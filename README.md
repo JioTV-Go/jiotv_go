@@ -27,6 +27,6 @@ go run .
 
 ## License
 
-GNU GENERAL PUBLIC LICENSE v3.0
+Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)
 
-**Free Software, Hell Yeah!**. The project is completely open-source and free to use. Any attempt to sell this project will be considered as a violation of the license and will be taken down immediately. If you notice any such activity, please report it to [me](mailto:rabil@rbls.eu.org).
+**Free Software, Hell Yeah!**. The project is open-source and free to use. Any attempt to sell this project will be considered as a violation of the license and will be taken down immediately. If you notice any such activity, please report it to [me](mailto:rabil@rbls.eu.org).
