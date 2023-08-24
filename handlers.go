@@ -136,12 +136,13 @@ func renderKeyHandler(c *gin.Context) {
 func channelsHandler(c *gin.Context) {
 	tv := getTV()
 	apiResponse := tv.channels()
+	// hostUrl should be request URL like http://localhost:5001
+	hostURL :=  strings.ToLower(c.Request.Proto[0:strings.Index(c.Request.Proto, "/")]) + "://" + c.Request.Host
 
 	// Check if the query parameter "type" is set to "m3u"
 	if c.Query("type") == "m3u" {
 		// Create an M3U playlist
 		m3uContent := "#EXTM3U\n"
-		hostURL := "http://localhost:5001"
 		for _, channel := range apiResponse.Result {
 			channelURL := fmt.Sprintf("%s/live/%d", hostURL, channel.ID)
 			m3uContent += fmt.Sprintf("#EXTINF:-1,%s\n%s\n", channel.Name, channelURL)
@@ -152,6 +153,10 @@ func channelsHandler(c *gin.Context) {
 		c.Header("Content-Type", "application/vnd.apple.mpegurl") // Set the video M3U MIME type
 		c.String(http.StatusOK, m3uContent)
 		return
+	}
+
+	for i, channel := range apiResponse.Result {
+		apiResponse.Result[i].URL = fmt.Sprintf("%s/live/%d", hostURL, channel.ID)
 	}
 
 	c.JSON(http.StatusOK, apiResponse)

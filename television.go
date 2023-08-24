@@ -21,6 +21,7 @@ type Television struct {
 type Channel struct {
 	ID   int    `json:"channel_id"`
 	Name string `json:"channel_name"`
+	URL  string `json:"channel_url"`
 }
 
 type APIResponse struct {
