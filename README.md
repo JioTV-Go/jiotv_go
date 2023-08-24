@@ -2,11 +2,14 @@
 
 JioTV Go is a web application that allows you to watch Live TV channels. This project helps you to watch JioTV without the JioTV App. The project is currently in development and is made for educational purposes only.
 
+Download latest binary for your operating system from [here](${{ github.repository }}/releases/latest) and refer following api endpoints to use it.
+
 ## API Endpoints
 
 | Endpoint | Description |
 | --- | --- |
 | `/` | Home Page |
+| `/login?username=<username>&password=<password>` | Login to JioTV (Mandatory). If you forgot your password, you can use the [JioTV Password Recovery](https://www.jio.com/selfcare/signup/forgot-password) page to reset your password. |
 | `/channels` | List of all channels |
 | `/channels?type=m3u` | List of all channels in m3u format for IPTV and VLC Media Player |
 | `/live/:channel_id` | Watch Live TV |
