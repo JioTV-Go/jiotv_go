@@ -19,7 +19,7 @@ Download the latest binary for your operating system from [here](https://github.
 
 ### Playing Live TV on VLC Media Player
 
-![Alt text](assets/image.png)
+![Alt text](./assets/image.png)
 
 ## API Endpoints
 
