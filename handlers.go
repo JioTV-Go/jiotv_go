@@ -2,6 +2,8 @@ package main
 
 import (
 	"bytes"
+	"fmt"
+	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
@@ -129,4 +131,28 @@ func renderKeyHandler(c *gin.Context) {
 	tv := getTV()
 	keyResult, status := tv.renderKey(decoded_url, channel_id)
 	c.Data(status, "application/octet-stream", keyResult)
+}
+
+func channelsHandler(c *gin.Context) {
+	tv := getTV()
+	apiResponse := tv.channels()
+
+	// Check if the query parameter "type" is set to "m3u"
+	if c.Query("type") == "m3u" {
+		// Create an M3U playlist
+		m3uContent := "#EXTM3U\n"
+		hostURL := "http://localhost:5001"
+		for _, channel := range apiResponse.Result {
+			channelURL := fmt.Sprintf("%s/live/%d", hostURL, channel.ID)
+			m3uContent += fmt.Sprintf("#EXTINF:-1,%s\n%s\n", channel.Name, channelURL)
+		}
+
+		// Set the Content-Disposition header for file download
+		c.Header("Content-Disposition", "attachment; filename=jiotv_playlist.m3u")
+		c.Header("Content-Type", "application/vnd.apple.mpegurl") // Set the video M3U MIME type
+		c.String(http.StatusOK, m3uContent)
+		return
+	}
+
+	c.JSON(http.StatusOK, apiResponse)
 }

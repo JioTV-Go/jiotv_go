@@ -18,6 +18,17 @@ type Television struct {
 	client    *http.Client
 }
 
+type Channel struct {
+	ID   int    `json:"channel_id"`
+	Name string `json:"channel_name"`
+}
+
+type APIResponse struct {
+	Code    int       `json:"code"`
+	Message string    `json:"message"`
+	Result  []Channel `json:"result"`
+}
+
 func NewTelevision(ssoToken, crm, uniqueID string) *Television {
 	headers := http.Header{
 		"Content-type":   {"application/x-www-form-urlencoded"},
@@ -120,3 +131,18 @@ func (tv *Television) getRequest(url string) *http.Request {
 	req.Header = tv.headers
 	return req
 }
+
+func (tv *Television) channels() APIResponse {
+	url := "https://jiotv.data.cdn.jio.com/apis/v1.3/getMobileChannelList/get/?os=android&devicetype=phone"
+	req := tv.getRequest(url)
+	resp, _ := tv.client.Do(req)
+	defer resp.Body.Close()
+
+	var apiResponse APIResponse
+	err := json.NewDecoder(resp.Body).Decode(&apiResponse)
+	if err != nil {
+		Log.Panic(err)
+	}
+	return apiResponse
+
+} 

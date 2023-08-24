@@ -16,5 +16,6 @@ func main() {
 	r.GET("/live/:id", liveHandler)
 	r.GET("/render", renderHandler)
 	r.GET("/renderKey", renderKeyHandler)
+	r.GET("/channels", channelsHandler)
 	r.Run("localhost:5001")
 }

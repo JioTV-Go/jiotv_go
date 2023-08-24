@@ -22,3 +22,6 @@ go.work
 
 # Credential file
 credentials.json
+
+# Playlist .m3u file
+*.m3u
