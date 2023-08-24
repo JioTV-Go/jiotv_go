@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"bytes"
@@ -7,20 +7,21 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
-
 	"github.com/gin-gonic/gin"
+	"github.com/rabilrbl/jiotv_go/internals/utils"
+	"github.com/rabilrbl/jiotv_go/internals/television"
 )
 
-func indexHandler(c *gin.Context) {
+func IndexHandler(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "Success",
 	})
 }
 
-func loginHandler(c *gin.Context) {
+func LoginHandler(c *gin.Context) {
 	username, check := c.GetQuery("username")
 	if !check {
-		Log.Println("Username not provided")	
+		utils.Log.Println("Username not provided")	
 		c.JSON(400, gin.H{
 			"message": "Username not provided",
 		})
@@ -28,33 +29,33 @@ func loginHandler(c *gin.Context) {
 	}
 	password, check := c.GetQuery("password")
 	if !check {
-		Log.Println("Password not provided")	
+		utils.Log.Println("Password not provided")	
 		c.JSON(400, gin.H{
 			"message": "Password not provided",
 		})
 		return
 	}
-	result, err := Login(username, password)
+	result, err := utils.Login(username, password)
 	if err != nil {
-		Log.Println(err)
+		utils.Log.Println(err)
 		return
 	}
 	c.JSON(200, result)
 
 }
 
-func liveHandler(c *gin.Context) {
+func LiveHandler(c *gin.Context) {
 	id := c.Param("id")
-	liveResult := TV.live(id)
+	liveResult := television.TV.Live(id)
 	// quote url
 	coded_url := url.QueryEscape(liveResult)
 	c.Redirect(302, "/render?auth="+coded_url+"&channel_key_id="+id)
 }
 
-func renderHandler(c *gin.Context) {
+func RenderHandler(c *gin.Context) {
 	auth, check := c.GetQuery("auth")
 	if !check {
-		Log.Println("Auth not provided")
+		utils.Log.Println("Auth not provided")
 		c.JSON(400, gin.H{
 			"message": "Auth not provided",
 		})
@@ -62,7 +63,7 @@ func renderHandler(c *gin.Context) {
 	}
 	channel_id, check := c.GetQuery("channel_key_id")
 	if !check {
-		Log.Println("Channel ID not provided")
+		utils.Log.Println("Channel ID not provided")
 		c.JSON(400, gin.H{
 			"message": "Channel ID not provided",
 		})
@@ -71,10 +72,10 @@ func renderHandler(c *gin.Context) {
 	// unquote url
 	decoded_url, err := url.QueryUnescape(auth)
 	if err != nil {
-		Log.Println(err)
+		utils.Log.Println(err)
 		return
 	}
-	renderResult := TV.render(decoded_url)
+	renderResult := television.TV.Render(decoded_url)
 	// baseUrl is the part of the url excluding suffix file.m3u8 and params is the part of the url after the suffix
 	split_url_by_params := strings.Split(decoded_url, "?")
 	baseUrl := split_url_by_params[0]
@@ -117,21 +118,21 @@ func renderHandler(c *gin.Context) {
 	c.Data(200, "application/vnd.apple.mpegurl", renderResult)
 }
 
-func renderKeyHandler(c *gin.Context) {
+func RenderKeyHandler(c *gin.Context) {
 	channel_id, _ := c.GetQuery("channel_key_id")
 	auth, _ := c.GetQuery("auth")
 	// decode url
 	decoded_url, err := url.QueryUnescape(auth)
 	if err != nil {
-		Log.Println(err)
+		utils.Log.Println(err)
 		return
 	}
-	keyResult, status := TV.renderKey(decoded_url, channel_id)
+	keyResult, status := television.TV.RenderKey(decoded_url, channel_id)
 	c.Data(status, "application/octet-stream", keyResult)
 }
 
-func channelsHandler(c *gin.Context) {
-	apiResponse := TV.channels()
+func ChannelsHandler(c *gin.Context) {
+	apiResponse := television.TV.Channels()
 	// hostUrl should be request URL like http://localhost:5001
 	hostURL :=  strings.ToLower(c.Request.Proto[0:strings.Index(c.Request.Proto, "/")]) + "://" + c.Request.Host
 

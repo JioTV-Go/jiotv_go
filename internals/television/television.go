@@ -1,14 +1,15 @@
-package main
+package television
 
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
 	"strings"
+	"github.com/rabilrbl/jiotv_go/internals/utils"
 )
+
 
 type Television struct {
 	ssoToken  string
@@ -29,6 +30,8 @@ type APIResponse struct {
 	Message string    `json:"message"`
 	Result  []Channel `json:"result"`
 }
+
+var TV *Television
 
 func NewTelevision(ssoToken, crm, uniqueID string) *Television {
 	headers := http.Header{
@@ -70,7 +73,21 @@ func NewTelevision(ssoToken, crm, uniqueID string) *Television {
 	}
 }
 
-func (tv *Television) live(channelID string) string {
+func getTV() *Television {
+	credentials, err := utils.GetLoginCredentials()
+	if err != nil {
+		// ask user to login
+		utils.Log.Fatal("Please login first with /login?username=<username>&password=<password>")
+	}
+	tv := NewTelevision(credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])
+	return tv
+}
+
+func Init() {
+	TV = getTV()
+}
+
+func (tv *Television) Live(channelID string) string {
 	formData := url.Values{
 		"channel_id":   []string{channelID},
 		"channelId":    []string{channelID},
@@ -83,7 +100,7 @@ func (tv *Television) live(channelID string) string {
 	req.Header = tv.headers
 	resp, err := tv.client.Do(req)
 	if err != nil {
-		log.Panic(err)
+		utils.Log.Panic(err)
 	}
 	defer resp.Body.Close()
 
@@ -93,16 +110,16 @@ func (tv *Television) live(channelID string) string {
 	return result["result"].(string)
 }
 
-func (tv *Television) render(url string) []byte {
+func (tv *Television) Render(url string) []byte {
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
-		Log.Fatal(err)
+		utils.Log.Fatal(err)
 	}
 	req.Header = tv.headers
 
 	resp, err := tv.client.Do(req)
 	if err != nil {
-		log.Panic(err)
+		utils.Log.Panic(err)
 	}
 
 	defer resp.Body.Close()
@@ -113,7 +130,7 @@ func (tv *Television) render(url string) []byte {
 	return buf.Bytes()
 }
 
-func (tv *Television) renderKey(url string, channelID string) ([]byte, int) {
+func (tv *Television) RenderKey(url string, channelID string) ([]byte, int) {
 	headers := tv.headers
 	headers["channelId"] = []string{channelID}
 	headers["channel_id"] = []string{channelID}
@@ -123,7 +140,7 @@ func (tv *Television) renderKey(url string, channelID string) ([]byte, int) {
 
 	resp, err := tv.client.Do(req)
 	if err != nil {
-		log.Panic(err)
+		utils.Log.Panic(err)
 	}
 	defer resp.Body.Close()
 
@@ -139,19 +156,19 @@ func (tv *Television) getRequest(url string) *http.Request {
 	return req
 }
 
-func (tv *Television) channels() APIResponse {
+func (tv *Television) Channels() APIResponse {
 	url := "https://jiotv.data.cdn.jio.com/apis/v1.3/getMobileChannelList/get/?os=android&devicetype=phone"
 	req := tv.getRequest(url)
 	resp, err := tv.client.Do(req)
 	if err != nil {
-		log.Panic(err)
+		utils.Log.Panic(err)
 	}
 	defer resp.Body.Close()
 
 	var apiResponse APIResponse
 	err = json.NewDecoder(resp.Body).Decode(&apiResponse)
 	if err != nil {
-		Log.Panic(err)
+		utils.Log.Panic(err)
 	}
 	return apiResponse
 

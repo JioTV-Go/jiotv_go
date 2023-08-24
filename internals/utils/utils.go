@@ -1,4 +1,4 @@
-package main
+package utils
 
 import (
 	"os"
@@ -135,26 +135,15 @@ func loadCredentialsFromFile(filename string) (map[string]string, error) {
 	return credentials, nil
 }
 
-func getLoginCredentials() (map[string]string, error) {
+func GetLoginCredentials() (map[string]string, error) {
 	// Check if credentials.json exists
 	if _, err := os.Stat("credentials.json"); os.IsNotExist(err) {
 		Log.Fatal("credentials.json not found, please login first")
 		return nil, err
 	}
-	Log.Output(2,"Accessing credentials")
 	credentials, err := loadCredentialsFromFile("credentials.json")
 	if err != nil {
 		return nil, err
 	}
 	return credentials, nil
-}
-
-func getTV() *Television {
-	credentials, err := getLoginCredentials()
-	if err != nil {
-		// ask user to login
-		Log.Fatal("Please login first with /login?username=<username>&password=<password>")
-	}
-	tv := NewTelevision(credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])
-	return tv
 }

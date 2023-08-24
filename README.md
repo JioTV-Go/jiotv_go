@@ -39,7 +39,7 @@ Install the dependencies and start the server.
 
 ```sh
 go mod download
-go run .
+go run ./cmd/jiotv_go
 ```
 
 ## License
