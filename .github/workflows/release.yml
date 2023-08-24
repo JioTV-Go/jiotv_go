@@ -39,3 +39,5 @@ jobs:
         binary_name: "jiotv_go"
         extra_files: LICENSE README.md
         compress_assets: OFF
+      env:
+        GIN_MODE: release
