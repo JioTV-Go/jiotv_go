@@ -152,7 +152,8 @@ func getLoginCredentials() (map[string]string, error) {
 func getTV() *Television {
 	credentials, err := getLoginCredentials()
 	if err != nil {
-		Log.Fatal(err)
+		// ask user to login
+		Log.Fatal("Please login first with /login?username=<username>&password=<password>")
 	}
 	tv := NewTelevision(credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])
 	return tv
