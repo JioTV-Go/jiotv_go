@@ -1,10 +1,6 @@
 #!/bin/bash
 
-ARCH=$(uname -m)  # Automatically detect system architecture
-if [ "$ARCH" != "amd64" ] && [ "$ARCH" != "arm64" ]; then
-    echo "Unsupported architecture: $ARCH"
-    exit 1
-fi
+ARCH=$(uname -m)
 
 # Function to get the latest Go version from the website
 get_latest_go_version() {
