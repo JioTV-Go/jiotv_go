@@ -149,39 +149,11 @@ func getLoginCredentials() (map[string]string, error) {
 	return credentials, nil
 }
 
-func GetLive(channel_id string) (string, error) {
-	url := "https://tv.media.jio.com/apis/v2.2/getchannelurl/getchannelurl"
-	data, err := json.Marshal(map[string]string{
-		"channel_id": channel_id,
-		"channelId": channel_id,
-		"stream_type": "Seek",
-	})
-	if err != nil {
-		Log.Println(err)
-		return "", err
-	}
-	req := NewRequest(url, "POST")
-	req.SetData(data)
-	resp, err := req.MakeRequest()
+func getTV() *Television {
+	credentials, err := getLoginCredentials()
 	if err != nil {
 		Log.Fatal(err)
-		return "", err
 	}
-	defer resp.Body.Close()
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		Log.Fatal(err)
-		return "", err
-	}
-	Log.Output(2, "Response: "+string(body))
-
-	var result map[string]interface{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		Log.Fatal(err)
-		return "", err
-	}
-
-	return result["result"].(string), nil
-	
+	tv := NewTelevision(credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])
+	return tv
 }

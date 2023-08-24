@@ -13,6 +13,8 @@ func main() {
 	r := gin.Default()
 	r.GET("/", indexHandler)
 	r.GET("/login", loginHandler)
-	r.GET("/live/:id", getLive)
-	r.Run(":5000")
+	r.GET("/live/:id", liveHandler)
+	r.GET("/render", renderHandler)
+	r.GET("/renderKey", renderKeyHandler)
+	r.Run("localhost:5001")
 }
