@@ -14,5 +14,5 @@ func main() {
 	r.GET("/", indexHandler)
 	r.GET("/login", loginHandler)
 	r.GET("/live/:id", getLive)
-	r.Run(":8080")
+	r.Run(":5000")
 }
