@@ -7,9 +7,11 @@ import (
 )
 
 var Log *log.Logger
+var TV *Television
 
 func main() {
 	Log = log.New(os.Stdout, "", log.LstdFlags)
+	TV = getTV()
 	r := gin.Default()
 	r.GET("/", indexHandler)
 	r.GET("/login", loginHandler)

@@ -45,8 +45,7 @@ func loginHandler(c *gin.Context) {
 
 func liveHandler(c *gin.Context) {
 	id := c.Param("id")
-	tv := getTV()
-	liveResult := tv.live(id)
+	liveResult := TV.live(id)
 	// quote url
 	coded_url := url.QueryEscape(liveResult)
 	c.Redirect(302, "/render?auth="+coded_url+"&channel_key_id="+id)
@@ -75,8 +74,7 @@ func renderHandler(c *gin.Context) {
 		Log.Println(err)
 		return
 	}
-	tv := getTV()
-	renderResult := tv.render(decoded_url)
+	renderResult := TV.render(decoded_url)
 	// baseUrl is the part of the url excluding suffix file.m3u8 and params is the part of the url after the suffix
 	split_url_by_params := strings.Split(decoded_url, "?")
 	baseUrl := split_url_by_params[0]
@@ -128,14 +126,12 @@ func renderKeyHandler(c *gin.Context) {
 		Log.Println(err)
 		return
 	}
-	tv := getTV()
-	keyResult, status := tv.renderKey(decoded_url, channel_id)
+	keyResult, status := TV.renderKey(decoded_url, channel_id)
 	c.Data(status, "application/octet-stream", keyResult)
 }
 
 func channelsHandler(c *gin.Context) {
-	tv := getTV()
-	apiResponse := tv.channels()
+	apiResponse := TV.channels()
 	// hostUrl should be request URL like http://localhost:5001
 	hostURL :=  strings.ToLower(c.Request.Proto[0:strings.Index(c.Request.Proto, "/")]) + "://" + c.Request.Host
 
