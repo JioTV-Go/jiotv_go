@@ -2,7 +2,7 @@
 
 JioTV Go is a web application that allows you to watch Live TV channels. This project helps you to watch JioTV without the JioTV App. The project is currently in development and is made for educational purposes only.
 
-Download latest binary for your operating system from [here](${{ github.repository }}/releases/latest) and refer following api endpoints to use it.
+Download latest binary for your operating system from [here](https://github.com/rabilrbl/jiotv_go/releases/latest) and refer following api endpoints to use it.
 
 ## API Endpoints
 
