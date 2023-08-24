@@ -81,7 +81,10 @@ func (tv *Television) live(channelID string) string {
 	url := "https://tv.media.jio.com/apis/v2.2/getchannelurl/getchannelurl"
 	req, _ := http.NewRequest("POST", url, strings.NewReader(data))
 	req.Header = tv.headers
-	resp, _ := tv.client.Do(req)
+	resp, err := tv.client.Do(req)
+	if err != nil {
+		log.Panic(err)
+	}
 	defer resp.Body.Close()
 
 	var result map[string]interface{}
@@ -118,7 +121,10 @@ func (tv *Television) renderKey(url string, channelID string) ([]byte, int) {
 	req, _ := http.NewRequest("GET", url, nil)
 	req.Header = headers
 
-	resp, _ := tv.client.Do(req)
+	resp, err := tv.client.Do(req)
+	if err != nil {
+		log.Panic(err)
+	}
 	defer resp.Body.Close()
 
 	buf := new(bytes.Buffer)
@@ -136,11 +142,14 @@ func (tv *Television) getRequest(url string) *http.Request {
 func (tv *Television) channels() APIResponse {
 	url := "https://jiotv.data.cdn.jio.com/apis/v1.3/getMobileChannelList/get/?os=android&devicetype=phone"
 	req := tv.getRequest(url)
-	resp, _ := tv.client.Do(req)
+	resp, err := tv.client.Do(req)
+	if err != nil {
+		log.Panic(err)
+	}
 	defer resp.Body.Close()
 
 	var apiResponse APIResponse
-	err := json.NewDecoder(resp.Body).Decode(&apiResponse)
+	err = json.NewDecoder(resp.Body).Decode(&apiResponse)
 	if err != nil {
 		Log.Panic(err)
 	}
