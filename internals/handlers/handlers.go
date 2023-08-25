@@ -13,9 +13,7 @@ import (
 )
 
 func IndexHandler(c *gin.Context) {
-	c.JSON(200, gin.H{
-		"message": "Success",
-	})
+	c.HTML(http.StatusOK, "index.html", gin.H{})
 }
 
 func LoginHandler(c *gin.Context) {
@@ -47,7 +45,13 @@ func LoginHandler(c *gin.Context) {
 
 func LiveHandler(c *gin.Context) {
 	id := c.Param("id")
+	// remove suffix .m3u8 if exists
+	id = strings.Replace(id, ".m3u8", "", -1)
 	liveResult := television.TV.Live(id)
+	if (liveResult == "retry") {
+		television.Init()
+		liveResult = television.TV.Live(id)
+	}
 	// quote url
 	coded_url := url.QueryEscape(liveResult)
 	c.Redirect(302, "/render?auth="+coded_url+"&channel_key_id="+id)
@@ -158,4 +162,12 @@ func ChannelsHandler(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, apiResponse)
+}
+
+func PlayHandler(c *gin.Context) {
+	id := c.Param("id")
+	play_url := "/live/" + id + ".m3u8"
+	c.HTML(http.StatusOK, "play.html", gin.H{
+		"play_url": play_url,
+	})
 }

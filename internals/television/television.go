@@ -105,6 +105,10 @@ func (tv *Television) Live(channelID string) string {
 	}
 	defer resp.Body.Close()
 
+	if(resp.StatusCode == 400) {
+		return "retry"
+	}
+
 	var result map[string]interface{}
 	json.NewDecoder(resp.Body).Decode(&result)
 
