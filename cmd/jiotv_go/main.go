@@ -5,6 +5,8 @@ import (
 	"github.com/rabilrbl/jiotv_go/internals/handlers"
 	"github.com/rabilrbl/jiotv_go/internals/television"
 	"github.com/rabilrbl/jiotv_go/internals/utils"
+	"html/template"
+	"net/http"
 )
 
 func main() {
@@ -13,8 +15,9 @@ func main() {
 	television.Init()
 	utils.Init()
 
-	r.Static("/static", "./static")
-	r.LoadHTMLGlob("templates/*")
+	r.StaticFS("/static", http.FS(staticEmbed))
+	tmpl := template.Must(template.ParseFS(tmplEmbed, "templates/*"))
+	r.SetHTMLTemplate(tmpl)
 
 	r.GET("/", handlers.IndexHandler)
 	r.GET("/login", handlers.LoginHandler)
