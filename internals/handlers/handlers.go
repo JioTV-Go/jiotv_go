@@ -40,6 +40,7 @@ func LoginHandler(c *gin.Context) {
 		utils.Log.Println(err)
 		return
 	}
+	television.Init()
 	c.JSON(200, result)
 
 }

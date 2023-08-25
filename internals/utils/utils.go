@@ -7,6 +7,8 @@ import (
 	"bytes"
 	"net/http"
 	"strings"
+	"fmt"
+	"golang.org/x/term"
 )
 
 func Login(username, password string) (map[string]string, error) {
@@ -115,6 +117,21 @@ func Login(username, password string) (map[string]string, error) {
 }
 
 func loadCredentialsFromFile(filename string) (map[string]string, error) {
+	// check if given file exists, if not ask user username and password then call Login()
+	_, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		// ask user input for username and password
+		fmt.Print("Enter your username: ")
+		var username string
+		fmt.Scanln(&username)
+
+		fmt.Print("Enter your password: ")
+		password, err := term.ReadPassword(0)
+		if err != nil {
+			Log.Fatal("Error reading password:", err)
+		}
+		Login(username, string(password))
+	}
 	credentials := make(map[string]string)
 	file, err := os.Open(filename)
 	if err != nil {
@@ -136,11 +153,6 @@ func loadCredentialsFromFile(filename string) (map[string]string, error) {
 }
 
 func GetLoginCredentials() (map[string]string, error) {
-	// Check if credentials.json exists
-	if _, err := os.Stat("credentials.json"); os.IsNotExist(err) {
-		Log.Fatal("credentials.json not found, please login first")
-		return nil, err
-	}
 	credentials, err := loadCredentialsFromFile("credentials.json")
 	if err != nil {
 		return nil, err

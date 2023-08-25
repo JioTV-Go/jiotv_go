@@ -77,7 +77,8 @@ func getTV() *Television {
 	credentials, err := utils.GetLoginCredentials()
 	if err != nil {
 		// ask user to login
-		utils.Log.Fatal("Please login first with /login?username=<username>&password=<password>")
+		utils.Log.Println("Please login first with /login?username=<username>&password=<password>")
+		
 	}
 	tv := NewTelevision(credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])
 	return tv
