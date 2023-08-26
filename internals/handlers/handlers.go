@@ -12,6 +12,13 @@ import (
 	"github.com/rabilrbl/jiotv_go/internals/television"
 )
 
+var TV *television.Television
+
+func Init() {
+	credentials, _ := utils.GetLoginCredentials()
+	TV = television.NewTelevision(credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])	
+}
+
 func IndexHandler(c *gin.Context) {
 	c.HTML(http.StatusOK, "index.html", gin.H{})
 }
@@ -38,7 +45,7 @@ func LoginHandler(c *gin.Context) {
 		utils.Log.Println(err)
 		return
 	}
-	television.Init()
+	Init()
 	c.JSON(200, result)
 
 }
@@ -47,11 +54,7 @@ func LiveHandler(c *gin.Context) {
 	id := c.Param("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", -1)
-	liveResult := television.TV.Live(id)
-	if (liveResult == "retry") {
-		television.Init()
-		liveResult = television.TV.Live(id)
-	}
+	liveResult := TV.Live(id)
 	// quote url
 	coded_url := url.QueryEscape(liveResult)
 	c.Redirect(302, "/render?auth="+coded_url+"&channel_key_id="+id)
@@ -80,7 +83,7 @@ func RenderHandler(c *gin.Context) {
 		utils.Log.Println(err)
 		return
 	}
-	renderResult := television.TV.Render(decoded_url)
+	renderResult := TV.Render(decoded_url)
 	// baseUrl is the part of the url excluding suffix file.m3u8 and params is the part of the url after the suffix
 	split_url_by_params := strings.Split(decoded_url, "?")
 	baseUrl := split_url_by_params[0]
@@ -132,12 +135,12 @@ func RenderKeyHandler(c *gin.Context) {
 		utils.Log.Println(err)
 		return
 	}
-	keyResult, status := television.TV.RenderKey(decoded_url, channel_id)
+	keyResult, status := TV.RenderKey(decoded_url, channel_id)
 	c.Data(status, "application/octet-stream", keyResult)
 }
 
 func ChannelsHandler(c *gin.Context) {
-	apiResponse := television.TV.Channels()
+	apiResponse := TV.Channels()
 	// hostUrl should be request URL like http://localhost:5001
 	hostURL :=  strings.ToLower(c.Request.Proto[0:strings.Index(c.Request.Proto, "/")]) + "://" + c.Request.Host
 

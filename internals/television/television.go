@@ -31,8 +31,6 @@ type APIResponse struct {
 	Result  []Channel `json:"result"`
 }
 
-var TV *Television
-
 func NewTelevision(ssoToken, crm, uniqueID string) *Television {
 	headers := http.Header{
 		"Content-type":   {"application/x-www-form-urlencoded"},
@@ -73,21 +71,6 @@ func NewTelevision(ssoToken, crm, uniqueID string) *Television {
 	}
 }
 
-func getTV() *Television {
-	credentials, err := utils.GetLoginCredentials()
-	if err != nil {
-		// ask user to login
-		utils.Log.Println("Please login first with /login?username=<username>&password=<password>")
-		
-	}
-	tv := NewTelevision(credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])
-	return tv
-}
-
-func Init() {
-	TV = getTV()
-}
-
 func (tv *Television) Live(channelID string) string {
 	formData := url.Values{
 		"channel_id":   []string{channelID},
@@ -105,8 +88,15 @@ func (tv *Television) Live(channelID string) string {
 	}
 	defer resp.Body.Close()
 
-	if(resp.StatusCode == 400) {
-		return "retry"
+	if resp.StatusCode == 400 {
+		// store string response 
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(resp.Body)
+		response := buf.String()
+		// add headers and data from request
+		utils.Log.Println("Request headers:", req.Header)
+		utils.Log.Println("Request data:", data)
+		utils.Log.Panicln("Response: ", response)
 	}
 
 	var result map[string]interface{}

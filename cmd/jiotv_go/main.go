@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/rabilrbl/jiotv_go/internals/handlers"
-	"github.com/rabilrbl/jiotv_go/internals/television"
 	"github.com/rabilrbl/jiotv_go/internals/utils"
 	"html/template"
 	"net/http"
@@ -11,14 +10,16 @@ import (
 
 func main() {
 	r := gin.Default()
-
-	television.Init()
-	utils.Init()
-
+	
+	utils.Log = utils.GetLogger()
+	
 	r.StaticFS("/static", http.FS(staticEmbed))
 	tmpl := template.Must(template.ParseFS(tmplEmbed, "templates/*"))
 	r.SetHTMLTemplate(tmpl)
-
+	
+	// Initialize the television client
+	handlers.Init()
+	
 	r.GET("/", handlers.IndexHandler)
 	r.GET("/login", handlers.LoginHandler)
 	r.GET("/live/:id", handlers.LiveHandler)

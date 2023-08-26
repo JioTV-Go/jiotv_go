@@ -1,15 +1,23 @@
 package utils
 
 import (
-	"os"
-	"io"
-	"encoding/json"
 	"bytes"
-	"net/http"
-	"strings"
+	"encoding/json"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+	"os"
+	"strings"
+
 	"golang.org/x/term"
 )
+
+var Log *log.Logger
+
+func GetLogger() *log.Logger {
+	return log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile)
+}
 
 func Login(username, password string) (map[string]string, error) {
 	postData := map[string]string{
