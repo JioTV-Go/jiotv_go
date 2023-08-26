@@ -80,6 +80,10 @@ func (tv *Television) Live(channelID string) string {
 	data := formData.Encode()
 
 	url := "https://tv.media.jio.com/apis/v2.2/getchannelurl/getchannelurl"
+
+	// remove old cookies
+	tv.client.Jar, _ = cookiejar.New(nil)
+
 	req, _ := http.NewRequest("POST", url, strings.NewReader(data))
 	req.Header = tv.headers
 	resp, err := tv.client.Do(req)
@@ -106,6 +110,9 @@ func (tv *Television) Live(channelID string) string {
 }
 
 func (tv *Television) Render(url string) []byte {
+	// remove old cookies
+	tv.client.Jar, _ = cookiejar.New(nil)
+	
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		utils.Log.Fatal(err)
