@@ -169,8 +169,16 @@ func ChannelsHandler(c *gin.Context) {
 
 func PlayHandler(c *gin.Context) {
 	id := c.Param("id")
-	play_url := "/live/" + id + ".m3u8"
+	player_url := "/player/" + id
 	c.HTML(http.StatusOK, "play.html", gin.H{
+		"player_url": player_url,
+	})
+}
+
+func PlayerHandler(c *gin.Context) {
+	id := c.Param("id")
+	play_url := "/live/" + id + ".m3u8"
+	c.HTML(http.StatusOK, "player.html", gin.H{
 		"play_url": play_url,
 	})
 }

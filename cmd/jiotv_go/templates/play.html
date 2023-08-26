@@ -6,9 +6,6 @@
     <title>JioTV Go</title>
     <link href="https://cdn.jsdelivr.net/npm/daisyui@3.6.2/dist/full.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@clappr/player@latest/dist/clappr.min.js"></script>
-    <script type="text/javascript"
-        src="//cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js"></script>
 </head>
 <body>
     <div class="navbar bg-base-100">
@@ -19,24 +16,9 @@
           <a href="/login" class="btn btn-outline btn-success">Login</a>
         </div>
     </div>
-    <div class="container mx-auto">
-        <div class="flex flex-wrap justify-center items-center">
-            <div id="player"></div>
+        <div class="relative overflow-hidden w-full pt-[56.25%]">
+            <iframe class="absolute top-0 left-0 bottom-0 right-0 w-full h-full" src="{{ .player_url }}" width="100%" height="100%" />
         </div>
-    </div>
-  <script>
-    var player = new Clappr.Player({
-        source: "{{ .play_url }}", 
-        parentId: "#player",
-        plugins: [LevelSelector],
-        levelSelectorConfig: {
-            title: 'Quality',
-            labelCallback: function(playbackLevel, _) {
-                return playbackLevel.level.height+'p' + ' - ' + Math.round(playbackLevel.level.bitrate/1000) + ' Kbps';
-            }
-        },
-    });
-  </script>
     </div>
 </body>
 </html>

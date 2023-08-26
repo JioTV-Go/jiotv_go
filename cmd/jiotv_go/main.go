@@ -27,5 +27,6 @@ func main() {
 	r.GET("/renderKey", handlers.RenderKeyHandler)
 	r.GET("/channels", handlers.ChannelsHandler)
 	r.GET("/play/:id", handlers.PlayHandler)
+	r.GET("/player/:id", handlers.PlayerHandler)
 	r.Run("localhost:5001")
 }
