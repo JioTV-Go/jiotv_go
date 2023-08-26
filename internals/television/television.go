@@ -110,12 +110,15 @@ func (tv *Television) Live(channelID string) string {
 }
 
 func (tv *Television) Render(url string) []byte {
-	
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		utils.Log.Fatal(err)
 	}
 	req.Header = tv.headers
+
+	// go http keeps adding more cookies to the request header, leading large request header size
+	// so we reset the cookie header, so that only new cookies are present
+	req.Header.Del("Cookie")
 
 	resp, err := tv.client.Do(req)
 	if err != nil {
@@ -146,9 +149,6 @@ func (tv *Television) RenderKey(url string, channelID string) ([]byte, int) {
 
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Body)
-
-	// reset cookies
-	tv.client.Jar, _ = cookiejar.New(nil)
 
 	return buf.Bytes(), resp.StatusCode
 }
