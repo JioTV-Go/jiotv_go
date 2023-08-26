@@ -3,7 +3,7 @@ package main
 import (
 	"embed"
 	"io/fs"
-	"path/filepath"
+	"path"
 )
 
 //go:embed templates
@@ -17,7 +17,7 @@ type staticFS struct {
 }
 
 func (sfs *staticFS) Open(name string) (fs.File, error) {
-	return sfs.fs.Open(filepath.Join("static", name))
+	return sfs.fs.Open(path.Join("static", name))
 }
 
 var staticEmbed = &staticFS{staticEmbedFS}
