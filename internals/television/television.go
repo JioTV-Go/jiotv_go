@@ -110,8 +110,6 @@ func (tv *Television) Live(channelID string) string {
 }
 
 func (tv *Television) Render(url string) []byte {
-	// remove old cookies
-	tv.client.Jar, _ = cookiejar.New(nil)
 	
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -148,6 +146,9 @@ func (tv *Television) RenderKey(url string, channelID string) ([]byte, int) {
 
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Body)
+
+	// reset cookies
+	tv.client.Jar, _ = cookiejar.New(nil)
 
 	return buf.Bytes(), resp.StatusCode
 }
