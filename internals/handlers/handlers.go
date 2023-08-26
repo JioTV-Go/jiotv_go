@@ -15,8 +15,12 @@ import (
 var TV *television.Television
 
 func Init() {
-	credentials, _ := utils.GetLoginCredentials()
-	TV = television.NewTelevision(credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])	
+	credentials, err := utils.GetLoginCredentials()
+	if err != nil {
+		utils.Log.Println("Login error!")
+	} else {
+		TV = television.NewTelevision(credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])	
+	}
 }
 
 func IndexHandler(c *gin.Context) {

@@ -13,14 +13,14 @@
           <a class="btn btn-ghost  text-xl">JioTV Go</a>
         </div>
         <div class="navbar-end">
-          <a href="/login" class="btn btn-outline btn-success">Login</a>
+          <button onclick="login_modal.showModal()" class="btn btn-outline btn-success">Login</button>
         </div>
     </div>
     <!-- Create a grid with dummy icon and use title and url from /channels -->
     <div class="container mx-auto">
         <div class="overflow-x-auto">
-            <div id="portexe-search-root" class="form-control w-full max-w-xs">
-                <input id="portexe-search-input" type="text" placeholder="Search channels here" class="input input-bordered input-accent w-full max-w-xs" />
+            <div id="portexe-search-root" class="form-control w-full px-4">
+                <input id="portexe-search-input" type="text" placeholder="Search channels here" class="input input-bordered input-accent w-full" />
             </div>
             <table id="portexe-data-table" class="table table-zebra">
                 <thead>
@@ -35,6 +35,23 @@
         </div>
 
     </div>
+    <dialog id="login_modal" class="modal modal-bottom sm:modal-middle">
+      <form method="dialog" class="modal-box">
+        <h3 class="font-bold text-lg">Login</h3>
+        <div class="flex flex-col gap-2">
+          <label for="username" class="label">Username / Mobile Number</label>
+          <input id="username" required type="text" placeholder="9876543210" class="input input-bordered input-primary w-full" />
+          <label for="password" class="label">Password</label>
+          <input id="password" required type="password" placeholder="********" class="input input-bordered input-primary w-full" />
+          <a href="https://www.jio.com/selfcare/signup/forgot-password" target="_blank" class="text-sm link link-error text-end">Forgot Password?</a>
+          <button onclick="loginClick()" class="btn btn-primary">Login</button>
+        </div>
+        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
+      </form>
+      <form method="dialog" class="modal-backdrop">
+        <button>close</button>
+      </form>
+    </dialog>
     <script src="/static/table.js"></script>
 </body>
 </html>

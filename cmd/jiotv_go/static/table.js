@@ -61,6 +61,16 @@ const tableFetch = () => {
     const url = "/channels";
     fetch(url)
     .then(function(response) {
+        if (response.status !== 200) {
+            // ask user has he logged in, if yes, then show error message
+            // if not, then show login modal
+            const logged_in = confirm("Would you like to login?");
+            if (logged_in) {
+              login_modal.showModal();
+            } else {
+              alert("If you are seeing this message, even after logging in, please contact the developer!");
+            }
+        }
         return response.json();
     }
     ).then(function(json) {
@@ -83,3 +93,25 @@ const tableFetch = () => {
 }
 
 tableFetch();
+
+loginClick = () => {
+  // create a popup to enter username and password
+  // then redirect to /login?username=xxx&password=xxx
+  const username = document.getElementById("username").value;
+  const password = document.getElementById("password").value;
+  if (!username || !password) {
+    return;
+  }
+  const url = "/login?username=" + username + "&password=" + password;
+  
+  fetch(url)
+  .then((response) => {
+    if (response.status == 200) {
+      alert("Login success! Enjoy!");
+    } else {
+      alert("Login failed! Please try again!");
+    }
+  }).catch((error) => {
+    console.log(error);
+  });
+}

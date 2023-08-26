@@ -3,14 +3,11 @@ package utils
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
 	"os"
 	"strings"
-
-	"golang.org/x/term"
 )
 
 var Log *log.Logger
@@ -128,36 +125,27 @@ func loadCredentialsFromFile(filename string) (map[string]string, error) {
 	// check if given file exists, if not ask user username and password then call Login()
 	_, err := os.Stat(filename)
 	if os.IsNotExist(err) {
-		// ask user input for username and password
-		fmt.Print("Enter your username: ")
-		var username string
-		fmt.Scanln(&username)
-
-		fmt.Print("Enter your password: ")
-		password, err := term.ReadPassword(0)
+		Log.Println("Credentials file not found, please login at the website or goto /login?username=xxx&password=xxx")
+	} else {
+		credentials := make(map[string]string)
+		file, err := os.Open(filename)
 		if err != nil {
-			Log.Fatal("Error reading password:", err)
+			return nil, err
 		}
-		Login(username, string(password))
-	}
-	credentials := make(map[string]string)
-	file, err := os.Open(filename)
-	if err != nil {
-		return nil, err
-	}
-	defer file.Close()
+		defer file.Close()
 
-	data, err := io.ReadAll(file)
-	if err != nil {
-		return nil, err
-	}
+		data, err := io.ReadAll(file)
+		if err != nil {
+			return nil, err
+		}
 
-	err = json.Unmarshal(data, &credentials)
-	if err != nil {
-		return nil, err
+		err = json.Unmarshal(data, &credentials)
+		if err != nil {
+			return nil, err
+		}
+		return credentials, nil
 	}
-
-	return credentials, nil
+	return nil, err
 }
 
 func GetLoginCredentials() (map[string]string, error) {
