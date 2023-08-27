@@ -66,7 +66,8 @@ loginClick = () => {
   if (!username || !password) {
     return;
   }
-  const url = "/login?username=" + username + "&password=" + password;
+  // construct the encoded URL for the login request
+  const url = "/login?username=" + username + "&password=" + encodeURIComponent(password)  + "-encoded";
   
   fetch(url)
   .then((response) => {
