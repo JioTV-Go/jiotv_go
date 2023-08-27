@@ -13,7 +13,13 @@
           <a class="btn btn-ghost  text-xl">JioTV Go</a>
         </div>
         <div class="navbar-end">
-          <button onclick="login_modal.showModal()" class="btn btn-outline btn-success">Login</button>
+          <button onclick="login_modal.showModal()" class="btn btn-outline btn-success">
+            {{ if .IsNotLoggedIn }}
+            Login
+            {{else}}
+            Logged In
+            {{end}}
+          </button>
         </div>
     </div>
     <!-- Create a grid with dummy icon and use title and url from /channels -->
