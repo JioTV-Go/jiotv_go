@@ -49,7 +49,7 @@ func LoginHandler(c *gin.Context) {
 		return
 	}
 	
-	// Remove trailing "-encoded" from password
+	// Strip trailing "-encoded" from password, if sent through Login form
 	if strings.HasSuffix(password, "-encoded") {
 		password = password[:len(password)-8]
 		// Decode the decodeURI password
