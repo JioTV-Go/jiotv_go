@@ -16,6 +16,11 @@
   {{ template "login_dialog" . }}
   <script src="/static/index.js"></script>
   <script src="/static/common.js"></script>
+  <script>
+    { { if .IsNotLoggedIn } }
+    login_modal.showModal();
+    { { end } }
+  </script>
 </body>
 
 </html>
