@@ -30,6 +30,12 @@
                   </tr>
                 </thead>
                 <tbody>
+                  {{range $channel := .Channels}}
+                  <tr>
+                    <td><span class="text-lg font-bold">{{$channel.Name}}</span></td>
+                    <td><a href="/play/{{$channel.ID}}" target="_blank" class="btn btn-outline btn-success">Play</a></td>
+                  </tr>
+                  {{end}}
                 </tbody>
               </table>
         </div>

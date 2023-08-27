@@ -24,7 +24,10 @@ func Init() {
 }
 
 func IndexHandler(c *gin.Context) {
-	c.HTML(http.StatusOK, "index.html", gin.H{})
+	channels := television.Channels()
+	c.HTML(http.StatusOK, "index.html", gin.H{
+		"Channels": channels.Result,
+	})
 }
 
 func LoginHandler(c *gin.Context) {
@@ -144,7 +147,7 @@ func RenderKeyHandler(c *gin.Context) {
 }
 
 func ChannelsHandler(c *gin.Context) {
-	apiResponse := TV.Channels()
+	apiResponse := television.Channels()
 	// hostUrl should be request URL like http://localhost:5001
 	hostURL :=  strings.ToLower(c.Request.Proto[0:strings.Index(c.Request.Proto, "/")]) + "://" + c.Request.Host
 

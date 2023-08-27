@@ -153,16 +153,9 @@ func (tv *Television) RenderKey(url string, channelID string) ([]byte, int) {
 	return buf.Bytes(), resp.StatusCode
 }
 
-func (tv *Television) getRequest(url string) *http.Request {
-	req, _ := http.NewRequest("GET", url, nil)
-	req.Header = tv.headers
-	return req
-}
-
-func (tv *Television) Channels() APIResponse {
+func Channels() APIResponse {
 	url := "https://jiotv.data.cdn.jio.com/apis/v1.3/getMobileChannelList/get/?os=android&devicetype=phone"
-	req := tv.getRequest(url)
-	resp, err := tv.client.Do(req)
+	resp, err := http.Get(url)
 	if err != nil {
 		utils.Log.Panic(err)
 	}
