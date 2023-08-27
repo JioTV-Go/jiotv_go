@@ -1,4 +1,4 @@
-module github.com/rabilrbl/jiotv_go
+module github.com/siddharthsky/jiotv_go
 
 go 1.21.0
 
