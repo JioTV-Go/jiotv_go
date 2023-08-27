@@ -29,6 +29,6 @@ fi
 # Run the Go program
 echo "Running Go program..."
 go mod tidy
-go run .
+go run ./cmd/jiotv_go/
 
 echo "Go program completed."
