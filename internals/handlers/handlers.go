@@ -48,9 +48,28 @@ func LoginHandler(c *gin.Context) {
 		})
 		return
 	}
+	
+	// Remove trailing "-encoded" from password
+	if strings.HasSuffix(password, "-encoded") {
+		password = password[:len(password)-8]
+		// Decode the decodeURI password
+		decodedPassword, err := url.QueryUnescape(password)
+		if err != nil {
+			utils.Log.Println("Failed to decode password")
+			c.JSON(400, gin.H{
+				"message": "Failed to decode password",
+			})
+			return
+		}
+		password = decodedPassword
+	}
+	
 	result, err := utils.Login(username, password)
 	if err != nil {
 		utils.Log.Println(err)
+		c.JSON(500, gin.H{
+			"message": "Internal server error",
+		})
 		return
 	}
 	Init()
