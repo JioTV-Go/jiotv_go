@@ -59,5 +59,10 @@
       </form>
     </dialog>
     <script src="/static/table.js"></script>
+    <script>
+      {{ if .IsNotLoggedIn }}
+      login_modal.showModal();
+      {{end}}
+    </script>
 </body>
 </html>

@@ -27,6 +27,7 @@ func IndexHandler(c *gin.Context) {
 	channels := television.Channels()
 	c.HTML(http.StatusOK, "index.html", gin.H{
 		"Channels": channels.Result,
+		"IsNotLoggedIn": !utils.CheckLoggedIn(),
 	})
 }
 

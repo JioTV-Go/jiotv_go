@@ -155,3 +155,13 @@ func GetLoginCredentials() (map[string]string, error) {
 	}
 	return credentials, nil
 }
+
+func CheckLoggedIn() bool {
+	// Check if credentials.json exists
+	_, err := GetLoginCredentials()
+	if err != nil {
+		return false
+	} else {
+		return true
+	}
+}
