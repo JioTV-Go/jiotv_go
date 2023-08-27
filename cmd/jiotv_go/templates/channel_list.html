@@ -1,0 +1,24 @@
+{{define "channel_list"}}
+<div class="overflow-x-auto">
+  <div id="portexe-search-root" class="form-control w-full px-2">
+    <input id="portexe-search-input" type="text" placeholder="Search channels here"
+      class="input input-bordered input-success w-full" />
+  </div>
+  <table id="portexe-data-table" class="table table-zebra">
+    <thead>
+      <tr>
+        <th>Channel</th>
+        <th>Play</th>
+      </tr>
+    </thead>
+    <tbody>
+      {{range $channel := .Channels}}
+      <tr>
+        <td><span class="text-lg font-bold">{{$channel.Name}}</span></td>
+        <td><a href="/play/{{$channel.ID}}" class="btn btn-outline btn-success">Play</a></td>
+      </tr>
+      {{end}}
+    </tbody>
+  </table>
+</div>
+{{end}}

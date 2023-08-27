@@ -1,0 +1,25 @@
+{{ define "navbar" }}
+<div class="navbar bg-base-100">
+    <div class="navbar-start">
+        <a class="btn btn-ghost text-xl">JioTV Go</a>
+    </div>
+    <div class="navbar-end">
+        {{ if .player_url }}
+        <button  class="btn btn-outline btn-success flex flex-row items-center justify-center gap-2" onclick="window.history.back()">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+              </svg>                     
+            Back
+        </button>
+        {{ else }}
+        <button onclick="login_modal.showModal()" class="btn btn-outline btn-success">
+        {{ if .IsNotLoggedIn }}
+            Login
+            {{else}}
+            Logged In
+            {{end}}
+        </button>
+        {{ end }}
+    </div>
+</div>
+{{ end }}
