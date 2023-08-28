@@ -31,37 +31,37 @@ func IndexHandler(c *gin.Context) {
 	})
 }
 
+func checkFieldExist(field string, check bool, c *gin.Context) {
+	if !check {
+		utils.Log.Println(field+" not provided")	
+		c.JSON(400, gin.H{
+			"message": field+" not provided",
+		})
+	}
+}
+
 func LoginHandler(c *gin.Context) {
-	username, check := c.GetQuery("username")
-	if !check {
-		utils.Log.Println("Username not provided")	
-		c.JSON(400, gin.H{
-			"message": "Username not provided",
-		})
-		return
-	}
-	password, check := c.GetQuery("password")
-	if !check {
-		utils.Log.Println("Password not provided")	
-		c.JSON(400, gin.H{
-			"message": "Password not provided",
-		})
-		return
-	}
-	
-	// Strip trailing "-encoded" from password, if sent through Login form
-	if strings.HasSuffix(password, "-encoded") {
-		password = password[:len(password)-8]
-		// Decode the decodeURI password
-		decodedPassword, err := url.QueryUnescape(password)
+	var username, password string
+	var check bool
+	if (c.Request.Method == "GET") {
+		username, check = c.GetQuery("username")
+		checkFieldExist("Username", check, c)
+		password, check = c.GetQuery("password")
+		checkFieldExist("Password", check, c)
+	} else if (c.Request.Method == "POST") {
+		var json map[string]string
+		err := c.BindJSON(&json)
 		if err != nil {
-			utils.Log.Println("Failed to decode password")
+			utils.Log.Println(err)
 			c.JSON(400, gin.H{
-				"message": "Failed to decode password",
+				"message": "Invalid JSON",
 			})
 			return
 		}
-		password = decodedPassword
+		username = json["username"]
+		checkFieldExist("Username", username != "", c)
+		password = json["password"]
+		checkFieldExist("Password", password != "", c)
 	}
 	
 	result, err := utils.Login(username, password)

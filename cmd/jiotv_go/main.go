@@ -23,6 +23,7 @@ func main() {
 	
 	r.GET("/", handlers.IndexHandler)
 	r.GET("/login", handlers.LoginHandler)
+	r.POST("/login", handlers.LoginHandler)
 	r.GET("/live/:id", handlers.LiveHandler)
 	r.GET("/render", handlers.RenderHandler)
 	r.GET("/renderKey", handlers.RenderKeyHandler)

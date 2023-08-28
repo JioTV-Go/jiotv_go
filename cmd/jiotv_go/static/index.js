@@ -66,17 +66,22 @@ loginClick = () => {
   if (!username || !password) {
     return;
   }
-  // construct the encoded URL for the login request
-  const url = "/login?username=" + username + "&password=" + encodeURIComponent(password)  + "-encoded";
+
+  const url = "/login";
   
-  fetch(url)
-  .then((response) => {
-    if (response.status == 200) {
-      alert("Login success! Enjoy!");
-    } else {
-      alert("Login failed! Please try again!");
-    }
-  }).catch((error) => {
-    console.log(error);
-  });
+  fetch(url, {
+    method: "POST",
+    body: JSON.stringify({ username, password }),
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.status === "success") {
+        alert("Login success. Enjoy!");
+      } else {
+        alert("Login failed!");
+      }
+    }).catch(err => {
+      console.log(err);
+      alert("Login failed!");
+    });
 }
