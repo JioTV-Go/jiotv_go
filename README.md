@@ -8,8 +8,10 @@ Download the latest binary for your operating system from [here](https://github.
 
 - [JioTV Go](#jiotv-go)
   - [Table of Contents](#table-of-contents)
-  - [How to use JioTV Go?](#how-to-use-jiotv-go)
-  - [Android Usage](#android-usage)
+  - [Usage](#usage)
+    - [Docker (Recommended)](#docker-recommended)
+    - [How to use JioTV Go?](#how-to-use-jiotv-go)
+    - [Android](#android)
   - [Web Paths](#web-paths)
   - [API Endpoints](#api-endpoints)
   - [Screenshots](#screenshots)
@@ -20,16 +22,24 @@ Download the latest binary for your operating system from [here](https://github.
   - [Usage from Source](#usage-from-source)
   - [License](#license)
 
-## How to use JioTV Go?
+## Usage
+
+### Docker (Recommended)
+
+1. Install [Docker](https://docs.docker.com/get-docker/).
+2. `docker run -p 5001:5001 ghcr.io/rabilrbl/jiotv_go:latest`
+3. Open `http://localhost:5001` in your browser.
+
+### How to use JioTV Go?
 
 1. Download the latest binary for your operating system from the [releases](https://github.com/rabilrbl/jiotv_go/releases/latest) page.
 2. On Linux/Unix, Give executable permission to the binary. `chmod +x jiotv_go`
 3. Run the binary. `./jiotv_go`. <br />(Optional) You can also specify `host:port` to run the server on a specific host and port. `./jiotv_go "127.0.0.1:4998"`
-4. Open `http://localhost:5001` in your browser. Expect a success message.
+4. Open `http://localhost:5001` in your browser.
 5. Login to JioTV by clicking on the Login button.
 6. Choose a channel and start watching.
 
-## Android Usage
+### Android
 
 > **Bug Notice**: Currently, the JioTV Go is not working on default termux due to some request error. Please use Andronix to run JioTV Go on Android for now.
 
