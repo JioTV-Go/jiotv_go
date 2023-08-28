@@ -13,10 +13,19 @@
                 class="text-sm link link-error text-end">Forgot Password?</a>
             <button onclick="loginClick()" class="btn btn-primary">Login</button>
         </div>
-        <button class="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">✕</button>
     </form>
     <form method="dialog" class="modal-backdrop">
         <button>close</button>
     </form>
 </dialog>
+<script>
+    // wait until the page is loaded
+    window.addEventListener('load', () => {
+      {{ if .IsNotLoggedIn }}
+      login_modal.showModal();
+      {{ else }}
+      console.log("You have already logged in");
+      {{ end }}
+    });
+</script>
 {{ end }}
