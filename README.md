@@ -4,28 +4,59 @@ JioTV Go is a web application that allows you to watch Live TV channels. This pr
 
 Download the latest binary for your operating system from [here](https://github.com/rabilrbl/jiotv_go/releases/latest) and refer to [API endpoints](#api-endpoints) to use it.
 
-## Steps to use JioTV Go on VLC Media Player or any IPTV Player
+## Table of Contents
 
-1. Download the latest binary for your operating system from the releases page.
-2. Give executable permission to the binary.
-3. Run the binary.
+- [JioTV Go](#jiotv-go)
+  - [Table of Contents](#table-of-contents)
+  - [How to use JioTV Go?](#how-to-use-jiotv-go)
+  - [Screenshots](#screenshots)
+    - [Home Page](#home-page)
+    - [Player Page](#player-page)
+    - [Login Page](#login-page)
+    - [Playing Live TV on VLC Media Player](#playing-live-tv-on-vlc-media-player)
+  - [Web Paths](#web-paths)
+  - [API Endpoints](#api-endpoints)
+  - [Usage from Source](#usage-from-source)
+  - [License](#license)
+
+## How to use JioTV Go?
+
+1. Download the latest binary for your operating system from the [releases](https://github.com/rabilrbl/jiotv_go/releases/latest) page.
+2. On Linux/Unix, Give executable permission to the binary. `chmod +x jiotv_go`
+3. Run the binary. `./jiotv_go`. <br />(Optional) You can also specify `host:port` to run the server on a specific host and port. `./jiotv_go "127.0.0.1:4998"`
 4. Open `http://localhost:5001` in your browser. Expect a success message.
-5. Login to JioTV by opening `http://localhost:5001/login?username=<username>&password=<password>` in your browser. Expect a JSON response with some credentials.
-6. Open `http://localhost:5001/channels?type=m3u` on your browser and download the m3u file.
-7. Open the m3u file in VLC Media Player or any IPTV Player.
-8. Enjoy Live TV.
+5. Login to JioTV by clicking on the Login button.
+6. Choose a channel and start watching.
 
 ## Screenshots
+
+### Home Page
+
+![Home Page](./assets/home.png)
+
+### Player Page
+
+![Player Page](./assets/player.png)
+### Login Page
+
+![Login Page](./assets/login.png)
 
 ### Playing Live TV on VLC Media Player
 
 ![Playing Live TV on VLC Media Player](./assets/image.png)
 
+## Web Paths
+
+| Path | Description |
+| --- | --- |
+| `/` | Home Page |
+| `/play/:channel_id` | Watch Channel with ID `channel_id` |
+| `/player/:channel_id` | Embed Player for Channel with ID `channel_id` |
+
 ## API Endpoints
 
 | Endpoint | Description |
 | --- | --- |
-| `/` | Home Page |
 | `/login?username=<username>&password=<password>` | Login to JioTV (Mandatory). If you forgot your password, you can use the [JioTV Password Recovery](https://www.jio.com/selfcare/signup/forgot-password) page to reset your password. |
 | `/channels` | List of all channels |
 | `/channels?type=m3u` | List of all channels in m3u format for IPTV and VLC Media Player |
