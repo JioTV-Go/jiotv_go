@@ -36,7 +36,7 @@ Download the latest binary for your operating system from [here](https://github.
 1. Download [Termux](https://github.com/termux/termux-app/releases/latest) and [Andronix](https://andronix.app/)
 2. On Termux, run `pkg up -y` 
 3. Install latest Ubuntu from Andronix by copying the command from the app and pasting it in Termux
-4. Copy download link of `linux-(arch)` bin file from releases. Choose your aarch, mostly arm64.
+4. Copy download link of `linux-(arch)` bin file from [releases](https://github.com/rabilrbl/jiotv_go/releases/latest). Choose your aarch, mostly arm64.
 5. Use `wget <link>` to download the file
 6. Then follow [above steps](#how-to-use-jiotv-go) from 2 to 6
 
