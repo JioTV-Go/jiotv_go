@@ -10,7 +10,7 @@ Download the latest binary for your operating system from [here](https://github.
   - [Table of Contents](#table-of-contents)
   - [Usage](#usage)
     - [Docker (Recommended)](#docker-recommended)
-    - [How to use JioTV Go?](#how-to-use-jiotv-go)
+    - [How to use JioTV Go natively](#how-to-use-jiotv-go-natively)
     - [Android](#android)
   - [Web Paths](#web-paths)
   - [API Endpoints](#api-endpoints)
@@ -30,7 +30,7 @@ Download the latest binary for your operating system from [here](https://github.
 2. `docker run -p 5001:5001 ghcr.io/rabilrbl/jiotv_go:latest`
 3. Open `http://localhost:5001` in your browser.
 
-### How to use JioTV Go?
+### How to use JioTV Go natively
 
 1. Download the latest binary for your operating system from the [releases](https://github.com/rabilrbl/jiotv_go/releases/latest) page.
 2. On Linux/Unix, Give executable permission to the binary. `chmod +x jiotv_go`
