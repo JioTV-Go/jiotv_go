@@ -9,13 +9,13 @@ Download the latest binary for your operating system from [here](https://github.
 - [JioTV Go](#jiotv-go)
   - [Table of Contents](#table-of-contents)
   - [How to use JioTV Go?](#how-to-use-jiotv-go)
+  - [Web Paths](#web-paths)
+  - [API Endpoints](#api-endpoints)
   - [Screenshots](#screenshots)
     - [Home Page](#home-page)
     - [Player Page](#player-page)
     - [Login Dialog](#login-dialog)
     - [Playing Live TV on VLC Media Player](#playing-live-tv-on-vlc-media-player)
-  - [Web Paths](#web-paths)
-  - [API Endpoints](#api-endpoints)
   - [Usage from Source](#usage-from-source)
   - [License](#license)
 
@@ -27,23 +27,6 @@ Download the latest binary for your operating system from [here](https://github.
 4. Open `http://localhost:5001` in your browser. Expect a success message.
 5. Login to JioTV by clicking on the Login button.
 6. Choose a channel and start watching.
-
-## Screenshots
-
-### Home Page
-
-![Home Page](./assets/home.png)
-
-### Player Page
-
-![Player Page](./assets/player.png)
-### Login Dialog
-
-![Login Page](./assets/login.png)
-
-### Playing Live TV on VLC Media Player
-
-![Playing Live TV on VLC Media Player](./assets/image.png)
 
 ## Web Paths
 
@@ -61,6 +44,23 @@ Download the latest binary for your operating system from [here](https://github.
 | `/channels` | List of all channels |
 | `/channels?type=m3u` | List of all channels in m3u format for IPTV and VLC Media Player |
 | `/live/:channel_id` | Watch Live TV |
+
+## Screenshots
+
+### Home Page
+
+![Home Page](./assets/home.png)
+
+### Player Page
+
+![Player Page](./assets/player.png)
+### Login Dialog
+
+![Login Page](./assets/login.png)
+
+### Playing Live TV on VLC Media Player
+
+![Playing Live TV on VLC Media Player](./assets/image.png)
 
 ## Usage from Source
 
