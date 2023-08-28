@@ -9,6 +9,7 @@ Download the latest binary for your operating system from [here](https://github.
 - [JioTV Go](#jiotv-go)
   - [Table of Contents](#table-of-contents)
   - [How to use JioTV Go?](#how-to-use-jiotv-go)
+  - [Android Usage](#android-usage)
   - [Web Paths](#web-paths)
   - [API Endpoints](#api-endpoints)
   - [Screenshots](#screenshots)
@@ -27,6 +28,16 @@ Download the latest binary for your operating system from [here](https://github.
 4. Open `http://localhost:5001` in your browser. Expect a success message.
 5. Login to JioTV by clicking on the Login button.
 6. Choose a channel and start watching.
+
+## Android Usage
+
+> **Bug Notice**: Currently, the JioTV Go is not working on default termux due to some request error. Please use Andronix to run JioTV Go on Android for now.
+
+1. Download [Termux](https://github.com/termux/termux-app/releases/latest) and [Andronix](https://andronix.app/)
+2. Install latest Ubuntu from Andronix by copying the command from the app and pasting it in Termux
+3. Download latest `linux-(arch)` bin file from releases. Choose your aarch, mostly arm64
+4. Then follow [above steps](#how-to-use-jiotv-go) from 2 to 6
+
 
 ## Web Paths
 
