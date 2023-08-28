@@ -6,6 +6,7 @@ import (
 	"github.com/rabilrbl/jiotv_go/internals/utils"
 	"html/template"
 	"net/http"
+	"os"
 )
 
 func main() {
@@ -28,5 +29,10 @@ func main() {
 	r.GET("/channels", handlers.ChannelsHandler)
 	r.GET("/play/:id", handlers.PlayHandler)
 	r.GET("/player/:id", handlers.PlayerHandler)
-	r.Run("localhost:5001")
+	
+	if len(os.Args) > 1 {
+		r.Run(os.Args[1])
+	} else {
+		r.Run("localhost:5001")
+	}
 }
