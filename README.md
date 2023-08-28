@@ -12,7 +12,7 @@ Download the latest binary for your operating system from [here](https://github.
   - [Screenshots](#screenshots)
     - [Home Page](#home-page)
     - [Player Page](#player-page)
-    - [Login Page](#login-page)
+    - [Login Dialog](#login-dialog)
     - [Playing Live TV on VLC Media Player](#playing-live-tv-on-vlc-media-player)
   - [Web Paths](#web-paths)
   - [API Endpoints](#api-endpoints)
@@ -37,7 +37,7 @@ Download the latest binary for your operating system from [here](https://github.
 ### Player Page
 
 ![Player Page](./assets/player.png)
-### Login Page
+### Login Dialog
 
 ![Login Page](./assets/login.png)
 
