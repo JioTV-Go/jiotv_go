@@ -11,7 +11,6 @@ if %errorlevel% neq 0 (
 REM Run the Go program
 echo Running Go program...
 go mod tidy
-
 go run ./cmd/jiotv_go
 
 echo Go program completed.
