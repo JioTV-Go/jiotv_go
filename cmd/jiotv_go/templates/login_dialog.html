@@ -19,4 +19,14 @@
         <button>close</button>
     </form>
 </dialog>
+<script>
+    // wait until the page is loaded
+    window.addEventListener('load', () => {
+      {{ if .IsNotLoggedIn }}
+      login_modal.showModal();
+      {{ else }}
+      console.log("You have already logged in");
+      {{ end }}
+    });
+</script>
 {{ end }}
