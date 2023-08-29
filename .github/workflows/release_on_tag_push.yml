@@ -24,7 +24,9 @@ jobs:
       - name: Generate changelogs
         id: changelogs
         run: |
-          echo "commits=$(git log --pretty=format:%s ${{ steps.fetch_latest_tag.outputs.previous_tag }}..${{ steps.fetch_latest_tag.outputs.latest_tag }})" >> $GITHUB_OUTPUT
+          echo "commits<<EOF" >> $GITHUB_OUTPUT
+          git log --pretty=format:%s ${{ steps.fetch_latest_tag.outputs.previous_tag }}..${{ steps.fetch_latest_tag.outputs.latest_tag }} >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
