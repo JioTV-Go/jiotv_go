@@ -14,6 +14,8 @@ jobs:
       steps:
       - name: Checkout code
         uses: actions/checkout@master
+        with:
+          fetch-depth: 0
       - name: Fetch tags
         id: fetch_latest_tag
         run: |
