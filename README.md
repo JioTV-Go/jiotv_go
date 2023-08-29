@@ -13,6 +13,7 @@ Download the latest binary for your operating system from [here](https://github.
     - [Android](#android)
     - [Docker (Recommended)](#docker-recommended)
     - [Optional Steps](#optional-steps)
+    - [Remote Deployment](#remote-deployment)
   - [Web Paths](#web-paths)
   - [API Endpoints](#api-endpoints)
   - [Screenshots](#screenshots)
@@ -56,6 +57,18 @@ Download the latest binary for your operating system from [here](https://github.
 
 - If you want to specify a custom port or host, you can do so by passing the `host:port` or `:port` as an argument to the binary. `./jiotv_go "host:port"`
 - If you want to specify the path/folder for `credentials.json`, set an environment variable `JIOTV_CREDENTIALS_PATH=/path` before running the binary.
+
+### Remote Deployment
+
+In cases where you want to deploy JioTV Go on a remote server, and if server doesn't have writable permissions to set the `credentials.json` file, you can use the following steps to deploy JioTV Go.
+
+1. Login to JioTV on your local machine.
+2. Set the following environment variables on your local machine.
+   - `JIOTV_SSO_TOKEN` - The `ssoToken` from the `credentials.json` file.
+   - `JIOTV_CRM` - The `crm` from the `credentials.json` file.
+   - `JIOTV_UNIQUE_ID` - The `uniqueId` from the `credentials.json` file.
+  
+> By setting above environment variables, the credentials.json will be ignored and the environment variables will be used instead.
 
 ## Web Paths
 
