@@ -1,0 +1,47 @@
+name: Create release on tag push
+on:
+    push:
+      # Sequence of patterns matched against refs/tags
+      tags:
+        - 'v*' # Push events to matching v*, i.e. v1.0, v20.15.10
+
+jobs:
+    build:
+        name: Create Release
+        runs-on: ubuntu-latest
+        permissions:
+            # write permission is required to create a github release
+            contents: write
+            # write permission is required for autolabeler
+        steps:
+        - name: Checkout code
+          uses: actions/checkout@master
+        - name: Generate release body
+          id: release_body
+          uses: actions/github-script@0.9.0
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          with:
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+            script: |
+              const compareCommits = await github.repos.compareCommits({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                base: context.payload.before,
+                head: context.payload.after
+              });
+              const commits = compareCommits.data.commits;
+              const commitMessages = commits.map(commit => commit.commit.message);
+              const body = commitMessages.join('\n');
+              return body;
+        - name: Generate Release
+          id: create_release
+          uses: actions/create-release@latest
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+          with:
+            tag_name: ${{ github.ref }}
+            release_name: ${{ github.ref }}
+            body: ${{ steps.release_body.outputs.result }}
+            draft: false
+            prerelease: false
