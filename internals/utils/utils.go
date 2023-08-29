@@ -16,6 +16,18 @@ func GetLogger() *log.Logger {
 	return log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile)
 }
 
+func getCredentialsPath() string {
+	// if env var called "CREDENTIALS_PATH" is set, then prepend it to filename
+		// else write result as credentials.json
+	credentials_path := os.Getenv("JIOTV_CREDENTIALS_PATH")
+	if credentials_path != "" {
+		credentials_path += "/credentials.json"
+	} else {
+		credentials_path = "credentials.json"
+	}
+	return credentials_path
+}
+
 func Login(username, password string) (map[string]string, error) {
 	postData := map[string]string{
 		"username": username,
@@ -98,8 +110,8 @@ func Login(username, password string) (map[string]string, error) {
 		crm := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["subscriberId"].(string)
 		uniqueId := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["unique"].(string)
 
-		// write result as credentials.json
-		file, err := os.Create("credentials.json")
+		credentials_path := getCredentialsPath()
+		file, err := os.Create(credentials_path)
 		if err != nil {
 			return nil, err
 		}
@@ -149,7 +161,8 @@ func loadCredentialsFromFile(filename string) (map[string]string, error) {
 }
 
 func GetLoginCredentials() (map[string]string, error) {
-	credentials, err := loadCredentialsFromFile("credentials.json")
+	credentials_path := getCredentialsPath()
+	credentials, err := loadCredentialsFromFile(credentials_path)
 	if err != nil {
 		return nil, err
 	}
