@@ -7,22 +7,21 @@ on:
 
 jobs:
     build:
-        name: Create Release
-        runs-on: ubuntu-latest
-        permissions:
-            # write permission is required to create a github release
-            contents: write
-            # write permission is required for autolabeler
-        steps:
-        - name: Checkout code
-          uses: actions/checkout@master
-        - name: Create Release
-          id: create_release
-          uses: actions/create-release@v1
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          with:
-            tag_name: ${{ github.ref }}
-            release_name: ${{ github.ref }}
-            draft: false
-            prerelease: false
+      name: Create Release
+      runs-on: ubuntu-latest
+      permissions:
+          contents: write
+      steps:
+      - name: Checkout code
+        uses: actions/checkout@master
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: false
+          prerelease: false
+          owner: ${{ github.repository_owner }}
