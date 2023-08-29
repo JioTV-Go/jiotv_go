@@ -12,22 +12,19 @@ jobs:
       permissions:
           contents: write
       steps:
-      - name: Checkout code
+      - 
+        name: Checkout code
         uses: actions/checkout@master
         with:
           fetch-depth: 0
-      - name: Fetch tags
+      - 
+        name: Fetch tags
         id: fetch_latest_tag
         run: |
           echo "previous_tag=$(git describe --tags --abbrev=0 HEAD^1 | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')" >> $GITHUB_OUTPUT
           echo "latest_tag=$(git describe --tags --abbrev=0 HEAD | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')" >> $GITHUB_OUTPUT
-      - name: Generate changelogs
-        id: changelogs
-        run: |
-          echo "commits<<EOF" >> $GITHUB_OUTPUT
-          git log --pretty=format:%s ${{ steps.fetch_latest_tag.outputs.previous_tag }}..${{ steps.fetch_latest_tag.outputs.latest_tag }} >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-      - name: Create Release
+      - 
+        name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -36,8 +33,6 @@ jobs:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
           body: |
-            ${{ steps.changelogs.outputs.commits }}
-            
             **Full Changelog**: https://github.com/rabilrbl/jiotv_go/compare/${{ steps.fetch_latest_tag.outputs.previous_tag }}...${{ steps.fetch_latest_tag.outputs.latest_tag }}
           draft: false
           prerelease: false
