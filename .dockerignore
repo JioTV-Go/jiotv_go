@@ -9,7 +9,6 @@ run_server*
 .gitignore
 .devcontainer
 jiotv_go
-.jiotv_go
 .vscode
 
 # Binaries for programs and plugins
