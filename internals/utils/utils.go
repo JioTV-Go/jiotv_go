@@ -17,9 +17,15 @@ func GetLogger() *log.Logger {
 }
 
 func getCredentialsPath() string {
-	// if env var called "CREDENTIALS_PATH" is set, then prepend it to filename
-		// else write result as credentials.json
 	credentials_path := os.Getenv("JIOTV_CREDENTIALS_PATH")
+	// if folder path is not found, create the folder in current directory
+	err := os.Mkdir(credentials_path, 0755)
+	if err != nil {
+		// if folder already exists, ignore the error
+		if !os.IsExist(err) {
+			Log.Println(err)
+		}
+	}
 	if credentials_path != "" {
 		credentials_path += "/credentials.json"
 	} else {
