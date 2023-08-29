@@ -28,10 +28,11 @@ ENV JIOTV_CREDENTIALS_PATH=secrets
 # Volume for credentials
 VOLUME /app/secrets
 
-# Expose port 5001 to the outside world
+# Expose port to the outside world
 
-EXPOSE 5001
+ARG PORT=5001
+EXPOSE $PORT
 
 # Command to run the executable
 
-CMD ["./jiotv_go", ":5001"]
+CMD ["./jiotv_go", $PORT]
