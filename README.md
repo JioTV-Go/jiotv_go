@@ -12,6 +12,7 @@ Download the latest binary for your operating system from [here](https://github.
     - [How to use JioTV Go natively](#how-to-use-jiotv-go-natively)
     - [Android](#android)
     - [Docker (Recommended)](#docker-recommended)
+    - [Optional Steps](#optional-steps)
   - [Web Paths](#web-paths)
   - [API Endpoints](#api-endpoints)
   - [Screenshots](#screenshots)
@@ -28,7 +29,7 @@ Download the latest binary for your operating system from [here](https://github.
 
 1. Download the latest binary for your operating system from the [releases](https://github.com/rabilrbl/jiotv_go/releases/latest) page.
 2. On Linux/Unix, Give executable permission to the binary. `chmod +x jiotv_go`
-3. Run the binary. `./jiotv_go`. <br />(Optional) You can also specify `host:port` to run the server on a specific host and port. `./jiotv_go "127.0.0.1:4998"`
+3. Run the binary. `./jiotv_go`.
 4. Open `http://localhost:5001` in your browser.
 5. Login to JioTV by clicking on the Login button.
 6. Choose a channel and start watching.
@@ -50,6 +51,11 @@ Download the latest binary for your operating system from [here](https://github.
 1. Install [Docker](https://docs.docker.com/get-docker/).
 2. `docker run -p 5001:5001 -v ./jiotv_go/secrets:/app/secrets ghcr.io/rabilrbl/jiotv_go:latest`
 3. Open `http://localhost:5001` in your browser.
+
+### Optional Steps
+
+- If you want to specify a custom port or host, you can do so by passing the `host:port` or `:port` as an argument to the binary. `./jiotv_go "host:port"`
+- If you want to specify the path/folder for `credentials.json`, set an environment variable `JIOTV_CREDENTIALS_PATH=/path` before running the binary.
 
 ## Web Paths
 
