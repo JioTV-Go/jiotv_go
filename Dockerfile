@@ -18,6 +18,16 @@ RUN go mod download
 
 RUN go build -o jiotv_go ./cmd/jiotv_go
 
+# Remove all files and folderes except the executable
+
+RUN find . -mindepth 1 -maxdepth 1 ! -name 'jiotv_go' -exec rm -rf {} +
+
+# Set credentials path
+ENV JIOTV_CREDENTIALS_PATH=secrets
+
+# Volume for credentials
+VOLUME /app/secrets
+
 # Expose port 5001 to the outside world
 
 EXPOSE 5001
