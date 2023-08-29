@@ -62,8 +62,8 @@ Download the latest binary for your operating system from [here](https://github.
 
 In cases where you want to deploy JioTV Go on a remote server, and if server doesn't have writable permissions to set the `credentials.json` file, you can use the following steps to deploy JioTV Go.
 
-1. Login to JioTV on your local machine.
-2. Set the following environment variables on your local machine.
+1. Login to JioTV on your local machine. This should generate `credentials.json`
+2. Set the following environment variables on your remote server.
    - `JIOTV_SSO_TOKEN` - The `ssoToken` from the `credentials.json` file.
    - `JIOTV_CRM` - The `crm` from the `credentials.json` file.
    - `JIOTV_UNIQUE_ID` - The `uniqueId` from the `credentials.json` file.
