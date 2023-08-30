@@ -219,7 +219,15 @@ func PlayHandler(c *gin.Context) {
 func PlayerHandler(c *gin.Context) {
 	id := c.Param("id")
 	play_url := "/live/" + id + ".m3u8"
-	c.HTML(http.StatusOK, "player.html", gin.H{
+	c.HTML(http.StatusOK, "flow_player.html", gin.H{
+		"play_url": play_url,
+	})
+}
+
+func ClapprHandler(c *gin.Context) {
+	id := c.Param("id")
+	play_url := "/live/" + id + ".m3u8"
+	c.HTML(http.StatusOK, "clappr.html", gin.H{
 		"play_url": play_url,
 	})
 }

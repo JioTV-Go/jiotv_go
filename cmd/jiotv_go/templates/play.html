@@ -11,9 +11,9 @@
 <body>
     {{ template "navbar" . }}
     <div class="p-1 sm:p-2 md:p-4 md:mx-8 lg:p-8 lg:mx-52"> 
-        <div id="player" class="relative overflow-hidden w-full pt-[56.25%]">
+        <div id="player" class="relative overflow-hidden w-full pt-[56.25%] rounded-xl">
             <iframe class="absolute top-0 left-0 bottom-0 right-0 w-full h-full" src="{{ .player_url }}" width="100%"
-                height="100%" allowfullscreen="true"></iframe>
+                height="100%" webkitAllowFullScreen mozallowfullscreen allowfullscreen allow="autoplay"></iframe>
         </div>
     </div>
     <script src="/static/common.js"></script>
