@@ -1,62 +1,55 @@
-// Two dimensional array
-const tableData = () => {
-    const searchData = [];
-    const tableEl = document.getElementById("portexe-data-table");
-    // gets an HTML collection
-    // console.log(tableEl.children);
-  
-    // .from creates an array from the HTML Collection
-    // console.log(Array.from(tableEl.children[1].children));
-    Array.from(tableEl.children[1].children).forEach(_bodyRowEl => {
-      searchData.push(
-        Array.from(_bodyRowEl.children).map(_celEl => {
-          return _celEl.innerHTML;
-        })
-      );
-    }); // tbody
-    return searchData;
-  };
-  
-  const search = (arr, searchTerm) => {
-    if (!searchTerm) return arr;
-    return arr.filter(_row => {
-      return _row.find(_item =>
-        _item.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    });
-  };
-  
-  // Refresh table
-  const refreshTable = data => {
-    const tableBody = document.getElementById("portexe-data-table").children[1];
-    tableBody.innerHTML = "";
-  
-    data.forEach(_row => {
+const fetchTableData = async () => {
+  return new Promise(resolve => {
+      // Simulate an asynchronous data fetching operation
+      setTimeout(() => {
+          const searchData = [];
+          const tableEl = document.getElementById("portexe-data-table");
+          
+          Array.from(tableEl.children[1].children).forEach(_bodyRowEl => {
+              const rowData = Array.from(_bodyRowEl.children).map(_celEl => _celEl.innerHTML);
+              searchData.push(rowData);
+          }); // tbody
+          
+          resolve(searchData);
+      }, 1000); // Simulated delay of 1 second
+  });
+};
+
+const search = (arr, searchTerm) => {
+  if (!searchTerm) return arr;
+  return arr.filter(_row => _row[1].toLowerCase().includes(searchTerm.toLowerCase()));
+};
+
+const refreshTable = data => {
+  const tableBody = document.getElementById("portexe-data-table").children[1];
+  tableBody.innerHTML = "";
+
+  data.forEach(_row => {
       const curRow = document.createElement("tr");
       _row.forEach(_dataItem => {
-        // if _dataItem is a <button> element
-        const curCell = document.createElement("td");
-        curCell.innerHTML = _dataItem;
-        curRow.appendChild(curCell);
+          const curCell = document.createElement("td");
+          curCell.innerHTML = _dataItem;
+          curRow.appendChild(curCell);
       });
-  
+
       tableBody.appendChild(curRow);
-    });
-  };
-  
-  // Put in document
-  const init = () => {
-  
-    const initialTableData = tableData();
-  
-    const searchInput = document.getElementById("portexe-search-input");
-    searchInput.addEventListener("keyup", e => {
-      // console.log(search(initialTableData, e.target.value));
-      refreshTable(search(initialTableData, e.target.value));
-    });
-  };
-  
+  });
+};
+
+const init = async () => {
+  const initialTableData = await fetchTableData();
+
+  const searchInput = document.getElementById("portexe-search-input");
+  searchInput.addEventListener("keyup", async e => {
+      const filteredData = search(initialTableData, e.target.value);
+      refreshTable(filteredData);
+  });
+};
+
+// Call the init function to start the process
 init();
+
+
 
 loginClick = () => {
   // create a popup to enter username and password
