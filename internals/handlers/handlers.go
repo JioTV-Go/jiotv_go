@@ -6,11 +6,12 @@ import (
 	"net/http"
 	"net/url"
 	"regexp"
-	"strings"
 	"strconv"
+	"strings"
+
 	"github.com/gin-gonic/gin"
-	"github.com/rabilrbl/jiotv_go/internals/utils"
 	"github.com/rabilrbl/jiotv_go/internals/television"
+	"github.com/rabilrbl/jiotv_go/internals/utils"
 )
 
 var TV *television.Television
@@ -20,7 +21,7 @@ func Init() {
 	if err != nil {
 		utils.Log.Println("Login error!")
 	} else {
-		TV = television.NewTelevision(credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])	
+		TV = television.NewTelevision(credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])
 	}
 }
 
@@ -34,12 +35,12 @@ func IndexHandler(c *gin.Context) {
 		category_int, _ := strconv.Atoi(category)
 		channels_list := television.FilterChannels(channels.Result, language_int, category_int)
 		c.HTML(http.StatusOK, "index.html", gin.H{
-			"Channels": channels_list,
+			"Channels":      channels_list,
 			"IsNotLoggedIn": !utils.CheckLoggedIn(),
 		})
-	} else  {
+	} else {
 		c.HTML(http.StatusOK, "index.html", gin.H{
-			"Channels": channels.Result,
+			"Channels":      channels.Result,
 			"IsNotLoggedIn": !utils.CheckLoggedIn(),
 		})
 	}
@@ -47,9 +48,9 @@ func IndexHandler(c *gin.Context) {
 
 func checkFieldExist(field string, check bool, c *gin.Context) {
 	if !check {
-		utils.Log.Println(field+" not provided")	
+		utils.Log.Println(field + " not provided")
 		c.JSON(400, gin.H{
-			"message": field+" not provided",
+			"message": field + " not provided",
 		})
 	}
 }
@@ -57,12 +58,12 @@ func checkFieldExist(field string, check bool, c *gin.Context) {
 func LoginHandler(c *gin.Context) {
 	var username, password string
 	var check bool
-	if (c.Request.Method == "GET") {
+	if c.Request.Method == "GET" {
 		username, check = c.GetQuery("username")
 		checkFieldExist("Username", check, c)
 		password, check = c.GetQuery("password")
 		checkFieldExist("Password", check, c)
-	} else if (c.Request.Method == "POST") {
+	} else if c.Request.Method == "POST" {
 		var json map[string]string
 		err := c.BindJSON(&json)
 		if err != nil {
@@ -77,7 +78,7 @@ func LoginHandler(c *gin.Context) {
 		password = json["password"]
 		checkFieldExist("Password", password != "", c)
 	}
-	
+
 	result, err := utils.Login(username, password)
 	if err != nil {
 		utils.Log.Println(err)
@@ -139,7 +140,7 @@ func RenderHandler(c *gin.Context) {
 		}
 		switch {
 		case bytes.HasSuffix(match, []byte(".m3u8")):
-			return []byte("/render?auth=" + url.QueryEscape(baseUrl + string(match) + "?" + params) + "&channel_key_id=" + channel_id)
+			return []byte("/render?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params) + "&channel_key_id=" + channel_id)
 		case bytes.HasSuffix(match, []byte(".ts")):
 			return []byte(baseUrl + string(match) + "?" + params)
 		default:
@@ -183,12 +184,12 @@ func RenderKeyHandler(c *gin.Context) {
 func ChannelsHandler(c *gin.Context) {
 	apiResponse := television.Channels()
 	// hostUrl should be request URL like http://localhost:5001
-	hostURL :=  strings.ToLower(c.Request.Proto[0:strings.Index(c.Request.Proto, "/")]) + "://" + c.Request.Host
+	hostURL := strings.ToLower(c.Request.Proto[0:strings.Index(c.Request.Proto, "/")]) + "://" + c.Request.Host
 
 	// Check if the query parameter "type" is set to "m3u"
 	if c.Query("type") == "m3u" {
 		// Create an M3U playlist
-		m3uContent := "#EXTM3U\n"
+		m3uContent := "#EXTM3U  x-tvg-url=\"https://github.com/siddharthsky/jiotv_go/raw/playlist-functionality/assets/epg.xml.gz\"\n"
 		for _, channel := range apiResponse.Result {
 			channelURL := fmt.Sprintf("%s/live/%d", hostURL, channel.ID)
 			m3uContent += fmt.Sprintf("#EXTINF:-1,%s\n%s\n", channel.Name, channelURL)
