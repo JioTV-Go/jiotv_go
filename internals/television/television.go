@@ -177,7 +177,20 @@ func Channels() APIResponse {
 func FilterChannels(channels []Channel, language int, category int) []Channel {
 	var filteredChannels []Channel
 	for _, channel := range channels {
-		if channel.Language == language || channel.Category == category {
+		// if both language and category is set, then use and operator
+		if language != 0 && category != 0 {
+			if channel.Language == language && channel.Category == category {
+				filteredChannels = append(filteredChannels, channel)
+			}
+		} else if language != 0 {
+			if channel.Language == language {
+				filteredChannels = append(filteredChannels, channel)
+			}
+		} else if category != 0 {
+			if channel.Category == category {
+				filteredChannels = append(filteredChannels, channel)
+			}
+		} else {
 			filteredChannels = append(filteredChannels, channel)
 		}
 	}

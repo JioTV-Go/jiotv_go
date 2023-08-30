@@ -1,7 +1,10 @@
 {{ define "navbar" }}
 <div class="navbar bg-base-100 px-4">
     <div class="navbar-start">
-        <a href="/" class="btn btn-ghost text-xl">JioTV Go</a>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 20.25h12m-7.5-3v3m3-3v3m-10.125-3h17.25c.621 0 1.125-.504 1.125-1.125V4.875c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125z" />
+          </svg>                 
+        <a href="/" class="btn btn-ghost text-xl text-error">JioTV Go</a>
     </div>
     <div class="navbar-end gap-4">
         <label class="swap swap-rotate">
@@ -15,14 +18,14 @@
             
         </label>
         {{ if .player_url }}
-        <button  class="btn btn-outline btn-success flex flex-row items-center justify-center gap-2" onclick="window.history.back()">
+        <button  class="btn btn-outline btn-info btn-md flex flex-row items-center justify-center gap-2" onclick="window.history.back()">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
               </svg>                     
             Back
         </button>
         {{ else }}
-        <button onclick="login_modal.showModal()" class="btn btn-outline btn-success">
+        <button onclick="login_modal.showModal()" class="btn btn-outline btn-success btn-md">
         {{ if .IsNotLoggedIn }}
             Login
             {{else}}
