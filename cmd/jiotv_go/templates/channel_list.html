@@ -7,14 +7,30 @@
   <table id="portexe-data-table" class="table table-zebra">
     <thead>
       <tr>
+        <th>Logo</th>
         <th>Channel</th>
+        <th></th>
         <th>Play</th>
       </tr>
     </thead>
     <tbody>
       {{range $channel := .Channels}}
       <tr>
-        <td><span class="text-lg font-bold">{{$channel.Name}}</span></td>
+        <td>
+          <img src="http://jiotv.catchup.cdn.jio.com/dare_images/images/{{$channel.LogoURL}}" alt="{{$channel.Name}}" class="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 lg:h-16 lg:w-16" />
+        </td>
+        <td>
+          <span class="text-lg font-bold">{{$channel.Name}}</span>
+        </td>
+        <td>
+          <div className="badge badge-error gap-2">
+            {{ if $channel.IsHD }}
+              HD
+            {{ else }}
+              SD
+            {{ end }}
+          </div>
+        </td>
         <td><a href="/play/{{$channel.ID}}" class="btn btn-outline btn-success">Play</a></td>
       </tr>
       {{end}}

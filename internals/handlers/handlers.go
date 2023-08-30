@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"strconv"
 	"github.com/gin-gonic/gin"
 	"github.com/rabilrbl/jiotv_go/internals/utils"
 	"github.com/rabilrbl/jiotv_go/internals/television"
@@ -25,10 +26,23 @@ func Init() {
 
 func IndexHandler(c *gin.Context) {
 	channels := television.Channels()
-	c.HTML(http.StatusOK, "index.html", gin.H{
-		"Channels": channels.Result,
-		"IsNotLoggedIn": !utils.CheckLoggedIn(),
-	})
+
+	language := c.Query("language")
+	category := c.Query("category")
+	if language != "" || category != "" {
+		language_int, _ := strconv.Atoi(language)
+		category_int, _ := strconv.Atoi(category)
+		channels_list := television.FilterChannels(channels.Result, language_int, category_int)
+		c.HTML(http.StatusOK, "index.html", gin.H{
+			"Channels": channels_list,
+			"IsNotLoggedIn": !utils.CheckLoggedIn(),
+		})
+	} else  {
+		c.HTML(http.StatusOK, "index.html", gin.H{
+			"Channels": channels.Result,
+			"IsNotLoggedIn": !utils.CheckLoggedIn(),
+		})
+	}
 }
 
 func checkFieldExist(field string, check bool, c *gin.Context) {

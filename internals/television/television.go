@@ -23,6 +23,10 @@ type Channel struct {
 	ID   int    `json:"channel_id"`
 	Name string `json:"channel_name"`
 	URL  string `json:"channel_url"`
+	LogoURL string `json:"logoUrl"`
+	Category int `json:"channelCategoryId"`
+	Language int `json:"channelLanguageId"` 
+	IsHD bool `json:"isHD"`
 }
 
 type APIResponse struct {
@@ -168,4 +172,14 @@ func Channels() APIResponse {
 	}
 	return apiResponse
 
-} 
+}
+
+func FilterChannels(channels []Channel, language int, category int) []Channel {
+	var filteredChannels []Channel
+	for _, channel := range channels {
+		if channel.Language == language || channel.Category == category {
+			filteredChannels = append(filteredChannels, channel)
+		}
+	}
+	return filteredChannels
+}
