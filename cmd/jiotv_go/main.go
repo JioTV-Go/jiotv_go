@@ -30,6 +30,7 @@ func main() {
 	r.GET("/channels", handlers.ChannelsHandler)
 	r.GET("/play/:id", handlers.PlayHandler)
 	r.GET("/player/:id", handlers.PlayerHandler)
+	r.GET("/clapper/:id", handlers.ClapprHandler)
 	
 	if len(os.Args) > 1 {
 		r.Run(os.Args[1])
