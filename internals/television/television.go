@@ -158,7 +158,7 @@ func (tv *Television) RenderKey(url string, channelID string) ([]byte, int) {
 }
 
 func Channels() APIResponse {
-	url := "https://jiotv.data.cdn.jio.com/apis/v1.3/getMobileChannelList/get/?os=android&devicetype=phone"
+	url := "https://jiotv.data.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?os=android&devicetype=phone&usertype=tvYR7NSNn7rymo3F&version=285"
 	resp, err := http.Get(url)
 	if err != nil {
 		utils.Log.Panic(err)
