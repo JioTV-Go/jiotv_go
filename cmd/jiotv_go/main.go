@@ -30,7 +30,7 @@ func main() {
 	r.GET("/channels", handlers.ChannelsHandler)
 	r.GET("/play/:id", handlers.PlayHandler)
 	r.GET("/player/:id", handlers.PlayerHandler)
-	r.GET("/clapper/:id", handlers.ClapprHandler)
+	r.GET("/clappr/:id", handlers.ClapprHandler)
 	r.POST("/blank", handlers.BlankHandler)
 	r.GET("/favicon.ico", handlers.FaviconHandler)
 
