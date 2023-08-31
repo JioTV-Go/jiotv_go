@@ -2488,7 +2488,18 @@ flowplayer-ad-countdown.go {
     margin: 0
 }
 
-.fp-qsel summary {
-    text-shadow: 0 4px 4px black;
-    font-size: x-large;
+@media screen and (min-width: 768px) {
+    .fp-qsel summary {
+        text-shadow: 0 4px 4px black;
+        font-size: xx-large;
+        font-weight: bold;
+    }
+}
+
+@media screen and (max-width: 767px) {
+    .fp-qsel summary {
+        text-shadow: 0 4px 4px black;
+        font-size: x-large;
+        font-weight: bold;
+    }
 }
