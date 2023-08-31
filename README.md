@@ -29,7 +29,7 @@ Download the latest binary for your operating system from [here](https://github.
 ### How to use JioTV Go natively
 
 1. Download the latest binary for your operating system from the [releases](https://github.com/rabilrbl/jiotv_go/releases/latest) page.
-2. On Linux/Unix, Give executable permission to the binary. `chmod +x jiotv_go-...`. Here `jiotv_go-...` is the name of the binary file you downloaded.
+2. On Linux/Unix, Give executable permission to the binary. `chmod +x jiotv_go-...`.<br /> Here `jiotv_go-...` is the name of the binary file you downloaded.
 3. Run the binary. `./jiotv_go-...`.
 4. Open `http://localhost:5001` in your browser.
 5. Login to JioTV by clicking on the Login button.
@@ -40,7 +40,7 @@ Download the latest binary for your operating system from [here](https://github.
 1. Download [Termux](https://github.com/termux/termux-app/releases/latest)
 2. Open Termux and execute `pkg install wget openssl -y`
 3. Copy download link of `jiotv_go-linux-(arch)` bin file from [releases](https://github.com/rabilrbl/jiotv_go/releases/latest). Choose your aarch, mostly arm64.
-4. Execute `wget <link>` to download the file. Here `<link>` is the link you copied in step 3.
+4. Execute `wget <link>` to download the file. <br />Here `<link>` is the link you copied in step 3.
 5. Then follow [How to use JioTV Go (above)](#how-to-use-jiotv-go-natively) from 2 to 6
 
 ### Docker
