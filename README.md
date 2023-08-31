@@ -29,23 +29,19 @@ Download the latest binary for your operating system from [here](https://github.
 ### How to use JioTV Go natively
 
 1. Download the latest binary for your operating system from the [releases](https://github.com/rabilrbl/jiotv_go/releases/latest) page.
-2. On Linux/Unix, Give executable permission to the binary. `chmod +x jiotv_go`
-3. Run the binary. `./jiotv_go`.
+2. On Linux/Unix, Give executable permission to the binary. `chmod +x jiotv_go-...`. Here `jiotv_go-...` is the name of the binary file you downloaded.
+3. Run the binary. `./jiotv_go-...`.
 4. Open `http://localhost:5001` in your browser.
 5. Login to JioTV by clicking on the Login button.
 6. Choose a channel and start watching.
 
 ### Android
 
-> **Bug Notice**: Currently, the JioTV Go is not working on default termux due to some request error. Please use Andronix to run JioTV Go on Android for now.
-
-1. Download [Termux](https://github.com/termux/termux-app/releases/latest) and [Andronix](https://andronix.app/)
-2. On Termux, run `pkg up -y` 
-3. Install latest Ubuntu from Andronix by copying the command from the app and pasting it in Termux.
-4. Wait patiently for the installation to complete. And then run `./start-andronix.sh` to start Ubuntu. You will now be in the Ubuntu shell.
-5. Copy download link of `linux-(arch)` bin file from [releases](https://github.com/rabilrbl/jiotv_go/releases/latest). Choose your aarch, mostly arm64.
-6. Use `wget <link>` to download the file
-7. Then follow [above steps](#how-to-use-jiotv-go) from 2 to 6
+1. Download [Termux](https://github.com/termux/termux-app/releases/latest)
+2. Open Termux and execute `pkg install wget openssl -y`
+3. Copy download link of `jiotv_go-linux-(arch)` bin file from [releases](https://github.com/rabilrbl/jiotv_go/releases/latest). Choose your aarch, mostly arm64.
+4. Execute `wget <link>` to download the file. Here `<link>` is the link you copied in step 3.
+5. Then follow [above steps](#how-to-use-jiotv-go) from 2 to 6
 
 ### Docker
 
