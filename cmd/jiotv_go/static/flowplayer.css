@@ -2487,3 +2487,8 @@ flowplayer-ad-countdown.go {
 .fp-error .error-message {
     margin: 0
 }
+
+.fp-qsel summary {
+    text-shadow: 0 4px 4px black;
+    font-size: x-large;
+}
