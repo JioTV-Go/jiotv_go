@@ -224,7 +224,7 @@ func ChannelsHandler(c *gin.Context) {
 	if c.Query("type") == "m3u" {
 		// Create an M3U playlist
 		m3uContent := "#EXTM3U\n"
-		logoURL := "https://jiotv.catchup.cdn.jio.com/dare_images/images/"
+		logoURL := "https://jiotv.catchup.cdn.jio.com/dare_images/images"
 		for _, channel := range apiResponse.Result {
 			channelURL := fmt.Sprintf("%s/live/%d", hostURL, channel.ID)
 			channelLOGOURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
