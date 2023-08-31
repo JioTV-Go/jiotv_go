@@ -817,7 +817,7 @@
     max-width: 100% !important;
     z-index: 99999 !important;
     border-radius: 0px !important;
-    background-color: #262626
+    background-color: transparent
 }
 
 .is-fullscreen .fp-fullscreen {
