@@ -21,7 +21,10 @@ Download the latest binary for your operating system from [here](https://github.
     - [Player Page](#player-page)
     - [Login Dialog](#login-dialog)
     - [Playing Live TV on VLC Media Player](#playing-live-tv-on-vlc-media-player)
-  - [Usage from Source](#usage-from-source)
+  - [Development](#development)
+    - [Building from source](#building-from-source)
+    - [Report Bugs](#report-bugs)
+    - [Contributing](#contributing)
   - [License](#license)
 
 ## Usage
@@ -72,16 +75,18 @@ In cases where you want to deploy JioTV Go on a remote server, and if server doe
 | --- | --- |
 | `/` | Home Page |
 | `/play/:channel_id` | Watch Channel with ID `channel_id` |
-| `/player/:channel_id` | Embed Player for Channel with ID `channel_id` |
+| `/player/:channel_id` | Embed Default player (Flowplayer) for Channel with ID `channel_id` |
+| `/clappr/:channel_id` | Embed Clappr player for Channel with ID `channel_id` |
 
 ## API Endpoints
 
 | Endpoint | Description |
 | --- | --- |
-| `/login?username=<username>&password=<password>` | Login to JioTV (Mandatory). If you forgot your password, you can use the [JioTV Password Recovery](https://www.jio.com/selfcare/signup/forgot-password) page to reset your password. |
+| `/login?username=<username>&password=<password>` | Login to JioTV (Mandatory). If you forgot your password, you can use the [JioTV Password Recovery](https://www.jio.com/selfcare/signup/forgot-password) page to reset your password. You can perform post request to this endpoint to login with data in the body. |
 | `/channels` | List of all channels |
 | `/channels?type=m3u` | List of all channels in m3u format for IPTV and VLC Media Player |
 | `/live/:channel_id` | Watch Live TV |
+| `/blank` | Blank post request route, made as a diversion for Flowplayer telemetry |
 
 ## Screenshots
 
@@ -100,16 +105,30 @@ In cases where you want to deploy JioTV Go on a remote server, and if server doe
 
 ![Playing Live TV on VLC Media Player](./assets/image.png)
 
-## Usage from Source
+## Development
 
 JioTV Go requires [Golang](https://golang.org/) to run.
-
 Install the dependencies and start the server.
 
 ```sh
+export GO_ENV=development # To enable debug mode
 go mod download
 go run ./cmd/jiotv_go
 ```
+
+### Building from source
+
+```sh
+go build ./cmd/jiotv_go
+```
+
+### Report Bugs
+
+If you find any bugs, please create an issue [here](https://github.com/rabilrbl/jiotv_go/issues/new). Please include the steps to reproduce the bug and the expected behaviour. If possible, include screenshots.
+
+### Contributing
+
+Contributions are welcome. Please create a pull request with your changes. If the changes are significant, please create an issue first and discuss it with me.
 
 ## License
 
