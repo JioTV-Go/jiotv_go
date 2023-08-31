@@ -32,6 +32,7 @@ func main() {
 	r.GET("/player/:id", handlers.PlayerHandler)
 	r.GET("/clapper/:id", handlers.ClapprHandler)
 	r.POST("/blank", handlers.BlankHandler)
+	r.GET("/favicon.ico", handlers.FaviconHandler)
 	
 	if len(os.Args) > 1 {
 		r.Run(os.Args[1])

@@ -235,3 +235,7 @@ func ClapprHandler(c *gin.Context) {
 func BlankHandler(c *gin.Context) {
 	c.String(http.StatusOK, "")
 }
+
+func FaviconHandler(c *gin.Context) {
+	c.Redirect(301, "/static/favicon.ico")
+}
