@@ -231,3 +231,7 @@ func ClapprHandler(c *gin.Context) {
 		"play_url": play_url,
 	})
 }
+
+func BlankHandler(c *gin.Context) {
+	c.String(http.StatusOK, "")
+}

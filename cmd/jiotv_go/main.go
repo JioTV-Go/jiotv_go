@@ -31,6 +31,7 @@ func main() {
 	r.GET("/play/:id", handlers.PlayHandler)
 	r.GET("/player/:id", handlers.PlayerHandler)
 	r.GET("/clapper/:id", handlers.ClapprHandler)
+	r.POST("/blank", handlers.BlankHandler)
 	
 	if len(os.Args) > 1 {
 		r.Run(os.Args[1])
