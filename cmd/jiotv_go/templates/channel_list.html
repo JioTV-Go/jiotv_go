@@ -3,6 +3,18 @@
   <div id="portexe-search-root" class="w-full px-2 flex flex-col gap-2 items-center justify-between sm:flex-row bg-base-100 px-4">
     <input id="portexe-search-input" type="text" placeholder="Search channels here"
       class="input input-bordered input-primary input-sm sm:input-md w-full rounded-xl" />
+    <select id="portexe-category-select" class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl">
+    {{ range $key, $value := .Categories }}
+      <option value="{{$key}}">{{$value}}</option>
+    {{ end }}
+    </select>
+    <select id="portexe-language-select" class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl">
+    {{ range $key, $value := .Languages }}
+      <option value="{{$key}}">{{$value}}</option>
+    {{ end }}
+    </select>
+    <button id="portexe-search-button" class="btn btn-primary btn-sm sm:btn-md w-full sm:w-auto rounded-xl">Apply</button>
+
   </div>
   <table id="portexe-data-table" class="table table-zebra">
     <thead>
