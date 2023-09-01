@@ -180,41 +180,6 @@ func RenderKeyHandler(c *gin.Context) {
 	c.Data(status, "application/octet-stream", keyResult)
 }
 
-var catMap = map[int]string{
-	5:  "Entertainment",
-	6:  "Movies",
-	7:  "Kids",
-	8:  "Sports",
-	9:  "Lifestyle",
-	10: "Infotainment",
-	12: "News",
-	13: "Music",
-	15: "Devotional",
-	16: "Business",
-	17: "Educational",
-	18: "Shopping",
-	19: "JioDarshan",
-}
-
-var langMap = map[int]string{
-	1:  "Hindi",
-	2:  "Marathi",
-	3:  "Punjabi",
-	4:  "Urdu",
-	5:  "Bengali",
-	6:  "English",
-	7:  "Malayalam",
-	8:  "Tamil",
-	9:  "Gujarati",
-	10: "Odia",
-	11: "Telugu",
-	12: "Bhojpuri",
-	13: "Kannada",
-	14: "Assamese",
-	15: "Nepali",
-	16: "French",
-	18: "Other"}
-
 func ChannelsHandler(c *gin.Context) {
 	apiResponse := television.Channels()
 	// hostUrl should be request URL like http://localhost:5001
@@ -229,7 +194,7 @@ func ChannelsHandler(c *gin.Context) {
 			channelURL := fmt.Sprintf("%s/live/%d", hostURL, channel.ID)
 			channelLOGOURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
 			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-name=\"%s\" tvg-logo=\"%s\" tvg-language=\"%s\" tvg-type=\"%s\" group-title=\"%s\", %s\n%s\n",
-				channel.Name, channelLOGOURL, langMap[channel.Language], catMap[channel.Category], catMap[channel.Category], channel.Name, channelURL)
+				channel.Name, channelLOGOURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], television.CategoryMap[channel.Category], channel.Name, channelURL)
 		}
 
 		// Set the Content-Disposition header for file download
