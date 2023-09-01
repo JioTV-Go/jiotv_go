@@ -29,6 +29,12 @@ func IndexHandler(c *gin.Context) {
 
 	language := c.Query("language")
 	category := c.Query("category")
+
+	categoryMap := television.CategoryMap
+	categoryMap[0] = "All Categories"
+	languageMap := television.LanguageMap
+	languageMap[0] = "All Languages"
+
 	if language != "" || category != "" {
 		language_int, _ := strconv.Atoi(language)
 		category_int, _ := strconv.Atoi(category)
@@ -36,11 +42,15 @@ func IndexHandler(c *gin.Context) {
 		c.HTML(http.StatusOK, "index.html", gin.H{
 			"Channels": channels_list,
 			"IsNotLoggedIn": !utils.CheckLoggedIn(),
+			"Categories": categoryMap,
+			"Languages": languageMap,
 		})
 	} else  {
 		c.HTML(http.StatusOK, "index.html", gin.H{
 			"Channels": channels.Result,
 			"IsNotLoggedIn": !utils.CheckLoggedIn(),
+			"Categories": categoryMap,
+			"Languages": languageMap,
 		})
 	}
 }
