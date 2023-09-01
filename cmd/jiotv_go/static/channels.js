@@ -34,6 +34,8 @@
 //     { value: 19, label: "JioDarshan" }
 // ];
 
+const languageElement = document.getElementById("portexe-language-select");
+const categoryElement = document.getElementById("portexe-category-select");
 const catLangApplyButton = document.getElementById("portexe-search-button");
 
 catLangApplyButton.addEventListener("click", () => {
@@ -46,8 +48,6 @@ catLangApplyButton.addEventListener("click", () => {
     document.location.href = url.href;
 });
 
-const languageElement = document.getElementById("portexe-category-select");
-const categoryElement = document.getElementById("portexe-language-select");
 
 // on page load, if either language or category is present in query params, set the value of the select element
 const url = new URL(window.location.href);
