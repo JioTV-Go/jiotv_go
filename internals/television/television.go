@@ -97,6 +97,8 @@ func NewTelevision(ssoToken, crm, uniqueID string) *Television {
 	// Create a new cookie jar
 	jar, _ := cookiejar.New(nil)
 
+	http.DefaultTransport.(*http.Transport).DialContext = utils.GetCustomDialer()
+
 	// Create an http.Client using the cookie jar
 	client := &http.Client{
 		Jar: jar,
@@ -195,7 +197,11 @@ func (tv *Television) RenderKey(url string, channelID string) ([]byte, int) {
 
 func Channels() APIResponse {
 	url := "https://jiotv.data.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?os=android&devicetype=phone&usertype=tvYR7NSNn7rymo3F&version=285"
-	resp, err := http.Get(url)
+	
+	http.DefaultTransport.(*http.Transport).DialContext = utils.GetCustomDialer()
+	client := &http.Client{}
+
+	resp, err := client.Get(url)
 	if err != nil {
 		utils.Log.Panic(err)
 	}

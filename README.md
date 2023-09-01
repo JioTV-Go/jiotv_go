@@ -56,6 +56,7 @@ Download the latest binary for your operating system from [here](https://github.
 
 - If you want to specify a custom port or host, you can do so by passing the `host:port` or `:port` as an argument to the binary. `./jiotv_go "host:port"`
 - If you want to specify the path/folder for `credentials.json`, set an environment variable `JIOTV_CREDENTIALS_PATH=/path` before running the binary.
+- Currently, we do not use native DNS resolution. If you want to use native DNS resolution, set an environment variable `JIOTV_DNS=1.1.1.1` before running the binary.
 
 ### Remote Deployment
 
