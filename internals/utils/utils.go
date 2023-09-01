@@ -8,6 +8,9 @@ import (
 	"net/http"
 	"os"
 	"strings"
+	"net"
+	"time"
+	"context"
 )
 
 var Log *log.Logger
@@ -96,6 +99,8 @@ func Login(username, password string) (map[string]string, error) {
 	for key, value := range headers {
 		req.Header.Set(key, value)
 	}
+
+	http.DefaultTransport.(*http.Transport).DialContext = GetCustomDialer()
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
@@ -200,3 +205,35 @@ func CheckLoggedIn() bool {
 		return true
 	}
 }
+
+func GetCustomDialer() func(ctx context.Context, network string, addr string) (net.Conn, error) {
+	USER_CUSTOM_DNS := os.Getenv("JIOTV_DNS")
+	if USER_CUSTOM_DNS == "" {
+		USER_CUSTOM_DNS = "1.1.1.1"
+	}
+	
+	var (
+		dnsResolverIP        = USER_CUSTOM_DNS+":53" // Cloudflare DNS resolver.
+		dnsResolverProto     = "udp"        // Protocol to use for the DNS resolver
+		dnsResolverTimeoutMs = 5000         // Timeout (ms) for the DNS resolver (optional)
+	)
+
+	dialer := &net.Dialer{
+	Resolver: &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+		d := net.Dialer{
+			Timeout: time.Duration(dnsResolverTimeoutMs) * time.Millisecond,
+		}
+		return d.DialContext(ctx, dnsResolverProto, dnsResolverIP)
+		},
+	},
+	}
+
+	dialContext := func(ctx context.Context, network, addr string) (net.Conn, error) {
+		return dialer.DialContext(ctx, network, addr)
+	}
+
+	return dialContext
+}
+ 
