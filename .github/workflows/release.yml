@@ -15,6 +15,7 @@ concurrency:
 jobs:
   releases-matrix:
     name: Release Go Binary
+    if: startsWith(github.event.release.tag_name, 'v')
     runs-on: ubuntu-latest
     strategy:
       matrix:
