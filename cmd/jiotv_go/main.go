@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rabilrbl/jiotv_go/internals/handlers"
 	"github.com/rabilrbl/jiotv_go/internals/utils"
+	"github.com/rabilrbl/jiotv_go/internals/middleware"
 	"html/template"
 	"net/http"
 	"os"
@@ -11,6 +12,7 @@ import (
 
 func main() {
 	r := gin.Default()
+	r.Use(middleware.CORS())
 	
 	utils.Log = utils.GetLogger()
 	
