@@ -144,9 +144,6 @@ func RenderHandler(c *gin.Context) {
 	params := split_url_by_params[1]
 
 	replacer := func(match []byte) []byte {
-		if bytes.HasSuffix(match, []byte("-iframes.m3u8")) {
-			return match // Skip replacements for matches with "-iframes.m3u8" suffix
-		}
 		switch {
 		case bytes.HasSuffix(match, []byte(".m3u8")):
 			return []byte("/render?auth=" + url.QueryEscape(baseUrl + string(match) + "?" + params) + "&channel_key_id=" + channel_id)
@@ -157,7 +154,7 @@ func RenderHandler(c *gin.Context) {
 		}
 	}
 
-	pattern = `[a-z0-9=\_\-A-Z]*\.(m3u8|ts)`
+	pattern = `[a-z0-9=\_\-A-Z\/]*\.(m3u8|ts)`
 	re = regexp.MustCompile(pattern)
 	renderResult = re.ReplaceAllFunc(renderResult, replacer)
 
@@ -201,10 +198,10 @@ func ChannelsHandler(c *gin.Context) {
 		m3uContent := "#EXTM3U\n"
 		logoURL := "https://jiotv.catchup.cdn.jio.com/dare_images/images"
 		for _, channel := range apiResponse.Result {
-			channelURL := fmt.Sprintf("%s/live/%d", hostURL, channel.ID)
-			channelLOGOURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
+			channelURL := fmt.Sprintf("%s/live/%d.m3u8", hostURL, channel.ID)
+			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
 			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-name=\"%s\" tvg-logo=\"%s\" tvg-language=\"%s\" tvg-type=\"%s\" group-title=\"%s\", %s\n%s\n",
-				channel.Name, channelLOGOURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], television.CategoryMap[channel.Category], channel.Name, channelURL)
+				channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], television.CategoryMap[channel.Category], channel.Name, channelURL)
 		}
 
 		// Set the Content-Disposition header for file download
