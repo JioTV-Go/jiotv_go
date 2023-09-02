@@ -32,10 +32,6 @@ func main() {
 	r.GET("/player/:id", handlers.PlayerHandler)
 	r.GET("/clappr/:id", handlers.ClapprHandler)
 	r.GET("/favicon.ico", handlers.FaviconHandler)
-
-	if(os.Getenv("GO_ENV") != "development") {
-		gin.SetMode(gin.ReleaseMode)
-	}
 	
 	if len(os.Args) > 1 {
 		r.Run(os.Args[1])
