@@ -2,9 +2,7 @@ name: Check build for Pull Request
 
 on:
   pull_request:
-    branches:
-      - "main"
-      - "dev"
+    types: [opened, synchronize]
 
 jobs:
     build:
@@ -42,13 +40,7 @@ jobs:
       needs: build
       steps:
         - name: Comment on PR
-          uses: actions/github-script@v6
+          uses: thollander/actions-comment-pull-request@v2
           with:
-            github-token: ${{ secrets.GITHUB_TOKEN }}
-            script: |
-              github.issues.createComment({
-                issue_number: context.issue.number,
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: 'Successfully built binaries for this PR ✅. Available at ${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}'
-              })
+            message: |
+              Binaries for this PR ✅. Available at ${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}
