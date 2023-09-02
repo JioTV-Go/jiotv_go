@@ -115,6 +115,7 @@ go mod download
 go run ./cmd/jiotv_go
 ```
 
+We use [TailwindCSS](https://tailwindcss.com/) for styling.
 If you want to modify css styling, make sure you have NodeJS installed.
 On a new terminal, run the following commands, from the root directory of the project
 
