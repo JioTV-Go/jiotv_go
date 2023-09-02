@@ -88,11 +88,12 @@ jobs:
           uses: svenstaro/upload-release-action@v2
           with:
             repo_token: ${{ secrets.PAT }}
-            file: ./bin/*
+            file: ./bin/jiotv_go*
             tag: ${{ steps.prepare_dev_tag.outputs.tag }}
             overwrite: false
             file_glob: true
             prerelease: true
+            release_name: ${{ steps.prepare_dev_tag.outputs.tag }}
             body: |
               This is a dev build. It is only for testing purposes.
 
