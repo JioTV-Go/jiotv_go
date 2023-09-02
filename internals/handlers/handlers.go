@@ -144,9 +144,6 @@ func RenderHandler(c *gin.Context) {
 	params := split_url_by_params[1]
 
 	replacer := func(match []byte) []byte {
-		if bytes.HasSuffix(match, []byte("-iframes.m3u8")) {
-			return match // Skip replacements for matches with "-iframes.m3u8" suffix
-		}
 		switch {
 		case bytes.HasSuffix(match, []byte(".m3u8")):
 			return []byte("/render?auth=" + url.QueryEscape(baseUrl + string(match) + "?" + params) + "&channel_key_id=" + channel_id)
