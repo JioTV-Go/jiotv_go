@@ -5,7 +5,7 @@ on:
 #     - cron: "0 10 * * *"
   push:
     branches:
-      - "**"
+      - "main"
     tags:
       - "v*.*"
     paths-ignore:
@@ -15,9 +15,10 @@ on:
       - "run_server.bat"
       - "assets/**"
       - "docs/**"
-  pull_request:
-    branches:
-      - "main"
+
+concurrency:
+  group: ${{ github.repository }}-${{ github.ref_name }}
+  cancel-in-progress: true
 
 jobs:
   docker:

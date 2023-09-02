@@ -37,5 +37,7 @@ jobs:
         binary_name: "jiotv_go"
         extra_files: LICENSE README.md
         compress_assets: OFF
+        ldflags: "-s -w -X main.Version=${{ github.event.release.tag_name }} -X main.BuildTime=${{ github.event.release.created_at }}"
+        build_flags: "-trimpath"
       env:
         GIN_MODE: release
