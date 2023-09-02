@@ -16,6 +16,10 @@ on:
       - "assets/**"
       - "docs/**"
 
+concurrency:
+  group: ${{ github.repository }}-${{ github.ref_name }}
+  cancel-in-progress: true
+
 jobs:
   docker:
     permissions:
