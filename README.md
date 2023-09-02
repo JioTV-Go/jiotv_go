@@ -115,6 +115,24 @@ go mod download
 go run ./cmd/jiotv_go
 ```
 
+If you want to modify css styling, make sure you have NodeJS installed.
+On a new terminal, run the following commands, from the root directory of the project
+
+```sh
+npm install
+```
+
+To keep generating TailwindCSS file on every change.
+```sh
+npm run watch
+```
+
+Once you are done with the changes, you must build minified css file.
+
+```sh
+npm run build
+```
+
 ### Building from source
 
 ```sh
