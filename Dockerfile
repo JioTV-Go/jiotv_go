@@ -16,7 +16,7 @@ RUN go mod download
 
 # Build the Go app
 
-RUN go build -o jiotv_go ./cmd/jiotv_go
+RUN go build -o jiotv_go ./cmd/jiotv_go -ldflags="-s -w" -trimpath
 
 # Remove all files and folderes except the executable
 
