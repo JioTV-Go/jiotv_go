@@ -16,11 +16,11 @@ RUN go mod download
 
 # Build the Go app
 
-RUN go build -o jiotv_go ./cmd/jiotv_go -ldflags="-s -w" -trimpath
+RUN go build -ldflags="-s -w" -trimpath -o jiotv_go ./cmd/jiotv_go
 
 # Remove all files and folderes except the executable
 
-RUN find . -mindepth 1 -maxdepth 1 ! -name 'jiotv_go' ! -name '.jiotv_go' -exec rm -rf {} +
+RUN find . -mindepth 1 -maxdepth 1 ! -name 'jiotv_go' -exec rm -rf {} +
 
 # Set credentials path
 ENV JIOTV_CREDENTIALS_PATH=secrets
