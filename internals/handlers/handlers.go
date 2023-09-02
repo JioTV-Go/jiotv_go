@@ -199,9 +199,9 @@ func ChannelsHandler(c *gin.Context) {
 		logoURL := "https://jiotv.catchup.cdn.jio.com/dare_images/images"
 		for _, channel := range apiResponse.Result {
 			channelURL := fmt.Sprintf("%s/live/%d.m3u8", hostURL, channel.ID)
-			channelLOGOURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
+			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
 			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-name=\"%s\" tvg-logo=\"%s\" tvg-language=\"%s\" tvg-type=\"%s\" group-title=\"%s\", %s\n%s\n",
-				channel.Name, channelLOGOURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], television.CategoryMap[channel.Category], channel.Name, channelURL)
+				channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], television.CategoryMap[channel.Category], channel.Name, channelURL)
 		}
 
 		// Set the Content-Disposition header for file download
