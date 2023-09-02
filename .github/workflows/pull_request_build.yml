@@ -32,15 +32,31 @@ jobs:
             name: jiotv_go-${{ matrix.goos }}-${{ matrix.goarch }}
             path: ./bin/
 
-    post:
+    post_success:
       runs-on: ubuntu-latest
       permissions:
           contents: read
           pull-requests: write
       needs: build
+      if: success()
       steps:
         - name: Comment on PR
           uses: thollander/actions-comment-pull-request@v2
           with:
             message: |
-              Binaries for this PR ✅. Available at ${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }}
+              Build was successfull for this PR ✅. [Download binaries](${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }})
+
+    post_failure:
+      runs-on: ubuntu-latest
+      permissions:
+          contents: read
+          pull-requests: write
+      needs: build
+      if: failure()
+      steps:
+        - name: Comment on PR
+          uses: thollander/actions-comment-pull-request@v2
+          with:
+            message: |
+              Build failed for this PR ❌. [Check logs](${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }})
+
