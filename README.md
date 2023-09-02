@@ -87,8 +87,6 @@ In cases where you want to deploy JioTV Go on a remote server, and if server doe
 | `/channels` | List of all channels |
 | `/channels?type=m3u` | List of all channels in m3u format for IPTV and VLC Media Player |
 | `/live/:channel_id` | Watch Live TV |
-| `/blank` | Blank post request route, made as a diversion for Flowplayer telemetry |
-
 ## Screenshots
 
 ### Home Page

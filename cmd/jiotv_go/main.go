@@ -31,7 +31,6 @@ func main() {
 	r.GET("/play/:id", handlers.PlayHandler)
 	r.GET("/player/:id", handlers.PlayerHandler)
 	r.GET("/clappr/:id", handlers.ClapprHandler)
-	r.POST("/blank", handlers.BlankHandler)
 	r.GET("/favicon.ico", handlers.FaviconHandler)
 
 	if(os.Getenv("GO_ENV") != "development") {
