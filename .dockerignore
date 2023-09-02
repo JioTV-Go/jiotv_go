@@ -35,3 +35,6 @@ credentials.json
 
 # Playlist .m3u file
 *.m3u
+
+# Node
+node_modules/

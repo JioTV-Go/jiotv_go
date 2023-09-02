@@ -29,7 +29,7 @@
       {{range $channel := .Channels}}
       <tr>
         <td>
-          <img src="http://jiotv.catchup.cdn.jio.com/dare_images/images/{{$channel.LogoURL}}" alt="{{$channel.Name}}" class="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 lg:h-16 lg:w-16 p-1 rounded-full bg-sky-100" />
+          <img src="http://jiotv.catchup.cdn.jio.com/dare_images/images/{{$channel.LogoURL}}" loading="lazy" alt="{{$channel.Name}}" class="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 lg:h-16 lg:w-16 p-1 rounded-full bg-sky-100" />
         </td>
         <td>
           <span class="text-lg font-bold">{{$channel.Name}}</span>

@@ -87,8 +87,6 @@ In cases where you want to deploy JioTV Go on a remote server, and if server doe
 | `/channels` | List of all channels |
 | `/channels?type=m3u` | List of all channels in m3u format for IPTV and VLC Media Player |
 | `/live/:channel_id` | Watch Live TV |
-| `/blank` | Blank post request route, made as a diversion for Flowplayer telemetry |
-
 ## Screenshots
 
 ### Home Page
@@ -115,6 +113,25 @@ Install the dependencies and start the server.
 export GO_ENV=development # To enable debug mode
 go mod download
 go run ./cmd/jiotv_go
+```
+
+We use [TailwindCSS](https://tailwindcss.com/) for styling.
+If you want to modify css styling, make sure you have NodeJS installed.
+On a new terminal, run the following commands, from the root directory of the project
+
+```sh
+npm install
+```
+
+To keep generating TailwindCSS file on every change.
+```sh
+npm run watch
+```
+
+Once you are done with the changes, you must build minified css file.
+
+```sh
+npm run build
 ```
 
 ### Building from source

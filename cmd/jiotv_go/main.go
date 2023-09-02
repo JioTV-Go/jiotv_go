@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/rabilrbl/jiotv_go/internals/handlers"
 	"github.com/rabilrbl/jiotv_go/internals/utils"
+	"github.com/rabilrbl/jiotv_go/internals/middleware"
 	"html/template"
 	"net/http"
 	"os"
@@ -11,6 +12,7 @@ import (
 
 func main() {
 	r := gin.Default()
+	r.Use(middleware.CORS())
 	
 	utils.Log = utils.GetLogger()
 	
@@ -31,12 +33,7 @@ func main() {
 	r.GET("/play/:id", handlers.PlayHandler)
 	r.GET("/player/:id", handlers.PlayerHandler)
 	r.GET("/clappr/:id", handlers.ClapprHandler)
-	r.POST("/blank", handlers.BlankHandler)
 	r.GET("/favicon.ico", handlers.FaviconHandler)
-
-	if(os.Getenv("GO_ENV") != "development") {
-		gin.SetMode(gin.ReleaseMode)
-	}
 	
 	if len(os.Args) > 1 {
 		r.Run(os.Args[1])
