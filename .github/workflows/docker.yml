@@ -5,7 +5,8 @@ on:
 #     - cron: "0 10 * * *"
   push:
     branches:
-      - "**"
+      - "main"
+      - "dev"
     tags:
       - "v*.*"
     paths-ignore:
@@ -15,9 +16,6 @@ on:
       - "run_server.bat"
       - "assets/**"
       - "docs/**"
-  pull_request:
-    branches:
-      - "main"
 
 jobs:
   docker:
