@@ -154,7 +154,7 @@ func RenderHandler(c *gin.Context) {
 		}
 	}
 
-	pattern = `[a-z0-9=\_\-A-Z]*\.(m3u8|ts)`
+	pattern = `[a-z0-9=\_\-A-Z\/]*\.(m3u8|ts)`
 	re = regexp.MustCompile(pattern)
 	renderResult = re.ReplaceAllFunc(renderResult, replacer)
 
