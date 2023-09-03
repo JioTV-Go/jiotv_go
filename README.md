@@ -180,7 +180,7 @@ Building JioTV Go from source is a breeze! Follow these simple steps:
 
 2. Run the following command to build JioTV Go:
     ```sh
-    go build./cmd/jiotv_g
+    go build./cmd/jiotv_go
     ```
 
 ## Let's Make JioTV Go Better Together! 🤝
