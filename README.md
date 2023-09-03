@@ -1,4 +1,4 @@
-# JioTV Go
+# JioTV Go 🌟
 
 Introducing JioTV Go: Your gateway to streaming Live TV channels on the web and IPTV! 📺🌐 Say goodbye to the JioTV App, as this project lets you enjoy JioTV's offerings hassle-free. Currently in the development stage, it's designed purely for educational exploration.
 
@@ -6,9 +6,9 @@ Ready to dive in? Download the latest binary for your operating system from [her
 
 ## Table of Contents
 
-- [JioTV Go](#jiotv-go)
+- [JioTV Go 🌟](#jiotv-go-)
   - [Table of Contents](#table-of-contents)
-  - [Usage Guide](#usage-guide)
+  - [Usage Guide 🚀](#usage-guide-)
     - [**Using JioTV Go Natively**](#using-jiotv-go-natively)
     - [**Android Users, We've Got You Covered!**](#android-users-weve-got-you-covered)
     - [**Docker Enthusiasts, Here's Your Shortcut!**](#docker-enthusiasts-heres-your-shortcut)
@@ -30,7 +30,7 @@ Ready to dive in? Download the latest binary for your operating system from [her
     - [**Ready to Contribute? Join the Journey! 🚀**](#ready-to-contribute-join-the-journey-)
   - [**License: Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)**](#license-attribution-noncommercial-40-international-cc-by-nc-40)
 
-## Usage Guide
+## Usage Guide 🚀
 
 ### **Using JioTV Go Natively**
 
@@ -93,25 +93,25 @@ With these environment variables set, the `credentials.json` will be bypassed, a
 
 ### **Web Paths**
 
-- **/**: The gateway to the Home Page, where your JioTV Go adventure begins.
+- **`/`**: The gateway to the Home Page, where your JioTV Go adventure begins.
 
-- **/play/:channel_id**: Dive into the world of specific channels with ID `channel_id`.
+- **`/play/:channel_id`**: Dive into the world of specific channels with ID `channel_id`.
 
-- **/playlist.m3u**: Instantly obtain an M3U playlist for IPTV. (Redirects to `/channels?type=m3u` for your convenience.)
+- **`/playlist.m3u`**: Instantly obtain an M3U playlist for IPTV. (Redirects to `/channels?type=m3u` for your convenience.)
 
-- **/player/:channel_id**: Immerse yourself with the default player (Flowplayer) for Channel `channel_id`.
+- **`/player/:channel_id`**: Immerse yourself with the default player (Flowplayer) for Channel `channel_id`.
 
-- **/clappr/:channel_id**: Experience the magic of the Clappr player for Channel `channel_id`.
+- **`/clappr/:channel_id`**: Experience the magic of the Clappr player for Channel `channel_id`.
 
 ### **API Endpoints**
 
-- **/login?username=<username>&password=<password>**: A mandatory entry point for JioTV login. Forgot your password? No worries, visit the [JioTV Password Recovery](https://www.jio.com/selfcare/signup/forgot-password) page to reset it. You can also perform a POST request to this endpoint with data in the body.
+- **`/login?username=<username>&password=<password>`**: Forgot your password? No worries, visit the [JioTV Password Recovery](https://www.jio.com/selfcare/signup/forgot-password) page to reset it. You can also perform a POST request to this endpoint with data in the body.
 
-- **/channels**: Discover the complete list of available channels.
+- **`/channels`**: Discover the complete list of available channels.
 
-- **/channels?type=m3u**: Effortlessly acquire an M3U playlist for IPTV.
+- **`/channels?type=m3u`**: Effortlessly acquire an M3U playlist for IPTV.
 
-- **/live/:channel_id**: Tune in to live TV with the specified channel ID.
+- **`/live/:channel_id`**: Tune in to live TV with the specified channel ID.
 
 ## Sneak Peek with Screenshots 📷
 
