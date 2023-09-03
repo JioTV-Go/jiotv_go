@@ -137,17 +137,12 @@ JioTV Go is powered by [Golang](https://golang.org/), so let's get started! Here
 
 1. First, make sure you have Golang installed on your system.
 
-2. Enable debug mode with the command:
-   ```sh
-   export GO_ENV=development
-   ```
-
-3. Install the necessary dependencies using:
+2. Install the necessary dependencies using:
     ```sh
     go mod download
     ```
 
-4. Finally, fire up the server with:
+3. Finally, fire up the server with:
    ```sh
    go run ./cmd/jiotv_go
     ```
