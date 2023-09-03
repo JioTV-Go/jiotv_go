@@ -117,19 +117,19 @@ With these environment variables set, the `credentials.json` will be bypassed, a
 
 ### **Home Page**
 
-![Home Page](./assets/home.png)
+![Home Page](./assets/home.webp)
 
 ### **Player Page**
 
-![Player Page](./assets/player.png)
+![Player Page](./assets/player.webp)
 
 ### **Login Dialog**
 
-![Login Page](./assets/login.png)
+![Login Page](./assets/login.webp)
 
 ### **Playing Live TV on VLC Media Player**
 
-![Playing Live TV on VLC Media Player](./assets/image.png)
+![Playing Live TV on VLC Media Player](./assets/image.webp)
 
 ## Ready to Contribute? Let's Dive into Development! 🚀
 
