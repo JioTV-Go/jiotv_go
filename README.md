@@ -1,156 +1,198 @@
-# JioTV Go
+# JioTV Go 🌟
 
-JioTV Go is a web application that allows you to watch Live TV channels. This project helps you to watch JioTV without the JioTV App. The project is currently in development and is made for educational purposes only.
+Introducing JioTV Go: Your gateway to streaming Live TV channels on the web and IPTV! 📺🌐 Say goodbye to the JioTV App, as this project lets you enjoy JioTV's offerings hassle-free. Currently in the development stage, it's designed purely for educational exploration.
 
-Download the latest binary for your operating system from [here](https://github.com/rabilrbl/jiotv_go/releases/latest) and refer to [API endpoints](#api-endpoints) to use it.
+Ready to dive in? Download the latest binary for your operating system from [here](https://github.com/rabilrbl/jiotv_go/releases/latest), and explore the [API endpoints](#api-endpoints) to start your JioTV Go adventure!  🚀📡🔥
 
 ## Table of Contents
 
-- [JioTV Go](#jiotv-go)
+- [JioTV Go 🌟](#jiotv-go-)
   - [Table of Contents](#table-of-contents)
-  - [Usage](#usage)
-    - [How to use JioTV Go natively](#how-to-use-jiotv-go-natively)
-    - [Android](#android)
-    - [Docker](#docker)
-    - [Optional Steps](#optional-steps)
-    - [Remote Deployment](#remote-deployment)
-  - [Web Paths](#web-paths)
-  - [API Endpoints](#api-endpoints)
-  - [Screenshots](#screenshots)
-    - [Home Page](#home-page)
-    - [Player Page](#player-page)
-    - [Login Dialog](#login-dialog)
-    - [Playing Live TV on VLC Media Player](#playing-live-tv-on-vlc-media-player)
-  - [Development](#development)
-    - [Building from source](#building-from-source)
-    - [Report Bugs](#report-bugs)
-    - [Contributing](#contributing)
-  - [License](#license)
+  - [Usage Guide 🚀](#usage-guide-)
+    - [**Using JioTV Go Natively**](#using-jiotv-go-natively)
+    - [**Android Users, We've Got You Covered!**](#android-users-weve-got-you-covered)
+    - [**Docker Enthusiasts, Here's Your Shortcut!**](#docker-enthusiasts-heres-your-shortcut)
+    - [**Optional Customizations**](#optional-customizations)
+    - [**Remote Deployment Made Easy**](#remote-deployment-made-easy)
+  - [Explore JioTV Go's Paths and Endpoints 🌐](#explore-jiotv-gos-paths-and-endpoints-)
+    - [**Web Paths**](#web-paths)
+    - [**API Endpoints**](#api-endpoints)
+  - [Sneak Peek with Screenshots 📷](#sneak-peek-with-screenshots-)
+    - [**Home Page**](#home-page)
+    - [**Player Page**](#player-page)
+    - [**Login Dialog**](#login-dialog)
+    - [**Playing Live TV on VLC Media Player**](#playing-live-tv-on-vlc-media-player)
+  - [Ready to Contribute? Let's Dive into Development! 🚀](#ready-to-contribute-lets-dive-into-development-)
+  - [Customize the Look with TailwindCSS 🎨](#customize-the-look-with-tailwindcss-)
+  - [Building JioTV Go from Source 🛠️](#building-jiotv-go-from-source-️)
+  - [Let's Make JioTV Go Better Together! 🤝](#lets-make-jiotv-go-better-together-)
+    - [**Report Bugs**](#report-bugs)
+    - [**Ready to Contribute? Join the Journey! 🚀**](#ready-to-contribute-join-the-journey-)
+  - [**License: Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)**](#license-attribution-noncommercial-40-international-cc-by-nc-40)
 
-## Usage
+## Usage Guide 🚀
 
-### How to use JioTV Go natively
+### **Using JioTV Go Natively**
 
-1. Download the latest binary for your operating system from the [releases](https://github.com/rabilrbl/jiotv_go/releases/latest) page.
-2. On Linux/Unix, Give executable permission to the binary. `chmod +x jiotv_go-...`.<br /> Here `jiotv_go-...` is the name of the binary file you downloaded.
-3. Run the binary. `./jiotv_go-...`.
-4. Open `http://localhost:5001` in your browser.
-5. Login to JioTV by clicking on the Login button.
-6. Choose a channel and start watching.
+1. Start your journey by downloading the latest binary for your operating system from the [releases page](https://github.com/rabilrbl/jiotv_go/releases/latest).
 
-### Android
+2. For Linux/Unix users, grant executable permissions to the downloaded binary. Use the command `chmod +x jiotv_go-...`, replacing `jiotv_go-...` with the actual binary name you've downloaded.
 
-1. Download [Termux](https://github.com/termux/termux-app/releases/latest)
-2. Open Termux and execute `pkg install wget openssl -y`
-3. Copy download link of `jiotv_go-linux-(arch)` bin file from [releases](https://github.com/rabilrbl/jiotv_go/releases/latest). Choose your aarch, mostly arm64.
-4. Execute `wget <link>` to download the file. <br />Here `<link>` is the link you copied in step 3.
-5. Then follow [How to use JioTV Go (above)](#how-to-use-jiotv-go-natively) from 2 to 6
+3. Run the binary with `./jiotv_go-...`.
 
-### Docker
+4. Fire up your favorite web browser and visit `http://localhost:5001`.
 
-1. Install [Docker](https://docs.docker.com/get-docker/).
-2. `docker run -p 5001:5001 -v ./.jiotv_go/secrets:/app/secrets ghcr.io/rabilrbl/jiotv_go`
-3. Open `http://localhost:5001` in your browser.
+5. To access JioTV content, click on the Login button and enter your credentials.
 
-### Optional Steps
+6. Choose from a variety of channels and embark on your live TV adventure!
 
-- If you want to specify a custom port or host, you can do so by passing the `host:port` or `:port` as an argument to the binary. `./jiotv_go "host:port"`
-- If you want to specify the path/folder for `credentials.json`, set an environment variable `JIOTV_CREDENTIALS_PATH=/path` before running the binary.
-- Currently, we do not use your device DNS settings. If you want to use custom DNS of your choice, set an environment variable `JIOTV_DNS=1.1.1.1` before running the binary.
+7. If you're an IPTV enthusiast, you can access the M3U playlist by visiting `http://localhost:5001/playlist.m3u`.
 
-### Remote Deployment
+### **Android Users, We've Got You Covered!**
 
-In cases where you want to deploy JioTV Go on a remote server, and if server doesn't have writable permissions to set the `credentials.json` file, you can use the following steps to deploy JioTV Go.
+1. Dive into the Android world by first downloading [Termux](https://github.com/termux/termux-app/releases/latest).
 
-1. Login to JioTV on your local machine. This should generate `credentials.json`
-2. Set the following environment variables on your remote server.
-   - `JIOTV_SSO_TOKEN` - The `ssoToken` from the `credentials.json` file.
-   - `JIOTV_CRM` - The `crm` from the `credentials.json` file.
-   - `JIOTV_UNIQUE_ID` - The `uniqueId` from the `credentials.json` file.
-  
-> By setting above environment variables, the credentials.json will be ignored and the environment variables will be used instead.
+2. Open Termux and execute the command `pkg install wget openssl -y`.
 
-## Web Paths
+3. Copy the download link of the `jiotv_go-linux-(arch)` binary from the [releases page](https://github.com/rabilrbl/jiotv_go/releases/latest). Typically, choose the arm64 version for your aarch.
 
-| Path | Description |
-| --- | --- |
-| `/` | Home Page |
-| `/play/:channel_id` | Watch Channel with ID `channel_id` |
-| `/playlist.m3u` | Get M3U playlist for IPTV. (Redirects to `/channels?type=m3u`) |
-| `/player/:channel_id` | Embed Default player (Flowplayer) for Channel with ID `channel_id` |
-| `/clappr/:channel_id` | Embed Clappr player for Channel with ID `channel_id` |
+4. Download the file using `wget <link>`, where `<link>` is the one you copied in the previous step.
 
-## API Endpoints
+5. Now, follow the instructions for using [JioTV Go natively (mentioned above)](#using-jiotv-go-natively) starting from step 2.
 
-| Endpoint | Description |
-| --- | --- |
-| `/login?username=<username>&password=<password>` | Login to JioTV (Mandatory). If you forgot your password, you can use the [JioTV Password Recovery](https://www.jio.com/selfcare/signup/forgot-password) page to reset your password. You can perform post request to this endpoint to login with data in the body. |
-| `/channels` | List of all channels |
-| `/channels?type=m3u` | Get M3U playlist for IPTV |
-| `/live/:channel_id` | Watch Live TV |
-## Screenshots
+### **Docker Enthusiasts, Here's Your Shortcut!**
 
-### Home Page
+1. If you're a Docker enthusiast, begin by installing [Docker](https://docs.docker.com/get-docker/).
 
-![Home Page](./assets/home.png)
+2. Run the command `docker run -p 5001:5001 -v ./.jiotv_go/secrets:/app/secrets ghcr.io/rabilrbl/jiotv_go`.
 
-### Player Page
+3. Open your web browser and visit `http://localhost:5001`.
 
-![Player Page](./assets/player.png)
-### Login Dialog
+### **Optional Customizations**
 
-![Login Page](./assets/login.png)
+- Want to specify a custom port or host? No problem! Simply pass `host:port` or `:port` as an argument to the binary like this: `./jiotv_go "host:port"`.
 
-### Playing Live TV on VLC Media Player
+- If you prefer a specific path or folder for your `credentials.json`, set the environment variable `JIOTV_CREDENTIALS_PATH=/path` before running the binary.
 
-![Playing Live TV on VLC Media Player](./assets/image.png)
+- Need to use a custom DNS? Set the environment variable `JIOTV_DNS=1.1.1.1` before launching the binary.
 
-## Development
+### **Remote Deployment Made Easy**
 
-JioTV Go requires [Golang](https://golang.org/) to run.
-Install the dependencies and start the server.
+In cases where remote server permissions prevent the creation of the `credentials.json` file, follow these steps:
 
-```sh
-export GO_ENV=development # To enable debug mode
-go mod download
-go run ./cmd/jiotv_go
-```
+1. On your local machine, log in to JioTV to generate your `credentials.json`.
 
-We use [TailwindCSS](https://tailwindcss.com/) for styling.
-If you want to modify css styling, make sure you have NodeJS installed.
-On a new terminal, run the following commands, from the root directory of the project
+2. Configure the following environment variables on your remote server:
+   - `JIOTV_SSO_TOKEN` - The `ssoToken` from your `credentials.json`.
+   - `JIOTV_CRM` - The `crm` from your `credentials.json`.
+   - `JIOTV_UNIQUE_ID` - The `uniqueId` from your `credentials.json`.
 
-```sh
-npm install
-```
+With these environment variables set, the `credentials.json` will be bypassed, and your JioTV Go deployment will proceed smoothly. Enjoy the journey!
 
-To keep generating TailwindCSS file on every change.
-```sh
-npm run watch
-```
+## Explore JioTV Go's Paths and Endpoints 🌐
 
-Once you are done with the changes, you must build minified css file.
+### **Web Paths**
 
-```sh
-npm run build
-```
+- **`/`**: The gateway to the Home Page, where your JioTV Go adventure begins.
 
-### Building from source
+- **`/play/:channel_id`**: Dive into the world of specific channels with ID `channel_id`.
 
-```sh
-go build ./cmd/jiotv_go
-```
+- **`/playlist.m3u`**: Instantly obtain an M3U playlist for IPTV. (Redirects to `/channels?type=m3u` for your convenience.)
 
-### Report Bugs
+- **`/player/:channel_id`**: Immerse yourself with the default player (Flowplayer) for Channel `channel_id`.
 
-If you find any bugs, please create an issue [here](https://github.com/rabilrbl/jiotv_go/issues/new). Please include the steps to reproduce the bug and the expected behaviour. If possible, include screenshots.
+- **`/clappr/:channel_id`**: Experience the magic of the Clappr player for Channel `channel_id`.
 
-### Contributing
+### **API Endpoints**
 
-Contributions are welcome. Please create a pull request with your changes. If the changes are significant, please create an issue first and discuss it with me.
+- **`/login?username=<username>&password=<password>`**: Forgot your password? No worries, visit the [JioTV Password Recovery](https://www.jio.com/selfcare/signup/forgot-password) page to reset it. You can also perform a POST request to this endpoint with data in the body.
 
-## License
+- **`/channels`**: Discover the complete list of available channels.
 
-Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)
+- **`/channels?type=m3u`**: Effortlessly acquire an M3U playlist for IPTV.
 
-**Free Software, Hell Yeah!**. The project is open-source and free to use. Any attempt to sell this project will be considered a violation of the license and will be taken down immediately. If you notice any such activity, please report it to [me](mailto:rabil@rbls.eu.org).
+- **`/live/:channel_id`**: Tune in to live TV with the specified channel ID.
+
+## Sneak Peek with Screenshots 📷
+
+### **Home Page**
+
+![Home Page](./assets/home.webp)
+
+### **Player Page**
+
+![Player Page](./assets/player.webp)
+
+### **Login Dialog**
+
+![Login Page](./assets/login.webp)
+
+### **Playing Live TV on VLC Media Player**
+
+![Playing Live TV on VLC Media Player](./assets/image.webp)
+
+## Ready to Contribute? Let's Dive into Development! 🚀
+
+JioTV Go is powered by [Golang](https://golang.org/), so let's get started! Here's how to set up and run the server:
+
+1. First, make sure you have Golang installed on your system.
+
+2. Install the necessary dependencies using:
+    ```sh
+    go mod download
+    ```
+
+3. Finally, fire up the server with:
+   ```sh
+   go run ./cmd/jiotv_go
+    ```
+
+That's it! You're now all set to explore and contribute to JioTV Go. Happy coding! 🖥️👩‍💻👨‍💻
+
+## Customize the Look with TailwindCSS 🎨
+
+At JioTV Go, we use the versatile [TailwindCSS](https://tailwindcss.com/) to style our project. If you're eager to make some style enhancements, here's how you can do it:
+
+1. Ensure you have NodeJS installed on your system.
+
+2. Open a new terminal window and navigate to the project's root directory.
+
+3. Install the necessary dependencies by running:
+    ```sh
+      npm install
+    ```
+
+4. To keep TailwindCSS up to date with your changes in real-time, run the following command:
+    ```sh
+    npm run watch
+    ```
+
+5. Once you're satisfied with your style modifications, it's time to build the minified CSS file:
+    ```sh
+    npm run build
+    ```
+
+## Building JioTV Go from Source 🛠️
+
+Building JioTV Go from source is a breeze! Follow these simple steps:
+
+1. Open your terminal and navigate to the project's root directory.
+
+2. Run the following command to build JioTV Go:
+    ```sh
+    go build./cmd/jiotv_go
+    ```
+
+## Let's Make JioTV Go Better Together! 🤝
+
+### **Report Bugs**
+
+Found a pesky bug? No worries! Please help us improve JioTV Go by creating an issue [here](https://github.com/rabilrbl/jiotv_go/issues/new). Be sure to include detailed steps to reproduce the bug, describe the expected behavior, and, if possible, attach screenshots. Your feedback is invaluable!
+
+### **Ready to Contribute? Join the Journey! 🚀**
+
+We wholeheartedly welcome your contributions. If you have ideas, fixes, or enhancements in mind, don't hesitate to create a pull request with your changes. For significant alterations, start by creating an issue to discuss your plans with us. Together, we can make JioTV Go even more incredible.
+
+## **License: Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)**
+
+**Embrace the Spirit of Free Software!** JioTV Go is open-source and free to use. We're committed to keeping it accessible to everyone. If you come across any unauthorized attempts to sell this project, please report them to [me](mailto:rabil@rbls.eu.org) so we can take swift action. Your support is essential in safeguarding our project's values. 🙌📜💼
