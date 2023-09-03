@@ -108,7 +108,7 @@ func LiveHandler(c *gin.Context) {
 	liveResult := TV.Live(id)
 	// quote url
 	coded_url := url.QueryEscape(liveResult)
-	c.Redirect(302, "/render?auth="+coded_url+"&channel_key_id="+id)
+	c.Redirect(302, "/render.m3u8?auth="+coded_url+"&channel_key_id="+id)
 }
 
 func RenderHandler(c *gin.Context) {
@@ -146,7 +146,7 @@ func RenderHandler(c *gin.Context) {
 	replacer := func(match []byte) []byte {
 		switch {
 		case bytes.HasSuffix(match, []byte(".m3u8")):
-			return []byte("/render?auth=" + url.QueryEscape(baseUrl + string(match) + "?" + params) + "&channel_key_id=" + channel_id)
+			return []byte("/render.m3u8?auth=" + url.QueryEscape(baseUrl + string(match) + "?" + params) + "&channel_key_id=" + channel_id)
 		case bytes.HasSuffix(match, []byte(".ts")):
 			return []byte(baseUrl + string(match) + "?" + params)
 		default:
@@ -161,7 +161,7 @@ func RenderHandler(c *gin.Context) {
 	replacer_key := func(match []byte) []byte {
 		switch {
 		case bytes.HasSuffix(match, []byte(".key")) || bytes.HasSuffix(match, []byte(".pkey")):
-			return []byte("/renderKey?auth=" + url.QueryEscape((string(match))) + "&channel_key_id=" + channel_id)
+			return []byte("/render.key?auth=" + url.QueryEscape((string(match))) + "&channel_key_id=" + channel_id)
 		default:
 			return match
 		}
@@ -244,4 +244,8 @@ func ClapprHandler(c *gin.Context) {
 
 func FaviconHandler(c *gin.Context) {
 	c.Redirect(301, "/static/favicon.ico")
+}
+
+func PlaylistHandler(c *gin.Context) {
+	c.Redirect(301, "/channels?type=m3u" + c.Request.URL.RawQuery)
 }

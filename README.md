@@ -76,6 +76,7 @@ In cases where you want to deploy JioTV Go on a remote server, and if server doe
 | --- | --- |
 | `/` | Home Page |
 | `/play/:channel_id` | Watch Channel with ID `channel_id` |
+| `/playlist.m3u` | Get M3U playlist for IPTV. (Redirects to `/channels?type=m3u`) |
 | `/player/:channel_id` | Embed Default player (Flowplayer) for Channel with ID `channel_id` |
 | `/clappr/:channel_id` | Embed Clappr player for Channel with ID `channel_id` |
 
@@ -85,7 +86,7 @@ In cases where you want to deploy JioTV Go on a remote server, and if server doe
 | --- | --- |
 | `/login?username=<username>&password=<password>` | Login to JioTV (Mandatory). If you forgot your password, you can use the [JioTV Password Recovery](https://www.jio.com/selfcare/signup/forgot-password) page to reset your password. You can perform post request to this endpoint to login with data in the body. |
 | `/channels` | List of all channels |
-| `/channels?type=m3u` | List of all channels in m3u format for IPTV and VLC Media Player |
+| `/channels?type=m3u` | Get M3U playlist for IPTV |
 | `/live/:channel_id` | Watch Live TV |
 ## Screenshots
 
