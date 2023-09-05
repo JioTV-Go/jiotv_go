@@ -1,44 +1,77 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"net/http"
+	"embed"
+	"os"
+
 	"github.com/rabilrbl/jiotv_go/internals/handlers"
 	"github.com/rabilrbl/jiotv_go/internals/utils"
 	"github.com/rabilrbl/jiotv_go/internals/middleware"
-	"html/template"
-	"net/http"
-	"os"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/template/html/v2"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
+//go:embed views/*
+var viewFiles embed.FS
+
+//go:embed static/*
+var staticFiles embed.FS
+
 func main() {
-	r := gin.Default()
-	r.Use(middleware.CORS())
+
+	engine := html.NewFileSystem(http.FS(viewFiles), ".html")
+	if os.Getenv("DEBUG") == "true" {
+		engine.Reload(true)
+	}
+
+	app := fiber.New(fiber.Config{
+		Views: engine,
+		CaseSensitive: false,
+		StrictRouting: false,
+		EnablePrintRoutes: false,
+		ServerHeader:  "JioTV Go",
+		AppName: "JioTV Go",
+	})
+
+	app.Use(recover.New(recover.Config{
+		EnableStackTrace: true,
+	}))
+
+	app.Use(middleware.CORS())
 	
+	app.Use("/static", filesystem.New(filesystem.Config{
+        Root: http.FS(staticFiles),
+        PathPrefix: "static",
+        Browse: false,
+    }))
+
 	utils.Log = utils.GetLogger()
 	
-	r.StaticFS("/static", http.FS(staticEmbed))
-	tmpl := template.Must(template.ParseFS(tmplEmbed, "templates/*"))
-	r.SetHTMLTemplate(tmpl)
-	
-	// Initialize the television client
+	// Initialize the television object
 	handlers.Init()
 	
-	r.GET("/", handlers.IndexHandler)
-	r.GET("/login", handlers.LoginHandler)
-	r.POST("/login", handlers.LoginHandler)
-	r.GET("/live/:id", handlers.LiveHandler)
-	r.GET("/render.m3u8", handlers.RenderHandler)
-	r.GET("/render.key", handlers.RenderKeyHandler)
-	r.GET("/channels", handlers.ChannelsHandler)
-	r.GET("/playlist.m3u", handlers.PlaylistHandler)
-	r.GET("/play/:id", handlers.PlayHandler)
-	r.GET("/player/:id", handlers.PlayerHandler)
-	r.GET("/clappr/:id", handlers.ClapprHandler)
-	r.GET("/favicon.ico", handlers.FaviconHandler)
+	app.Get("/", handlers.IndexHandler)
+	app.Get("/login", handlers.LoginHandler)
+	app.Post("/login", handlers.LoginHandler)
+	app.Get("/live/:id", handlers.LiveHandler)
+	app.Get("/render.m3u8", handlers.RenderHandler)
+	app.Get("/render.key", handlers.RenderKeyHandler)
+	app.Get("/channels", handlers.ChannelsHandler)
+	app.Get("/playlist.m3u", handlers.PlaylistHandler)
+	app.Get("/play/:id", handlers.PlayHandler)
+	app.Get("/player/:id", handlers.PlayerHandler)
+	app.Get("/clappr/:id", handlers.ClapprHandler)
+	app.Get("/favicon.ico", handlers.FaviconHandler)
 	
+	addr := "localhost:5001"
+
 	if len(os.Args) > 1 {
-		r.Run(os.Args[1])
-	} else {
-		r.Run("localhost:5001")
+		addr = os.Args[1]
 	}
+
+	app.Listen(addr)
 }

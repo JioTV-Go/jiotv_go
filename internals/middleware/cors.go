@@ -1,19 +1,18 @@
 package middleware
 
 import (
-    "github.com/gin-gonic/gin"
-  )
-  
-func CORS() gin.HandlerFunc {
-    return func(c *gin.Context) {
-        c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-        c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET")
+    "github.com/gofiber/fiber/v2"
+)
 
-        if c.Request.Method == "OPTIONS" {
-            c.AbortWithStatus(204)
-            return
+func CORS() fiber.Handler {
+    return func(c *fiber.Ctx) error {
+        c.Set("Access-Control-Allow-Origin", "*")
+        c.Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET")
+
+        if c.Method() == "OPTIONS" {
+            return c.SendStatus(204)
         }
 
-        c.Next()
+        return c.Next()
     }
 }

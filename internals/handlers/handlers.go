@@ -3,12 +3,11 @@ package handlers
 import (
 	"bytes"
 	"fmt"
-	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
 	"strconv"
-	"github.com/gin-gonic/gin"
+	"github.com/gofiber/fiber/v2"
 	"github.com/rabilrbl/jiotv_go/internals/utils"
 	"github.com/rabilrbl/jiotv_go/internals/television"
 )
@@ -24,7 +23,7 @@ func Init() {
 	}
 }
 
-func IndexHandler(c *gin.Context) {
+func IndexHandler(c *fiber.Ctx) error {
 	channels := television.Channels()
 
 	language := c.Query("language")
@@ -39,14 +38,14 @@ func IndexHandler(c *gin.Context) {
 		language_int, _ := strconv.Atoi(language)
 		category_int, _ := strconv.Atoi(category)
 		channels_list := television.FilterChannels(channels.Result, language_int, category_int)
-		c.HTML(http.StatusOK, "index.html", gin.H{
+		return c.Render("views/index", fiber.Map{
 			"Channels": channels_list,
 			"IsNotLoggedIn": !utils.CheckLoggedIn(),
 			"Categories": categoryMap,
 			"Languages": languageMap,
 		})
 	} else  {
-		c.HTML(http.StatusOK, "index.html", gin.H{
+		return c.Render("views/index", fiber.Map{
 			"Channels": channels.Result,
 			"IsNotLoggedIn": !utils.CheckLoggedIn(),
 			"Categories": categoryMap,
@@ -55,32 +54,31 @@ func IndexHandler(c *gin.Context) {
 	}
 }
 
-func checkFieldExist(field string, check bool, c *gin.Context) {
+func checkFieldExist(field string, check bool, c *fiber.Ctx) {
 	if !check {
 		utils.Log.Println(field+" not provided")	
-		c.JSON(400, gin.H{
+		c.Status(fiber.StatusBadRequest)
+		c.JSON(fiber.Map{
 			"message": field+" not provided",
 		})
 	}
 }
 
-func LoginHandler(c *gin.Context) {
+func LoginHandler(c *fiber.Ctx) error {
 	var username, password string
-	var check bool
-	if (c.Request.Method == "GET") {
-		username, check = c.GetQuery("username")
-		checkFieldExist("Username", check, c)
-		password, check = c.GetQuery("password")
-		checkFieldExist("Password", check, c)
-	} else if (c.Request.Method == "POST") {
+	if (c.Method() == "GET") {
+		username = c.Query("username")
+		checkFieldExist("Username", username != "", c)
+		password = c.Query("password")
+		checkFieldExist("Password", password != "", c)
+	} else if (c.Method() == "POST") {
 		var json map[string]string
-		err := c.BindJSON(&json)
+		err := c.BodyParser(&json)
 		if err != nil {
 			utils.Log.Println(err)
-			c.JSON(400, gin.H{
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"message": "Invalid JSON",
 			})
-			return
 		}
 		username = json["username"]
 		checkFieldExist("Username", username != "", c)
@@ -91,48 +89,45 @@ func LoginHandler(c *gin.Context) {
 	result, err := utils.Login(username, password)
 	if err != nil {
 		utils.Log.Println(err)
-		c.JSON(500, gin.H{
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": "Internal server error",
 		})
-		return
 	}
 	Init()
-	c.JSON(200, result)
+	return c.JSON(result)
 
 }
 
-func LiveHandler(c *gin.Context) {
-	id := c.Param("id")
+func LiveHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", -1)
 	liveResult := TV.Live(id)
 	// quote url
 	coded_url := url.QueryEscape(liveResult)
-	c.Redirect(302, "/render.m3u8?auth="+coded_url+"&channel_key_id="+id)
+	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
 }
 
-func RenderHandler(c *gin.Context) {
-	auth, check := c.GetQuery("auth")
-	if !check {
+func RenderHandler(c *fiber.Ctx) error {
+	auth := c.Query("auth")
+	if auth == "" {
 		utils.Log.Println("Auth not provided")
-		c.JSON(400, gin.H{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Auth not provided",
 		})
-		return
 	}
-	channel_id, check := c.GetQuery("channel_key_id")
-	if !check {
+	channel_id := c.Query("channel_key_id")
+	if channel_id == "" {
 		utils.Log.Println("Channel ID not provided")
-		c.JSON(400, gin.H{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": "Channel ID not provided",
 		})
-		return
 	}
 	// unquote url
 	decoded_url, err := url.QueryUnescape(auth)
 	if err != nil {
 		utils.Log.Println(err)
-		return
+		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 	renderResult := TV.Render(decoded_url)
 	// baseUrl is the part of the url excluding suffix file.m3u8 and params is the part of the url after the suffix
@@ -171,26 +166,26 @@ func RenderHandler(c *gin.Context) {
 	re_key := regexp.MustCompile(pattern_key)
 	renderResult = re_key.ReplaceAllFunc(renderResult, replacer_key)
 
-	c.Data(200, "application/vnd.apple.mpegurl", renderResult)
+	return c.Send(renderResult)
 }
 
-func RenderKeyHandler(c *gin.Context) {
-	channel_id, _ := c.GetQuery("channel_key_id")
-	auth, _ := c.GetQuery("auth")
+func RenderKeyHandler(c *fiber.Ctx) error {
+	channel_id := c.Query("channel_key_id")
+	auth := c.Query("auth")
 	// decode url
 	decoded_url, err := url.QueryUnescape(auth)
 	if err != nil {
 		utils.Log.Println(err)
-		return
+		return c.SendStatus(fiber.StatusInternalServerError)
 	}
 	keyResult, status := TV.RenderKey(decoded_url, channel_id)
-	c.Data(status, "application/octet-stream", keyResult)
+	return c.Status(status).Send(keyResult)
 }
 
-func ChannelsHandler(c *gin.Context) {
+func ChannelsHandler(c *fiber.Ctx) error {
 	apiResponse := television.Channels()
 	// hostUrl should be request URL like http://localhost:5001
-	hostURL :=  strings.ToLower(c.Request.Proto[0:strings.Index(c.Request.Proto, "/")]) + "://" + c.Request.Host
+	hostURL :=  strings.ToLower(c.Protocol()) + "://" + c.Hostname()
 
 	// Check if the query parameter "type" is set to "m3u"
 	if c.Query("type") == "m3u" {
@@ -205,47 +200,46 @@ func ChannelsHandler(c *gin.Context) {
 		}
 
 		// Set the Content-Disposition header for file download
-		c.Header("Content-Disposition", "attachment; filename=jiotv_playlist.m3u")
-		c.Header("Content-Type", "application/vnd.apple.mpegurl") // Set the video M3U MIME type
-		c.String(http.StatusOK, m3uContent)
-		return
+		c.Set("Content-Disposition", "attachment; filename=jiotv_playlist.m3u")
+		c.Set("Content-Type", "application/vnd.apple.mpegurl") // Set the video M3U MIME type
+		return c.SendString(m3uContent)
 	}
 
 	for i, channel := range apiResponse.Result {
 		apiResponse.Result[i].URL = fmt.Sprintf("%s/live/%d", hostURL, channel.ID)
 	}
 
-	c.JSON(http.StatusOK, apiResponse)
+	return c.JSON(apiResponse)
 }
 
-func PlayHandler(c *gin.Context) {
-	id := c.Param("id")
+func PlayHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
 	player_url := "/player/" + id
-	c.HTML(http.StatusOK, "play.html", gin.H{
+	return c.Render("views/play", fiber.Map{
 		"player_url": player_url,
 	})
 }
 
-func PlayerHandler(c *gin.Context) {
-	id := c.Param("id")
+func PlayerHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
 	play_url := "/live/" + id + ".m3u8"
-	c.HTML(http.StatusOK, "flow_player.html", gin.H{
+	return c.Render("views/flow_player", fiber.Map{
 		"play_url": play_url,
 	})
 }
 
-func ClapprHandler(c *gin.Context) {
-	id := c.Param("id")
+func ClapprHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
 	play_url := "/live/" + id + ".m3u8"
-	c.HTML(http.StatusOK, "clappr.html", gin.H{
+	return c.Render("views/clappr", fiber.Map{
 		"play_url": play_url,
 	})
 }
 
-func FaviconHandler(c *gin.Context) {
-	c.Redirect(301, "/static/favicon.ico")
+func FaviconHandler(c *fiber.Ctx) error {
+	return c.Redirect("/static/favicon.ico", fiber.StatusMovedPermanently)
 }
 
-func PlaylistHandler(c *gin.Context) {
-	c.Redirect(301, "/channels?type=m3u" + c.Request.URL.RawQuery)
+func PlaylistHandler(c *fiber.Ctx) error {
+	return c.Redirect("/channels?type=m3u", fiber.StatusMovedPermanently)
 }
