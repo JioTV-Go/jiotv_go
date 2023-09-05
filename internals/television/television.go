@@ -2,11 +2,12 @@ package television
 
 import (
 	"bytes"
-	"encoding/json"
-	"net/http"
-	"net/http/cookiejar"
-	"net/url"
 	"strings"
+	"net/http"
+	"net/url"
+	"net/http/cookiejar"
+	"encoding/json"
+	
 	"github.com/rabilrbl/jiotv_go/internals/utils"
 )
 

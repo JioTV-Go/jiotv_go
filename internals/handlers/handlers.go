@@ -7,9 +7,11 @@ import (
 	"regexp"
 	"strings"
 	"strconv"
-	"github.com/gofiber/fiber/v2"
+
 	"github.com/rabilrbl/jiotv_go/internals/utils"
 	"github.com/rabilrbl/jiotv_go/internals/television"
+	
+	"github.com/gofiber/fiber/v2"
 )
 
 var TV *television.Television

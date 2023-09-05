@@ -2,15 +2,15 @@ package utils
 
 import (
 	"bytes"
-	"encoding/json"
 	"io"
 	"log"
-	"net/http"
 	"os"
 	"strings"
 	"net"
 	"time"
 	"context"
+	"net/http"
+	"encoding/json"
 )
 
 var Log *log.Logger
