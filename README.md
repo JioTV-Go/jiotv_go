@@ -6,7 +6,10 @@ Ready to dive in? Download the latest binary for your operating system from [her
 
 *Give us 🌟 on GitHub.*
 
-### Join us on Telegram: [Announcement Channel](https://jiotv_go.t.me/) and [Support Group](https://jiotv_go_chat.t.me/)
+### Join us on Telegram: 
+
+#### [Announcement Channel (`jiotv_go`)](https://telegram.me/jiotv_go)
+#### [Support Group (`jiotv_go_chat`)](https://telegram.me/jiotv_go_chat)
 
 ## Table of Contents
 
