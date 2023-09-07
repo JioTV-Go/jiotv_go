@@ -4,7 +4,7 @@ Introducing JioTV Go: Your gateway to streaming Live TV channels on the web and 
 
 Ready to dive in? Download the latest binary for your operating system from [here](https://github.com/rabilrbl/jiotv_go/releases/latest), and explore the [API endpoints](#api-endpoints) to start your JioTV Go adventure!  🚀📡🔥
 
-*Give us 🌟 on GutHub.*
+*Give us 🌟 on GitHub.*
 
 ### Join us on Telegram: [Announcement Channel](https://jiotv_go.t.me/) and [Support Group](https://jiotv_go_chat.t.me/)
 
