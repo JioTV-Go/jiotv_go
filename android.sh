@@ -25,9 +25,9 @@ esac
 
 # Function to install the binary
 install_android() {
-  echo "Installing wget, curl, openssl and proot from Termux repositories..."
+  echo "Installing curl, openssl and proot from Termux repositories..."
   echo "Please be patient, this can take a few minutes to complete..."
-  pkg install wget curl openssl proot -y
+  pkg install curl openssl proot -y
 
   # Get the latest release version from GitHub API
   RELEASE_INFO=$(curl -s "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest")
@@ -38,13 +38,12 @@ install_android() {
   # Construct the download URL for the binary
   DOWNLOAD_URL="https://github.com/$REPO_OWNER/$REPO_NAME/releases/download/$LATEST_VERSION/$file_name"
 
-
   # Download and install the binary
   echo "Downloading JioTV Go $LATEST_VERSION for $ARCH..."
-  wget "$DOWNLOAD_URL"
+  curl -LO --progress-bar --retry 5 --retry-delay 2 "$DOWNLOAD_URL"
   chmod +x "$file_name"
 
-  echo "$BINARY_NAME $LATEST_VERSION for $ARCH has been downloaded and installed to $INSTALL_DIR"
+  echo "$BINARY_NAME $LATEST_VERSION for $ARCH has been downloaded. Run "./$0 run" to execute it."
 }
 
 # Function to update the binary
@@ -68,8 +67,8 @@ update_android() {
   DOWNLOAD_URL="https://github.com/$REPO_OWNER/$REPO_NAME/releases/download/$LATEST_VERSION/$file_name"
 
   # Update the binary
-  echo "Updating $BINARY_NAME to $LATEST_VERSION for $ARCH..."
-  wget "$DOWNLOAD_URL"
+  echo "Updating JioTV Go to $LATEST_VERSION for $ARCH..."
+  curl -LO --progress-bar --retry 5 --retry-delay 2 "$DOWNLOAD_URL"
   chmod +x "$file_name"
 
   echo "JioTV Go has been updated to $LATEST_VERSION for $ARCH"
@@ -103,10 +102,10 @@ run_android() {
 # Check for the provided argument and perform the corresponding action
 case "$1" in
   "install")
-    install_android
+    install_android "$@"
     ;;
   "update")
-    update_android
+    update_android "$@"
     ;;
   "run")
     run_android "$@"
