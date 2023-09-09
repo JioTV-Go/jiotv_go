@@ -7,26 +7,28 @@ import (
 	"net/http/cookiejar"
 	"net/url"
 	"strings"
+	"sync"
+
 	"github.com/rabilrbl/jiotv_go/internals/utils"
 )
 
-
 type Television struct {
-	ssoToken  string
-	crm       string
-	uniqueID  string
-	headers   map[string][]string
-	client    *http.Client
+	ssoToken string
+	crm      string
+	uniqueID string
+	headers  map[string][]string
+	client   *http.Client
+	mu       sync.RWMutex
 }
 
 type Channel struct {
-	ID   int    `json:"channel_id"`
-	Name string `json:"channel_name"`
-	URL  string `json:"channel_url"`
-	LogoURL string `json:"logoUrl"`
-	Category int `json:"channelCategoryId"`
-	Language int `json:"channelLanguageId"` 
-	IsHD bool `json:"isHD"`
+	ID       int    `json:"channel_id"`
+	Name     string `json:"channel_name"`
+	URL      string `json:"channel_url"`
+	LogoURL  string `json:"logoUrl"`
+	Category int    `json:"channelCategoryId"`
+	Language int    `json:"channelLanguageId"`
+	IsHD     bool   `json:"isHD"`
 }
 
 type APIResponse struct {
@@ -73,25 +75,25 @@ var LanguageMap = map[int]string{
 
 func NewTelevision(ssoToken, crm, uniqueID string) *Television {
 	headers := http.Header{
-		"Content-type":   {"application/x-www-form-urlencoded"},
-		"appkey":         {"NzNiMDhlYzQyNjJm"},
-		"channelId":      {""},
-		"channel_id":     {""},
-		"crmid":          {crm},
-		"deviceId":       {"e4286d7b481d69b8"},
-		"devicetype":     {"phone"},
-		"isott":          {"true"},
-		"languageId":     {"6"},
-		"lbcookie":       {"1"},
-		"os":             {"android"},
-		"osVersion":      {"8.1.0"},
-		"srno":           {"230203144000"},
-		"ssotoken":       {ssoToken},
-		"subscriberId":   {crm},
-		"uniqueId":       {uniqueID},
-		"User-Agent":     {"plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7"},
-		"usergroup":      {"tvYR7NSNn7rymo3F"},
-		"versionCode":    {"277"},
+		"Content-type": {"application/x-www-form-urlencoded"},
+		"appkey":       {"NzNiMDhlYzQyNjJm"},
+		"channelId":    {""},
+		"channel_id":   {""},
+		"crmid":        {crm},
+		"deviceId":     {"e4286d7b481d69b8"},
+		"devicetype":   {"phone"},
+		"isott":        {"true"},
+		"languageId":   {"6"},
+		"lbcookie":     {"1"},
+		"os":           {"android"},
+		"osVersion":    {"8.1.0"},
+		"srno":         {"230203144000"},
+		"ssotoken":     {ssoToken},
+		"subscriberId": {crm},
+		"uniqueId":     {uniqueID},
+		"User-Agent":   {"plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7"},
+		"usergroup":    {"tvYR7NSNn7rymo3F"},
+		"versionCode":  {"277"},
 	}
 
 	// Create a new cookie jar
@@ -115,9 +117,9 @@ func NewTelevision(ssoToken, crm, uniqueID string) *Television {
 
 func (tv *Television) Live(channelID string) string {
 	formData := url.Values{
-		"channel_id":   []string{channelID},
-		"channelId":    []string{channelID},
-		"stream_type":  []string{"Seek"},
+		"channel_id":  []string{channelID},
+		"channelId":   []string{channelID},
+		"stream_type": []string{"Seek"},
 	}
 	data := formData.Encode()
 
@@ -135,7 +137,7 @@ func (tv *Television) Live(channelID string) string {
 	defer resp.Body.Close()
 
 	if resp.StatusCode == 400 {
-		// store string response 
+		// store string response
 		buf := new(bytes.Buffer)
 		buf.ReadFrom(resp.Body)
 		response := buf.String()
@@ -156,6 +158,7 @@ func (tv *Television) Render(url string) []byte {
 	if err != nil {
 		utils.Log.Fatal(err)
 	}
+	tv.mu.Lock()
 	req.Header = tv.headers
 
 	// go http keeps adding more cookies to the request header, leading large request header size
@@ -166,8 +169,8 @@ func (tv *Television) Render(url string) []byte {
 	if err != nil {
 		utils.Log.Panic(err)
 	}
-
 	defer resp.Body.Close()
+	tv.mu.Unlock()
 
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Body)
@@ -197,7 +200,7 @@ func (tv *Television) RenderKey(url string, channelID string) ([]byte, int) {
 
 func Channels() APIResponse {
 	url := "https://jiotv.data.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?os=android&devicetype=phone&usertype=tvYR7NSNn7rymo3F&version=285"
-	
+
 	http.DefaultTransport.(*http.Transport).DialContext = utils.GetCustomDialer()
 	client := &http.Client{}
 
