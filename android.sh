@@ -49,8 +49,14 @@ install_android() {
 
 # Function to update the binary
 update_android() {
+  # fetch file name from ls command
+  file_name=$(ls | grep -E "$BINARY_NAME-.*-$ARCH")
+
   # Delete the old binary from ls command
-  rm -rf $(ls | grep "$BINARY_NAME")
+  if [ ! -z "$file_name" ]; then
+    echo "Deleting $file_name..."
+    rm "$file_name"
+  fi
 
   # Get the latest release version from GitHub API
   RELEASE_INFO=$(curl -s "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest")
