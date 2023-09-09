@@ -14,6 +14,9 @@ Ready to dive in? Download the latest binary for your operating system from [her
 ## Table of Contents
 
 - [JioTV Go 🌟](#jiotv-go-)
+    - [Join us on Telegram:](#join-us-on-telegram)
+      - [Announcement Channel (`jiotv_go`)](#announcement-channel-jiotv_go)
+      - [Support Group (`jiotv_go_chat`)](#support-group-jiotv_go_chat)
   - [Table of Contents](#table-of-contents)
   - [Usage Guide 🚀](#usage-guide-)
     - [**Using JioTV Go Natively**](#using-jiotv-go-natively)
@@ -61,11 +64,17 @@ Ready to dive in? Download the latest binary for your operating system from [her
 
 2. Open Termux and execute the command `pkg install wget openssl -y`.
 
-3. Copy the download link of the `jiotv_go-linux-(arch)` binary from the [releases page](https://github.com/rabilrbl/jiotv_go/releases/latest). Typically, choose the arm64 version for your aarch.
+3. Download our android script by running `wget https://raw.githubusercontent.com/rabilrbl/jiotv_go/main/scripts/android.sh -O jiotv_go.sh`.
 
-4. Download the file using `wget <link>`, where `<link>` is the one you copied in the previous step.
+4. Grant executable permissions to the script with `chmod +x jiotv_go.sh`.
+  
+5. Execute the install script with `./jiotv_go.sh install`. The script will automatically download the latest binary for your device and install it.
 
-5. Now, follow the instructions for using [JioTV Go natively (mentioned above)](#using-jiotv-go-natively) starting from step 2.
+6. Start the server with `./jiotv_go.sh run`.
+
+7. Open your web browser and visit `http://localhost:5001`.
+
+8. To update to latest version, run `./jiotv_go.sh update`.
 
 ### **Docker Enthusiasts, Here's Your Shortcut!**
 
