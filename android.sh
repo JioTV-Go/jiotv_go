@@ -89,7 +89,11 @@ run_android() {
   # Run the Android binary
   echo "Running JioTV Go at $JIOTV_GO_ADDR for $ARCH..."
 
-  proot -b $PREFIX/etc/resolv.conf:/etc/resolv.conf ./$file_name $JIOTV_GO_ADDR
+  # Use error handling to capture any issues with proot
+  if ! proot -b "$PREFIX/etc/resolv.conf:/etc/resolv.conf" ./$file_name "$JIOTV_GO_ADDR"; then
+    echo "Error: Failed to run the JioTV Go binary. Please contact the developer or create an issue on GitHub."
+    return 1
+  fi
   
 }
 
