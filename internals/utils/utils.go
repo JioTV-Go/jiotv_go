@@ -1,16 +1,17 @@
 package utils
 
 import (
-	"bytes"
-	"encoding/json"
+	"fmt"
 	"io"
 	"log"
-	"net/http"
 	"os"
 	"strings"
 	"net"
 	"time"
 	"context"
+	"encoding/json"
+
+	"github.com/valyala/fasthttp"
 )
 
 var Log *log.Logger
@@ -92,28 +93,33 @@ func Login(username, password string) (map[string]string, error) {
 
 	// Make the request
 	url := "https://api.jio.com/v3/dip/user/unpw/verify"
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(payloadJSON))
-	if err != nil {
-		return nil, err
-	}
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+	
+	req.SetRequestURI(url)
+	req.Header.SetContentType("application/json")
+	req.Header.SetMethod("POST")
 	for key, value := range headers {
 		req.Header.Set(key, value)
 	}
+	req.SetBody(payloadJSON)
 
-	http.DefaultTransport.(*http.Transport).DialContext = GetCustomDialer()
+	client := &fasthttp.Client{}
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
 
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
+	// Perform the HTTP POST request
+	if err := client.Do(req, resp); err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+
+	// Check the response status code
+	if resp.StatusCode() != fasthttp.StatusOK {
+		return nil, fmt.Errorf("request failed with status code: %d", resp.StatusCode())
+	}
 
 	// Read response body
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
+	body := resp.Body()
 
 	var result map[string]interface{}
 	if err := json.Unmarshal(body, &result); err != nil {
@@ -125,20 +131,20 @@ func Login(username, password string) (map[string]string, error) {
 		crm := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["subscriberId"].(string)
 		uniqueId := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["unique"].(string)
 
-		credentials_path := getCredentialsPath()
-		file, err := os.Create(credentials_path)
+		credentialsPath := getCredentialsPath()
+		file, err := os.Create(credentialsPath)
 		if err != nil {
 			return nil, err
 		}
 		defer file.Close()
 
-		// write result as credentials.json
+		// Write result as credentials.json
 		file.WriteString(`{"ssoToken":"` + ssoToken + `","crm":"` + crm + `","uniqueId":"` + uniqueId + `"}`)
 		return map[string]string{
-			"status":    "success",
-			"ssoToken":  ssoToken,
-			"crm":       result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["subscriberId"].(string),
-			"uniqueId":  result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["unique"].(string),
+			"status":   "success",
+			"ssoToken": ssoToken,
+			"crm":      result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["subscriberId"].(string),
+			"uniqueId": result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["unique"].(string),
 		}, nil
 	} else {
 		return map[string]string{
