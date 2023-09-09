@@ -62,9 +62,9 @@ Ready to dive in? Download the latest binary for your operating system from [her
 
 1. Dive into the Android world by first downloading [Termux](https://github.com/termux/termux-app/releases/latest).
 
-2. Open Termux and execute the command `pkg install wget openssl -y`.
+2. Open Termux and execute the command `pkg install curl openssl -y`.
 
-3. Download our android script by running `wget https://raw.githubusercontent.com/rabilrbl/jiotv_go/main/android.sh -O jiotv_go.sh`.
+3. Download our android script by running `curl -Lo jiotv_go.sh https://raw.githubusercontent.com/rabilrbl/jiotv_go/main/android.sh`.
 
 4. Grant executable permissions to the script with `chmod +x jiotv_go.sh`.
   
