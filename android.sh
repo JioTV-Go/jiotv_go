@@ -26,9 +26,9 @@ esac
 # Function to install the binary
 install_android() {
   echo "Upgrading termux repositories..."
+  echo "Please be patient, this can take a few minutes to complete..."
   DEBIAN_FRONTEND=noninteractive pkg update -y && pkg upgrade -y
   echo "Installing curl, openssl and proot from Termux repositories..."
-  echo "Please be patient, this can take a few minutes to complete..."
   pkg install curl openssl proot -y
 
   # Get the latest release version from GitHub API
