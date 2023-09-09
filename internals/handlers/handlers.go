@@ -16,6 +16,11 @@ import (
 
 var TV *television.Television
 
+type LoginRequestBodyData struct {
+    Username string `json:"username" xml:"username" form:"username"`
+    Password string `json:"password" xml:"password" form:"password"`
+}
+
 func Init() {
 	credentials, err := utils.GetLoginCredentials()
 	if err != nil {
@@ -74,17 +79,17 @@ func LoginHandler(c *fiber.Ctx) error {
 		password = c.Query("password")
 		checkFieldExist("Password", password != "", c)
 	} else if (c.Method() == "POST") {
-		var json map[string]string
-		err := c.BodyParser(&json)
+		formBody := new(LoginRequestBodyData)
+		err := c.BodyParser(&formBody)
 		if err != nil {
 			utils.Log.Println(err)
 			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 				"message": "Invalid JSON",
 			})
 		}
-		username = json["username"]
+		username = formBody.Username
 		checkFieldExist("Username", username != "", c)
-		password = json["password"]
+		password = formBody.Password
 		checkFieldExist("Password", password != "", c)
 	}
 	
