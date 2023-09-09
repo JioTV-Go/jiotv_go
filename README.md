@@ -86,7 +86,7 @@ Ready to dive in? Download the latest binary for your operating system from [her
 
 ### **Optional Customizations**
 
-- Want to specify a custom port or host? No problem! Simply pass `host:port` or `:port` as an argument to the binary like this: `./jiotv_go "host:port"`.
+- Want to specify a custom port or host? No problem! Simply pass `host:port` or `:port` as an argument to the binary like this: `./jiotv_go "host:port"`. If you are using android script, you can pass the port as an argument to the script like this: `./jiotv_go.sh run "host:port"`.
 
 - If you prefer a specific path or folder for your `credentials.json`, set the environment variable `JIOTV_CREDENTIALS_PATH=/path` before running the binary.
 
