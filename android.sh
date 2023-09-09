@@ -72,7 +72,7 @@ update_android() {
 # Function to run the binary
 run_android() {
   # fetch file name from ls command
-  file_name=$(ls | grep "$BINARY_NAME")
+  file_name=$(ls | grep -E "$BINARY_NAME-.*-$ARCH")
 
    # Check if the binary exists
   if [ -z "$file_name" ]; then
@@ -89,12 +89,9 @@ run_android() {
   # Run the Android binary
   echo "Running JioTV Go at $JIOTV_GO_ADDR for $ARCH..."
 
-  # Use error handling to capture any issues with proot
-  if ! proot -b "$PREFIX/etc/resolv.conf:/etc/resolv.conf" ./$file_name "$JIOTV_GO_ADDR"; then
-    echo "Error: Failed to run the JioTV Go binary. Please contact the developer or create an issue on GitHub."
-    return 1
-  fi
-  
+  echo "Copy and paste following command to run JioTV Go"
+
+  echo "proot -b \"$PREFIX/etc/resolv.conf:/etc/resolv.conf\" ./$file_name \"$JIOTV_GO_ADDR\""
 }
 
 # Check for the provided argument and perform the corresponding action
