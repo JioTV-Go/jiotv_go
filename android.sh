@@ -45,7 +45,7 @@ install_android() {
   curl -LO --progress-bar --retry 5 --retry-delay 2 "$DOWNLOAD_URL"
   chmod +x "$file_name"
 
-  echo "$BINARY_NAME $LATEST_VERSION for $ARCH has been downloaded. Run "./$0 run" to execute it."
+  echo "$BINARY_NAME $LATEST_VERSION for $ARCH has been downloaded. Run "$0 run" to execute it."
 }
 
 # Function to update the binary
@@ -83,7 +83,7 @@ run_android() {
 
    # Check if the binary exists
   if [ -z "$file_name" ]; then
-    echo "Error: Binary '$BINARY_NAME' not found in the current directory. Run "./$0 install" to download the binary."
+    echo "Error: Binary '$BINARY_NAME' not found in the current directory. Run "$0 install" to download the binary."
     return 1
   fi
 
