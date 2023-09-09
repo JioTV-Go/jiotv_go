@@ -104,6 +104,8 @@ func NewTelevision(ssoToken, crm, uniqueID string) *Television {
 
 func (tv *Television) Live(channelID string) string {
 	formData := fasthttp.AcquireArgs()
+	defer fasthttp.ReleaseArgs(formData)
+	
 	formData.Add("channel_id", channelID)
 	formData.Add("channelId", channelID)
 	formData.Add("stream_type", "Seek")
@@ -134,7 +136,6 @@ func (tv *Television) Live(channelID string) string {
 		utils.Log.Panic(err)
 	}
 
-	defer fasthttp.ReleaseArgs(formData)
 
 	if resp.StatusCode() == fasthttp.StatusBadRequest {
 		// Store the response body as a string
