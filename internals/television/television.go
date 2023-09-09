@@ -1,13 +1,11 @@
 package television
 
 import (
-	"bytes"
-	"strings"
-	"net/http"
-	"net/url"
-	"net/http/cookiejar"
 	"encoding/json"
-	
+	"strings"
+
+	"github.com/valyala/fasthttp"
+
 	"github.com/rabilrbl/jiotv_go/internals/utils"
 )
 
@@ -16,8 +14,8 @@ type Television struct {
 	ssoToken  string
 	crm       string
 	uniqueID  string
-	headers   map[string][]string
-	client    *http.Client
+	headers   map[string]string
+	client    *fasthttp.Client
 }
 
 type Channel struct {
@@ -73,36 +71,26 @@ var LanguageMap = map[int]string{
 }
 
 func NewTelevision(ssoToken, crm, uniqueID string) *Television {
-	headers := http.Header{
-		"Content-type":   {"application/x-www-form-urlencoded"},
-		"appkey":         {"NzNiMDhlYzQyNjJm"},
-		"channelId":      {""},
-		"channel_id":     {""},
-		"crmid":          {crm},
-		"deviceId":       {"e4286d7b481d69b8"},
-		"devicetype":     {"phone"},
-		"isott":          {"true"},
-		"languageId":     {"6"},
-		"lbcookie":       {"1"},
-		"os":             {"android"},
-		"osVersion":      {"8.1.0"},
-		"srno":           {"230203144000"},
-		"ssotoken":       {ssoToken},
-		"subscriberId":   {crm},
-		"uniqueId":       {uniqueID},
-		"User-Agent":     {"plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7"},
-		"usergroup":      {"tvYR7NSNn7rymo3F"},
-		"versionCode":    {"277"},
-	}
-
-	// Create a new cookie jar
-	jar, _ := cookiejar.New(nil)
-
-	http.DefaultTransport.(*http.Transport).DialContext = utils.GetCustomDialer()
-
-	// Create an http.Client using the cookie jar
-	client := &http.Client{
-		Jar: jar,
+	headers := map[string]string{
+		"Content-type":   "application/x-www-form-urlencoded",
+		"appkey":         "NzNiMDhlYzQyNjJm",
+		"channelId":      "",
+		"channel_id":     "",
+		"crmid":          crm,
+		"deviceId":       "e4286d7b481d69b8",
+		"devicetype":     "phone",
+		"isott":          "true",
+		"languageId":     "6",
+		"lbcookie":       "1",
+		"os":             "android",
+		"osVersion":      "8.1.0",
+		"srno":           "230203144000",
+		"ssotoken":       ssoToken,
+		"subscriberId":   crm,
+		"uniqueId":       uniqueID,
+		"User-Agent":     "plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7",
+		"usergroup":      "tvYR7NSNn7rymo3F",
+		"versionCode":    "277",
 	}
 
 	return &Television{
@@ -110,111 +98,157 @@ func NewTelevision(ssoToken, crm, uniqueID string) *Television {
 		crm:      crm,
 		uniqueID: uniqueID,
 		headers:  headers,
-		client:   client,
+		client:   &fasthttp.Client{},
 	}
 }
 
 func (tv *Television) Live(channelID string) string {
-	formData := url.Values{
-		"channel_id":   []string{channelID},
-		"channelId":    []string{channelID},
-		"stream_type":  []string{"Seek"},
-	}
-	data := formData.Encode()
-
+	formData := fasthttp.AcquireArgs()
+	formData.Add("channel_id", channelID)
+	formData.Add("channelId", channelID)
+	formData.Add("stream_type", "Seek")
+	
 	url := "https://tv.media.jio.com/apis/v2.2/getchannelurl/getchannelurl"
-
-	// remove old cookies
-	tv.client.Jar, _ = cookiejar.New(nil)
-
-	req, _ := http.NewRequest("POST", url, strings.NewReader(data))
-	req.Header = tv.headers
-	resp, err := tv.client.Do(req)
-	if err != nil {
+	
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+	
+	req.SetRequestURI(url)
+	req.Header.SetContentType("application/x-www-form-urlencoded")
+	req.Header.SetMethod("POST")
+	req.Header.SetUserAgent("plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7")
+	
+	// Encode the form data and set it as the request body
+	req.SetBody(formData.QueryString())
+	
+	// Copy headers from the Television headers map to the request
+	for key, value := range tv.headers {
+		req.Header.Set(key, value)
+	}
+	
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+	
+	// Perform the HTTP POST request
+	if err := tv.client.Do(req, resp); err != nil {
 		utils.Log.Panic(err)
 	}
-	defer resp.Body.Close()
 
-	if resp.StatusCode == 400 {
-		// store string response 
-		buf := new(bytes.Buffer)
-		buf.ReadFrom(resp.Body)
-		response := buf.String()
-		// add headers and data from request
-		utils.Log.Println("Request headers:", req.Header)
-		utils.Log.Println("Request data:", data)
+	defer fasthttp.ReleaseArgs(formData)
+
+	if resp.StatusCode() == fasthttp.StatusBadRequest {
+		// Store the response body as a string
+		response := string(resp.Body())
+
+		// Log headers and request data
+		utils.Log.Println("Request headers:", req.Header.String())
+		utils.Log.Println("Request data:", formData.String())
 		utils.Log.Panicln("Response: ", response)
 	}
 
 	var result map[string]interface{}
-	json.NewDecoder(resp.Body).Decode(&result)
+	if err := json.Unmarshal(resp.Body(), &result); err != nil {
+		utils.Log.Panic(err)
+	}
 
 	return result["result"].(string)
 }
 
 func (tv *Television) Render(url string) []byte {
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		utils.Log.Fatal(err)
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+
+	req.SetRequestURI(url)
+	req.Header.SetMethod("GET")
+
+	// Copy headers from the Television headers map to the request
+	for key, value := range tv.headers {
+		req.Header.Set(key, value)
 	}
-	req.Header = tv.headers
 
-	// go http keeps adding more cookies to the request header, leading large request header size
-	// so we reset the cookie header, so that only new cookies are present
-	req.Header.Del("Cookie")
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
 
-	resp, err := tv.client.Do(req)
-	if err != nil {
+	// Perform the HTTP GET request
+	if err := tv.client.Do(req, resp); err != nil {
 		utils.Log.Panic(err)
 	}
 
-	defer resp.Body.Close()
+	buf := resp.Body()
 
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(resp.Body)
-
-	return buf.Bytes()
+	return buf
 }
 
 func (tv *Television) RenderKey(url string, channelID string) ([]byte, int) {
-	headers := tv.headers
-	headers["channelId"] = []string{channelID}
-	headers["channel_id"] = []string{channelID}
+	// extract params from url
+	params := strings.Split(url, "?")[1]
 
-	req, _ := http.NewRequest("GET", url, nil)
-	req.Header = headers
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
 
-	resp, err := tv.client.Do(req)
-	if err != nil {
+	req.SetRequestURI(url)
+	req.Header.SetMethod("GET")
+
+	// set params as cookies as JioTV uses cookies to authenticate
+	for _, param := range strings.Split(params, "&") {
+		key := strings.Split(param, "=")[0]
+		value := strings.Split(param, "=")[1]
+		req.Header.SetCookie(key, value)
+	}
+
+	// Copy headers from the Television headers map to the request
+	for key, value := range tv.headers {
+		req.Header.Set(key, value) // Assuming only one value for each header
+	}
+	req.Header.Set("channelId", channelID)
+	req.Header.Set("channel_id", channelID)
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	// Perform the HTTP GET request
+	if err := tv.client.Do(req, resp); err != nil {
 		utils.Log.Panic(err)
 	}
-	defer resp.Body.Close()
 
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(resp.Body)
+	buf := resp.Body()
 
-	return buf.Bytes(), resp.StatusCode
+	return buf, resp.StatusCode()
 }
+
 
 func Channels() APIResponse {
 	url := "https://jiotv.data.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?os=android&devicetype=phone&usertype=tvYR7NSNn7rymo3F&version=285"
-	
-	http.DefaultTransport.(*http.Transport).DialContext = utils.GetCustomDialer()
-	client := &http.Client{}
 
-	resp, err := client.Get(url)
-	if err != nil {
+	// Create a fasthttp.Client
+	client := &fasthttp.Client{}
+
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+
+	req.SetRequestURI(url)
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	// Perform the HTTP GET request
+	if err := client.Do(req, resp); err != nil {
 		utils.Log.Panic(err)
 	}
-	defer resp.Body.Close()
 
 	var apiResponse APIResponse
-	err = json.NewDecoder(resp.Body).Decode(&apiResponse)
-	if err != nil {
+
+	// Check the response status code
+	if resp.StatusCode() != fasthttp.StatusOK {
+		utils.Log.Panicf("Request failed with status code: %d", resp.StatusCode())
+	}
+
+	// Parse the JSON response
+	if err := json.Unmarshal(resp.Body(), &apiResponse); err != nil {
 		utils.Log.Panic(err)
 	}
-	return apiResponse
 
+	return apiResponse
 }
 
 func FilterChannels(channels []Channel, language int, category int) []Channel {

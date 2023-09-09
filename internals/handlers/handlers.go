@@ -163,7 +163,7 @@ func RenderHandler(c *fiber.Ctx) error {
 	replacer_key := func(match []byte) []byte {
 		switch {
 		case bytes.HasSuffix(match, []byte(".key")) || bytes.HasSuffix(match, []byte(".pkey")):
-			return []byte("/render.key?auth=" + url.QueryEscape((string(match))) + "&channel_key_id=" + channel_id)
+			return []byte("/render.key?auth=" + url.QueryEscape(string(match)+ "?" + params) + "&channel_key_id=" + channel_id)
 		default:
 			return match
 		}
