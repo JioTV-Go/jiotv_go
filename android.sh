@@ -25,6 +25,10 @@ esac
 
 # Function to install the binary
 install_android() {
+  echo "Installing wget, curl, openssl and proot from Termux repositories..."
+  echo "Please be patient, this can take a few minutes to complete..."
+  pkg install wget curl openssl proot -y
+
   # Get the latest release version from GitHub API
   RELEASE_INFO=$(curl -s "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest")
   LATEST_VERSION=$(echo "$RELEASE_INFO" | grep -o '"tag_name": "[^"]*' | sed 's/"tag_name": "//')
@@ -34,8 +38,6 @@ install_android() {
   # Construct the download URL for the binary
   DOWNLOAD_URL="https://github.com/$REPO_OWNER/$REPO_NAME/releases/download/$LATEST_VERSION/$file_name"
 
-  echo "Installing wget, curl, openssl and proot from Termux repositories..."
-  pkg install wget curl openssl proot -y
 
   # Download and install the binary
   echo "Downloading JioTV Go $LATEST_VERSION for $ARCH..."
@@ -72,10 +74,22 @@ run_android() {
   # fetch file name from ls command
   file_name=$(ls | grep "$BINARY_NAME")
 
-  # Run the Android binary
-  echo "Running $BINARY_NAME for $ARCH..."
+   # Check if the binary exists
+  if [ -z "$file_name" ]; then
+    echo "Error: Binary '$BINARY_NAME' not found in the current directory. Run "./$0 install" to download the binary."
+    return 1
+  fi
 
-  proot -b $PREFIX/etc/resolv.conf:/etc/resolv.conf ./$file_name
+  # Add optional second argument as the address to run the binary on
+  JIOTV_GO_ADDR="localhost:5001"
+  if [ ! -z "$2" ]; then
+    JIOTV_GO_ADDR="$2"
+  fi
+
+  # Run the Android binary
+  echo "Running JioTV Go at $JIOTV_GO_ADDR for $ARCH..."
+
+  proot -b $PREFIX/etc/resolv.conf:/etc/resolv.conf ./$file_name $JIOTV_GO_ADDR
   
 }
 
@@ -88,7 +102,7 @@ case "$1" in
     update_android
     ;;
   "run")
-    run_android
+    run_android "$@"
     ;;
   *)
     echo "Usage: $0 {install|update|run}"
