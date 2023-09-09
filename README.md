@@ -64,7 +64,7 @@ Ready to dive in? Download the latest binary for your operating system from [her
 
 2. Open Termux and execute the command `pkg install wget openssl -y`.
 
-3. Download our android script by running `wget https://raw.githubusercontent.com/rabilrbl/jiotv_go/main/scripts/android.sh -O jiotv_go.sh`.
+3. Download our android script by running `wget https://raw.githubusercontent.com/rabilrbl/jiotv_go/main/android.sh -O jiotv_go.sh`.
 
 4. Grant executable permissions to the script with `chmod +x jiotv_go.sh`.
   
