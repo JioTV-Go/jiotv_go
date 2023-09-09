@@ -91,7 +91,7 @@ run_android() {
 
   echo "Copy and paste following command to run JioTV Go"
 
-  echo "proot -b \"$PREFIX/etc/resolv.conf:/etc/resolv.conf\" ./$file_name \"$JIOTV_GO_ADDR\""
+  proot -b "$PREFIX/etc/resolv.conf:/etc/resolv.conf" "./$file_name" "$JIOTV_GO_ADDR"
 }
 
 # Check for the provided argument and perform the corresponding action
