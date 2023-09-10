@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Source: https://github.com/rabilrbl/jiotv_go
+
 # Define the GitHub repository and binary information
 REPO_OWNER="rabilrbl"
 REPO_NAME="jiotv_go"
@@ -111,6 +113,7 @@ update_android() {
     fi
   else
     echo "Missing existing file name. Is JioTV Go installed?"
+    echo "Execute \"$0 install\" to install JioTV Go."
   fi
 }
 
@@ -122,7 +125,7 @@ run_android() {
    # Check if the binary exists
   if [ -z "$file_name" ]; then
     echo "Error: Binary '$BINARY_NAME' not found in the current directory."
-    echo "Execute "$0 install" to install JioTV Go."
+    echo "Execute \"$0 install\" to install JioTV Go."
     return 1
   fi
 
