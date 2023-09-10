@@ -23,6 +23,37 @@ case $ARCH in
     ;;
 esac
 
+release_file_name() {
+  # Get the latest release version from GitHub API
+  echo "Fetching latest release info from GitHub..."
+  RELEASE_INFO=$(curl -s "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest")
+  LATEST_VERSION=$(echo "$RELEASE_INFO" | grep -o '"tag_name": "[^"]*' | sed 's/"tag_name": "//')
+
+  file_name="$BINARY_NAME-$LATEST_VERSION-linux-$ARCH"
+}
+
+download_binary() {
+  # fetch latest file name
+  if ! release_file_name; then
+    echo "Failed to fetch latest release info from GitHub."
+    return 1
+  fi
+
+  # Construct the download URL for the binary
+  DOWNLOAD_URL="https://github.com/$REPO_OWNER/$REPO_NAME/releases/download/$LATEST_VERSION/$file_name"
+
+  # Download and install the binary
+  echo "Downloading JioTV Go $LATEST_VERSION for $ARCH..."
+  if ! curl -LO --progress-bar --retry 5 --retry-delay 2 "$DOWNLOAD_URL"; then
+    echo "Error: Failed to download binary. Please try again later."
+    return 1
+  fi
+  if ! chmod +x "$file_name"; then
+    echo "Error: Failed to make binary executable. File missing? Run again!."
+    return 1
+  fi
+}
+
 # Function to install the binary
 install_android() {
   echo "Upgrading termux repositories..."
@@ -31,59 +62,58 @@ install_android() {
   echo "Installing curl, openssl and proot from Termux repositories..."
   pkg install curl openssl proot -y
 
-  # Get the latest release version from GitHub API
-  RELEASE_INFO=$(curl -s "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest")
-  LATEST_VERSION=$(echo "$RELEASE_INFO" | grep -o '"tag_name": "[^"]*' | sed 's/"tag_name": "//')
-
-  file_name="$BINARY_NAME-$LATEST_VERSION-linux-$ARCH"
-
-  # Construct the download URL for the binary
-  DOWNLOAD_URL="https://github.com/$REPO_OWNER/$REPO_NAME/releases/download/$LATEST_VERSION/$file_name"
-
-  # Download and install the binary
-  echo "Downloading JioTV Go $LATEST_VERSION for $ARCH..."
-  curl -LO --progress-bar --retry 5 --retry-delay 2 "$DOWNLOAD_URL"
-  chmod +x "$file_name"
-
-  echo "$BINARY_NAME $LATEST_VERSION for $ARCH has been downloaded. Run "$0 run" to execute it."
+  if download_binary; then
+    echo "JioTV Go $LATEST_VERSION for $ARCH has been downloaded."
+    echo "Execute "$0 run" to start JioTV Go."
+  else
+    echo "Failed to download JioTV Go"
+    return 1
+  fi
 }
 
 # Function to update the binary
 update_android() {
-  # fetch file name from ls command
-  file_name=$(ls | grep -E "$BINARY_NAME-.*-$ARCH")
+  # fetch existing file name, if multiple files are present, pick the latest one
+  existing_file_name=$(ls | grep -E "$BINARY_NAME-.*-$ARCH" | sort -r | head -n 1)
 
-  # Delete the old binary from ls command
-  if [ ! -z "$file_name" ]; then
-    echo "Deleting $file_name..."
-    rm "$file_name"
+  if [ ! -z "$existing_file_name" ]; then
+    echo "Found existing file: $existing_file_name"
+    # fetch latest file name
+    if ! release_file_name; then
+      echo "Failed to fetch latest release info from GitHub."
+      return 1
+    fi
+    # compare existing file name with file name
+    # if both are same, need not download again
+    if [ "$existing_file_name" == "$file_name" ]; then
+        echo "JioTV Go is already up to date."
+        return 0
+    else
+        if download_binary; then
+          # Delete the old binary from ls command
+          if [ ! -z "$existing_file_name" ]; then
+            echo "Deleting old version $existing_file_name..."
+            rm "$existing_file_name"
+          fi
+          echo "JioTV Go has been updated to latest $LATEST_VERSION version."
+        else
+          echo "Failed to update JioTV Go"
+        fi
+    fi
+  else
+    echo "Missing existing file name. Is JioTV Go installed?"
   fi
-
-  # Get the latest release version from GitHub API
-  RELEASE_INFO=$(curl -s "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest")
-  LATEST_VERSION=$(echo "$RELEASE_INFO" | grep -o '"tag_name": "[^"]*' | sed 's/"tag_name": "//')
-
-  file_name="$BINARY_NAME-$LATEST_VERSION-linux-$ARCH"
-
-  # Construct the download URL for the binary
-  DOWNLOAD_URL="https://github.com/$REPO_OWNER/$REPO_NAME/releases/download/$LATEST_VERSION/$file_name"
-
-  # Update the binary
-  echo "Updating JioTV Go to $LATEST_VERSION for $ARCH..."
-  curl -LO --progress-bar --retry 5 --retry-delay 2 "$DOWNLOAD_URL"
-  chmod +x "$file_name"
-
-  echo "JioTV Go has been updated to $LATEST_VERSION for $ARCH"
 }
 
 # Function to run the binary
 run_android() {
-  # fetch file name from ls command
-  file_name=$(ls | grep -E "$BINARY_NAME-.*-$ARCH")
+  # fetch file name from ls command, if multiple files are present, pick the latest one
+  file_name=$(ls | grep -E "$BINARY_NAME-.*-$ARCH" | sort -r | head -n 1)
 
    # Check if the binary exists
   if [ -z "$file_name" ]; then
-    echo "Error: Binary '$BINARY_NAME' not found in the current directory. Run "$0 install" to download the binary."
+    echo "Error: Binary '$BINARY_NAME' not found in the current directory."
+    echo "Execute "$0 install" to install JioTV Go."
     return 1
   fi
 
@@ -95,8 +125,6 @@ run_android() {
 
   # Run the Android binary
   echo "Running JioTV Go at $JIOTV_GO_ADDR for $ARCH..."
-
-  echo "Copy and paste following command to run JioTV Go"
 
   proot -b "$PREFIX/etc/resolv.conf:/etc/resolv.conf" "./$file_name" "$JIOTV_GO_ADDR"
 }
