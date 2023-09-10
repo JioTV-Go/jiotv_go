@@ -23,6 +23,15 @@ case $ARCH in
     ;;
 esac
 
+usage() {
+    echo "Usage: $0 {install|update|run}"
+    echo "  install: Install JioTV Go for the first time"
+    echo "  update: Update JioTV Go to the latest version"
+    echo "  run: Run JioTV Go (default)"
+    echo ""
+    echo "You can optionally specify the \"host:port\" to run JioTV Go as a second argument."
+}
+
 release_file_name() {
   # Get the latest release version from GitHub API
   echo "Fetching latest release info from GitHub..."
@@ -140,8 +149,11 @@ case "$1" in
   "run")
     run_android "$@"
     ;;
+  "help")
+    usage
+    ;;
   *)
-    echo "Usage: $0 {install|update|run}"
+    usage
     exit 1
     ;;
 esac
