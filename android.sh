@@ -16,6 +16,9 @@ case $ARCH in
   "armv7l")
     ARCH="arm"
     ;;
+  "armv8l")
+    ARCH="arm"
+    ;;
   "x86_64")
     ARCH="amd64"
     ;;
