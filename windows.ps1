@@ -7,8 +7,8 @@ $BINARY_NAME = "jiotv_go"
 $ARCH = (Get-WmiObject -Class Win32_ComputerSystem).SystemType
 
 switch -Wildcard ($ARCH) {
-    "*64-bit*" { $ARCH = "amd64" }
-    # "*32-bit*" { $ARCH = "386" }
+    "*64*" { $ARCH = "amd64" }
+    # "*32*" { $ARCH = "386" }
     # "*ARM*" { $ARCH = "arm" }
     default {
         Write-Host "Unsupported architecture: $ARCH"
