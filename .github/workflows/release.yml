@@ -21,6 +21,7 @@ jobs:
         # build and publish in parallel: linux/386, linux/amd64, linux/arm64, windows/386, windows/amd64, darwin/amd64, darwin/arm64
         goos: [linux, windows, darwin]
         goarch: [amd64, arm64, arm]
+        goarm: [v7,v8]
         exclude:
           - goos: windows
             goarch: arm
@@ -33,6 +34,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: ${{ matrix.goos }}
         goarch: ${{ matrix.goarch }}
+        goarm: ${{ matrix.goarm }}
         project_path: "./cmd/jiotv_go"
         binary_name: "jiotv_go"
         extra_files: LICENSE README.md
