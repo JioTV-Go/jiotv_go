@@ -152,7 +152,8 @@ auto_start() {
     echo "$0 run" >> "$PREFIX/etc/bash.bashrc"
   else
     echo "Removing existing auto start from bash.bashrc..."
-    sed -i "/$0 run/d" "$PREFIX/etc/bash.bashrc"
+    grep -v "$0 run" "$PREFIX/etc/bash.bashrc" > "$PREFIX/etc/bash.bashrc.tmp"
+    mv "$PREFIX/etc/bash.bashrc.tmp" "$PREFIX/etc/bash.bashrc"
   fi
 }
 
