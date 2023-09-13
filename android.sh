@@ -33,6 +33,7 @@ usage() {
     echo "  install: Install JioTV Go for the first time"
     echo "  update: Update JioTV Go to the latest version"
     echo "  run: Run JioTV Go (default)"
+    echo "  auto-start: Add/Remove auto start. To launch JioTV Go automatically on Termux startup"
     echo ""
     echo "You can optionally specify the \"host:port\" to run JioTV Go as a second argument."
 }
@@ -144,6 +145,17 @@ run_android() {
   proot -b "$PREFIX/etc/resolv.conf:/etc/resolv.conf" "./$file_name" "$JIOTV_GO_ADDR"
 }
 
+auto_start() {
+  # add $0 run to bash.bashrc
+  if ! grep -q "$0 run" "$PREFIX/etc/bash.bashrc"; then
+    echo "Adding auto start to bash.bashrc..."
+    echo "$0 run" >> "$PREFIX/etc/bash.bashrc"
+  else
+    echo "Removing existing auto start from bash.bashrc..."
+    sed -i "/$0 run/d" "$PREFIX/etc/bash.bashrc"
+  fi
+}
+
 # Check for the provided argument and perform the corresponding action
 case "$1" in
   "install")
@@ -154,6 +166,9 @@ case "$1" in
     ;;
   "run")
     run_android "$@"
+    ;;
+  "auto-start")
+    auto_start "$@"
     ;;
   "help")
     usage
