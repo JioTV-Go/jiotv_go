@@ -1,15 +1,15 @@
 package utils
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"os"
 	"strings"
-	"net"
 	"time"
-	"context"
-	"encoding/json"
 
 	"github.com/valyala/fasthttp"
 )
@@ -67,10 +67,10 @@ func Login(username, password string) (map[string]string, error) {
 
 	// Construct payload
 	payload := map[string]interface{}{
-		"identifier":          user,
-		"password":            passw,
-		"rememberUser":        "T",
-		"upgradeAuth":         "Y",
+		"identifier":           user,
+		"password":             passw,
+		"rememberUser":         "T",
+		"upgradeAuth":          "Y",
 		"returnSessionDetails": "T",
 		"deviceInfo": map[string]interface{}{
 			"consumptionDeviceName": "Jio",
@@ -95,7 +95,7 @@ func Login(username, password string) (map[string]string, error) {
 	url := "https://api.jio.com/v3/dip/user/unpw/verify"
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
-	
+
 	req.SetRequestURI(url)
 	req.Header.SetContentType("application/json")
 	req.Header.SetMethod("POST")
@@ -217,23 +217,23 @@ func GetCustomDialer() func(ctx context.Context, network string, addr string) (n
 	if USER_CUSTOM_DNS == "" {
 		USER_CUSTOM_DNS = "1.1.1.1"
 	}
-	
+
 	var (
-		dnsResolverIP        = USER_CUSTOM_DNS+":53" // Cloudflare DNS resolver.
-		dnsResolverProto     = "udp"        // Protocol to use for the DNS resolver
-		dnsResolverTimeoutMs = 5000         // Timeout (ms) for the DNS resolver (optional)
+		dnsResolverIP        = USER_CUSTOM_DNS + ":53" // Cloudflare DNS resolver.
+		dnsResolverProto     = "udp"                   // Protocol to use for the DNS resolver
+		dnsResolverTimeoutMs = 5000                    // Timeout (ms) for the DNS resolver (optional)
 	)
 
 	dialer := &net.Dialer{
-	Resolver: &net.Resolver{
-		PreferGo: true,
-		Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
-		d := net.Dialer{
-			Timeout: time.Duration(dnsResolverTimeoutMs) * time.Millisecond,
-		}
-		return d.DialContext(ctx, dnsResolverProto, dnsResolverIP)
+		Resolver: &net.Resolver{
+			PreferGo: true,
+			Dial: func(ctx context.Context, network, address string) (net.Conn, error) {
+				d := net.Dialer{
+					Timeout: time.Duration(dnsResolverTimeoutMs) * time.Millisecond,
+				}
+				return d.DialContext(ctx, dnsResolverProto, dnsResolverIP)
+			},
 		},
-	},
 	}
 
 	dialContext := func(ctx context.Context, network, addr string) (net.Conn, error) {
@@ -242,4 +242,3 @@ func GetCustomDialer() func(ctx context.Context, network string, addr string) (n
 
 	return dialContext
 }
- 

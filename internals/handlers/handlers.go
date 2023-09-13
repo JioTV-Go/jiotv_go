@@ -5,20 +5,20 @@ import (
 	"fmt"
 	"net/url"
 	"regexp"
-	"strings"
 	"strconv"
+	"strings"
 
-	"github.com/rabilrbl/jiotv_go/internals/utils"
 	"github.com/rabilrbl/jiotv_go/internals/television"
-	
+	"github.com/rabilrbl/jiotv_go/internals/utils"
+
 	"github.com/gofiber/fiber/v2"
 )
 
 var TV *television.Television
 
 type LoginRequestBodyData struct {
-    Username string `json:"username" xml:"username" form:"username"`
-    Password string `json:"password" xml:"password" form:"password"`
+	Username string `json:"username" xml:"username" form:"username"`
+	Password string `json:"password" xml:"password" form:"password"`
 }
 
 func Init() {
@@ -26,7 +26,7 @@ func Init() {
 	if err != nil {
 		utils.Log.Println("Login error!")
 	} else {
-		TV = television.NewTelevision(credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])	
+		TV = television.NewTelevision(credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])
 	}
 }
 
@@ -46,39 +46,39 @@ func IndexHandler(c *fiber.Ctx) error {
 		category_int, _ := strconv.Atoi(category)
 		channels_list := television.FilterChannels(channels.Result, language_int, category_int)
 		return c.Render("views/index", fiber.Map{
-			"Channels": channels_list,
+			"Channels":      channels_list,
 			"IsNotLoggedIn": !utils.CheckLoggedIn(),
-			"Categories": categoryMap,
-			"Languages": languageMap,
+			"Categories":    categoryMap,
+			"Languages":     languageMap,
 		})
-	} else  {
+	} else {
 		return c.Render("views/index", fiber.Map{
-			"Channels": channels.Result,
+			"Channels":      channels.Result,
 			"IsNotLoggedIn": !utils.CheckLoggedIn(),
-			"Categories": categoryMap,
-			"Languages": languageMap,
+			"Categories":    categoryMap,
+			"Languages":     languageMap,
 		})
 	}
 }
 
 func checkFieldExist(field string, check bool, c *fiber.Ctx) {
 	if !check {
-		utils.Log.Println(field+" not provided")	
+		utils.Log.Println(field + " not provided")
 		c.Status(fiber.StatusBadRequest)
 		c.JSON(fiber.Map{
-			"message": field+" not provided",
+			"message": field + " not provided",
 		})
 	}
 }
 
 func LoginHandler(c *fiber.Ctx) error {
 	var username, password string
-	if (c.Method() == "GET") {
+	if c.Method() == "GET" {
 		username = c.Query("username")
 		checkFieldExist("Username", username != "", c)
 		password = c.Query("password")
 		checkFieldExist("Password", password != "", c)
-	} else if (c.Method() == "POST") {
+	} else if c.Method() == "POST" {
 		formBody := new(LoginRequestBodyData)
 		err := c.BodyParser(&formBody)
 		if err != nil {
@@ -92,7 +92,7 @@ func LoginHandler(c *fiber.Ctx) error {
 		password = formBody.Password
 		checkFieldExist("Password", password != "", c)
 	}
-	
+
 	result, err := utils.Login(username, password)
 	if err != nil {
 		utils.Log.Println(err)
@@ -148,7 +148,7 @@ func RenderHandler(c *fiber.Ctx) error {
 	replacer := func(match []byte) []byte {
 		switch {
 		case bytes.HasSuffix(match, []byte(".m3u8")):
-			return []byte("/render.m3u8?auth=" + url.QueryEscape(baseUrl + string(match) + "?" + params) + "&channel_key_id=" + channel_id)
+			return []byte("/render.m3u8?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params) + "&channel_key_id=" + channel_id)
 		case bytes.HasSuffix(match, []byte(".ts")):
 			return []byte(baseUrl + string(match) + "?" + params)
 		default:
@@ -163,7 +163,7 @@ func RenderHandler(c *fiber.Ctx) error {
 	replacer_key := func(match []byte) []byte {
 		switch {
 		case bytes.HasSuffix(match, []byte(".key")) || bytes.HasSuffix(match, []byte(".pkey")):
-			return []byte("/render.key?auth=" + url.QueryEscape(string(match)+ "?" + params) + "&channel_key_id=" + channel_id)
+			return []byte("/render.key?auth=" + url.QueryEscape(string(match)+"?"+params) + "&channel_key_id=" + channel_id)
 		default:
 			return match
 		}
@@ -192,7 +192,7 @@ func RenderKeyHandler(c *fiber.Ctx) error {
 func ChannelsHandler(c *fiber.Ctx) error {
 	apiResponse := television.Channels()
 	// hostUrl should be request URL like http://localhost:5001
-	hostURL :=  strings.ToLower(c.Protocol()) + "://" + c.Hostname()
+	hostURL := strings.ToLower(c.Protocol()) + "://" + c.Hostname()
 
 	// Check if the query parameter "type" is set to "m3u"
 	if c.Query("type") == "m3u" {

@@ -1,18 +1,18 @@
 package main
 
 import (
-	"net/http"
 	"embed"
+	"net/http"
 	"os"
 
 	"github.com/rabilrbl/jiotv_go/internals/handlers"
-	"github.com/rabilrbl/jiotv_go/internals/utils"
 	"github.com/rabilrbl/jiotv_go/internals/middleware"
+	"github.com/rabilrbl/jiotv_go/internals/utils"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/template/html/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/template/html/v2"
 )
 
 //go:embed views/*
@@ -29,12 +29,12 @@ func main() {
 	}
 
 	app := fiber.New(fiber.Config{
-		Views: engine,
-		CaseSensitive: false,
-		StrictRouting: false,
+		Views:             engine,
+		CaseSensitive:     false,
+		StrictRouting:     false,
 		EnablePrintRoutes: false,
-		ServerHeader:  "JioTV Go",
-		AppName: "JioTV Go",
+		ServerHeader:      "JioTV Go",
+		AppName:           "JioTV Go",
 	})
 
 	app.Use(recover.New(recover.Config{
@@ -42,18 +42,18 @@ func main() {
 	}))
 
 	app.Use(middleware.CORS())
-	
+
 	app.Use("/static", filesystem.New(filesystem.Config{
-        Root: http.FS(staticFiles),
-        PathPrefix: "static",
-        Browse: false,
-    }))
+		Root:       http.FS(staticFiles),
+		PathPrefix: "static",
+		Browse:     false,
+	}))
 
 	utils.Log = utils.GetLogger()
-	
+
 	// Initialize the television object
 	handlers.Init()
-	
+
 	app.Get("/", handlers.IndexHandler)
 	app.Get("/login", handlers.LoginHandler)
 	app.Post("/login", handlers.LoginHandler)
@@ -66,7 +66,7 @@ func main() {
 	app.Get("/player/:id", handlers.PlayerHandler)
 	app.Get("/clappr/:id", handlers.ClapprHandler)
 	app.Get("/favicon.ico", handlers.FaviconHandler)
-	
+
 	addr := "localhost:5001"
 
 	if len(os.Args) > 1 {

@@ -9,23 +9,22 @@ import (
 	"github.com/rabilrbl/jiotv_go/internals/utils"
 )
 
-
 type Television struct {
-	ssoToken  string
-	crm       string
-	uniqueID  string
-	headers   map[string]string
-	client    *fasthttp.Client
+	ssoToken string
+	crm      string
+	uniqueID string
+	headers  map[string]string
+	client   *fasthttp.Client
 }
 
 type Channel struct {
-	ID   int    `json:"channel_id"`
-	Name string `json:"channel_name"`
-	URL  string `json:"channel_url"`
-	LogoURL string `json:"logoUrl"`
-	Category int `json:"channelCategoryId"`
-	Language int `json:"channelLanguageId"` 
-	IsHD bool `json:"isHD"`
+	ID       int    `json:"channel_id"`
+	Name     string `json:"channel_name"`
+	URL      string `json:"channel_url"`
+	LogoURL  string `json:"logoUrl"`
+	Category int    `json:"channelCategoryId"`
+	Language int    `json:"channelLanguageId"`
+	IsHD     bool   `json:"isHD"`
 }
 
 type APIResponse struct {
@@ -72,25 +71,25 @@ var LanguageMap = map[int]string{
 
 func NewTelevision(ssoToken, crm, uniqueID string) *Television {
 	headers := map[string]string{
-		"Content-type":   "application/x-www-form-urlencoded",
-		"appkey":         "NzNiMDhlYzQyNjJm",
-		"channelId":      "",
-		"channel_id":     "",
-		"crmid":          crm,
-		"deviceId":       "e4286d7b481d69b8",
-		"devicetype":     "phone",
-		"isott":          "true",
-		"languageId":     "6",
-		"lbcookie":       "1",
-		"os":             "android",
-		"osVersion":      "8.1.0",
-		"srno":           "230203144000",
-		"ssotoken":       ssoToken,
-		"subscriberId":   crm,
-		"uniqueId":       uniqueID,
-		"User-Agent":     "plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7",
-		"usergroup":      "tvYR7NSNn7rymo3F",
-		"versionCode":    "277",
+		"Content-type": "application/x-www-form-urlencoded",
+		"appkey":       "NzNiMDhlYzQyNjJm",
+		"channelId":    "",
+		"channel_id":   "",
+		"crmid":        crm,
+		"deviceId":     "e4286d7b481d69b8",
+		"devicetype":   "phone",
+		"isott":        "true",
+		"languageId":   "6",
+		"lbcookie":     "1",
+		"os":           "android",
+		"osVersion":    "8.1.0",
+		"srno":         "230203144000",
+		"ssotoken":     ssoToken,
+		"subscriberId": crm,
+		"uniqueId":     uniqueID,
+		"User-Agent":   "plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7",
+		"usergroup":    "tvYR7NSNn7rymo3F",
+		"versionCode":  "277",
 	}
 
 	return &Television{
@@ -105,37 +104,36 @@ func NewTelevision(ssoToken, crm, uniqueID string) *Television {
 func (tv *Television) Live(channelID string) string {
 	formData := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(formData)
-	
+
 	formData.Add("channel_id", channelID)
 	formData.Add("channelId", channelID)
 	formData.Add("stream_type", "Seek")
-	
+
 	url := "https://tv.media.jio.com/apis/v2.2/getchannelurl/getchannelurl"
-	
+
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
-	
+
 	req.SetRequestURI(url)
 	req.Header.SetContentType("application/x-www-form-urlencoded")
 	req.Header.SetMethod("POST")
 	req.Header.SetUserAgent("plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7")
-	
+
 	// Encode the form data and set it as the request body
 	req.SetBody(formData.QueryString())
-	
+
 	// Copy headers from the Television headers map to the request
 	for key, value := range tv.headers {
 		req.Header.Set(key, value)
 	}
-	
+
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
-	
+
 	// Perform the HTTP POST request
 	if err := tv.client.Do(req, resp); err != nil {
 		utils.Log.Panic(err)
 	}
-
 
 	if resp.StatusCode() == fasthttp.StatusBadRequest {
 		// Store the response body as a string
@@ -216,7 +214,6 @@ func (tv *Television) RenderKey(url string, channelID string) ([]byte, int) {
 
 	return buf, resp.StatusCode()
 }
-
 
 func Channels() APIResponse {
 	url := "https://jiotv.data.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?os=android&devicetype=phone&usertype=tvYR7NSNn7rymo3F&version=285"
