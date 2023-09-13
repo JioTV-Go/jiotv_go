@@ -1,20 +1,37 @@
 {{define "channel_list"}}
 <div class="overflow-x-auto">
-  <div id="portexe-search-root" class="w-full px-2 flex flex-col gap-2 items-center justify-between sm:flex-row bg-base-100 px-4">
-    <input id="portexe-search-input" type="text" placeholder="Search channels here"
-      class="input input-bordered input-primary input-sm sm:input-md w-full rounded-xl" />
-    <select id="portexe-category-select" class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl">
-    {{ range $key, $value := .Categories }}
+  <div
+    id="portexe-search-root"
+    class="w-full px-2 flex flex-col gap-2 items-center justify-between sm:flex-row bg-base-100 px-4"
+  >
+    <input
+      id="portexe-search-input"
+      type="text"
+      placeholder="Search channels here"
+      class="input input-bordered input-primary input-sm sm:input-md w-full rounded-xl"
+    />
+    <select
+      id="portexe-category-select"
+      class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl"
+    >
+      {{ range $key, $value := .Categories }}
       <option value="{{$key}}">{{$value}}</option>
-    {{ end }}
+      {{ end }}
     </select>
-    <select id="portexe-language-select" class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl">
-    {{ range $key, $value := .Languages }}
+    <select
+      id="portexe-language-select"
+      class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl"
+    >
+      {{ range $key, $value := .Languages }}
       <option value="{{$key}}">{{$value}}</option>
-    {{ end }}
+      {{ end }}
     </select>
-    <button id="portexe-search-button" class="btn btn-primary btn-sm sm:btn-md w-full sm:w-auto rounded-xl">Apply</button>
-
+    <button
+      id="portexe-search-button"
+      class="btn btn-primary btn-sm sm:btn-md w-full sm:w-auto rounded-xl"
+    >
+      Apply
+    </button>
   </div>
   <table id="portexe-data-table" class="table table-zebra">
     <thead>
@@ -29,31 +46,52 @@
       {{range $channel := .Channels}}
       <tr>
         <td>
-          <img src="http://jiotv.catchup.cdn.jio.com/dare_images/images/{{$channel.LogoURL}}" loading="lazy" alt="{{$channel.Name}}" class="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 lg:h-16 lg:w-16 p-1 rounded-full bg-sky-100" />
+          <img
+            src="http://jiotv.catchup.cdn.jio.com/dare_images/images/{{$channel.LogoURL}}"
+            loading="lazy"
+            alt="{{$channel.Name}}"
+            class="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 lg:h-16 lg:w-16 p-1 rounded-full bg-sky-100"
+          />
         </td>
         <td>
           <span class="text-lg font-bold">{{$channel.Name}}</span>
         </td>
         <td>
           <div className="badge badge-error gap-2">
-            {{ if $channel.IsHD }}
-              HD
-            {{ else }}
-              SD
-            {{ end }}
+            {{ if $channel.IsHD }} HD {{ else }} SD {{ end }}
           </div>
         </td>
-        <td><a href="/play/{{$channel.ID}}" class="btn btn-outline btn-info btn-md">Play</a></td>
+        <td>
+          <a
+            href="/play/{{$channel.ID}}"
+            class="btn btn-outline btn-info btn-md"
+            >Play</a
+          >
+        </td>
       </tr>
       {{end}}
     </tbody>
   </table>
-  <button class="btn btn-primary fixed bottom-4 right-4 px-4 rounded-full shadow-lg focus:outline-none flex flex-row gap-2" onclick="scrollToTop()">
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-      <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+  <button
+    class="btn btn-primary fixed bottom-4 right-4 px-4 rounded-full shadow-lg focus:outline-none flex flex-row gap-2"
+    onclick="scrollToTop()"
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+      stroke-width="1.5"
+      stroke="currentColor"
+      class="w-6 h-6"
+    >
+      <path
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+      />
     </svg>
     <span class="hidden sm:block">Search</span>
-</button>
+  </button>
   <script src="/static/channels.js"></script>
 </div>
 {{end}}
