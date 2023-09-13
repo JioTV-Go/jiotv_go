@@ -29,7 +29,7 @@ case $ARCH in
 esac
 
 usage() {
-    echo "Usage: $0 {install|update|run}"
+    echo "Usage: $0 {install|update|run|auto-start|help}"
     echo "  install: Install JioTV Go for the first time"
     echo "  update: Update JioTV Go to the latest version"
     echo "  run: Run JioTV Go (default)"
