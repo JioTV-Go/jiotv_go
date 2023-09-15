@@ -1,7 +1,7 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
-    "./cmd/jiotv_go/templates/*.html",
+    "./cmd/jiotv_go/views/*.html",
   ],
   theme: {
     extend: {},
