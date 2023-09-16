@@ -12,6 +12,7 @@ jobs:
     build:
         permissions:
             contents: read
+            pull-requests: write
         runs-on: ubuntu-latest
         strategy:
           matrix:
@@ -26,6 +27,14 @@ jobs:
           uses: actions/setup-go@v4
           with:
             go-version-file: ./go.mod
+        
+        - name: Comment Build started
+          run: |
+            gh pr comment "$PR_URL" -b "Build started for this PR. [Check logs](${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }})"
+          env:
+            PR_URL: ${{ github.event.pull_request.html_url }}
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  
         - name: Build binary for ${{ matrix.goos }}/${{ matrix.goarch }}
           run: |
             GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o ./bin/jiotv_go-${{ matrix.goos }}-${{ matrix.goarch }} -ldflags "-s -w" ./cmd/jiotv_go
@@ -44,11 +53,12 @@ jobs:
       needs: build
       if: success()
       steps:
-        - name: Comment on PR
-          uses: thollander/actions-comment-pull-request@v2
-          with:
-            message: |
-              Build was successfull for this PR ✅. [Download binaries](${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }})
+        - name: Comment Build success
+          run: |
+            gh pr comment "$PR_URL" --edit-last -b "Build success for this PR ✅. [Download artifacts](${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }})"
+          env:
+            PR_URL: ${{ github.event.pull_request.html_url }}
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     post_failure:
       runs-on: ubuntu-latest
@@ -58,8 +68,9 @@ jobs:
       needs: build
       if: failure()
       steps:
-        - name: Comment on PR
-          uses: thollander/actions-comment-pull-request@v2
-          with:
-            message: |
-              Build failed for this PR ❌. [Check logs](${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }})
+        - name: Comment Build failed
+          run: |
+            gh pr comment "$PR_URL" --edit-last -b "Build failed for this PR ❌. [Check logs](${{ github.event.repository.html_url }}/actions/runs/${{ github.run_id }})"
+          env:
+            PR_URL: ${{ github.event.pull_request.html_url }}
+            GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
