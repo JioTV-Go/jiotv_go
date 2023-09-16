@@ -90,8 +90,6 @@ Ready to dive in? Download the latest binary for your operating system from [her
 
 - If you prefer a specific path or folder for your `credentials.json`, set the environment variable `JIOTV_CREDENTIALS_PATH=/path` before running the binary.
 
-- Need to use a custom DNS? Set the environment variable `JIOTV_DNS=1.1.1.1` before launching the binary.
-
 ### **Remote Deployment Made Easy**
 
 In cases where remote server permissions prevent the creation of the `credentials.json` file, follow these steps:
