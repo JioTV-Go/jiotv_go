@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        # JioTV Go report
+        # JioTV Go Bug report
 
         Important to note that your issue may have already been reported before. Please check for existing issues [here](https://github.com/rabilrbl/jiotv_go/labels/bug).
 
