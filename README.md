@@ -6,17 +6,15 @@ Ready to dive in? Download the latest binary for your operating system from [her
 
 *Give us 🌟 on GitHub.*
 
-### Join us on Telegram: 
+### Join the community on Telegram:
 
-#### [Announcement Channel (`jiotv_go`)](https://telegram.me/jiotv_go)
-#### [Support Group (`jiotv_go_chat`)](https://telegram.me/jiotv_go_chat)
+- [Announcement Channel (`jiotv_go`)](https://telegram.me/jiotv_go)
+- [Support Group (`jiotv_go_chat`)](https://telegram.me/jiotv_go_chat)
 
 ## Table of Contents
 
 - [JioTV Go 🌟](#jiotv-go-)
-    - [Join us on Telegram:](#join-us-on-telegram)
-      - [Announcement Channel (`jiotv_go`)](#announcement-channel-jiotv_go)
-      - [Support Group (`jiotv_go_chat`)](#support-group-jiotv_go_chat)
+    - [Join the community on Telegram:](#join-the-community-on-telegram)
   - [Table of Contents](#table-of-contents)
   - [Usage Guide 🚀](#usage-guide-)
     - [**Using JioTV Go Natively**](#using-jiotv-go-natively)
