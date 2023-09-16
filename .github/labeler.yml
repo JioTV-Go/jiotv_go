@@ -12,7 +12,7 @@ documentation:
 
 # Label for issues related to user interface
 ui:
-  - '(ui|user interface|user experience|ux|gui|graphical user interface)'
+  - '(user interface|user experience|graphical user interface|web|website)'
 
 # Label for issues related to bug reports
 bug:
