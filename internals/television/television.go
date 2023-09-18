@@ -216,7 +216,7 @@ func (tv *Television) RenderKey(url string, channelID string) ([]byte, int) {
 }
 
 func Channels() APIResponse {
-	url := "https://jiotv.data.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?os=android&devicetype=phone&usertype=tvYR7NSNn7rymo3F&version=285"
+	url := "https://jiotvapi.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?langId=6&os=android&devicetype=phone&usertype=JIO&version=315&langId=6"
 
 	// Create a fasthttp.Client
 	client := &fasthttp.Client{}
@@ -225,6 +225,16 @@ func Channels() APIResponse {
 	defer fasthttp.ReleaseRequest(req)
 
 	req.SetRequestURI(url)
+
+	req.Header.SetMethod("GET")
+	req.Header.Add("User-Agent", "okhttp/4.2.2")
+	req.Header.Add("Accept-Encoding", "gzip, deflate, br")
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("devicetype", "phone")
+	req.Header.Add("os", "android")
+	req.Header.Add("appkey", "NzNiMDhlYzQyNjJm")
+	req.Header.Add("lbcookie", "1")
+	req.Header.Add("usertype", "JIO")
 
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
@@ -241,8 +251,13 @@ func Channels() APIResponse {
 		utils.Log.Panicf("Request failed with status code: %d", resp.StatusCode())
 	}
 
+	resp_body, err := resp.BodyGunzip()
+	if err != nil {
+		utils.Log.Panic(err)
+	}
+
 	// Parse the JSON response
-	if err := json.Unmarshal(resp.Body(), &apiResponse); err != nil {
+	if err := json.Unmarshal(resp_body, &apiResponse); err != nil {
 		utils.Log.Panic(err)
 	}
 
