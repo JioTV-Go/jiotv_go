@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -35,9 +36,9 @@ func getCredentialsPath() string {
 				Log.Println(err)
 			}
 		}
-		credentials_path += "credentials.json"
+		credentials_path += "jiotv_credentials.json"
 	} else {
-		credentials_path = "credentials.json"
+		credentials_path = "jiotv_credentials.json"
 	}
 	return credentials_path
 }
@@ -153,6 +154,170 @@ func Login(username, password string) (map[string]string, error) {
 		}, nil
 	}
 }
+
+func LoginSendOTP(number string) (bool, error) {
+	postData := map[string]string{
+		"number": number,
+	}
+
+	// convert number string to base64
+	postData["number"] = base64.StdEncoding.EncodeToString([]byte(postData["number"]))
+
+	// Construct payload
+	payload := map[string]interface{}{
+		"number": postData["number"],
+	}
+
+	// Convert payload to JSON
+	payloadJSON, err := json.Marshal(payload)
+	if err != nil {
+		return false, err
+	}
+
+	// Make the request
+	url := "https://jiotvapi.media.jio.com/userservice/apis/v1/loginotp/send"
+
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+
+	req.SetRequestURI(url)
+
+	req.Header.SetContentType("application/json")
+	req.Header.SetMethod("POST")
+	req.Header.SetUserAgent("okhttp/4.2.2")
+	// Set headers
+	req.Header.Add("appname", "RJIL_JioTV")
+	req.Header.Add("os", "android")
+	req.Header.Add("devicetype", "phone")
+
+	req.SetBody(payloadJSON)
+
+	client := &fasthttp.Client{}
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	// Perform the HTTP POST request
+	if err := client.Do(req, resp); err != nil {
+		return false, err
+	}
+
+	// Check the response status code
+	if resp.StatusCode() != fasthttp.StatusNoContent {
+		return false, fmt.Errorf("request failed with status code: %d body: %s", resp.StatusCode(), resp.Body())
+	} else {
+		return true, nil
+	}
+}
+
+func LoginVerifyOTP(number, otp string) (map[string]string, error) {
+	postData := map[string]string{
+		"number": number,
+		"otp":    otp,
+	}
+
+	// convert number string to base64
+	postData["number"] = base64.StdEncoding.EncodeToString([]byte(postData["number"]))
+
+	// Construct payload
+	payload := map[string]interface{}{
+		"number": postData["number"],
+		"otp":    postData["otp"],
+		"deviceInfo": map[string]interface{}{
+			"consumptionDeviceName": "SM-G930F",
+			"info": map[string]interface{}{
+				"type": "android",
+				"platform": map[string]string{
+					"name":    "SM-G930F",
+				},
+				"androidId": "6fcadeb7b4b10d77",
+			},
+		},
+	}
+
+	// Convert payload to JSON
+	payloadJSON, err := json.Marshal(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	// Make the request
+	url := "https://jiotvapi.media.jio.com/userservice/apis/v1/loginotp/verify"
+
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+
+	req.SetRequestURI(url)
+
+	req.Header.SetContentType("application/json")
+	req.Header.SetMethod("POST")
+	req.Header.SetUserAgent("okhttp/4.2.2")
+	// Set headers
+	req.Header.Add("appname", "RJIL_JioTV")
+	req.Header.Add("os", "android")
+	req.Header.Add("devicetype", "phone")
+
+	req.SetBody(payloadJSON)
+
+	client := &fasthttp.Client{}
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	// Perform the HTTP POST request
+	if err := client.Do(req, resp); err != nil {
+		return nil, err
+	}
+
+	// Check the response status code
+	if resp.StatusCode() != fasthttp.StatusOK {
+		return nil, fmt.Errorf("request failed with status code: %d", resp.StatusCode())
+	}
+
+	// Read response body
+	body := resp.Body()
+
+	var result map[string]interface{}
+
+	if err := json.Unmarshal(body, &result); err != nil {
+		return nil, err
+	}
+
+	accessToken := result["authToken"].(string)
+	
+	if accessToken != "" {
+		refreshtoken := result["refreshToken"].(string)
+		ssotoken := result["ssoToken"].(string)
+		crm := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["subscriberId"].(string)
+		uniqueId := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["unique"].(string)
+
+		credentialsPath := getCredentialsPath()
+		file, err := os.Create(credentialsPath)
+		if err != nil {
+			return nil, err
+		}
+		defer file.Close()
+
+		// Write result as credentials.json
+		file.WriteString(`{"ssoToken":"` + ssotoken + `","crm":"` + crm + `","uniqueId":"` + uniqueId + `","accessToken":"` + accessToken + `","refreshToken":"` + refreshtoken + `"}`)
+		return map[string]string{
+			"status":       "success",
+			"accessToken":  accessToken,
+			"refreshToken": refreshtoken,
+			"ssoToken":     ssotoken,
+			"crm":          crm,
+			"uniqueId":     uniqueId,
+		}, nil
+	} else {
+		return map[string]string{
+			"status":  "failed",
+			"message": "Invalid OTP",
+		}, nil
+	}
+}
+
+
+
 
 func loadCredentialsFromFile(filename string) (map[string]string, error) {
 	// check if given file exists, if not ask user username and password then call Login()

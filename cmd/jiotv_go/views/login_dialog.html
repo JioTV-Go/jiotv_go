@@ -5,33 +5,45 @@
     <div class="flex flex-col gap-2">
       <label for="username" class="label">Username / Mobile Number</label>
       <input
-        id="username"
-        required
-        type="text"
+        id="number"
+        type="tel"
+        class="input input-bordered"
         placeholder="9876543210"
-        class="input input-bordered input-primary w-full"
-      />
-      <label for="password" class="label">Password</label>
-      <input
-        id="password"
+        pattern="[0-9]{10}"
+        minlength="10"
+        maxlength="10"
         required
-        type="password"
-        placeholder="********"
-        class="input input-bordered input-primary w-full"
       />
-      <a
-        href="https://www.jio.com/selfcare/signup/forgot-password"
-        target="_blank"
-        class="text-sm link link-error text-end"
-        >Forgot Password?</a
-      >
-      <button onclick="loginClick()" class="btn btn-primary">Login</button>
+      <button onclick="loginOTPClick()" class="btn btn-primary">Login</button>
     </div>
   </form>
   <form method="dialog" class="modal-backdrop">
     <button>close</button>
   </form>
 </dialog>
+<!-- Verify OTP Modal -->
+<dialog id="verify_otp_modal" class="modal modal-bottom sm:modal-middle">
+  <form method="dialog" class="modal-box">
+    <h3 class="font-bold text-lg">Verify OTP</h3>
+    <div class="flex flex-col gap-2">
+      <label for="otp" class="label">OTP</label>
+      <input
+        id="otp"
+        type="number"
+        class="input input-bordered"
+        placeholder="543210"
+        max="999999"
+        min="100000"
+        required
+      />
+      <button onclick="loginOTPVerifyClick()" class="btn btn-primary">Verify</button>
+    </div>
+  </form>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>
+
 <script>
   {{ if .IsNotLoggedIn }}
     login_modal.showModal();
