@@ -35,7 +35,7 @@ func Init() {
 	if err != nil {
 		utils.Log.Println("Login error!")
 	} else {
-		TV = television.NewTelevision(credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])
+		TV = television.NewTelevision(credentials["accessToken"], credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])
 	}
 }
 
@@ -272,7 +272,7 @@ func LoginSendOTPHandler(c *fiber.Ctx) error {
 	}
 	mobileNumber := formBody.MobileNumber
 	checkFieldExist("Mobile Number", mobileNumber != "", c)
-	
+
 	result, err := utils.LoginSendOTP(mobileNumber)
 	if err != nil {
 		utils.Log.Println(err)
