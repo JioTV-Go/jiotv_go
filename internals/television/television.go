@@ -114,9 +114,7 @@ func (tv *Television) Live(channelID string) string {
 	defer fasthttp.ReleaseRequest(req)
 
 	req.SetRequestURI(url)
-	req.Header.SetContentType("application/x-www-form-urlencoded")
 	req.Header.SetMethod("POST")
-	req.Header.SetUserAgent("okhttp/4.2.2")
 
 	// Encode the form data and set it as the request body
 	req.SetBody(formData.QueryString())
