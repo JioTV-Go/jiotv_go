@@ -20,19 +20,19 @@ jobs:
                 github-token: ${{ secrets.GITHUB_TOKEN }}
         -
             name: Checkout
-            if: steps.dependabot-metadata.outputs.package-ecosystem == 'npm'
+            if: steps.dependabot-metadata.outputs.package-ecosystem == 'npm_and_yarn'
             uses: actions/checkout@v4
             with:
                 ref: ${{ github.event.pull_request.head.ref }}
         -
             name: Setup Node.js
-            if: steps.dependabot-metadata.outputs.package-ecosystem == 'npm'
+            if: steps.dependabot-metadata.outputs.package-ecosystem == 'npm_and_yarn'
             uses: actions/setup-node@v3
             with:
                 node-version: latest
         -   
             name: Update tailwindcss with build changes
-            if: steps.dependabot-metadata.outputs.package-ecosystem == 'npm'
+            if: steps.dependabot-metadata.outputs.package-ecosystem == 'npm_and_yarn'
             run: |
                 npm ci && npm run build
                 git add cmd/jiotv_go/static/tailwind.css
@@ -40,17 +40,3 @@ jobs:
                 git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
                 git commit -m "[dependabot skip] Update tailwindcss with build changes" || exit 0
                 git push
-
-        -
-            name: Enable auto-merge for Dependabot PRs
-            if: ${{ steps.dependabot-metadata.outputs.update-type == 'version-update:semver-patch' || steps.dependabot-metadata.outputs.update-type == 'version-update:semver-minor' }}
-            run: |
-                gh pr checkout "$PR_URL" # sets the upstream metadata for `gh pr status`
-                if [ "$(gh pr status --json reviewDecision -q .currentBranch.reviewDecision)" != "APPROVED" ];
-                then gh pr review --approve "$PR_URL"
-                else echo "PR already approved, skipping additional approvals to minimize emails/notification noise.";
-                fi
-                gh pr comment "$PR_URL" --body "@dependabot squash and merge (auto-merge) :robot:\n\nThis PR will be automatically merged once CI passes."
-            env:
-                PR_URL: ${{ github.event.pull_request.html_url }}
-                GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
