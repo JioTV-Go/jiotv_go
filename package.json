@@ -4,7 +4,7 @@
     "tailwindcss": "^3.3.3"
   },
   "scripts": {
-    "build": "tailwindcss build ./cmd/jiotv_go/static/input.css -o ./cmd/jiotv_go/static/tailwind.css -m",
+    "build": "tailwindcss build -i ./cmd/jiotv_go/static/input.css -o ./cmd/jiotv_go/static/tailwind.css -m",
     "watch": "tailwindcss -i ./cmd/jiotv_go/static/input.css -o ./cmd/jiotv_go/static/tailwind.css -w"
   }
 }
