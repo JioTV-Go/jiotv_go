@@ -10,7 +10,7 @@ COPY . .
 RUN go build -ldflags="-s -w" -trimpath -o /app/jiotv_go ./cmd/jiotv_go
 
 # Stage 2: Create the final minimal image
-FROM alpine
+FROM alpine:latest
 
 # Set the working directory inside the container
 WORKDIR /app
