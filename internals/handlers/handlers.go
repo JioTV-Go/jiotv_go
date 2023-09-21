@@ -83,7 +83,7 @@ func checkFieldExist(field string, check bool, c *fiber.Ctx) {
 func LiveHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
-	id = strings.Replace(id, ".m3u8", "", -1)
+	id = strings.Replace(id, ".m3u8", "", 1)
 	liveResult := TV.Live(id)
 	// quote url
 	coded_url := url.QueryEscape(liveResult)
