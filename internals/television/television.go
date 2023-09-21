@@ -177,7 +177,7 @@ func (tv *Television) Render(url string) []byte {
 	return buf
 }
 
-func (tv *Television) RenderKey(url string, channelID string) ([]byte, int) {
+func (tv *Television) RenderKey(url, channelID string) ([]byte, int) {
 	// extract params from url
 	params := strings.Split(url, "?")[1]
 
@@ -264,7 +264,7 @@ func Channels() APIResponse {
 	return apiResponse
 }
 
-func FilterChannels(channels []Channel, language int, category int) []Channel {
+func FilterChannels(channels []Channel, language, category int) []Channel {
 	var filteredChannels []Channel
 	for _, channel := range channels {
 		// if both language and category is set, then use and operator
