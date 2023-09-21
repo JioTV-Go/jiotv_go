@@ -1,16 +1,13 @@
 package utils
 
 import (
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
-	"net"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/valyala/fasthttp"
 )
