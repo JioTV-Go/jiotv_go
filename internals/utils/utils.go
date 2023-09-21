@@ -377,6 +377,7 @@ func GetRequestClient() *fasthttp.Client {
 	proxy := os.Getenv("JIOTV_PROXY")
 
 	if proxy != "" {
+		Log.Println("Using proxy: " + proxy)
 		// check if given proxy is socks5 or http
 		if strings.HasPrefix(proxy, "socks5://") {
 			// socks5 proxy
