@@ -91,7 +91,7 @@ install_linux() {
 # Function to update the binary
 update_linux() {
     # fetch existing file name, if multiple files are present, pick the latest one
-    existing_file_name=$(ls | grep -E "$BINARY_NAME-.*-$ARCH" | sort -r | head -n 1)
+    existing_file_name=$(ls "$BINARY_NAME-*-$ARCH" | sort -r | head -n 1)
 
     if [ ! -z "$existing_file_name" ]; then
         echo "Found existing file: $existing_file_name"
@@ -126,7 +126,7 @@ update_linux() {
 # Function to run the binary
 run_linux() {
     # fetch file name from ls command, if multiple files are present, pick the latest one
-    file_name=$(ls | grep -E "$BINARY_NAME-.*-$ARCH" | sort -r | head -n 1)
+    file_name=$(ls "$BINARY_NAME-*-$ARCH" | sort -r | head -n 1)
 
     # Check if the binary exists
     if [ -z "$file_name" ]; then
