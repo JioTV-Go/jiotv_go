@@ -1,18 +1,16 @@
 package utils
 
 import (
-	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"log"
-	"net"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/valyala/fasthttp"
+	"github.com/valyala/fasthttp/fasthttpproxy"
 )
 
 var Log *log.Logger
@@ -105,7 +103,7 @@ func Login(username, password string) (map[string]string, error) {
 	}
 	req.SetBody(payloadJSON)
 
-	client := &fasthttp.Client{}
+	client := GetRequestClient()
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
 
@@ -192,7 +190,7 @@ func LoginSendOTP(number string) (bool, error) {
 
 	req.SetBody(payloadJSON)
 
-	client := &fasthttp.Client{}
+	client := GetRequestClient()
 
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
@@ -228,7 +226,7 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 			"info": map[string]interface{}{
 				"type": "android",
 				"platform": map[string]string{
-					"name":    "SM-G930F",
+					"name": "SM-G930F",
 				},
 				"androidId": "6fcadeb7b4b10d77",
 			},
@@ -259,7 +257,7 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 
 	req.SetBody(payloadJSON)
 
-	client := &fasthttp.Client{}
+	client := GetRequestClient()
 
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
@@ -284,7 +282,7 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 	}
 
 	accessToken := result["authToken"].(string)
-	
+
 	if accessToken != "" {
 		refreshtoken := result["refreshToken"].(string)
 		ssotoken := result["ssoToken"].(string)
@@ -315,9 +313,6 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 		}, nil
 	}
 }
-
-
-
 
 func loadCredentialsFromFile(filename string) (map[string]string, error) {
 	// check if given file exists, if not ask user username and password then call Login()
@@ -375,4 +370,25 @@ func CheckLoggedIn() bool {
 	} else {
 		return true
 	}
+}
+
+func GetRequestClient() *fasthttp.Client {
+	// The function shall return a fasthttp.client with proxy if given
+	proxy := os.Getenv("JIOTV_PROXY")
+
+	if proxy != "" {
+		// check if given proxy is socks5 or http
+		if strings.HasPrefix(proxy, "socks5://") {
+			// socks5 proxy
+			return &fasthttp.Client{
+				Dial: fasthttpproxy.FasthttpSocksDialer(proxy),
+			}
+		} else {
+			// http proxy
+			return &fasthttp.Client{
+				Dial: fasthttpproxy.FasthttpHTTPDialer(proxy),
+			}
+		}
+	}
+	return &fasthttp.Client{}
 }

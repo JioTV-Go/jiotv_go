@@ -91,13 +91,15 @@ func NewTelevision(accessToken, ssoToken, crm, uniqueID string) *Television {
 		"versionCode":  "315",
 	}
 
+	client := utils.GetRequestClient()
+
 	return &Television{
 		accessToken: accessToken,
 		ssoToken:    ssoToken,
 		crm:         crm,
 		uniqueID:    uniqueID,
 		headers:     headers,
-		client:      &fasthttp.Client{},
+		client:      client,
 	}
 }
 
@@ -219,7 +221,7 @@ func Channels() APIResponse {
 	url := "https://jiotvapi.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?langId=6&os=android&devicetype=phone&usertype=JIO&version=315&langId=6"
 
 	// Create a fasthttp.Client
-	client := &fasthttp.Client{}
+	client := utils.GetRequestClient()
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
