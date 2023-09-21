@@ -55,8 +55,6 @@ func main() {
 	handlers.Init()
 
 	app.Get("/", handlers.IndexHandler)
-	app.Get("/login", handlers.LoginHandler)
-	app.Post("/login", handlers.LoginHandler)
 	app.Post("/login/sendOTP", handlers.LoginSendOTPHandler)
 	app.Post("/login/verifyOTP", handlers.LoginVerifyOTPHandler)
 	app.Get("/live/:id", handlers.LiveHandler)

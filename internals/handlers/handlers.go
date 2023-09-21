@@ -80,40 +80,6 @@ func checkFieldExist(field string, check bool, c *fiber.Ctx) {
 	}
 }
 
-func LoginHandler(c *fiber.Ctx) error {
-	var username, password string
-	if c.Method() == "GET" {
-		username = c.Query("username")
-		checkFieldExist("Username", username != "", c)
-		password = c.Query("password")
-		checkFieldExist("Password", password != "", c)
-	} else if c.Method() == "POST" {
-		formBody := new(LoginRequestBodyData)
-		err := c.BodyParser(&formBody)
-		if err != nil {
-			utils.Log.Println(err)
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"message": "Invalid JSON",
-			})
-		}
-		username = formBody.Username
-		checkFieldExist("Username", username != "", c)
-		password = formBody.Password
-		checkFieldExist("Password", password != "", c)
-	}
-
-	result, err := utils.Login(username, password)
-	if err != nil {
-		utils.Log.Println(err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Internal server error",
-		})
-	}
-	Init()
-	return c.JSON(result)
-
-}
-
 func LiveHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists

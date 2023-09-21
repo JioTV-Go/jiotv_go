@@ -41,118 +41,6 @@ func getCredentialsPath() string {
 	return credentials_path
 }
 
-func Login(username, password string) (map[string]string, error) {
-	postData := map[string]string{
-		"username": username,
-		"password": password,
-	}
-
-	// Process the username
-	u := postData["username"]
-	var user string
-	if strings.Contains(u, "@") {
-		user = u
-	} else {
-		user = "+91" + u
-	}
-
-	passw := postData["password"]
-
-	// Set headers
-	headers := map[string]string{
-		"x-api-key":    "l7xx75e822925f184370b2e25170c5d5820a",
-		"Content-Type": "application/json",
-	}
-
-	// Construct payload
-	payload := map[string]interface{}{
-		"identifier":           user,
-		"password":             passw,
-		"rememberUser":         "T",
-		"upgradeAuth":          "Y",
-		"returnSessionDetails": "T",
-		"deviceInfo": map[string]interface{}{
-			"consumptionDeviceName": "Jio",
-			"info": map[string]interface{}{
-				"type": "android",
-				"platform": map[string]string{
-					"name":    "vbox86p",
-					"version": "8.0.0",
-				},
-				"androidId": "6fcadeb7b4b10d77",
-			},
-		},
-	}
-
-	// Convert payload to JSON
-	payloadJSON, err := json.Marshal(payload)
-	if err != nil {
-		return nil, err
-	}
-
-	// Make the request
-	url := "https://api.jio.com/v3/dip/user/unpw/verify"
-	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
-
-	req.SetRequestURI(url)
-	req.Header.SetContentType("application/json")
-	req.Header.SetMethod("POST")
-	for key, value := range headers {
-		req.Header.Set(key, value)
-	}
-	req.SetBody(payloadJSON)
-
-	client := GetRequestClient()
-	resp := fasthttp.AcquireResponse()
-	defer fasthttp.ReleaseResponse(resp)
-
-	// Perform the HTTP POST request
-	if err := client.Do(req, resp); err != nil {
-		return nil, err
-	}
-
-	// Check the response status code
-	if resp.StatusCode() != fasthttp.StatusOK {
-		return nil, fmt.Errorf("request failed with status code: %d", resp.StatusCode())
-	}
-
-	// Read response body
-	body := resp.Body()
-
-	var result map[string]interface{}
-	if err := json.Unmarshal(body, &result); err != nil {
-		return nil, err
-	}
-
-	ssoToken := result["ssoToken"].(string)
-	if ssoToken != "" {
-		crm := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["subscriberId"].(string)
-		uniqueId := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["unique"].(string)
-
-		credentialsPath := getCredentialsPath()
-		file, err := os.Create(credentialsPath)
-		if err != nil {
-			return nil, err
-		}
-		defer file.Close()
-
-		// Write result as credentials.json
-		file.WriteString(`{"ssoToken":"` + ssoToken + `","crm":"` + crm + `","uniqueId":"` + uniqueId + `"}`)
-		return map[string]string{
-			"status":   "success",
-			"ssoToken": ssoToken,
-			"crm":      result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["subscriberId"].(string),
-			"uniqueId": result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["unique"].(string),
-		}, nil
-	} else {
-		return map[string]string{
-			"status":  "failed",
-			"message": "Invalid credentials",
-		}, nil
-	}
-}
-
 func LoginSendOTP(number string) (bool, error) {
 	postData := map[string]string{
 		"number": number,
@@ -343,12 +231,14 @@ func loadCredentialsFromFile(filename string) (map[string]string, error) {
 
 func GetLoginCredentials() (map[string]string, error) {
 	// Use credentials from environment variables if available
+	jiotv_accessToken := os.Getenv("JIOTV_ACCESS_TOKEN")
 	jiotv_ssoToken := os.Getenv("JIOTV_SSO_TOKEN")
 	jiotv_crm := os.Getenv("JIOTV_CRM")
 	jiotv_uniqueId := os.Getenv("JIOTV_UNIQUE_ID")
 	if jiotv_ssoToken != "" && jiotv_crm != "" && jiotv_uniqueId != "" {
 		Log.Println("Using credentials from environment variables")
 		return map[string]string{
+			"accessToken": jiotv_accessToken,
 			"ssoToken": jiotv_ssoToken,
 			"crm":      jiotv_crm,
 			"uniqueId": jiotv_uniqueId,
