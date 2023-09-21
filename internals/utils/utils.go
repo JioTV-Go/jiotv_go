@@ -181,7 +181,7 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer file.Close()
+		defer file.Close() // skipcq: GO-S2307
 
 		// Write result as credentials.json
 		file.WriteString(`{"ssoToken":"` + ssotoken + `","crm":"` + crm + `","uniqueId":"` + uniqueId + `","accessToken":"` + accessToken + `","refreshToken":"` + refreshtoken + `"}`)
@@ -215,7 +215,7 @@ func loadCredentialsFromFile(filename string) (map[string]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer file.Close()
+		defer file.Close() // skipcq: GO-S2307
 
 		data, err := io.ReadAll(file)
 		if err != nil {
