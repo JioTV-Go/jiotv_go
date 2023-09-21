@@ -21,12 +21,21 @@ type LoginRequestBodyData struct {
 	Password string `json:"password" xml:"password" form:"password"`
 }
 
+type LoginSendOTPRequestBodyData struct {
+	MobileNumber string `json:"number" xml:"number" form:"number"`
+}
+
+type LoginVerifyOTPRequestBodyData struct {
+	MobileNumber string `json:"number" xml:"number" form:"number"`
+	OTP          string `json:"otp" xml:"otp" form:"otp"`
+}
+
 func Init() {
 	credentials, err := utils.GetLoginCredentials()
 	if err != nil {
 		utils.Log.Println("Login error!")
 	} else {
-		TV = television.NewTelevision(credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])
+		TV = television.NewTelevision(credentials["accessToken"], credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])
 	}
 }
 
@@ -69,40 +78,6 @@ func checkFieldExist(field string, check bool, c *fiber.Ctx) {
 			"message": field + " not provided",
 		})
 	}
-}
-
-func LoginHandler(c *fiber.Ctx) error {
-	var username, password string
-	if c.Method() == "GET" {
-		username = c.Query("username")
-		checkFieldExist("Username", username != "", c)
-		password = c.Query("password")
-		checkFieldExist("Password", password != "", c)
-	} else if c.Method() == "POST" {
-		formBody := new(LoginRequestBodyData)
-		err := c.BodyParser(&formBody)
-		if err != nil {
-			utils.Log.Println(err)
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"message": "Invalid JSON",
-			})
-		}
-		username = formBody.Username
-		checkFieldExist("Username", username != "", c)
-		password = formBody.Password
-		checkFieldExist("Password", password != "", c)
-	}
-
-	result, err := utils.Login(username, password)
-	if err != nil {
-		utils.Log.Println(err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Internal server error",
-		})
-	}
-	Init()
-	return c.JSON(result)
-
 }
 
 func LiveHandler(c *fiber.Ctx) error {
@@ -249,4 +224,55 @@ func FaviconHandler(c *fiber.Ctx) error {
 
 func PlaylistHandler(c *fiber.Ctx) error {
 	return c.Redirect("/channels?type=m3u", fiber.StatusMovedPermanently)
+}
+
+func LoginSendOTPHandler(c *fiber.Ctx) error {
+	// get mobile number from post request
+	formBody := new(LoginSendOTPRequestBodyData)
+	err := c.BodyParser(&formBody)
+	if err != nil {
+		utils.Log.Println(err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid JSON",
+		})
+	}
+	mobileNumber := formBody.MobileNumber
+	checkFieldExist("Mobile Number", mobileNumber != "", c)
+
+	result, err := utils.LoginSendOTP(mobileNumber)
+	if err != nil {
+		utils.Log.Println(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err,
+		})
+	}
+	return c.JSON(fiber.Map{
+		"status": result,
+	})
+}
+
+func LoginVerifyOTPHandler(c *fiber.Ctx) error {
+	// get mobile number and otp from post request
+	formBody := new(LoginVerifyOTPRequestBodyData)
+	err := c.BodyParser(&formBody)
+	if err != nil {
+		utils.Log.Println(err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid JSON",
+		})
+	}
+	mobileNumber := formBody.MobileNumber
+	checkFieldExist("Mobile Number", mobileNumber != "", c)
+	otp := formBody.OTP
+	checkFieldExist("OTP", otp != "", c)
+
+	result, err := utils.LoginVerifyOTP(mobileNumber, otp)
+	if err != nil {
+		utils.Log.Println(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Internal server error",
+		})
+	}
+	Init()
+	return c.JSON(result)
 }

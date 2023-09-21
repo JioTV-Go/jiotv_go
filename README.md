@@ -95,6 +95,7 @@ In cases where remote server permissions prevent the creation of the `credential
 1. On your local machine, log in to JioTV to generate your `credentials.json`.
 
 2. Configure the following environment variables on your remote server:
+    - `JIOTV_ACCESS_TOKEN` - The `access_token` from your `credentials.json`.
    - `JIOTV_SSO_TOKEN` - The `ssoToken` from your `credentials.json`.
    - `JIOTV_CRM` - The `crm` from your `credentials.json`.
    - `JIOTV_UNIQUE_ID` - The `uniqueId` from your `credentials.json`.
@@ -117,7 +118,9 @@ With these environment variables set, the `credentials.json` will be bypassed, a
 
 ### **API Endpoints**
 
-- **`/login?username=<username>&password=<password>`**: Forgot your password? No worries, visit the [JioTV Password Recovery](https://www.jio.com/selfcare/signup/forgot-password) page to reset it. You can also perform a POST request to this endpoint with data in the body.
+- **`/login/sendOTP`**: Request an OTP to log in to JioTV.
+
+- **`/login/verifyOTP`**: Verify the OTP and log in to JioTV.
 
 - **`/channels`**: Discover the complete list of available channels.
 

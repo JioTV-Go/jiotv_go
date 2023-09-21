@@ -10,11 +10,12 @@ import (
 )
 
 type Television struct {
-	ssoToken string
-	crm      string
-	uniqueID string
-	headers  map[string]string
-	client   *fasthttp.Client
+	accessToken string
+	ssoToken    string
+	crm         string
+	uniqueID    string
+	headers     map[string]string
+	client      *fasthttp.Client
 }
 
 type Channel struct {
@@ -69,35 +70,34 @@ var LanguageMap = map[int]string{
 	18: "Other",
 }
 
-func NewTelevision(ssoToken, crm, uniqueID string) *Television {
+func NewTelevision(accessToken, ssoToken, crm, uniqueID string) *Television {
 	headers := map[string]string{
 		"Content-type": "application/x-www-form-urlencoded",
 		"appkey":       "NzNiMDhlYzQyNjJm",
-		"channelId":    "",
 		"channel_id":   "",
 		"crmid":        crm,
+		"userId":       crm,
 		"deviceId":     "e4286d7b481d69b8",
 		"devicetype":   "phone",
-		"isott":        "true",
+		"isott":        "false",
 		"languageId":   "6",
 		"lbcookie":     "1",
 		"os":           "android",
-		"osVersion":    "8.1.0",
-		"srno":         "230203144000",
-		"ssotoken":     ssoToken,
+		"osVersion":    "13",
 		"subscriberId": crm,
 		"uniqueId":     uniqueID,
-		"User-Agent":   "plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7",
+		"User-Agent":   "okhttp/4.2.2",
 		"usergroup":    "tvYR7NSNn7rymo3F",
-		"versionCode":  "277",
+		"versionCode":  "315",
 	}
 
 	return &Television{
-		ssoToken: ssoToken,
-		crm:      crm,
-		uniqueID: uniqueID,
-		headers:  headers,
-		client:   &fasthttp.Client{},
+		accessToken: accessToken,
+		ssoToken:    ssoToken,
+		crm:         crm,
+		uniqueID:    uniqueID,
+		headers:     headers,
+		client:      &fasthttp.Client{},
 	}
 }
 
@@ -106,18 +106,15 @@ func (tv *Television) Live(channelID string) string {
 	defer fasthttp.ReleaseArgs(formData)
 
 	formData.Add("channel_id", channelID)
-	formData.Add("channelId", channelID)
 	formData.Add("stream_type", "Seek")
 
-	url := "https://tv.media.jio.com/apis/v2.2/getchannelurl/getchannelurl"
+	url := "https://jiotvapi.media.jio.com/playback/apis/v1/geturl?langId=6"
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 
 	req.SetRequestURI(url)
-	req.Header.SetContentType("application/x-www-form-urlencoded")
 	req.Header.SetMethod("POST")
-	req.Header.SetUserAgent("plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7")
 
 	// Encode the form data and set it as the request body
 	req.SetBody(formData.QueryString())
@@ -126,6 +123,8 @@ func (tv *Television) Live(channelID string) string {
 	for key, value := range tv.headers {
 		req.Header.Set(key, value)
 	}
+	req.Header.Set("accesstoken", tv.accessToken)
+	req.Header.Set("channel_id", channelID)
 
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
@@ -199,8 +198,9 @@ func (tv *Television) RenderKey(url string, channelID string) ([]byte, int) {
 	for key, value := range tv.headers {
 		req.Header.Set(key, value) // Assuming only one value for each header
 	}
+	req.Header.Set("srno", "230203144000")
+	req.Header.Set("ssotoken", tv.ssoToken)
 	req.Header.Set("channelId", channelID)
-	req.Header.Set("channel_id", channelID)
 
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
