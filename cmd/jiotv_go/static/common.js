@@ -1,4 +1,4 @@
-getCurrentTheme = () => {
+const getCurrentTheme = () => {
   const htmlTag = document.getElementsByTagName("html")[0];
   if (htmlTag.getAttribute("data-theme")) {
     return htmlTag.getAttribute("data-theme");
@@ -14,7 +14,7 @@ getCurrentTheme = () => {
   }
 };
 
-toggleTheme = () => {
+const toggleTheme = () => {
   // toggle or add attribute "data-theme" to html tag
   const htmlTag = document.getElementsByTagName("html")[0];
   if (getCurrentTheme() == "dark") {
@@ -24,7 +24,7 @@ toggleTheme = () => {
   }
 };
 
-initializeTheme = () => {
+const initializeTheme = () => {
   const sunIcon = document.getElementById("sunIcon");
   const moonIcon = document.getElementById("moonIcon");
 
