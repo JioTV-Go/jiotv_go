@@ -28,6 +28,8 @@ case $ARCH in
     ;;
 esac
 
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+
 usage() {
     echo "Usage: $0 {install|update|run}"
     echo "  install: Install JioTV Go for the first time"
@@ -49,7 +51,7 @@ release_file_name() {
     RELEASE_INFO=$(curl -s "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/releases/latest")
     LATEST_VERSION=$(echo "$RELEASE_INFO" | grep -o '"tag_name": "[^"]*' | sed 's/"tag_name": "//')
     
-    file_name="$BINARY_NAME-$LATEST_VERSION-linux-$ARCH"
+    file_name="$BINARY_NAME-$LATEST_VERSION-$OS-$ARCH"
 }
 
 download_binary() {
