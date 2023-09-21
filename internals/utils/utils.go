@@ -192,7 +192,7 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 			"ssoToken":     ssotoken,
 			"crm":          crm,
 			"uniqueId":     uniqueId,
-		}, nil
+		}, file.Sync()
 	} else {
 		return map[string]string{
 			"status":  "failed",
@@ -226,7 +226,7 @@ func loadCredentialsFromFile(filename string) (map[string]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		return credentials, nil
+		return credentials, file.Sync()
 	}
 	return nil, err
 }
