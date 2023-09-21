@@ -237,7 +237,7 @@ func GetLoginCredentials() (map[string]string, error) {
 	jiotv_ssoToken := os.Getenv("JIOTV_SSO_TOKEN")
 	jiotv_crm := os.Getenv("JIOTV_CRM")
 	jiotv_uniqueId := os.Getenv("JIOTV_UNIQUE_ID")
-	if jiotv_ssoToken != "" && jiotv_crm != "" && jiotv_uniqueId != "" {
+	if jiotv_accessToken != "" && jiotv_ssoToken != "" && jiotv_crm != "" && jiotv_uniqueId != "" {
 		Log.Println("Using credentials from environment variables")
 		return map[string]string{
 			"accessToken": jiotv_accessToken,
