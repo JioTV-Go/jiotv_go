@@ -26,7 +26,7 @@ func getCredentialsPath() string {
 			credentials_path += "/"
 		}
 		// if folder path is not found, create the folder in current directory
-		err := os.Mkdir(credentials_path, 0755)
+		err := os.Mkdir(credentials_path, 0640)
 		if err != nil {
 			// if folder already exists, ignore the error
 			if !os.IsExist(err) {
