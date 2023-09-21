@@ -43,7 +43,6 @@ install() {
     check_previous_command_success
 }
 
-
 if [ "$TERMUX_VERSION" ]; then
     # android
     install "android"
