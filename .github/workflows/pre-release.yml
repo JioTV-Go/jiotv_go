@@ -36,7 +36,12 @@ jobs:
       - name: Build Executables 🗄️ 🔃
         run: |
           mkdir -p bin
+          allowed_archs="amd64 arm arm64 386"
           for var in $(go tool dist list); do
+            if [[ ! $allowed_archs =~ "$(cut -d '/' -f 2 <<<$var)" ]]; then
+                echo "Skipping: $var"
+                continue
+            fi
             case "$(cut -d '/' -f 1 <<<$var)" in
                 "windows")
                     echo "Building $var"
