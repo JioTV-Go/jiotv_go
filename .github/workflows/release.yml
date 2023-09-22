@@ -51,7 +51,7 @@ jobs:
                   ;;
             esac
           done
-          
+
       - name: Increment version 📈
         id: gen_tag
         run: |
@@ -92,7 +92,7 @@ jobs:
             fi
           fi
           # Calculate the new version number.
-          new_version="${major}.${minor}.${patch}"
+          new_version="v${major}.${minor}.${patch}"
           echo "New version: $new_version"
           # Set the new tag.
           echo "tag=$new_version" >> $GITHUB_OUTPUT
