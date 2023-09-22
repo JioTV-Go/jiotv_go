@@ -40,11 +40,11 @@ jobs:
             case "$(cut -d '/' -f 1 <<<$var)" in
                 "windows")
                     echo "Building $var"
-                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build ./cmd/jiotv_go -trimpath -ldflags -s -w -o bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var).exe"
+                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build -o bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var).exe" -trimpath -ldflags="-s -w" ./cmd/jiotv_go
                   ;;
                   "linux" | "darwin")
                     echo "Building $var"
-                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build ./cmd/jiotv_go -o bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)"
+                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build -o bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)" -trimpath -ldflags="-s -w" ./cmd/jiotv_go
                   ;;
                   *)
                     echo "Skipping: $var"
