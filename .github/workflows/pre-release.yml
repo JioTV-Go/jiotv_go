@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - "dev"
-      - "main"
     paths-ignore:
       - "README.md"
       - "LICENSE"
@@ -17,7 +16,7 @@ on:
       - "**.sh"
 
 concurrency:
-  group: ${{ github.ref }}
+  group: ${{ github.ref }}-pre-release
   cancel-in-progress: true
 
 permissions:
