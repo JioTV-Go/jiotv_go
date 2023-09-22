@@ -15,6 +15,7 @@ on:
       - "run_server.bat"
       - "assets/**"
       - "docs/**"
+      - ".github/**"
 
 concurrency:
   group: ${{ github.repository }}-${{ github.ref_name }}
