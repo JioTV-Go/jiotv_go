@@ -1,8 +1,6 @@
 name: JioTV Go Docker Build
 
 on:
-#   schedule:
-#     - cron: "0 10 * * *"
   push:
     branches:
       - "main"
