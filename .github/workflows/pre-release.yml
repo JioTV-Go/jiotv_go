@@ -39,11 +39,11 @@ jobs:
             case "$(cut -d '/' -f 1 <<<$var)" in
                 "windows")
                     echo "Building $var"
-                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build ./cmd/jiotv_go -ldflags -H=windowsgui -o ./bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var).exe"
+                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build ./cmd/jiotv_go -ldflags -H=windowsgui -o bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var).exe"
                   ;;
                   "linux" | "darwin")
                     echo "Building $var"
-                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build ./cmd/jiotv_go -o ./bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)"
+                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build ./cmd/jiotv_go -o bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)"
                   ;;
                   *)
                     echo "Skipping OS: $(cut -d '/' -f 1 <<<$var)"
