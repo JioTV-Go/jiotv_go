@@ -4,13 +4,17 @@ FROM --platform=$BUILDPLATFORM golang:1.21-alpine AS builder
 WORKDIR /app
 
 # Copy source files from the host computer to the container
-COPY . .
+COPY go.mod ./
+COPY go.sum ./
+COPY cmd ./cmd
+COPY internals ./internals
 
 # Build the Go app with optimizations
 RUN go build -ldflags="-s -w" -trimpath -o /app/jiotv_go ./cmd/jiotv_go
 
 # Stage 2: Create the final minimal image
-FROM alpine
+# skipcq: DOK-DL3007
+FROM alpine:latest 
 
 # Set the working directory inside the container
 WORKDIR /app

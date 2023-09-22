@@ -27,7 +27,7 @@ func getCredentialsPath() string {
 			credentials_path += "/"
 		}
 		// if folder path is not found, create the folder in current directory
-		err := os.Mkdir(credentials_path, 0755)
+		err := os.Mkdir(credentials_path, 0640)
 		if err != nil {
 			// if folder already exists, ignore the error
 			if !os.IsExist(err) {
@@ -182,7 +182,7 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer file.Close()
+		defer file.Close() // skipcq: GO-S2307
 
 		// Write result as credentials.json
 		file.WriteString(`{"ssoToken":"` + ssotoken + `","crm":"` + crm + `","uniqueId":"` + uniqueId + `","accessToken":"` + accessToken + `","refreshToken":"` + refreshtoken + `"}`)
@@ -193,7 +193,7 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 			"ssoToken":     ssotoken,
 			"crm":          crm,
 			"uniqueId":     uniqueId,
-		}, nil
+		}, file.Sync()
 	} else {
 		return map[string]string{
 			"status":  "failed",
@@ -213,7 +213,7 @@ func loadCredentialsFromFile(filename string) (map[string]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		defer file.Close()
+		defer file.Close() // skipcq: GO-S2307
 
 		data, err := io.ReadAll(file)
 		if err != nil {
@@ -224,7 +224,7 @@ func loadCredentialsFromFile(filename string) (map[string]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		return credentials, nil
+		return credentials, file.Sync()
 	}
 	return nil, err
 }
@@ -235,7 +235,7 @@ func GetLoginCredentials() (map[string]string, error) {
 	jiotv_ssoToken := os.Getenv("JIOTV_SSO_TOKEN")
 	jiotv_crm := os.Getenv("JIOTV_CRM")
 	jiotv_uniqueId := os.Getenv("JIOTV_UNIQUE_ID")
-	if jiotv_ssoToken != "" && jiotv_crm != "" && jiotv_uniqueId != "" {
+	if jiotv_accessToken != "" && jiotv_ssoToken != "" && jiotv_crm != "" && jiotv_uniqueId != "" {
 		Log.Println("Using credentials from environment variables")
 		return map[string]string{
 			"accessToken": jiotv_accessToken,

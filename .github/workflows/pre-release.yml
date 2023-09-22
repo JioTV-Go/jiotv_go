@@ -1,0 +1,81 @@
+name: Pre-Release on Push
+
+on:
+  push:
+    branches:
+      - "dev"
+    paths-ignore:
+      - "README.md"
+      - "LICENSE"
+      - "package.json"
+      - "package-lock.json"
+      - "tailwind.config.js"
+      - ".gitignore"
+      - ".dockerignore"
+      - "Dockerfile"
+      - "**.sh"
+
+concurrency:
+  group: ${{ github.ref }}-pre-release
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  pre-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Setup Go 📦
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: "go.mod"
+      - name: Build Executables 🗄️ 🔃
+        run: |
+          mkdir -p bin
+          allowed_archs="amd64 arm arm64 386"
+          for var in $(go tool dist list); do
+            if [[ ! $allowed_archs =~ "$(cut -d '/' -f 2 <<<$var)" ]]; then
+                echo "Skipping: $var"
+                continue
+            fi
+            case "$(cut -d '/' -f 1 <<<$var)" in
+                "windows")
+                    echo "Building $var"
+                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build -o bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var).exe" -trimpath -ldflags="-s -w" ./cmd/jiotv_go
+                  ;;
+                  "linux" | "darwin")
+                    echo "Building $var"
+                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build -o bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)" -trimpath -ldflags="-s -w" ./cmd/jiotv_go
+                  ;;
+                  *)
+                    echo "Skipping: $var"
+                  ;;
+            esac
+          done
+      - name: Delete previous release 🗑️
+        run: |
+          tag=$(git describe --tags --match "${{ github.ref_name }}.[0-9]*.[0-9]*.[0-9]*" --abbrev=0)
+          gh release delete -y $tag --cleanup-tag
+        continue-on-error: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Generate tag
+        id: gen_tag
+        run: |
+          echo "tag=${{ github.ref_name }}.$(date +'%Y.%m.%d.%H.%M.%s')" >> $GITHUB_OUTPUT
+      - name: Release 📦
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: false
+          prerelease: true
+          tag_name: ${{ steps.gen_tag.outputs.tag }}
+          files: |
+            ./bin/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

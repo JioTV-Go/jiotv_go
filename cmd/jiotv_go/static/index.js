@@ -105,7 +105,7 @@ const loginOTPClick = () => {
     .then((res) => res.json())
     .then((data) => {
       if (data.status) {
-        verify_otp_modal.showModal();
+        verify_otp_modal.showModal(); // skipcq: JS-0125
       } else {
         alert("Sending OTP failed!");
       }

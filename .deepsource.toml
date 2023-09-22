@@ -1,0 +1,19 @@
+version = 1
+
+[[analyzers]]
+name = "docker"
+
+[[analyzers]]
+name = "shell"
+
+# [[analyzers]]
+# name = "javascript"
+
+#   [analyzers.meta]
+#   environment = ["browser"]
+
+[[analyzers]]
+name = "go"
+
+  [analyzers.meta]
+  import_root = "github.com/rabilrbl/jiotv_go"

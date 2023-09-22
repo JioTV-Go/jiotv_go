@@ -81,7 +81,7 @@ install_linux() {
 
     if download_binary; then
         echo "JioTV Go $LATEST_VERSION for $ARCH has been downloaded."
-        echo "Execute "$0 run" to start JioTV Go."
+        echo "Execute \"$0 run\" to start JioTV Go."
     else
         echo "Failed to download JioTV Go"
         return 1
@@ -91,7 +91,7 @@ install_linux() {
 # Function to update the binary
 update_linux() {
     # fetch existing file name, if multiple files are present, pick the latest one
-    existing_file_name=$(ls | grep -E "$BINARY_NAME-.*-$ARCH" | sort -r | head -n 1)
+    existing_file_name=$(ls "$BINARY_NAME-*-$ARCH" | sort -r | head -n 1) # skipcq: SH-2012
 
     if [ ! -z "$existing_file_name" ]; then
         echo "Found existing file: $existing_file_name"
@@ -126,7 +126,7 @@ update_linux() {
 # Function to run the binary
 run_linux() {
     # fetch file name from ls command, if multiple files are present, pick the latest one
-    file_name=$(ls | grep -E "$BINARY_NAME-.*-$ARCH" | sort -r | head -n 1)
+    file_name=$(ls "$BINARY_NAME-*-$ARCH" | sort -r | head -n 1) # skipcq: SH-2012
 
     # Check if the binary exists
     if [ -z "$file_name" ]; then
