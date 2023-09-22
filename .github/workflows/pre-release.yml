@@ -59,7 +59,7 @@ jobs:
       - name: Generate tag
         id: gen_tag
         run: |
-          echo "tag=$(date +'%Y.%m.%d.%H.%M.%s').${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "tag=${{ github.ref_name }}.$(date +'%Y.%m.%d.%H.%M.%s')" >> $GITHUB_OUTPUT
       - name: Release 📦
         uses: softprops/action-gh-release@v1
         with:
