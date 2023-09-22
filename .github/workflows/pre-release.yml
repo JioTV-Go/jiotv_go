@@ -1,0 +1,68 @@
+name: Pre-Release on Push
+
+on:
+  push:
+    branches:
+      - "dev"
+      - "main"
+    paths-ignore:
+      - "README.md"
+      - "LICENSE"
+      - "package.json"
+      - "package-lock.json"
+      - "tailwind.config.js"
+      - ".gitignore"
+      - ".dockerignore"
+      - "Dockerfile"
+      - "**.sh"
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  pre-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v3
+      - name: Setup Go 📦
+        uses: actions/setup-go@v4
+        with:
+          go-version-file: "go.mod"
+      - name: Build Executables 🗄️ 🔃
+        run: |
+          for var in $(go tool dist list); do
+            case "$(cut -d '/' -f 1 <<<$var)" in
+                "windows")
+                    echo "Building $var"
+                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build -ldflags -H=windowsgui -o ./bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var).exe" || true
+                  ;;
+                  "linux" | "darwin")
+                    echo "Building $var"
+                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build -o ./bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)" || true
+                  ;;
+                  *)
+                    echo "Skipping OS: $(cut -d '/' -f 1 <<<$var)"
+                  ;;
+            esac
+          done
+        continue-on-error: true
+      - name: Generate tag
+        id: gen_tag
+        run: |
+          echo "tag=dev${{ github.ref_name }}$(date +'%Y.%m.%d')-$(git log --format=%h -1)" >> $GITHUB_ENV
+      - name: Release 📦
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: false
+          prerelease: true
+          tag_name: ${{ steps.gen_tag.outputs.tag }}
+          files: |
+            ./bin/*
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
