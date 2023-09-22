@@ -39,22 +39,21 @@ jobs:
             case "$(cut -d '/' -f 1 <<<$var)" in
                 "windows")
                     echo "Building $var"
-                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build -ldflags -H=windowsgui -o ./bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var).exe" || true
+                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build ./cmd/jiotv_go -ldflags -H=windowsgui -o ./bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var).exe"
                   ;;
                   "linux" | "darwin")
                     echo "Building $var"
-                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build -o ./bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)" || true
+                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build ./cmd/jiotv_go -o ./bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)"
                   ;;
                   *)
                     echo "Skipping OS: $(cut -d '/' -f 1 <<<$var)"
                   ;;
             esac
           done
-        continue-on-error: true
       - name: Generate tag
         id: gen_tag
         run: |
-          echo "tag=dev.${{ github.ref_name }}.$(date +'%Y.%m.%d').$(git log --format=%h -1)" >> $GITHUB_ENV
+          echo "tag=$(date +'%Y.%m.%d.%H.%M.%s').${{ github.ref_name }}" >> $GITHUB_ENV
       - name: Release 📦
         uses: softprops/action-gh-release@v1
         with:
