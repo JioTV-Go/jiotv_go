@@ -81,7 +81,7 @@ install_linux() {
 
     if download_binary; then
         echo "JioTV Go $LATEST_VERSION for $ARCH has been downloaded."
-        echo "Execute "$0 run" to start JioTV Go."
+        echo "Execute \"$0 run\" to start JioTV Go."
     else
         echo "Failed to download JioTV Go"
         return 1
