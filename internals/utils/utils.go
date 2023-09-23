@@ -18,7 +18,7 @@ func GetLogger() *log.Logger {
 	return log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile)
 }
 
-func getCredentialsPath() string {
+func GetCredentialsPath() string {
 	credentials_path := os.Getenv("JIOTV_CREDENTIALS_PATH")
 	if credentials_path != "" {
 		// if trailing slash is not present, add it
@@ -176,7 +176,7 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 		crm := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["subscriberId"].(string)
 		uniqueId := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["unique"].(string)
 
-		credentialsPath := getCredentialsPath()
+		credentialsPath := GetCredentialsPath()
 		file, err := os.Create(credentialsPath)
 		if err != nil {
 			return nil, err
@@ -198,107 +198,6 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 			"status":  "failed",
 			"message": "Invalid OTP",
 		}, nil
-	}
-}
-
-func LoginRefreshAccessToken() map[string]interface{} {
-	Log.Println("Refreshing AccessToken...")
-	tokenData, err := GetLoginCredentials()
-	if err != nil {
-		Log.Fatalln(err)
-		return map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		}
-	}
-
-	// Prepare the request body
-	requestBody := map[string]interface{}{
-		"appName":      "RJIL_JioTV",
-		"deviceId":     "6fcadeb7b4b10d77",
-		"refreshToken": tokenData["refreshToken"],
-	}
-
-	requestBodyJSON, err := json.Marshal(requestBody)
-	if err != nil {
-		Log.Fatalln(err)
-		return map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		}
-	}
-
-	// Prepare the request
-	req := fasthttp.AcquireRequest()
-	req.SetRequestURI("https://auth.media.jio.com/tokenservice/apis/v1/refreshtoken?langId=6")
-	req.Header.SetMethod("POST")
-	req.Header.Set("devicetype", "phone")
-	req.Header.Set("versionCode", "315")
-	req.Header.Set("os", "android")
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-	req.Header.Set("Host", "auth.media.jio.com")
-	req.Header.Set("Accept-Encoding", "gzip")
-	req.Header.Set("User-Agent", "okhttp/4.2.2")
-	req.Header.Set("accessToken", tokenData["accessToken"])
-	req.SetBody(requestBodyJSON)
-
-	// Send the request
-	resp := fasthttp.AcquireResponse()
-	if err := fasthttp.Do(req, resp); err != nil {
-		Log.Fatalln(err)
-		return map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		}
-	}
-
-	// Check the response
-	if resp.StatusCode() != fasthttp.StatusOK {
-		Log.Fatalln("Request failed with status code:", resp.StatusCode())
-		return map[string]interface{}{
-			"success": false,
-			"message": "Token expired, please log in again.",
-		}
-	}
-
-	// Parse the response body
-	respBody, err := resp.BodyGunzip()
-	if err != nil {
-		Log.Fatalln(err)
-		return map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		}
-	}
-	var res map[string]interface{}
-	if err := json.Unmarshal(respBody, &res); err != nil {
-		Log.Fatalln(err)
-		return map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		}
-	}
-
-	// Update tokenData
-	if authToken, ok := res["authToken"].(string); ok {
-		tokenData["accessToken"] = authToken
-		err := os.WriteFile(getCredentialsPath(), []byte(`{"ssoToken":"`+tokenData["ssoToken"]+`","crm":"`+tokenData["crm"]+`","uniqueId":"`+tokenData["uniqueId"]+`","accessToken":"`+tokenData["accessToken"]+`","refreshToken":"`+tokenData["refreshToken"]+`"}`), 0640)
-		if err != nil {
-			Log.Fatalln(err)
-			return map[string]interface{}{
-				"success": false,
-				"message": err.Error(),
-			}
-		}
-		return map[string]interface{}{
-			"success": true,
-			"message": "AccessToken Generated",
-		}
-	} else {
-		return map[string]interface{}{
-			"success": false,
-			"message": "AccessToken not found in response",
-		}
 	}
 }
 
@@ -344,7 +243,7 @@ func GetLoginCredentials() (map[string]string, error) {
 			"uniqueId":    jiotv_uniqueId,
 		}, nil
 	}
-	credentials_path := getCredentialsPath()
+	credentials_path := GetCredentialsPath()
 	credentials, err := loadCredentialsFromFile(credentials_path)
 	if err != nil {
 		return nil, err

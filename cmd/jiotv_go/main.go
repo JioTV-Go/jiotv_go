@@ -4,8 +4,8 @@ import (
 	"embed"
 	"net/http"
 	"os"
-	// "sync"
-	// "time"
+	"sync"
+	"time"
 
 	"github.com/rabilrbl/jiotv_go/internals/handlers"
 	"github.com/rabilrbl/jiotv_go/internals/middleware"
@@ -23,9 +23,9 @@ var viewFiles embed.FS
 //go:embed static/*
 var staticFiles embed.FS
 
-// var (
-// 	schedulerMutex sync.Mutex
-// )
+var (
+	schedulerMutex sync.Mutex
+)
 
 func main() {
 
@@ -80,20 +80,20 @@ func main() {
 	}
 
 	// refresh the token every 30 minutes
-	// go scheduleFunctionCall(func() { utils.LoginRefreshAccessToken() }, 30*time.Minute)
+	go scheduleFunctionCall(func() { handlers.LoginRefreshAccessToken() }, 30*time.Minute)
 	app.Listen(addr)
 }
 
-// func scheduleFunctionCall(fn func(), interval time.Duration) {
-// 	ticker := time.NewTicker(interval)
-// 	defer ticker.Stop()
+func scheduleFunctionCall(fn func(), interval time.Duration) {
+	ticker := time.NewTicker(interval)
+	defer ticker.Stop()
 
-// 	for range ticker.C {
-// 		// Ensure only one instance of the function is running at a time
-// 		schedulerMutex.Lock()
-// 		go func() {
-// 			defer schedulerMutex.Unlock()
-// 			fn()
-// 		}()
-// 	}
-// }
+	for range ticker.C {
+		// Ensure only one instance of the function is running at a time
+		schedulerMutex.Lock()
+		go func() {
+			defer schedulerMutex.Unlock()
+			fn()
+		}()
+	}
+}
