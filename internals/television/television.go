@@ -103,7 +103,7 @@ func NewTelevision(accessToken, ssoToken, crm, uniqueID string) *Television {
 	}
 }
 
-func (tv *Television) Live(channelID string) string {
+func (tv *Television) Live(channelID string) (string, error) {
 	formData := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(formData)
 
@@ -134,6 +134,7 @@ func (tv *Television) Live(channelID string) string {
 	// Perform the HTTP POST request
 	if err := tv.client.Do(req, resp); err != nil {
 		utils.Log.Panic(err)
+		return "", err
 	}
 
 	if resp.StatusCode() == fasthttp.StatusBadRequest {
@@ -149,9 +150,10 @@ func (tv *Television) Live(channelID string) string {
 	var result map[string]interface{}
 	if err := json.Unmarshal(resp.Body(), &result); err != nil {
 		utils.Log.Panic(err)
+		return "", err
 	}
 
-	return result["result"].(string)
+	return result["result"].(string), nil
 }
 
 func (tv *Television) Render(url string) []byte {

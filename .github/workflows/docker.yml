@@ -1,8 +1,6 @@
 name: JioTV Go Docker Build
 
 on:
-#   schedule:
-#     - cron: "0 10 * * *"
   push:
     branches:
       - "main"
@@ -15,7 +13,7 @@ on:
       - "run_server.bat"
       - "assets/**"
       - "docs/**"
-      - ".github/**"
+      - "**.sh"
 
 concurrency:
   group: ${{ github.repository }}-${{ github.ref_name }}

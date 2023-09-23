@@ -85,7 +85,16 @@ func LiveHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
-	liveResult := TV.Live(id)
+	liveResult, err := TV.Live(id)
+	if err != nil {
+		utils.Log.Println(err)
+		utils.LoginRefreshAccessToken()
+		liveResult, err = TV.Live(id)
+		if err != nil {
+			utils.Log.Println(err)
+			return c.SendStatus(fiber.StatusInternalServerError)
+		}
+	}
 	// quote url
 	coded_url := url.QueryEscape(liveResult)
 	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
