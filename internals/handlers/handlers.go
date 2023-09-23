@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -125,7 +126,11 @@ func RenderHandler(c *fiber.Ctx) error {
 		case bytes.HasSuffix(match, []byte(".m3u8")):
 			return []byte("/render.m3u8?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params) + "&channel_key_id=" + channel_id)
 		case bytes.HasSuffix(match, []byte(".ts")):
-			return []byte(baseUrl + string(match) + "?" + params)
+			if os.Getenv("JIOTV_PROXY") != "" {
+				return []byte("/render.ts?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params) + "&channel_key_id=" + channel_id)
+			} else {
+				return []byte(baseUrl + string(match) + "?" + params)
+			}
 		default:
 			return match
 		}
@@ -162,6 +167,19 @@ func RenderKeyHandler(c *fiber.Ctx) error {
 	}
 	keyResult, status := TV.RenderKey(decoded_url, channel_id)
 	return c.Status(status).Send(keyResult)
+}
+
+func RenderTSHandler(c *fiber.Ctx) error {
+	auth := c.Query("auth")
+	// decode url
+	decoded_url, err := url.QueryUnescape(auth)
+	if err != nil {
+		utils.Log.Println(err)
+		return c.SendStatus(fiber.StatusInternalServerError)
+	}
+	tsResult := TV.Render(decoded_url)
+	c.Set("Content-Type", "video/MP2T")
+	return c.Send(tsResult)
 }
 
 func ChannelsHandler(c *fiber.Ctx) error {
