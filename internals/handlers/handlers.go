@@ -2,14 +2,17 @@ package handlers
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/rabilrbl/jiotv_go/internals/television"
 	"github.com/rabilrbl/jiotv_go/internals/utils"
+	"github.com/valyala/fasthttp"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -87,7 +90,7 @@ func LiveHandler(c *fiber.Ctx) error {
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
-		utils.LoginRefreshAccessToken()
+		LoginRefreshAccessToken()
 		liveResult, err = TV.Live(id)
 		if err != nil {
 			utils.Log.Println(err)
@@ -134,7 +137,11 @@ func RenderHandler(c *fiber.Ctx) error {
 		case bytes.HasSuffix(match, []byte(".m3u8")):
 			return []byte("/render.m3u8?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params) + "&channel_key_id=" + channel_id)
 		case bytes.HasSuffix(match, []byte(".ts")):
-			return []byte(baseUrl + string(match) + "?" + params)
+			if os.Getenv("JIOTV_PROXY") != "" {
+				return []byte("/render.ts?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params) + "&channel_key_id=" + channel_id)
+			} else {
+				return []byte(baseUrl + string(match) + "?" + params)
+			}
 		default:
 			return match
 		}
@@ -284,4 +291,105 @@ func LoginVerifyOTPHandler(c *fiber.Ctx) error {
 	}
 	Init()
 	return c.JSON(result)
+}
+
+func LoginRefreshAccessToken() map[string]interface{} {
+	utils.Log.Println("Refreshing AccessToken...")
+	tokenData, err := utils.GetLoginCredentials()
+	if err != nil {
+		utils.Log.Fatalln(err)
+		return map[string]interface{}{
+			"success": false,
+			"message": err.Error(),
+		}
+	}
+
+	// Prepare the request body
+	requestBody := map[string]interface{}{
+		"appName":      "RJIL_JioTV",
+		"deviceId":     "6fcadeb7b4b10d77",
+		"refreshToken": tokenData["refreshToken"],
+	}
+
+	requestBodyJSON, err := json.Marshal(requestBody)
+	if err != nil {
+		utils.Log.Fatalln(err)
+		return map[string]interface{}{
+			"success": false,
+			"message": err.Error(),
+		}
+	}
+
+	// Prepare the request
+	req := fasthttp.AcquireRequest()
+	req.SetRequestURI("https://auth.media.jio.com/tokenservice/apis/v1/refreshtoken?langId=6")
+	req.Header.SetMethod("POST")
+	req.Header.Set("devicetype", "phone")
+	req.Header.Set("versionCode", "315")
+	req.Header.Set("os", "android")
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.Header.Set("Host", "auth.media.jio.com")
+	req.Header.Set("Accept-Encoding", "gzip")
+	req.Header.Set("User-Agent", "okhttp/4.2.2")
+	req.Header.Set("accessToken", tokenData["accessToken"])
+	req.SetBody(requestBodyJSON)
+
+	// Send the request
+	resp := fasthttp.AcquireResponse()
+	if err := fasthttp.Do(req, resp); err != nil {
+		utils.Log.Fatalln(err)
+		return map[string]interface{}{
+			"success": false,
+			"message": err.Error(),
+		}
+	}
+
+	// Check the response
+	if resp.StatusCode() != fasthttp.StatusOK {
+		utils.Log.Fatalln("Request failed with status code:", resp.StatusCode())
+		return map[string]interface{}{
+			"success": false,
+			"message": "Token expired, please log in again.",
+		}
+	}
+
+	// Parse the response body
+	respBody, err := resp.BodyGunzip()
+	if err != nil {
+		utils.Log.Fatalln(err)
+		return map[string]interface{}{
+			"success": false,
+			"message": err.Error(),
+		}
+	}
+	var res map[string]interface{}
+	if err := json.Unmarshal(respBody, &res); err != nil {
+		utils.Log.Fatalln(err)
+		return map[string]interface{}{
+			"success": false,
+			"message": err.Error(),
+		}
+	}
+
+	// Update tokenData
+	if authToken, ok := res["authToken"].(string); ok {
+		err := os.WriteFile(utils.GetCredentialsPath(), []byte(`{"ssoToken":"`+tokenData["ssoToken"]+`","crm":"`+tokenData["crm"]+`","uniqueId":"`+tokenData["uniqueId"]+`","accessToken":"`+authToken+`","refreshToken":"`+tokenData["refreshToken"]+`"}`), 0640)
+		if err != nil {
+			utils.Log.Fatalln(err)
+			return map[string]interface{}{
+				"success": false,
+				"message": err.Error(),
+			}
+		}
+		TV = television.NewTelevision(authToken, tokenData["ssoToken"], tokenData["crm"], tokenData["uniqueId"])
+		return map[string]interface{}{
+			"success": true,
+			"message": "AccessToken Generated",
+		}
+	} else {
+		return map[string]interface{}{
+			"success": false,
+			"message": "AccessToken not found in response",
+		}
+	}
 }
