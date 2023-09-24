@@ -79,9 +79,17 @@ Ready to dive in? Download the latest binary for your operating system from [her
 
 1. If you're a Docker enthusiast, begin by installing [Docker](https://docs.docker.com/get-docker/).
 
-2. Run the command `docker run -p 5001:5001 -v ./.jiotv_go/secrets:/app/secrets ghcr.io/rabilrbl/jiotv_go`.
+2. Run the command 
+     ```sh
+     docker run -p 5001:5001 -v ./.jiotv_go/secrets:/app/secrets ghcr.io/rabilrbl/jiotv_go
+     ```
 
 3. Open your web browser and visit `http://localhost:5001`.
+
+4. To update to latest version, run
+    ```sh
+    docker pull ghcr.io/rabilrbl/jiotv_go:latest
+    ```
 
 ### **Optional Customizations**
 
