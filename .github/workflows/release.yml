@@ -53,7 +53,6 @@ jobs:
           echo "Commits since last tag: $commits"
           # If any of commit messages contains "BREAKING" string, increment major version.
           breaking_changes=$(git log $tag.. --pretty=%B | grep -iE "BREAKING" | wc -l)
-          git log $tag.. --pretty=%B | grep -iE "BREAKING" 
           echo "Breaking changes: $breaking_changes"
           if [[ $breaking_changes -gt 0 ]]; then
             major=$((major + 1))
@@ -62,8 +61,7 @@ jobs:
           else
             # Increment minor version.
             features=$(git log $tag.. --pretty=%B | grep -iE "feat|compatibility|integration|enhance|improvement|upgrade|perf|improve" | wc -l)
-            git log $tag.. --pretty=%B | grep -iE "feat|compatibility|integration|enhance|improvement|upgrade|perf|improve"
-            echo "Features numbers: $features"
+            echo "Features: $features"
             if [[ $features -gt 0 ]]; then
               minor=$((minor + 1))
               patch=0
