@@ -219,6 +219,34 @@ func (tv *Television) RenderKey(url, channelID string) ([]byte, int) {
 	return buf, resp.StatusCode()
 }
 
+func (tv *Television) RenderTS(url string) ([]byte, int, map[string]string) {
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+
+	req.SetRequestURI(url)
+	req.Header.SetMethod("GET")
+
+	// Copy headers from the Television headers map to the request
+	for key, value := range tv.headers {
+		req.Header.Set(key, value)
+	}
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	// Perform the HTTP GET request
+	if err := tv.client.Do(req, resp); err != nil {
+		utils.Log.Panic(err)
+	}
+
+	headers := make(map[string]string)
+	resp.Header.VisitAll(func(key, value []byte) {
+		headers[string(key)] = string(value)
+	})
+
+	return resp.Body(), resp.StatusCode(), headers
+}
+
 func Channels() APIResponse {
 	url := "https://jiotvapi.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?langId=6&os=android&devicetype=phone&usertype=JIO&version=315&langId=6"
 

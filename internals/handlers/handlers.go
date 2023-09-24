@@ -188,12 +188,26 @@ func RenderTSHandler(c *fiber.Ctx) error {
 	// decode url
 	decoded_url, err := url.QueryUnescape(auth)
 	if err != nil {
-		utils.Log.Println(err)
-		return c.SendStatus(fiber.StatusInternalServerError)
+		utils.Log.Panicln(err)
+		return c.SendStatus(fiber.StatusBadRequest)
 	}
-	tsResult := TV.Render(decoded_url)
-	c.Set("Content-Type", "video/MP2T")
-	return c.Send(tsResult)
+
+	contents, statusCode, responseHeaders := TV.RenderTS(decoded_url)
+
+	for key, value := range responseHeaders {
+		c.Set(key, value)
+	}
+
+	// Set the response status code
+	c.Status(statusCode)
+
+	// Stream the response body to the fiber.Ctx response
+	if _, err := c.Write(contents); err != nil {
+		utils.Log.Panic(err)
+		return err
+	}
+
+	return nil
 }
 
 func ChannelsHandler(c *fiber.Ctx) error {
