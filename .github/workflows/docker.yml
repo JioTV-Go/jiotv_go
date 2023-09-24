@@ -15,7 +15,10 @@ on:
       - "docs/**"
       - "**.sh"
       - "**.md"
-      - "**.yml"
+      - ".github/workflows/dependabot_action.yml"
+      - ".github/workflows/pre-release.yml"
+      - ".github/workflows/test-build.yml"
+      - ".github/workflows/docker.yml"
   workflow_dispatch:
 
 concurrency:
