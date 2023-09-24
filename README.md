@@ -95,8 +95,6 @@ Ready to dive in? Download the latest binary for your operating system from [her
 
 - Want to specify a custom port or host? No problem! Simply pass `host:port` or `:port` as an argument to the binary like this: `./jiotv_go "host:port"`. If you are using android script, you can pass the port as an argument to the script like this: `./jiotv_go.sh run "host:port"`.
 
-- By default, TS (video) files are proxied through the server. If you want to disable this feature, set the environment variable `JIOTV_DISABLE_PROXY=true` before running the binary. This will make the server return the direct Jio Server link to the TS file when playing a channel.
-
 - If you prefer a specific path or folder for your `credentials.json`, set the environment variable `JIOTV_CREDENTIALS_PATH=/path` before running the binary.
 
 ### **Proxy 🌐**
