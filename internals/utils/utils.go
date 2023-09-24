@@ -228,7 +228,7 @@ func loadCredentialsFromFile(filename string) (map[string]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		return credentials, file.Sync()
+		return credentials, nil
 	}
 	return nil, err
 }
