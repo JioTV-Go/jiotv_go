@@ -27,30 +27,50 @@ jobs:
         permissions:
             contents: read
         runs-on: ubuntu-latest
-        strategy:
-          matrix:
-              goos: [linux, windows]
-              goarch: [amd64, arm64]
-              exclude:
-                  - goos: windows
-                    goarch: arm64
         steps:
-        - uses: actions/checkout@v4
-        - name: Set up Go
+        - name: Checkout 🛎️
+          uses: actions/checkout@v4
+        - name: Set up Go 🏗️
           uses: actions/setup-go@v4
           with:
             go-version-file: ./go.mod
   
-        - name: Build binary for ${{ matrix.goos }}/${{ matrix.goarch }}
+        - name: Build Executables 🗄️ 🔃
           run: |
-            GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o ./bin/jiotv_go-${{ matrix.goos }}-${{ matrix.goarch }} -ldflags "-s -w" ./cmd/jiotv_go
+            mkdir -p bin
+            allowed_archs="amd64 arm arm64 386"
+            for var in $(go tool dist list); do
+              if [[ ! $allowed_archs =~ "$(cut -d '/' -f 2 <<<$var)" ]]; then
+                  echo "Skipping: $var"
+                  continue
+              fi
+              file_name="jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)"
+              case "$(cut -d '/' -f 1 <<<$var)" in
+                  "windows")
+                      echo "Building $var"
+                      GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build -o bin/"$file_name.exe" -trimpath -ldflags="-s -w" ./cmd/jiotv_go
+                    ;;
+                    "linux" | "darwin")
+                      echo "Building $var"
+                      GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build -o bin/"$file_name" -trimpath -ldflags="-s -w" ./cmd/jiotv_go
+                    ;;
+                    *)
+                      echo "Skipping: $var"
+                    ;;
+              esac
+            done    
 
-        - name: Upload artifact
-          uses: actions/upload-artifact@v3
-          with:
-            name: jiotv_go-${{ matrix.goos }}-${{ matrix.goarch }}
-            path: ./bin/
-
+        - name: Upload artifact 📦
+          run: |
+            for file in bin/*; do
+              echo "Uploading $file"
+              gh api repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts \
+                -F name="$(basename $file)" \
+                -F "artifact_type=go-binary" \
+                -F "file=@$file"
+            done
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     post_success:
       runs-on: ubuntu-latest
       permissions:
