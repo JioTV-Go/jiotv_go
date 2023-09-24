@@ -364,7 +364,8 @@ func LoginRefreshAccessToken() (map[string]interface{}, error) {
 
 	// Send the request
 	resp := fasthttp.AcquireResponse()
-	if err := fasthttp.Do(req, resp); err != nil {
+	client := utils.GetRequestClient()
+	if err := client.Do(req, resp); err != nil {
 		utils.Log.Fatalln(err)
 		return map[string]interface{}{
 			"success": false,
