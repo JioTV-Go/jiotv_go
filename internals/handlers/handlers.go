@@ -96,7 +96,6 @@ func LiveHandler(c *fiber.Ctx) error {
 	if err != nil {
 		utils.Log.Println(err)
 		if err != nil {
-			utils.Log.Println(err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 				"message": err,
 			})

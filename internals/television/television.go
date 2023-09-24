@@ -2,6 +2,7 @@ package television
 
 import (
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/valyala/fasthttp"
@@ -137,7 +138,7 @@ func (tv *Television) Live(channelID string) (string, error) {
 		return "", err
 	}
 
-	if resp.StatusCode() == fasthttp.StatusBadRequest {
+	if resp.StatusCode() != fasthttp.StatusOK {
 		// Store the response body as a string
 		response := string(resp.Body())
 
@@ -145,6 +146,8 @@ func (tv *Television) Live(channelID string) (string, error) {
 		utils.Log.Println("Request headers:", req.Header.String())
 		utils.Log.Println("Request data:", formData.String())
 		utils.Log.Panicln("Response: ", response)
+
+		return "", fmt.Errorf("Request failed with status code: %d\nresponse: %s", resp.StatusCode(), response)
 	}
 
 	var result map[string]interface{}
