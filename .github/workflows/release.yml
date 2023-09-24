@@ -8,6 +8,8 @@ on:
       - "README.md"
       - "LICENSE"
       - "**.sh"
+      - "**.yml"
+      - "**.md"
 
 concurrency:
   group: ${{ github.ref }}-release
@@ -24,6 +26,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Go 📦
         uses: actions/setup-go@v4
