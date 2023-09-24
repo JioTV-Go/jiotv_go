@@ -4,7 +4,6 @@ import (
 	"embed"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/rabilrbl/jiotv_go/internals/handlers"
 	"github.com/rabilrbl/jiotv_go/internals/middleware"
