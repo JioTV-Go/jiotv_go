@@ -8,9 +8,6 @@ on:
       - "README.md"
       - "LICENSE"
       - "**.sh"
-      - "**.yml"
-      - "**.md"
-  workflow_dispatch:
 
 concurrency:
   group: ${{ github.ref }}-release
@@ -27,7 +24,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Go 📦
         uses: actions/setup-go@v4
@@ -35,7 +31,6 @@ jobs:
           go-version-file: "go.mod"
 
       - name: Increment version 📈
-        shell: bash
         id: gen_tag
         run: |
           # setup git
@@ -81,14 +76,13 @@ jobs:
           new_version="v${major}.${minor}.${patch}"
           echo "New version: $new_version"
           # Mirrors tags
-          git tag -fa v$major -m "Mirror for tag $new_version"
-          git tag -fa v$major.$minor -m "Mirror for tag $new_version"
+          git tag -fa v$major -m "Mirror tag $new_version"
+          git tag -fa v$major.$minor -m "Mirror tag $new_version"
           git push --tags --force
           # Set the new tag.
           echo "tag=$new_version" >> $GITHUB_OUTPUT
 
       - name: Build Executables 🗄️ 🔃
-        shell: bash
         run: |
           mkdir -p bin
           allowed_archs="amd64 arm arm64 386"
