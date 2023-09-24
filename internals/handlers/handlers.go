@@ -18,7 +18,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-var TV *television.Television
+var (
+	TV *television.Television
+)
 
 type LoginRequestBodyData struct {
 	Username string `json:"username" xml:"username" form:"username"`
@@ -34,10 +36,10 @@ type LoginVerifyOTPRequestBodyData struct {
 	OTP          string `json:"otp" xml:"otp" form:"otp"`
 }
 
-func Init() {
+func InitLogin() {
 	credentials, err := utils.GetLoginCredentials()
 	if err != nil {
-		utils.Log.Println("Login error!")
+		utils.Log.Println("Login error!", err)
 	} else {
 		// Check validity of credentials
 		RefreshTokenIfExpired(credentials)
@@ -140,7 +142,7 @@ func RenderHandler(c *fiber.Ctx) error {
 		case bytes.HasSuffix(match, []byte(".m3u8")):
 			return []byte("/render.m3u8?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params) + "&channel_key_id=" + channel_id)
 		case bytes.HasSuffix(match, []byte(".ts")):
-			return []byte(baseUrl + string(match) + "?" + params)
+			return []byte("/render.ts?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params))
 		default:
 			return match
 		}
@@ -177,6 +179,33 @@ func RenderKeyHandler(c *fiber.Ctx) error {
 	}
 	keyResult, status := TV.RenderKey(decoded_url, channel_id)
 	return c.Status(status).Send(keyResult)
+}
+
+func RenderTSHandler(c *fiber.Ctx) error {
+	auth := c.Query("auth")
+	// decode url
+	decoded_url, err := url.QueryUnescape(auth)
+	if err != nil {
+		utils.Log.Panicln(err)
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	contents, statusCode, responseHeaders := TV.RenderTS(decoded_url)
+
+	for key, value := range responseHeaders {
+		c.Set(key, value)
+	}
+
+	// Set the response status code
+	c.Status(statusCode)
+
+	// Stream the response body to the fiber.Ctx response
+	if _, err := c.Write(contents); err != nil {
+		utils.Log.Panic(err)
+		return err
+	}
+
+	return nil
 }
 
 func ChannelsHandler(c *fiber.Ctx) error {
@@ -288,7 +317,7 @@ func LoginVerifyOTPHandler(c *fiber.Ctx) error {
 			"message": "Internal server error",
 		})
 	}
-	Init()
+	InitLogin()
 	return c.JSON(result)
 }
 
@@ -380,7 +409,7 @@ func LoginRefreshAccessToken() (map[string]interface{}, error) {
 				"message": err.Error(),
 			}, err
 		}
-		Init()
+		InitLogin()
 		return map[string]interface{}{
 			"success": true,
 			"message": "AccessToken Generated",

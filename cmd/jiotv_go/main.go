@@ -52,13 +52,14 @@ func main() {
 	utils.Log = utils.GetLogger()
 
 	// Initialize the television object
-	handlers.Init()
+	handlers.InitLogin()
 
 	app.Get("/", handlers.IndexHandler)
 	app.Post("/login/sendOTP", handlers.LoginSendOTPHandler)
 	app.Post("/login/verifyOTP", handlers.LoginVerifyOTPHandler)
 	app.Get("/live/:id", handlers.LiveHandler)
 	app.Get("/render.m3u8", handlers.RenderHandler)
+	app.Get("/render.ts", handlers.RenderTSHandler)
 	app.Get("/render.key", handlers.RenderKeyHandler)
 	app.Get("/channels", handlers.ChannelsHandler)
 	app.Get("/playlist.m3u", handlers.PlaylistHandler)

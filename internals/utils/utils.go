@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/valyala/fasthttp"
+	"github.com/valyala/fasthttp/fasthttpproxy"
 )
 
 var (
@@ -81,7 +82,7 @@ func LoginSendOTP(number string) (bool, error) {
 
 	req.SetBody(payloadJSON)
 
-	client := &fasthttp.Client{}
+	client := GetRequestClient()
 
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
@@ -148,7 +149,7 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 
 	req.SetBody(payloadJSON)
 
-	client := &fasthttp.Client{}
+	client := GetRequestClient()
 
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
@@ -227,7 +228,7 @@ func loadCredentialsFromFile(filename string) (map[string]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		return credentials, file.Sync()
+		return credentials, nil
 	}
 	return nil, err
 }
@@ -271,4 +272,26 @@ func ScheduleFunctionCall(fn func(), executeTime time.Time) {
 		time.Sleep(executeTime.Sub(now))
 	}
 	fn()
+}
+
+func GetRequestClient() *fasthttp.Client {
+	// The function shall return a fasthttp.client with proxy if given
+	proxy := os.Getenv("JIOTV_PROXY")
+
+	if proxy != "" {
+		Log.Println("Using proxy: " + proxy)
+		// check if given proxy is socks5 or http
+		if strings.HasPrefix(proxy, "socks5://") {
+			// socks5 proxy
+			return &fasthttp.Client{
+				Dial: fasthttpproxy.FasthttpSocksDialer(proxy),
+			}
+		} else {
+			// http proxy
+			return &fasthttp.Client{
+				Dial: fasthttpproxy.FasthttpHTTPDialer(proxy),
+			}
+		}
+	}
+	return &fasthttp.Client{}
 }

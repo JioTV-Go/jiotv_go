@@ -21,6 +21,7 @@ Ready to dive in? Download the latest binary for your operating system from [her
     - [**Android Users, We've Got You Covered!**](#android-users-weve-got-you-covered)
     - [**Docker Enthusiasts, Here's Your Shortcut!**](#docker-enthusiasts-heres-your-shortcut)
     - [**Optional Customizations**](#optional-customizations)
+    - [**Proxy 🌐**](#proxy-)
     - [**Remote Deployment Made Easy**](#remote-deployment-made-easy)
   - [Explore JioTV Go's Paths and Endpoints 🌐](#explore-jiotv-gos-paths-and-endpoints-)
     - [**Web Paths**](#web-paths)
@@ -94,7 +95,18 @@ Ready to dive in? Download the latest binary for your operating system from [her
 
 - Want to specify a custom port or host? No problem! Simply pass `host:port` or `:port` as an argument to the binary like this: `./jiotv_go "host:port"`. If you are using android script, you can pass the port as an argument to the script like this: `./jiotv_go.sh run "host:port"`.
 
+- By default, TS (video) files are proxied through the server. If you want to disable this feature, set the environment variable `JIOTV_DISABLE_PROXY=true` before running the binary. This will make the server return the direct Jio Server link to the TS file when playing a channel.
+
 - If you prefer a specific path or folder for your `credentials.json`, set the environment variable `JIOTV_CREDENTIALS_PATH=/path` before running the binary.
+
+### **Proxy 🌐**
+
+If you want to use a proxy, set the environment variable `JIOTV_PROXY` before running the binary.
+
+Example: 
+
+- Socks5 Proxy `export JIOTV_PROXY="socks5://user:pass@host:port"`
+- All other Proxy `export JIOTV_PROXY="user:pass@host:port"`
 
 ### **Remote Deployment Made Easy**
 
