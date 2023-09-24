@@ -24,7 +24,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Setup Go 📦
         uses: actions/setup-go@v4
@@ -41,9 +40,6 @@ jobs:
             echo "No semver tag found, use 0.0.0"
             tag="v0.0.0"
           fi
-          # set-up git
-          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
           # Get the major, minor and patch parts from the tag.
           major_minor_patch=$(echo $tag | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")
           echo "Major, minor and patch version: $major_minor_patch"
@@ -63,10 +59,6 @@ jobs:
             major=$((major + 1))
             minor=0
             patch=0
-            # mirror tags
-            git tag -fa v$major -m "Mirror tag"
-            # Update tags in the repo.
-            git push --tags --force
           else
             # Increment minor version.
             features=$(git log $tag.. --pretty=%B | grep -iE "feat|compatibility|integration|enhance|improvement|upgrade|perf|improve" | wc -l)
@@ -78,9 +70,6 @@ jobs:
             else
               patch=$((patch + 1))
             fi
-            git tag -fa "v$major.$minor" -m "Mirror tag"
-            # Update tags in the repo.
-            git push --tags --force
           fi
           # Calculate the new version number.
           new_version="v${major}.${minor}.${patch}"
