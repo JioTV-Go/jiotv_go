@@ -4,6 +4,7 @@ import (
 	"embed"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -76,6 +77,27 @@ func main() {
 	addr := "localhost:5001"
 
 	if len(os.Args) > 1 {
+		// Check if the port is available
+		addrPort := os.Args[1]
+		addrPortSplit := strings.Split(addrPort, ":")
+		// split the address and port
+		if len(addrPortSplit) > 1 {
+			addrPort = addrPortSplit[1]
+		} else {
+			utils.Log.Printf("invalid port number: %s. \nExample: \"localhost:5001\" or \":5001\"", addrPort)
+			os.Exit(1)
+		}
+		check, err := utils.IsPortAvailable(addrPort)
+		if err != nil {
+			utils.Log.Printf("error checking port availability: %s", err)
+			os.Exit(1)
+		}
+		if check {
+			utils.Log.Printf("using port %s", addrPort)
+		} else {
+			utils.Log.Printf("port %s is not available, occupied by another process. Please increase the port number and try again!", addrPort)
+			os.Exit(1)
+		}
 		addr = os.Args[1]
 	}
 
