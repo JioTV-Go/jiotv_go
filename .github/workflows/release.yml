@@ -33,6 +33,9 @@ jobs:
       - name: Increment version 📈
         id: gen_tag
         run: |
+          # setup git
+          git config user.name github-actions
+          git config user.email github-actions@github.com
           # Get the latest tag that looks like a semver tag.
           tag=$(git describe --tags --match "v[0-9]*.[0-9]*.[0-9]*" --abbrev=0)
           echo "Latest tag: $tag"
@@ -72,6 +75,10 @@ jobs:
           # Calculate the new version number.
           new_version="v${major}.${minor}.${patch}"
           echo "New version: $new_version"
+          # Mirrors tags
+          git tag -fa v$major -m "Mirror tag v$new_version"
+          git tag -fa v$major.$minor -m "Mirror tag v$new_version"
+          git push --tags --force
           # Set the new tag.
           echo "tag=$new_version" >> $GITHUB_OUTPUT
 
