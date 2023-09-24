@@ -95,5 +95,8 @@ func main() {
 		addr = os.Args[1]
 	}
 
-	app.Listen(addr)
+	err := app.Listen(addr)
+	if err != nil {
+		utils.Log.Panic(err)
+	}
 }

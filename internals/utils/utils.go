@@ -266,25 +266,6 @@ func CheckLoggedIn() bool {
 	}
 }
 
-func IsPortAvailable(port string) (bool, error) {
-	// Convert the port string to an integer.
-	portNumber, err := strconv.Atoi(port)
-	if err != nil {
-		return false, err
-	}
-
-	// Attempt to listen on the specified port to see if it's available.
-	listener, err := net.Listen("tcp", ":"+strconv.Itoa(portNumber))
-	if err != nil {
-		// If an error occurs while listening, it likely means the port is in use.
-		return false, nil
-	}
-
-	// Close the listener to release the port.
-	_ = listener.Close()
-	return true, nil
-}
-
 func ScheduleFunctionCall(fn func(), executeTime time.Time) {
 	now := time.Now()
 	if executeTime.After(now) {
