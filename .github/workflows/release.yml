@@ -10,6 +10,7 @@ on:
       - "**.sh"
       - "**.yml"
       - "**.md"
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.ref }}-release
