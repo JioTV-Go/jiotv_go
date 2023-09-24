@@ -142,7 +142,7 @@ func RenderHandler(c *fiber.Ctx) error {
 		case bytes.HasSuffix(match, []byte(".m3u8")):
 			return []byte("/render.m3u8?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params) + "&channel_key_id=" + channel_id)
 		case bytes.HasSuffix(match, []byte(".ts")):
-			return []byte("/render.ts?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params) + "&channel_key_id=" + channel_id)
+			return []byte("/render.ts?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params))
 		default:
 			return match
 		}
