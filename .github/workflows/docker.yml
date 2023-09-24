@@ -14,6 +14,9 @@ on:
       - "assets/**"
       - "docs/**"
       - "**.sh"
+      - "**.md"
+      - "**.yml"
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.repository }}-${{ github.ref_name }}
