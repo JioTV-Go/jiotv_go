@@ -75,6 +75,6 @@ func main() {
 
 	err := app.Listen(addr)
 	if err != nil {
-		utils.Log.Panic(err)
+		utils.Log.Fatal(err)
 	}
 }
