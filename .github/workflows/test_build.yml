@@ -61,16 +61,10 @@ jobs:
             done    
 
         - name: Upload artifact 📦
-          run: |
-            for file in bin/*; do
-              echo "Uploading $file"
-              gh api repos/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID/artifacts \
-                -F name="$(basename $file)" \
-                -F "artifact_type=go-binary" \
-                -F "file=@$file"
-            done
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          uses: actions/upload-artifact@v3
+          with:
+            path: bin/**
+            
     post_success:
       runs-on: ubuntu-latest
       permissions:
