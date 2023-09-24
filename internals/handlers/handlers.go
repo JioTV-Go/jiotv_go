@@ -39,7 +39,7 @@ type LoginVerifyOTPRequestBodyData struct {
 func InitLogin() {
 	credentials, err := utils.GetLoginCredentials()
 	if err != nil {
-		utils.Log.Println("Login error!")
+		utils.Log.Println("Login error!", err)
 	} else {
 		// Check validity of credentials
 		RefreshTokenIfExpired(credentials)
