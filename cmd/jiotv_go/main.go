@@ -4,7 +4,6 @@ import (
 	"embed"
 	"net/http"
 	"os"
-	"strings"
 
 	"github.com/rabilrbl/jiotv_go/internals/handlers"
 	"github.com/rabilrbl/jiotv_go/internals/middleware"
@@ -96,5 +95,8 @@ func main() {
 		addr = os.Args[1]
 	}
 
-	app.Listen(addr)
+	err := app.Listen(addr)
+	if err != nil {
+		utils.Log.Fatal(err)
+	}
 }
