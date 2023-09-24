@@ -53,7 +53,7 @@ func main() {
 	utils.Log = utils.GetLogger()
 
 	// Initialize the television object
-	handlers.Init()
+	handlers.InitLogin()
 
 	app.Get("/", handlers.IndexHandler)
 	app.Post("/login/sendOTP", handlers.LoginSendOTPHandler)

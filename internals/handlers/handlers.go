@@ -18,7 +18,9 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-var TV *television.Television
+var (
+	TV *television.Television
+)
 
 type LoginRequestBodyData struct {
 	Username string `json:"username" xml:"username" form:"username"`
@@ -34,7 +36,7 @@ type LoginVerifyOTPRequestBodyData struct {
 	OTP          string `json:"otp" xml:"otp" form:"otp"`
 }
 
-func Init() {
+func InitLogin() {
 	credentials, err := utils.GetLoginCredentials()
 	if err != nil {
 		utils.Log.Println("Login error!")
@@ -140,11 +142,7 @@ func RenderHandler(c *fiber.Ctx) error {
 		case bytes.HasSuffix(match, []byte(".m3u8")):
 			return []byte("/render.m3u8?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params) + "&channel_key_id=" + channel_id)
 		case bytes.HasSuffix(match, []byte(".ts")):
-			if os.Getenv("JIOTV_PROXY") != "" {
-				return []byte("/render.ts?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params) + "&channel_key_id=" + channel_id)
-			} else {
-				return []byte(baseUrl + string(match) + "?" + params)
-			}
+			return []byte("/render.ts?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params) + "&channel_key_id=" + channel_id)
 		default:
 			return match
 		}
@@ -319,7 +317,7 @@ func LoginVerifyOTPHandler(c *fiber.Ctx) error {
 			"message": "Internal server error",
 		})
 	}
-	Init()
+	InitLogin()
 	return c.JSON(result)
 }
 
@@ -411,7 +409,7 @@ func LoginRefreshAccessToken() (map[string]interface{}, error) {
 				"message": err.Error(),
 			}, err
 		}
-		Init()
+		InitLogin()
 		return map[string]interface{}{
 			"success": true,
 			"message": "AccessToken Generated",
