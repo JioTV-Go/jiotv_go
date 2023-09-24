@@ -32,6 +32,7 @@ go.work
 # Credential file
 credentials.json
 jiotv_credentials.json
+jiotv_credentials_v2.json
 
 # Playlist .m3u file
 *.m3u

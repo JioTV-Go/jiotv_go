@@ -10,11 +10,14 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/valyala/fasthttp"
 )
 
-var Log *log.Logger
+var (
+	Log *log.Logger
+)
 
 func GetLogger() *log.Logger {
 	return log.New(os.Stdout, "", log.LstdFlags|log.Lshortfile)
@@ -35,9 +38,9 @@ func GetCredentialsPath() string {
 				Log.Println(err)
 			}
 		}
-		credentials_path += "jiotv_credentials.json"
+		credentials_path += "jiotv_credentials_v2.json"
 	} else {
-		credentials_path = "jiotv_credentials.json"
+		credentials_path = "jiotv_credentials_v2.json"
 	}
 	return credentials_path
 }
@@ -186,7 +189,7 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 		defer file.Close() // skipcq: GO-S2307
 
 		// Write result as credentials.json
-		file.WriteString(`{"ssoToken":"` + ssotoken + `","crm":"` + crm + `","uniqueId":"` + uniqueId + `","accessToken":"` + accessToken + `","refreshToken":"` + refreshtoken + `"}`)
+		file.WriteString(`{"ssoToken":"` + ssotoken + `","crm":"` + crm + `","uniqueId":"` + uniqueId + `","accessToken":"` + accessToken + `","refreshToken":"` + refreshtoken + `","lastTokenRefreshTime":"` + strconv.FormatInt(time.Now().Unix(), 10) + `"}`)
 		return map[string]string{
 			"status":       "success",
 			"accessToken":  accessToken,
@@ -264,20 +267,28 @@ func CheckLoggedIn() bool {
 }
 
 func IsPortAvailable(port string) (bool, error) {
-    // Convert the port string to an integer.
-    portNumber, err := strconv.Atoi(port)
-    if err != nil {
-        return false, err
-    }
+	// Convert the port string to an integer.
+	portNumber, err := strconv.Atoi(port)
+	if err != nil {
+		return false, err
+	}
 
-    // Attempt to listen on the specified port to see if it's available.
-    listener, err := net.Listen("tcp", ":"+strconv.Itoa(portNumber))
-    if err != nil {
-        // If an error occurs while listening, it likely means the port is in use.
-        return false, nil
-    }
+	// Attempt to listen on the specified port to see if it's available.
+	listener, err := net.Listen("tcp", ":"+strconv.Itoa(portNumber))
+	if err != nil {
+		// If an error occurs while listening, it likely means the port is in use.
+		return false, nil
+	}
 
-    // Close the listener to release the port.
-    _ = listener.Close()
-    return true, nil
+	// Close the listener to release the port.
+	_ = listener.Close()
+	return true, nil
+}
+
+func ScheduleFunctionCall(fn func(), executeTime time.Time) {
+	now := time.Now()
+	if executeTime.After(now) {
+		time.Sleep(executeTime.Sub(now))
+	}
+	fn()
 }

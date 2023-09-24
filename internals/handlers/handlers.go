@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/rabilrbl/jiotv_go/internals/television"
 	"github.com/rabilrbl/jiotv_go/internals/utils"
@@ -38,6 +39,8 @@ func Init() {
 	if err != nil {
 		utils.Log.Println("Login error!")
 	} else {
+		// Check validity of credentials
+		RefreshTokenIfExpired(credentials)
 		TV = television.NewTelevision(credentials["accessToken"], credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])
 	}
 }
@@ -90,11 +93,11 @@ func LiveHandler(c *fiber.Ctx) error {
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
-		LoginRefreshAccessToken()
-		liveResult, err = TV.Live(id)
 		if err != nil {
 			utils.Log.Println(err)
-			return c.SendStatus(fiber.StatusInternalServerError)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": err,
+			})
 		}
 	}
 	// quote url
@@ -289,7 +292,7 @@ func LoginVerifyOTPHandler(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
-func LoginRefreshAccessToken() map[string]interface{} {
+func LoginRefreshAccessToken() (map[string]interface{}, error) {
 	utils.Log.Println("Refreshing AccessToken...")
 	tokenData, err := utils.GetLoginCredentials()
 	if err != nil {
@@ -297,7 +300,7 @@ func LoginRefreshAccessToken() map[string]interface{} {
 		return map[string]interface{}{
 			"success": false,
 			"message": err.Error(),
-		}
+		}, err
 	}
 
 	// Prepare the request body
@@ -313,7 +316,7 @@ func LoginRefreshAccessToken() map[string]interface{} {
 		return map[string]interface{}{
 			"success": false,
 			"message": err.Error(),
-		}
+		}, err
 	}
 
 	// Prepare the request
@@ -337,7 +340,7 @@ func LoginRefreshAccessToken() map[string]interface{} {
 		return map[string]interface{}{
 			"success": false,
 			"message": err.Error(),
-		}
+		}, err
 	}
 
 	// Check the response
@@ -346,7 +349,7 @@ func LoginRefreshAccessToken() map[string]interface{} {
 		return map[string]interface{}{
 			"success": false,
 			"message": "Token expired, please log in again.",
-		}
+		}, fmt.Errorf("Request failed with status code: %d", resp.StatusCode())
 	}
 
 	// Parse the response body
@@ -356,7 +359,7 @@ func LoginRefreshAccessToken() map[string]interface{} {
 		return map[string]interface{}{
 			"success": false,
 			"message": err.Error(),
-		}
+		}, err
 	}
 	var res map[string]interface{}
 	if err := json.Unmarshal(respBody, &res); err != nil {
@@ -364,28 +367,45 @@ func LoginRefreshAccessToken() map[string]interface{} {
 		return map[string]interface{}{
 			"success": false,
 			"message": err.Error(),
-		}
+		}, err
 	}
 
 	// Update tokenData
 	if authToken, ok := res["authToken"].(string); ok {
-		err := os.WriteFile(utils.GetCredentialsPath(), []byte(`{"ssoToken":"`+tokenData["ssoToken"]+`","crm":"`+tokenData["crm"]+`","uniqueId":"`+tokenData["uniqueId"]+`","accessToken":"`+authToken+`","refreshToken":"`+tokenData["refreshToken"]+`"}`), 0640)
+		err := os.WriteFile(utils.GetCredentialsPath(), []byte(`{"ssoToken":"`+tokenData["ssoToken"]+`","crm":"`+tokenData["crm"]+`","uniqueId":"`+tokenData["uniqueId"]+`","accessToken":"`+authToken+`","refreshToken":"`+tokenData["refreshToken"]+`","lastTokenRefreshTime":"`+strconv.FormatInt(time.Now().Unix(), 10)+`"}`), 0640)
 		if err != nil {
 			utils.Log.Fatalln(err)
 			return map[string]interface{}{
 				"success": false,
 				"message": err.Error(),
-			}
+			}, err
 		}
-		TV = television.NewTelevision(authToken, tokenData["ssoToken"], tokenData["crm"], tokenData["uniqueId"])
+		Init()
 		return map[string]interface{}{
 			"success": true,
 			"message": "AccessToken Generated",
-		}
+		}, nil
 	} else {
 		return map[string]interface{}{
 			"success": false,
 			"message": "AccessToken not found in response",
-		}
+		}, fmt.Errorf("AccessToken not found in response")
+	}
+}
+
+func RefreshTokenIfExpired(cred map[string]string) {
+	utils.Log.Println("Checking if AccessToken is expired...")
+	lastTokenRefreshTime, err := strconv.ParseInt(cred["lastTokenRefreshTime"], 10, 64)
+	if err != nil {
+		utils.Log.Fatal(err)
+	}
+	lastTokenRefreshTimeUnix := time.Unix(lastTokenRefreshTime, 0)
+	thresholdTime := lastTokenRefreshTimeUnix.Add(1*time.Hour + 50*time.Minute)
+
+	if thresholdTime.Before(time.Now()) {
+		LoginRefreshAccessToken()
+	} else {
+		utils.Log.Println("Refreshing AccessToken after", time.Until(thresholdTime))
+		go utils.ScheduleFunctionCall(func() { RefreshTokenIfExpired(cred) }, thresholdTime)
 	}
 }
