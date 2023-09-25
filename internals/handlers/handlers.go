@@ -43,7 +43,6 @@ func InitLogin() {
 	} else {
 		// Check validity of credentials
 		TV = television.NewTelevision(credentials["accessToken"], credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])
-		go RefreshTokenIfExpired(credentials)
 	}
 }
 
@@ -409,7 +408,8 @@ func LoginRefreshAccessToken() (map[string]interface{}, error) {
 				"message": err.Error(),
 			}, err
 		}
-		InitLogin()
+		TV = television.NewTelevision(authToken, tokenData["ssoToken"], tokenData["crm"], tokenData["uniqueId"])
+		go RefreshTokenIfExpired(tokenData)
 		return map[string]interface{}{
 			"success": true,
 			"message": "AccessToken Generated",
