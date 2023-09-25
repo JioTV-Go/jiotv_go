@@ -437,7 +437,7 @@ func RefreshTokenIfExpired(cred map[string]string) {
 	if thresholdTime.Before(time.Now()) {
 		LoginRefreshAccessToken()
 	} else {
-		utils.Log.Println("Refreshing AccessToken after", time.Until(thresholdTime))
+		utils.Log.Println("Refreshing AccessToken after", time.Until(thresholdTime).Truncate(time.Second))
 		go utils.ScheduleFunctionCall(func() { RefreshTokenIfExpired(cred) }, thresholdTime)
 	}
 }
