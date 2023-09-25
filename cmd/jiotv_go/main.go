@@ -11,6 +11,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
+	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/template/html/v2"
 )
@@ -37,19 +38,25 @@ func main() {
 		AppName:           "JioTV Go",
 	})
 
+	utils.Log = utils.GetLogger()
+
 	app.Use(recover.New(recover.Config{
 		EnableStackTrace: true,
 	}))
 
 	app.Use(middleware.CORS())
 
+	app.Use(logger.New(logger.Config{
+		TimeZone: "Asia/Kolkata",
+		Format: "[${time}] ${status} - ${latency} ${method} ${path} Params:[${queryParams}] IP:[${ip}] Referer:[${referer}] ${error}\n",
+		Output: utils.Log.Writer(),
+	}))
+
 	app.Use("/static", filesystem.New(filesystem.Config{
 		Root:       http.FS(staticFiles),
 		PathPrefix: "static",
 		Browse:     false,
 	}))
-
-	utils.Log = utils.GetLogger()
 
 	// Initialize the television object
 	handlers.InitLogin()
