@@ -89,13 +89,13 @@ func (tv *Television) Live(channelID string) (string, error) {
 		return "", fmt.Errorf("Request failed with status code: %d\nresponse: %s", resp.StatusCode(), response)
 	}
 
-	var result map[string]interface{}
+	var result LiveURLOutput
 	if err := json.Unmarshal(resp.Body(), &result); err != nil {
 		utils.Log.Panic(err)
 		return "", err
 	}
 
-	return result["result"].(string), nil
+	return result.Bitrates.Auto, nil
 }
 
 func (tv *Television) Render(url string) []byte {
