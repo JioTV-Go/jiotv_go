@@ -10,13 +10,13 @@ import (
 	"github.com/rabilrbl/jiotv_go/internals/utils"
 )
 
-func NewTelevision(accessToken, ssoToken, crm, uniqueID string) *Television {
+func NewTelevision(credentials *utils.JIOTV_CREDENTIALS) *Television {
 	headers := map[string]string{
 		"Content-type": "application/x-www-form-urlencoded",
 		"appkey":       "NzNiMDhlYzQyNjJm",
 		"channel_id":   "",
-		"crmid":        crm,
-		"userId":       crm,
+		"crmid":        credentials.CRM,
+		"userId":       credentials.CRM,
 		"deviceId":     "e4286d7b481d69b8",
 		"devicetype":   "phone",
 		"isott":        "false",
@@ -24,8 +24,8 @@ func NewTelevision(accessToken, ssoToken, crm, uniqueID string) *Television {
 		"lbcookie":     "1",
 		"os":           "android",
 		"osVersion":    "13",
-		"subscriberId": crm,
-		"uniqueId":     uniqueID,
+		"subscriberId": credentials.CRM,
+		"uniqueId":     credentials.UniqueID,
 		"User-Agent":   "okhttp/4.2.2",
 		"usergroup":    "tvYR7NSNn7rymo3F",
 		"versionCode":  "315",
@@ -34,10 +34,10 @@ func NewTelevision(accessToken, ssoToken, crm, uniqueID string) *Television {
 	client := utils.GetRequestClient()
 
 	return &Television{
-		accessToken: accessToken,
-		ssoToken:    ssoToken,
-		crm:         crm,
-		uniqueID:    uniqueID,
+		accessToken: credentials.AccessToken,
+		ssoToken:    credentials.SSOToken,
+		crm:         credentials.CRM,
+		uniqueID:    credentials.UniqueID,
 		headers:     headers,
 		client:      client,
 	}

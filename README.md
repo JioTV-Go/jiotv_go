@@ -22,7 +22,6 @@ Ready to dive in? Download the latest binary for your operating system from [her
     - [**Docker Enthusiasts, Here's Your Shortcut!**](#docker-enthusiasts-heres-your-shortcut)
     - [**Optional Customizations**](#optional-customizations)
     - [**Proxy 🌐**](#proxy-)
-    - [**Remote Deployment Made Easy**](#remote-deployment-made-easy)
   - [Explore JioTV Go's Paths and Endpoints 🌐](#explore-jiotv-gos-paths-and-endpoints-)
     - [**Web Paths**](#web-paths)
     - [**API Endpoints**](#api-endpoints)
@@ -105,18 +104,6 @@ Example:
 
 - Socks5 Proxy `export JIOTV_PROXY="socks5://user:pass@host:port"`
 - All other Proxy `export JIOTV_PROXY="user:pass@host:port"`
-
-### **Remote Deployment Made Easy**
-
-In cases where remote server permissions prevent the creation of the `credentials.json` file, follow these steps:
-
-1. On your local machine, log in to JioTV to generate your `credentials.json`.
-
-2. Configure the following environment variables on your remote server:
-    - `JIOTV_ACCESS_TOKEN` - The `access_token` from your `credentials.json`.
-   - `JIOTV_SSO_TOKEN` - The `ssoToken` from your `credentials.json`.
-   - `JIOTV_CRM` - The `crm` from your `credentials.json`.
-   - `JIOTV_UNIQUE_ID` - The `uniqueId` from your `credentials.json`.
 
 With these environment variables set, the `credentials.json` will be bypassed, and your JioTV Go deployment will proceed smoothly. Enjoy the journey!
 
