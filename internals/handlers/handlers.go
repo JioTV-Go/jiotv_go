@@ -360,15 +360,15 @@ func LoginRefreshAccessToken() error {
 		utils.Log.Fatalln(err)
 		return err
 	}
-	var res map[string]interface{}
-	if err := json.Unmarshal(respBody, &res); err != nil {
+	var response RefreshTokenResponse
+	if err := json.Unmarshal(respBody, &response); err != nil {
 		utils.Log.Fatalln(err)
 		return err
 	}
 
 	// Update tokenData
-	if authToken, ok := res["authToken"].(string); ok {
-		tokenData["accessToken"] = authToken
+	if response.AccessToken != "" {
+		tokenData["accessToken"] = response.AccessToken
 		tokenData["lastTokenRefreshTime"] = strconv.FormatInt(time.Now().Unix(), 10)
 		err := os.WriteFile(utils.GetCredentialsPath(), []byte(`{"ssoToken":"`+tokenData["ssoToken"]+`","crm":"`+tokenData["crm"]+`","uniqueId":"`+tokenData["uniqueId"]+`","accessToken":"`+tokenData["accessToken"]+`","refreshToken":"`+tokenData["refreshToken"]+`","lastTokenRefreshTime":"`+tokenData["lastTokenRefreshTime"]+`"}`), 0640)
 		if err != nil {

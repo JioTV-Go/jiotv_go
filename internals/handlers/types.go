@@ -13,3 +13,7 @@ type LoginVerifyOTPRequestBodyData struct {
 	MobileNumber string `json:"number" xml:"number" form:"number"`
 	OTP          string `json:"otp" xml:"otp" form:"otp"`
 }
+
+type RefreshTokenResponse struct {
+	AccessToken string `json:"authToken"`
+}
