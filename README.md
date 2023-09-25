@@ -94,6 +94,8 @@ Ready to dive in? Download the latest binary for your operating system from [her
 
 - Want to specify a custom port or host? No problem! Simply pass `host:port` or `:port` as an argument to the binary like this: `./jiotv_go "host:port"`. If you are using android script, you can pass the port as an argument to the script like this: `./jiotv_go.sh run "host:port"`.
 
+- Disable TS Handler by setting the environment variable `JIOTV_DISABLE_TS_HANDLER=true` before running the binary. By disabling TS Handler, TS video requests will be served directly from JioTV servers instead of being served through the JioTV Go server. This will reduce the load on the server and will also reduce the latency. This is useful on low-end devices where the server is not able to handle the load and the video playback is laggy/buffering.
+
 - If you prefer a specific path or folder for your `credentials.json`, set the environment variable `JIOTV_CREDENTIALS_PATH=/path` before running the binary.
 
 ### **Proxy 🌐**

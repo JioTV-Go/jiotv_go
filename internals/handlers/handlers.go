@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -19,9 +20,14 @@ import (
 
 var (
 	TV *television.Television
+	DisableTSHandler bool
 )
 
 func InitLogin() {
+	DisableTSHandler = os.Getenv("JIOTV_DISABLE_TS_HANDLER") == "true"
+	if DisableTSHandler {
+		utils.Log.Println("TS Handler disabled!. All TS video requests will be served directly from JioTV servers.")
+	}
 	credentials, err := utils.GetJIOTVCredentials()
 	if err != nil {
 		utils.Log.Println("Login error!", err)
@@ -126,6 +132,9 @@ func RenderHandler(c *fiber.Ctx) error {
 		case bytes.HasSuffix(match, []byte(".m3u8")):
 			return []byte("/render.m3u8?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params) + "&channel_key_id=" + channel_id)
 		case bytes.HasSuffix(match, []byte(".ts")):
+			if DisableTSHandler {
+				return []byte(baseUrl + string(match) + "?" + params)
+			}
 			return []byte("/render.ts?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params))
 		default:
 			return match
