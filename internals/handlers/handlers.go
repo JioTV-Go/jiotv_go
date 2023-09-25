@@ -42,6 +42,7 @@ func InitLogin() {
 		utils.Log.Println("Login error!", err)
 	} else {
 		// Check validity of credentials
+		go RefreshTokenIfExpired(tokenData)
 		TV = television.NewTelevision(credentials["accessToken"], credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])
 	}
 }
