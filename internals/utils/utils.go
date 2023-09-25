@@ -12,6 +12,8 @@ import (
 	"strings"
 	"time"
 
+	"gopkg.in/natefinch/lumberjack.v2"
+
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/fasthttpproxy"
 )
@@ -31,6 +33,13 @@ func GetLogger() *log.Logger {
 			log.Println(err)
 		}
 		logger = log.New(file, "[DEBUG] ", log.Ldate|log.Ltime|log.Lshortfile)
+		// rotate log file if it is larger than 10MB
+		logger.SetOutput(&lumberjack.Logger{
+			Filename:   "jiotv_go.log",
+			MaxSize:    5, // megabytes
+			MaxBackups: 3,
+			MaxAge:     7, // days
+		})
 	}
 	return logger
 }
