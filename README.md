@@ -107,8 +107,6 @@ Example:
 - Socks5 Proxy `export JIOTV_PROXY="socks5://user:pass@host:port"`
 - All other Proxy `export JIOTV_PROXY="user:pass@host:port"`
 
-With these environment variables set, the `credentials.json` will be bypassed, and your JioTV Go deployment will proceed smoothly. Enjoy the journey!
-
 ## Explore JioTV Go's Paths and Endpoints 🌐
 
 ### **Web Paths**
