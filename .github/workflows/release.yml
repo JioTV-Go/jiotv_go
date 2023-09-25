@@ -8,11 +8,12 @@ on:
       - "README.md"
       - "LICENSE"
       - "**.sh"
+      - "**.md"
       - ".github/workflows/dependabot_action.yml"
       - ".github/workflows/pre-release.yml"
       - ".github/workflows/test-build.yml"
       - ".github/workflows/docker.yml"
-      - "**.md"
+      - ".github/dependabot.yml"
 
 concurrency:
   group: ${{ github.ref }}-release
