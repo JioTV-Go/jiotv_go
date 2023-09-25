@@ -54,7 +54,7 @@ func LoginSendOTP(number string) (bool, error) {
 	postData["number"] = base64.StdEncoding.EncodeToString([]byte(postData["number"]))
 
 	// Construct payload
-	payload := map[string]string {
+	payload := map[string]string{
 		"number": postData["number"],
 	}
 
@@ -233,7 +233,7 @@ func loadCredentialsFromFile(filename string) (*JIOTV_CREDENTIALS, error) {
 	return nil, err
 }
 
-func GetLoginCredentials() (*JIOTV_CREDENTIALS, error) {
+func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
 	credentials_path := GetCredentialsPath()
 	credentials, err := loadCredentialsFromFile(credentials_path)
 	if err != nil {
@@ -242,7 +242,7 @@ func GetLoginCredentials() (*JIOTV_CREDENTIALS, error) {
 	return credentials, nil
 }
 
-func WriteJIOTVCredentialsToFile(credentials *JIOTV_CREDENTIALS) error {
+func WriteJIOTVCredentials(credentials *JIOTV_CREDENTIALS) error {
 	credentialsPath := GetCredentialsPath()
 	file, err := os.Create(credentialsPath)
 	if err != nil {
@@ -255,7 +255,7 @@ func WriteJIOTVCredentialsToFile(credentials *JIOTV_CREDENTIALS) error {
 
 func CheckLoggedIn() bool {
 	// Check if credentials.json exists
-	_, err := GetLoginCredentials()
+	_, err := GetJIOTVCredentials()
 	if err != nil {
 		return false
 	} else {

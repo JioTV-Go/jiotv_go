@@ -22,7 +22,7 @@ var (
 )
 
 func InitLogin() {
-	credentials, err := utils.GetLoginCredentials()
+	credentials, err := utils.GetJIOTVCredentials()
 	if err != nil {
 		utils.Log.Println("Login error!", err)
 	} else {
@@ -307,7 +307,7 @@ func LoginVerifyOTPHandler(c *fiber.Ctx) error {
 
 func LoginRefreshAccessToken() error {
 	utils.Log.Println("Refreshing AccessToken...")
-	tokenData, err := utils.GetLoginCredentials()
+	tokenData, err := utils.GetJIOTVCredentials()
 	if err != nil {
 		return err
 	}
@@ -369,7 +369,7 @@ func LoginRefreshAccessToken() error {
 	if response.AccessToken != "" {
 		tokenData.AccessToken = response.AccessToken
 		tokenData.LastTokenRefreshTime = strconv.FormatInt(time.Now().Unix(), 10)
-		err := utils.WriteJIOTVCredentialsToFile(tokenData)
+		err := utils.WriteJIOTVCredentials(tokenData)
 		if err != nil {
 			utils.Log.Fatalln(err)
 			return err
