@@ -25,7 +25,7 @@ func GetLogger() *log.Logger {
 		logger = log.New(os.Stdout, "[DEBUG] ", log.Ldate|log.Ltime|log.Lshortfile)
 	} else {
 		// write logs to a file jiotv_go.log
-		file, err := os.OpenFile("jiotv_go.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0640)
+		file, err := os.OpenFile("jiotv_go.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0640) // skipcq: GSC-G302
 		if err != nil {
 			log.Println(err)
 		}
