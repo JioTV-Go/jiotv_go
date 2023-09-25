@@ -206,13 +206,13 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 	}
 }
 
-func loadCredentialsFromFile(filename string) (map[string]string, error) {
+func loadCredentialsFromFile(filename string) (*JIOTV_CREDENTIALS, error) {
 	// check if given file exists, if not ask user username and password then call Login()
 	_, err := os.Stat(filename)
 	if os.IsNotExist(err) {
 		Log.Println("Credentials file not found, please login at the website or goto /login?username=xxx&password=xxx")
 	} else {
-		credentials := make(map[string]string)
+		var credentials JIOTV_CREDENTIALS
 		file, err := os.Open(filename)
 		if err != nil {
 			return nil, err
@@ -228,32 +228,29 @@ func loadCredentialsFromFile(filename string) (map[string]string, error) {
 		if err != nil {
 			return nil, err
 		}
-		return credentials, nil
+		return &credentials, nil
 	}
 	return nil, err
 }
 
-func GetLoginCredentials() (map[string]string, error) {
-	// Use credentials from environment variables if available
-	jiotv_accessToken := os.Getenv("JIOTV_ACCESS_TOKEN")
-	jiotv_ssoToken := os.Getenv("JIOTV_SSO_TOKEN")
-	jiotv_crm := os.Getenv("JIOTV_CRM")
-	jiotv_uniqueId := os.Getenv("JIOTV_UNIQUE_ID")
-	if jiotv_accessToken != "" && jiotv_ssoToken != "" && jiotv_crm != "" && jiotv_uniqueId != "" {
-		Log.Println("Using credentials from environment variables")
-		return map[string]string{
-			"accessToken": jiotv_accessToken,
-			"ssoToken":    jiotv_ssoToken,
-			"crm":         jiotv_crm,
-			"uniqueId":    jiotv_uniqueId,
-		}, nil
-	}
+func GetLoginCredentials() (*JIOTV_CREDENTIALS, error) {
 	credentials_path := GetCredentialsPath()
 	credentials, err := loadCredentialsFromFile(credentials_path)
 	if err != nil {
 		return nil, err
 	}
 	return credentials, nil
+}
+
+func WriteJIOTVCredentialsToFile(credentials *JIOTV_CREDENTIALS) error {
+	credentialsPath := GetCredentialsPath()
+	file, err := os.Create(credentialsPath)
+	if err != nil {
+		return err
+	}
+	// Write result as credentials.json
+	file.WriteString(`{"ssoToken":"` + credentials.SSOToken + `","crm":"` + credentials.CRM + `","uniqueId":"` + credentials.UniqueID + `","accessToken":"` + credentials.AccessToken + `","refreshToken":"` + credentials.RefreshToken + `","lastTokenRefreshTime":"` + strconv.FormatInt(time.Now().Unix(), 10) + `"}`)
+	return file.Close()
 }
 
 func CheckLoggedIn() bool {

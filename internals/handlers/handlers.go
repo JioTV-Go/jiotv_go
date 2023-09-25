@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -29,7 +28,7 @@ func InitLogin() {
 	} else {
 		// Check validity of credentials
 		go RefreshTokenIfExpired(credentials)
-		TV = television.NewTelevision(credentials["accessToken"], credentials["ssoToken"], credentials["crm"], credentials["uniqueId"])
+		TV = television.NewTelevision(credentials)
 	}
 }
 
@@ -317,7 +316,7 @@ func LoginRefreshAccessToken() error {
 	requestBody := map[string]string{
 		"appName":      "RJIL_JioTV",
 		"deviceId":     "6fcadeb7b4b10d77",
-		"refreshToken": tokenData["refreshToken"],
+		"refreshToken": tokenData.RefreshToken,
 	}
 
 	requestBodyJSON, err := json.Marshal(requestBody)
@@ -337,7 +336,7 @@ func LoginRefreshAccessToken() error {
 	req.Header.Set("Host", "auth.media.jio.com")
 	req.Header.Set("Accept-Encoding", "gzip")
 	req.Header.Set("User-Agent", "okhttp/4.2.2")
-	req.Header.Set("accessToken", tokenData["accessToken"])
+	req.Header.Set("accessToken", tokenData.AccessToken)
 	req.SetBody(requestBodyJSON)
 
 	// Send the request
@@ -368,14 +367,14 @@ func LoginRefreshAccessToken() error {
 
 	// Update tokenData
 	if response.AccessToken != "" {
-		tokenData["accessToken"] = response.AccessToken
-		tokenData["lastTokenRefreshTime"] = strconv.FormatInt(time.Now().Unix(), 10)
-		err := os.WriteFile(utils.GetCredentialsPath(), []byte(`{"ssoToken":"`+tokenData["ssoToken"]+`","crm":"`+tokenData["crm"]+`","uniqueId":"`+tokenData["uniqueId"]+`","accessToken":"`+tokenData["accessToken"]+`","refreshToken":"`+tokenData["refreshToken"]+`","lastTokenRefreshTime":"`+tokenData["lastTokenRefreshTime"]+`"}`), 0640)
+		tokenData.AccessToken = response.AccessToken
+		tokenData.LastTokenRefreshTime = strconv.FormatInt(time.Now().Unix(), 10)
+		err := utils.WriteJIOTVCredentialsToFile(tokenData)
 		if err != nil {
 			utils.Log.Fatalln(err)
 			return err
 		}
-		TV = television.NewTelevision(tokenData["accessToken"], tokenData["ssoToken"], tokenData["crm"], tokenData["uniqueId"])
+		TV = television.NewTelevision(tokenData)
 		go RefreshTokenIfExpired(tokenData)
 		return nil
 	} else {
@@ -383,9 +382,9 @@ func LoginRefreshAccessToken() error {
 	}
 }
 
-func RefreshTokenIfExpired(cred map[string]string) {
+func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) {
 	utils.Log.Println("Checking if AccessToken is expired...")
-	lastTokenRefreshTime, err := strconv.ParseInt(cred["lastTokenRefreshTime"], 10, 64)
+	lastTokenRefreshTime, err := strconv.ParseInt(credentials.LastTokenRefreshTime, 10, 64)
 	if err != nil {
 		utils.Log.Fatal(err)
 	}
@@ -396,6 +395,6 @@ func RefreshTokenIfExpired(cred map[string]string) {
 		LoginRefreshAccessToken()
 	} else {
 		utils.Log.Println("Refreshing AccessToken after", time.Until(thresholdTime).Truncate(time.Second))
-		go utils.ScheduleFunctionCall(func() { RefreshTokenIfExpired(cred) }, thresholdTime)
+		go utils.ScheduleFunctionCall(func() { RefreshTokenIfExpired(credentials) }, thresholdTime)
 	}
 }
