@@ -306,19 +306,15 @@ func LoginVerifyOTPHandler(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
-func LoginRefreshAccessToken() (map[string]interface{}, error) {
+func LoginRefreshAccessToken() error {
 	utils.Log.Println("Refreshing AccessToken...")
 	tokenData, err := utils.GetLoginCredentials()
 	if err != nil {
-		utils.Log.Fatalln(err)
-		return map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		}, err
+		return err
 	}
 
 	// Prepare the request body
-	requestBody := map[string]interface{}{
+	requestBody := map[string]string{
 		"appName":      "RJIL_JioTV",
 		"deviceId":     "6fcadeb7b4b10d77",
 		"refreshToken": tokenData["refreshToken"],
@@ -327,10 +323,7 @@ func LoginRefreshAccessToken() (map[string]interface{}, error) {
 	requestBodyJSON, err := json.Marshal(requestBody)
 	if err != nil {
 		utils.Log.Fatalln(err)
-		return map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		}, err
+		return err
 	}
 
 	// Prepare the request
@@ -352,37 +345,25 @@ func LoginRefreshAccessToken() (map[string]interface{}, error) {
 	client := utils.GetRequestClient()
 	if err := client.Do(req, resp); err != nil {
 		utils.Log.Fatalln(err)
-		return map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		}, err
+		return err
 	}
 
 	// Check the response
 	if resp.StatusCode() != fasthttp.StatusOK {
 		utils.Log.Fatalln("Request failed with status code:", resp.StatusCode())
-		return map[string]interface{}{
-			"success": false,
-			"message": "Token expired, please log in again.",
-		}, fmt.Errorf("Request failed with status code: %d", resp.StatusCode())
+		return fmt.Errorf("Request failed with status code: %d", resp.StatusCode())
 	}
 
 	// Parse the response body
 	respBody, err := resp.BodyGunzip()
 	if err != nil {
 		utils.Log.Fatalln(err)
-		return map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		}, err
+		return err
 	}
 	var res map[string]interface{}
 	if err := json.Unmarshal(respBody, &res); err != nil {
 		utils.Log.Fatalln(err)
-		return map[string]interface{}{
-			"success": false,
-			"message": err.Error(),
-		}, err
+		return err
 	}
 
 	// Update tokenData
@@ -392,22 +373,13 @@ func LoginRefreshAccessToken() (map[string]interface{}, error) {
 		err := os.WriteFile(utils.GetCredentialsPath(), []byte(`{"ssoToken":"`+tokenData["ssoToken"]+`","crm":"`+tokenData["crm"]+`","uniqueId":"`+tokenData["uniqueId"]+`","accessToken":"`+tokenData["accessToken"]+`","refreshToken":"`+tokenData["refreshToken"]+`","lastTokenRefreshTime":"`+tokenData["lastTokenRefreshTime"]+`"}`), 0640)
 		if err != nil {
 			utils.Log.Fatalln(err)
-			return map[string]interface{}{
-				"success": false,
-				"message": err.Error(),
-			}, err
+			return err
 		}
 		TV = television.NewTelevision(tokenData["accessToken"], tokenData["ssoToken"], tokenData["crm"], tokenData["uniqueId"])
 		go RefreshTokenIfExpired(tokenData)
-		return map[string]interface{}{
-			"success": true,
-			"message": "AccessToken Generated",
-		}, nil
+		return nil
 	} else {
-		return map[string]interface{}{
-			"success": false,
-			"message": "AccessToken not found in response",
-		}, fmt.Errorf("AccessToken not found in response")
+		return fmt.Errorf("AccessToken not found in response")
 	}
 }
 

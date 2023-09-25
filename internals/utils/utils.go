@@ -54,7 +54,7 @@ func LoginSendOTP(number string) (bool, error) {
 	postData["number"] = base64.StdEncoding.EncodeToString([]byte(postData["number"]))
 
 	// Construct payload
-	payload := map[string]interface{}{
+	payload := map[string]string {
 		"number": postData["number"],
 	}
 
