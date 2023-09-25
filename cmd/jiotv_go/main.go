@@ -48,7 +48,7 @@ func main() {
 
 	app.Use(logger.New(logger.Config{
 		TimeZone: "Asia/Kolkata",
-		Format: "[${time}] ${status} - ${latency} ${method} ${path} Params:[${queryParams}] IP:[${ip}] Referer:[${referer}] ${error}\n",
+		Format: "[${time}] ${status} - ${latency} ${method} ${path} Params:[${queryParams}] IP:[${ip}] ${error}\n",
 		Output: utils.Log.Writer(),
 	}))
 
