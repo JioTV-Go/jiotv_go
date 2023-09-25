@@ -401,7 +401,9 @@ func LoginRefreshAccessToken() (map[string]interface{}, error) {
 
 	// Update tokenData
 	if authToken, ok := res["authToken"].(string); ok {
-		err := os.WriteFile(utils.GetCredentialsPath(), []byte(`{"ssoToken":"`+tokenData["ssoToken"]+`","crm":"`+tokenData["crm"]+`","uniqueId":"`+tokenData["uniqueId"]+`","accessToken":"`+authToken+`","refreshToken":"`+tokenData["refreshToken"]+`","lastTokenRefreshTime":"`+strconv.FormatInt(time.Now().Unix(), 10)+`"}`), 0640)
+		tokenData["accessToken"] = authToken
+		tokenData["lastTokenRefreshTime"] = strconv.FormatInt(time.Now().Unix(), 10)
+		err := os.WriteFile(utils.GetCredentialsPath(), []byte(`{"ssoToken":"`+tokenData["ssoToken"]+`","crm":"`+tokenData["crm"]+`","uniqueId":"`+tokenData["uniqueId"]+`","accessToken":"`+tokenData["accessToken"]+`","refreshToken":"`+tokenData["refreshToken"]+`","lastTokenRefreshTime":"`+tokenData["lastTokenRefreshTime"]+`"}`), 0640)
 		if err != nil {
 			utils.Log.Fatalln(err)
 			return map[string]interface{}{
@@ -409,7 +411,7 @@ func LoginRefreshAccessToken() (map[string]interface{}, error) {
 				"message": err.Error(),
 			}, err
 		}
-		TV = television.NewTelevision(authToken, tokenData["ssoToken"], tokenData["crm"], tokenData["uniqueId"])
+		TV = television.NewTelevision(tokenData["accessToken"], tokenData["ssoToken"], tokenData["crm"], tokenData["uniqueId"])
 		go RefreshTokenIfExpired(tokenData)
 		return map[string]interface{}{
 			"success": true,
