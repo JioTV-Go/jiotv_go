@@ -155,6 +155,8 @@ With these environment variables set, the `credentials.json` will be bypassed, a
 
 JioTV Go is powered by [Golang](https://golang.org/), so let's get started! Here's how to set up and run the server:
 
+Set `JIOTV_DEBUG=true` to enable automatic reloading on templates changes in views folder and to enable debug logs in console/terminal.
+
 1. First, make sure you have Golang installed on your system.
 
 2. Install the necessary dependencies using:

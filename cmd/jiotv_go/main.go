@@ -24,7 +24,7 @@ var staticFiles embed.FS
 func main() {
 
 	engine := html.NewFileSystem(http.FS(viewFiles), ".html")
-	if os.Getenv("DEBUG") == "true" {
+	if os.Getenv("JIOTV_DEBUG") == "true" {
 		engine.Reload(true)
 	}
 
