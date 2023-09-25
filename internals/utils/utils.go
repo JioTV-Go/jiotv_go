@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"os"
 	"strconv"
 	"strings"
@@ -297,9 +298,13 @@ func GetRequestClient() *fasthttp.Client {
 		} else {
 			// http proxy
 			return &fasthttp.Client{
-				Dial: fasthttpproxy.FasthttpHTTPDialer(proxy),
+				Dial: fasthttpproxy.FasthttpHTTPDialerTimeout(proxy, 10*time.Second),
 			}
 		}
 	}
-	return &fasthttp.Client{}
+	return &fasthttp.Client{
+		Dial: fasthttp.DialFunc(func(addr string) (netConn net.Conn, err error) {
+			return fasthttp.DialTimeout(addr, 5*time.Second)
+		}),
+	}
 }
