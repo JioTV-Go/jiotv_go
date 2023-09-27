@@ -75,6 +75,7 @@ const loginClick = () => {
     .then((data) => {
       if (data.status === "success") {
         alert("Login success. Enjoy!");
+        document.location.reload();
       } else {
         alert("Login failed!");
       }
@@ -137,6 +138,7 @@ const loginOTPVerifyClick = () => {
     .then((data) => {
       if (data.status) {
         alert("OTP verification success. Enjoy!");
+        document.location.reload();
       } else {
         alert("OTP verification failed!");
       }

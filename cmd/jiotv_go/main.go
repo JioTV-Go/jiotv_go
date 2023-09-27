@@ -48,8 +48,8 @@ func main() {
 
 	app.Use(logger.New(logger.Config{
 		TimeZone: "Asia/Kolkata",
-		Format: "[${time}] ${status} - ${latency} ${method} ${path} Params:[${queryParams}] ${error}\n",
-		Output: utils.Log.Writer(),
+		Format:   "[${time}] ${status} - ${latency} ${method} ${path} Params:[${queryParams}] ${error}\n",
+		Output:   utils.Log.Writer(),
 	}))
 
 	app.Use("/static", filesystem.New(filesystem.Config{
@@ -64,6 +64,7 @@ func main() {
 	app.Get("/", handlers.IndexHandler)
 	app.Post("/login/sendOTP", handlers.LoginSendOTPHandler)
 	app.Post("/login/verifyOTP", handlers.LoginVerifyOTPHandler)
+	app.Post("/login", handlers.LoginHandler)
 	app.Get("/live/:id", handlers.LiveHandler)
 	app.Get("/render.m3u8", handlers.RenderHandler)
 	app.Get("/render.ts", handlers.RenderTSHandler)

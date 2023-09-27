@@ -1,9 +1,29 @@
 {{ define "login_dialog" }}
+<dialog id="login_modal_usrn_passwd" class="modal modal-bottom sm:modal-middle">
+  <form method="dialog" class="modal-box">
+      <h3 class="font-bold text-lg">Login</h3>
+      <div class="flex flex-col gap-2">
+          <label for="username" class="label">Username / Mobile Number</label>
+          <input id="username" type="text" placeholder="9876543210"
+              class="input input-bordered input-primary w-full" />
+          <label for="password" class="label">Password</label>
+          <input id="password" type="password" placeholder="********"
+              class="input input-bordered input-primary w-full" />
+          <a href="https://www.jio.com/selfcare/signup/forgot-password" target="_blank"
+              class="text-sm link link-error text-end">Forgot Password?</a>
+          <button onclick="loginClick()" class="btn btn-primary">Login</button>
+          <button class="btn btn-sm btn-ghost">Login with OTP</button>
+      </div>
+  </form>
+  <form method="dialog" class="modal-backdrop">
+      <button>close</button>
+  </form>
+</dialog>
 <dialog id="login_modal" class="modal modal-bottom sm:modal-middle">
   <form method="dialog" class="modal-box">
     <h3 class="font-bold text-lg">Login</h3>
     <div class="flex flex-col gap-2">
-      <label for="username" class="label">Username / Mobile Number</label>
+      <label for="username" class="label">Jio Mobile Number</label>
       <input
         id="number"
         type="tel"
@@ -12,9 +32,9 @@
         pattern="[0-9]{10}"
         minlength="10"
         maxlength="10"
-        required
       />
       <button onclick="loginOTPClick()" class="btn btn-primary">Login</button>
+      <button onclick="login_modal_usrn_passwd.showModal()" class="btn btn-sm btn-ghost">Login with Password</button>
     </div>
   </form>
   <form method="dialog" class="modal-backdrop">

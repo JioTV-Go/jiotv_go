@@ -50,22 +50,31 @@ func (tv *Television) Live(channelID string) (string, error) {
 	formData.Add("channel_id", channelID)
 	formData.Add("stream_type", "Seek")
 
-	url := "https://jiotvapi.media.jio.com/playback/apis/v1/geturl?langId=6"
-
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 
+	// Copy headers from the Television headers map to the request
+	for key, value := range tv.headers {
+		req.Header.Set(key, value)
+	}
+
+	var url string
+	if tv.accessToken != "" {
+		url = "https://jiotvapi.media.jio.com/playback/apis/v1/geturl?langId=6"
+		req.Header.Set("accesstoken", tv.accessToken)
+		} else {
+		req.Header.Set("osVersion", "8.1.0")
+		req.Header.Set("ssotoken", tv.ssoToken)
+		req.Header.Set("versionCode", "277")
+		url = "https://tv.media.jio.com/apis/v2.2/getchannelurl/getchannelurl"
+		req.Header.SetUserAgent("plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7")
+	}
 	req.SetRequestURI(url)
 	req.Header.SetMethod("POST")
 
 	// Encode the form data and set it as the request body
 	req.SetBody(formData.QueryString())
 
-	// Copy headers from the Television headers map to the request
-	for key, value := range tv.headers {
-		req.Header.Set(key, value)
-	}
-	req.Header.Set("accesstoken", tv.accessToken)
 	req.Header.Set("channel_id", channelID)
 
 	resp := fasthttp.AcquireResponse()

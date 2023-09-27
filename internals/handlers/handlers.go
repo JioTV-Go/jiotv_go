@@ -32,8 +32,10 @@ func InitLogin() {
 	if err != nil {
 		utils.Log.Println("Login error!", err)
 	} else {
+		if credentials.AccessToken != "" {
 		// Check validity of credentials
 		go RefreshTokenIfExpired(credentials)
+		}
 		TV = television.NewTelevision(credentials)
 	}
 }
@@ -313,6 +315,40 @@ func LoginVerifyOTPHandler(c *fiber.Ctx) error {
 	InitLogin()
 	return c.JSON(result)
 }
+
+func LoginHandler(c *fiber.Ctx) error {
+	var username, password string
+	if (c.Method() == "GET") {
+		username = c.Query("username")
+		checkFieldExist("Username", username != "", c)
+		password = c.Query("password")
+		checkFieldExist("Password", password != "", c)
+	} else if (c.Method() == "POST") {
+		formBody := new(LoginRequestBodyData)
+		err := c.BodyParser(&formBody)
+		if err != nil {
+			utils.Log.Println(err)
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"message": "Invalid JSON",
+			})
+		}
+		username = formBody.Username
+		checkFieldExist("Username", username != "", c)
+		password = formBody.Password
+		checkFieldExist("Password", password != "", c)
+	}
+	
+	result, err := utils.Login(username, password)
+	if err != nil {
+		utils.Log.Println(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Internal server error",
+		})
+	}
+	InitLogin()
+	return c.JSON(result)
+}
+
 
 func LoginRefreshAccessToken() error {
 	utils.Log.Println("Refreshing AccessToken...")
