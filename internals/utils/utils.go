@@ -203,15 +203,14 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 		crm := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["subscriberId"].(string)
 		uniqueId := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["unique"].(string)
 
-		credentialsPath := GetCredentialsPath()
-		file, err := os.Create(credentialsPath)
-		if err != nil {
-			return nil, err
-		}
-		defer file.Close() // skipcq: GO-S2307
-
-		// Write result as credentials.json
-		file.WriteString(`{"ssoToken":"` + ssotoken + `","crm":"` + crm + `","uniqueId":"` + uniqueId + `","accessToken":"` + accessToken + `","refreshToken":"` + refreshtoken + `","lastTokenRefreshTime":"` + strconv.FormatInt(time.Now().Unix(), 10) + `"}`)
+		WriteJIOTVCredentials(&JIOTV_CREDENTIALS{
+			SSOToken: ssotoken,
+			CRM: crm,
+			UniqueID: uniqueId,
+			AccessToken: accessToken,
+			RefreshToken: refreshtoken,
+			LastTokenRefreshTime: strconv.FormatInt(time.Now().Unix(), 10),
+		})
 		return map[string]string{
 			"status":       "success",
 			"accessToken":  accessToken,
@@ -219,7 +218,7 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 			"ssoToken":     ssotoken,
 			"crm":          crm,
 			"uniqueId":     uniqueId,
-		}, file.Sync()
+		}, nil
 	} else {
 		return map[string]string{
 			"status":  "failed",
@@ -317,15 +316,13 @@ func Login(username, password string) (map[string]string, error) {
 		crm := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["subscriberId"].(string)
 		uniqueId := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["unique"].(string)
 
-		credentialsPath := GetCredentialsPath()
-		file, err := os.Create(credentialsPath)
-		if err != nil {
-			return nil, err
-		}
-		defer file.Close()
+		WriteJIOTVCredentials(&JIOTV_CREDENTIALS{
+			SSOToken: ssoToken,
+			CRM: crm,
+			UniqueID: uniqueId,
+			AccessToken: "",
+		})
 
-		// Write result as credentials.json
-		file.WriteString(`{"ssoToken":"` + ssoToken + `","crm":"` + crm + `","uniqueId":"` + uniqueId + `","accessToken":""` + `}`)
 		return map[string]string{
 			"status":   "success",
 			"ssoToken": ssoToken,
