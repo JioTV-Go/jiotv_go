@@ -19,7 +19,7 @@ import (
 )
 
 var (
-	TV *television.Television
+	TV               *television.Television
 	DisableTSHandler bool
 )
 
@@ -33,8 +33,8 @@ func InitLogin() {
 		utils.Log.Println("Login error!", err)
 	} else {
 		if credentials.AccessToken != "" {
-		// Check validity of credentials
-		go RefreshTokenIfExpired(credentials)
+			// Check validity of credentials
+			go RefreshTokenIfExpired(credentials)
 		}
 		TV = television.NewTelevision(credentials)
 	}
@@ -318,12 +318,12 @@ func LoginVerifyOTPHandler(c *fiber.Ctx) error {
 
 func LoginHandler(c *fiber.Ctx) error {
 	var username, password string
-	if (c.Method() == "GET") {
+	if c.Method() == "GET" {
 		username = c.Query("username")
 		checkFieldExist("Username", username != "", c)
 		password = c.Query("password")
 		checkFieldExist("Password", password != "", c)
-	} else if (c.Method() == "POST") {
+	} else if c.Method() == "POST" {
 		formBody := new(LoginRequestBodyData)
 		err := c.BodyParser(&formBody)
 		if err != nil {
@@ -337,7 +337,7 @@ func LoginHandler(c *fiber.Ctx) error {
 		password = formBody.Password
 		checkFieldExist("Password", password != "", c)
 	}
-	
+
 	result, err := utils.Login(username, password)
 	if err != nil {
 		utils.Log.Println(err)
@@ -348,7 +348,6 @@ func LoginHandler(c *fiber.Ctx) error {
 	InitLogin()
 	return c.JSON(result)
 }
-
 
 func LoginRefreshAccessToken() error {
 	utils.Log.Println("Refreshing AccessToken...")

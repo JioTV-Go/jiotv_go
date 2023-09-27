@@ -204,11 +204,11 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 		uniqueId := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["unique"].(string)
 
 		WriteJIOTVCredentials(&JIOTV_CREDENTIALS{
-			SSOToken: ssotoken,
-			CRM: crm,
-			UniqueID: uniqueId,
-			AccessToken: accessToken,
-			RefreshToken: refreshtoken,
+			SSOToken:             ssotoken,
+			CRM:                  crm,
+			UniqueID:             uniqueId,
+			AccessToken:          accessToken,
+			RefreshToken:         refreshtoken,
 			LastTokenRefreshTime: strconv.FormatInt(time.Now().Unix(), 10),
 		})
 		return map[string]string{
@@ -252,10 +252,10 @@ func Login(username, password string) (map[string]string, error) {
 
 	// Construct payload
 	payload := map[string]interface{}{
-		"identifier":          user,
-		"password":            passw,
-		"rememberUser":        "T",
-		"upgradeAuth":         "Y",
+		"identifier":           user,
+		"password":             passw,
+		"rememberUser":         "T",
+		"upgradeAuth":          "Y",
 		"returnSessionDetails": "T",
 		"deviceInfo": map[string]interface{}{
 			"consumptionDeviceName": "Jio",
@@ -280,7 +280,7 @@ func Login(username, password string) (map[string]string, error) {
 	url := "https://api.jio.com/v3/dip/user/unpw/verify"
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
-	
+
 	req.SetRequestURI(url)
 	req.Header.SetContentType("application/json")
 	req.Header.SetMethod("POST")
@@ -317,9 +317,9 @@ func Login(username, password string) (map[string]string, error) {
 		uniqueId := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["unique"].(string)
 
 		WriteJIOTVCredentials(&JIOTV_CREDENTIALS{
-			SSOToken: ssoToken,
-			CRM: crm,
-			UniqueID: uniqueId,
+			SSOToken:    ssoToken,
+			CRM:         crm,
+			UniqueID:    uniqueId,
 			AccessToken: "",
 		})
 
@@ -372,9 +372,9 @@ func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
 	if jiotv_ssoToken != "" && jiotv_crm != "" && jiotv_uniqueId != "" {
 		Log.Println("Using credentials from environment variables")
 		return &JIOTV_CREDENTIALS{
-			SSOToken: jiotv_ssoToken,
-			CRM:      jiotv_crm,
-			UniqueID: jiotv_uniqueId,
+			SSOToken:    jiotv_ssoToken,
+			CRM:         jiotv_crm,
+			UniqueID:    jiotv_uniqueId,
 			AccessToken: "",
 		}, nil
 	}

@@ -62,7 +62,7 @@ func (tv *Television) Live(channelID string) (string, error) {
 	if tv.accessToken != "" {
 		url = "https://jiotvapi.media.jio.com/playback/apis/v1/geturl?langId=6"
 		req.Header.Set("accesstoken", tv.accessToken)
-		} else {
+	} else {
 		req.Header.Set("osVersion", "8.1.0")
 		req.Header.Set("ssotoken", tv.ssoToken)
 		req.Header.Set("versionCode", "277")
