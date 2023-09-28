@@ -61,6 +61,12 @@ func IndexHandler(c *fiber.Ctx) error {
 			"IsNotLoggedIn": !utils.CheckLoggedIn(),
 			"Categories":    categoryMap,
 			"Languages":     languageMap,
+			"Qualities":     map[string]string{
+				"auto":   "Quality (Auto)",
+				"high":   "High",
+				"medium": "Medium",
+				"low":    "Low",
+			},
 		})
 	} else {
 		return c.Render("views/index", fiber.Map{
@@ -68,6 +74,12 @@ func IndexHandler(c *fiber.Ctx) error {
 			"IsNotLoggedIn": !utils.CheckLoggedIn(),
 			"Categories":    categoryMap,
 			"Languages":     languageMap,
+			"Qualities":     map[string]string{
+				"auto":   "Quality (Auto)",
+				"high":   "High",
+				"medium": "Medium",
+				"low":    "Low",
+			},
 		})
 	}
 }
@@ -96,7 +108,61 @@ func LiveHandler(c *fiber.Ctx) error {
 		}
 	}
 	// quote url
-	coded_url := url.QueryEscape(liveResult)
+	coded_url := url.QueryEscape(liveResult.Auto)
+	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
+}
+
+func LiveHighHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
+	// remove suffix .m3u8 if exists
+	id = strings.Replace(id, ".m3u8", "", 1)
+	liveResult, err := TV.Live(id)
+	if err != nil {
+		utils.Log.Println(err)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": err,
+			})
+		}
+	}
+	// quote url
+	coded_url := url.QueryEscape(liveResult.High)
+	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
+}
+
+func LiveMediumHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
+	// remove suffix .m3u8 if exists
+	id = strings.Replace(id, ".m3u8", "", 1)
+	liveResult, err := TV.Live(id)
+	if err != nil {
+		utils.Log.Println(err)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": err,
+			})
+		}
+	}
+	// quote url
+	coded_url := url.QueryEscape(liveResult.Medium)
+	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
+}
+
+func LiveLowHandler(c *fiber.Ctx) error {
+	id := c.Params("id")
+	// remove suffix .m3u8 if exists
+	id = strings.Replace(id, ".m3u8", "", 1)
+	liveResult, err := TV.Live(id)
+	if err != nil {
+		utils.Log.Println(err)
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": err,
+			})
+		}
+	}
+	// quote url
+	coded_url := url.QueryEscape(liveResult.Low)
 	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
 }
 
@@ -194,6 +260,7 @@ func RenderTSHandler(c *fiber.Ctx) error {
 }
 
 func ChannelsHandler(c *fiber.Ctx) error {
+	quality := c.Query("q")
 	apiResponse := television.Channels()
 	// hostUrl should be request URL like http://localhost:5001
 	hostURL := strings.ToLower(c.Protocol()) + "://" + c.Hostname()
@@ -204,7 +271,12 @@ func ChannelsHandler(c *fiber.Ctx) error {
 		m3uContent := "#EXTM3U\n"
 		logoURL := "/jtvimage"
 		for _, channel := range apiResponse.Result {
-			channelURL := fmt.Sprintf("%s/live/%d.m3u8", hostURL, channel.ID)
+			var channelURL string
+			if quality != "" {
+				channelURL = fmt.Sprintf("%s/live/%s/%d.m3u8", hostURL, quality, channel.ID)
+			} else {
+				channelURL = fmt.Sprintf("%s/live/%d.m3u8", hostURL, channel.ID)
+			}
 			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
 			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
 				channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], television.CategoryMap[channel.Category], channel.Name, channelURL)
@@ -225,7 +297,8 @@ func ChannelsHandler(c *fiber.Ctx) error {
 
 func PlayHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
-	player_url := "/player/" + id
+	quality := c.Query("q")
+	player_url := "/player/" + id + "?q=" + quality
 	return c.Render("views/play", fiber.Map{
 		"player_url": player_url,
 	})
@@ -233,7 +306,13 @@ func PlayHandler(c *fiber.Ctx) error {
 
 func PlayerHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
-	play_url := "/live/" + id + ".m3u8"
+	quality := c.Query("q")
+	var play_url string
+	if quality != "" {
+		play_url = "/live/" + quality + "/" + id + ".m3u8"
+	} else {
+		play_url = "/live/" + id + ".m3u8"
+	}
 	return c.Render("views/flow_player", fiber.Map{
 		"play_url": play_url,
 	})
@@ -241,7 +320,13 @@ func PlayerHandler(c *fiber.Ctx) error {
 
 func ClapprHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
-	play_url := "/live/" + id + ".m3u8"
+	quality := c.Query("q")
+	var play_url string
+	if quality != "" {
+		play_url = "/live/" + quality + "/" + id + ".m3u8"
+	} else {
+		play_url = "/live/" + id + ".m3u8"
+	}
 	return c.Render("views/clappr", fiber.Map{
 		"play_url": play_url,
 	})
@@ -252,7 +337,8 @@ func FaviconHandler(c *fiber.Ctx) error {
 }
 
 func PlaylistHandler(c *fiber.Ctx) error {
-	return c.Redirect("/channels?type=m3u", fiber.StatusMovedPermanently)
+	quality := c.Query("q")
+	return c.Redirect("/channels?type=m3u&q="+quality, fiber.StatusMovedPermanently)
 }
 
 func ImageHandler(c *fiber.Ctx) error {

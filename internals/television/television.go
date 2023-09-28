@@ -43,7 +43,7 @@ func NewTelevision(credentials *utils.JIOTV_CREDENTIALS) *Television {
 	}
 }
 
-func (tv *Television) Live(channelID string) (string, error) {
+func (tv *Television) Live(channelID string) (*Bitrates, error) {
 	formData := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(formData)
 
@@ -83,7 +83,7 @@ func (tv *Television) Live(channelID string) (string, error) {
 	// Perform the HTTP POST request
 	if err := tv.Client.Do(req, resp); err != nil {
 		utils.Log.Panic(err)
-		return "", err
+		return nil, err
 	}
 
 	if resp.StatusCode() != fasthttp.StatusOK {
@@ -95,16 +95,16 @@ func (tv *Television) Live(channelID string) (string, error) {
 		utils.Log.Println("Request data:", formData.String())
 		utils.Log.Panicln("Response: ", response)
 
-		return "", fmt.Errorf("Request failed with status code: %d\nresponse: %s", resp.StatusCode(), response)
+		return nil, fmt.Errorf("Request failed with status code: %d\nresponse: %s", resp.StatusCode(), response)
 	}
 
 	var result LiveURLOutput
 	if err := json.Unmarshal(resp.Body(), &result); err != nil {
 		utils.Log.Panic(err)
-		return "", err
+		return nil, err
 	}
 
-	return result.Bitrates.Auto, nil
+	return &result.Bitrates, nil
 }
 
 func (tv *Television) Render(url string) []byte {
