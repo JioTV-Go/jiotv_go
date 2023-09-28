@@ -75,6 +75,7 @@ func main() {
 	app.Get("/player/:id", handlers.PlayerHandler)
 	app.Get("/clappr/:id", handlers.ClapprHandler)
 	app.Get("/favicon.ico", handlers.FaviconHandler)
+	app.Get("/jtvimage/:file", handlers.ImageHandler)
 
 	addr := "localhost:5001"
 
