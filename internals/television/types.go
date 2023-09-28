@@ -10,7 +10,7 @@ type Television struct {
 	crm         string
 	uniqueID    string
 	headers     map[string]string
-	client      *fasthttp.Client
+	Client      *fasthttp.Client
 }
 
 type Channel struct {

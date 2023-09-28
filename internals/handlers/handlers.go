@@ -16,6 +16,7 @@ import (
 	"github.com/valyala/fasthttp"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/proxy"
 )
 
 var (
@@ -185,21 +186,10 @@ func RenderTSHandler(c *fiber.Ctx) error {
 		return c.SendStatus(fiber.StatusBadRequest)
 	}
 
-	contents, statusCode, responseHeaders := TV.RenderTS(decoded_url)
-
-	for key, value := range responseHeaders {
-		c.Set(key, value)
-	}
-
-	// Set the response status code
-	c.Status(statusCode)
-
-	// Stream the response body to the fiber.Ctx response
-	if _, err := c.Write(contents); err != nil {
-		utils.Log.Panic(err)
+	if err := proxy.Do(c, decoded_url, TV.Client); err != nil {
 		return err
 	}
-
+	c.Response().Header.Del(fiber.HeaderServer)
 	return nil
 }
 
@@ -212,7 +202,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	if c.Query("type") == "m3u" {
 		// Create an M3U playlist
 		m3uContent := "#EXTM3U\n"
-		logoURL := "https://jiotv.catchup.cdn.jio.com/dare_images/images"
+		logoURL := "/jtvimage"
 		for _, channel := range apiResponse.Result {
 			channelURL := fmt.Sprintf("%s/live/%d.m3u8", hostURL, channel.ID)
 			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
@@ -263,6 +253,15 @@ func FaviconHandler(c *fiber.Ctx) error {
 
 func PlaylistHandler(c *fiber.Ctx) error {
 	return c.Redirect("/channels?type=m3u", fiber.StatusMovedPermanently)
+}
+
+func ImageHandler(c *fiber.Ctx) error {
+	url := "http://jiotv.catchup.cdn.jio.com/dare_images/images/"+c.Params("file")
+	if err := proxy.Do(c, url, TV.Client); err != nil {
+		return err
+	}
+	c.Response().Header.Del(fiber.HeaderServer)
+	return nil
 }
 
 func LoginSendOTPHandler(c *fiber.Ctx) error {
