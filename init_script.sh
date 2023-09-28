@@ -43,7 +43,8 @@ install() {
     check_previous_command_success
 }
 
-if [ "$TERMUX_VERSION" ]; then
+# If $HOME == /data/data/com.termux/files/home then we are running in termux android app.
+if [ "$HOME" == "/data/data/com.termux/files/home" ]; then
     # android
     install "android"
 else
