@@ -1,12 +1,14 @@
 const languageElement = document.getElementById("portexe-language-select");
 const categoryElement = document.getElementById("portexe-category-select");
 const catLangApplyButton = document.getElementById("portexe-search-button");
+const qualityElement = document.getElementById("portexe-quality-select");
 
 catLangApplyButton.addEventListener("click", () => {
   // apply to current url as query params and reload
   const url = new URL(window.location.href);
   url.searchParams.set("language", languageElement.value);
   url.searchParams.set("category", categoryElement.value);
+  url.searchParams.set("q", qualityElement.value);
 
   // reload
   document.location.href = url.href;
@@ -33,14 +35,19 @@ const onQualityChange = (elem) => {
   } else {
     url.searchParams.set("q", quality);
   }
+  history.pushState({}, "", url.href);
   const playElems = document.getElementsByClassName("btn btn-outline btn-info btn-md");
   for (let i = 0; i < playElems.length; i++) {
     const elem = playElems[i];
     const href = elem.getAttribute("href");
     elem.setAttribute("href", href.split("?")[0] + url.search);
   }
-  console.log(playElems);
 };
+
+if (url.searchParams.get("q")) {
+  qualityElement.value = url.searchParams.get("q");
+  onQualityChange(qualityElement);
+}
 
 const scrollToTop = () => {
   // make smooth scroll to top
