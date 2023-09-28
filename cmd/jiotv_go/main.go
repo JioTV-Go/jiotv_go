@@ -13,6 +13,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v2/middleware/monitor"
 	"github.com/gofiber/template/html/v2"
 )
 
@@ -75,6 +76,9 @@ func main() {
 	app.Get("/player/:id", handlers.PlayerHandler)
 	app.Get("/clappr/:id", handlers.ClapprHandler)
 	app.Get("/favicon.ico", handlers.FaviconHandler)
+	app.Get("/metrics", monitor.New(monitor.Config{
+		Title: "JioTV Go Metrics",
+	}))
 
 	addr := "localhost:5001"
 
