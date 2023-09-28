@@ -260,7 +260,7 @@ func RenderTSHandler(c *fiber.Ctx) error {
 }
 
 func ChannelsHandler(c *fiber.Ctx) error {
-	quality := c.Query("q")
+	quality := strings.TrimSpace(c.Query("q"))
 	apiResponse := television.Channels()
 	// hostUrl should be request URL like http://localhost:5001
 	hostURL := strings.ToLower(c.Protocol()) + "://" + c.Hostname()
