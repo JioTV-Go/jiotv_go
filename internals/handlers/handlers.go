@@ -269,7 +269,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	if c.Query("type") == "m3u" {
 		// Create an M3U playlist
 		m3uContent := "#EXTM3U\n"
-		logoURL := "/jtvimage"
+		logoURL := hostURL+"/jtvimage"
 		for _, channel := range apiResponse.Result {
 			var channelURL string
 			if quality != "" {
