@@ -25,6 +25,23 @@ if (category) {
   categoryElement.value = category;
 }
 
+const onQualityChange = (elem) => {
+  const quality = elem.value;
+  if (quality === "auto") {
+    // remove quality from url
+    url.searchParams.delete("q");
+  } else {
+    url.searchParams.set("q", quality);
+  }
+  const playElems = document.getElementsByClassName("btn btn-outline btn-info btn-md");
+  for (let i = 0; i < playElems.length; i++) {
+    const elem = playElems[i];
+    const href = elem.getAttribute("href");
+    elem.setAttribute("href", href.split("?")[0] + url.search);
+  }
+  console.log(playElems);
+};
+
 const scrollToTop = () => {
   // make smooth scroll to top
   window.scrollTo({

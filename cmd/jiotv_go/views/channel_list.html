@@ -8,8 +8,17 @@
       id="portexe-search-input"
       type="text"
       placeholder="Search channels here"
-      class="input input-bordered input-primary input-sm sm:input-md w-full rounded-xl"
+      class="input input-bordered input-primary input-md w-full rounded-xl"
     />
+    <select
+      id="portexe-quality-select"
+      class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl"
+      onchange="onQualityChange(this)"
+    >
+      {{ range $key, $value := .Qualities }}
+      <option value="{{$key}}">{{$value}}</option>
+      {{ end }}
+    </select>
     <select
       id="portexe-category-select"
       class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl"
@@ -50,7 +59,7 @@
             src="/jtvimage/{{$channel.LogoURL}}"
             loading="lazy"
             alt="{{$channel.Name}}"
-            class="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 lg:h-16 lg:w-16 p-1 rounded-full bg-sky-100"
+            class="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 lg:h-16 lg:w-16 sm:p-1 rounded-sm rounded-full bg-sky-100"
           />
         </td>
         <td>

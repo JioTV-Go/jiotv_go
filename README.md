@@ -129,7 +129,7 @@ With these environment variables set, the `credentials.json` will be bypassed, a
 
 - **`/play/:channel_id`**: Dive into the world of specific channels with ID `channel_id`.
 
-- **`/playlist.m3u`**: Instantly obtain an M3U playlist for IPTV. (Redirects to `/channels?type=m3u` for your convenience.)
+- **`/playlist.m3u`**: Instantly obtain an M3U playlist for IPTV. (Redirects to `/channels?type=m3u` for your convenience.) Add `?q={resolution}` resolution: `low`, `medium`, `high` to get the playlist for specific resolution.
 
 - **`/player/:channel_id`**: Immerse yourself with the default player (Flowplayer) for Channel `channel_id`.
 
