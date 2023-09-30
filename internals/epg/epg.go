@@ -40,7 +40,7 @@ func Init() {
 
 	genepg := func() {
 		// schedule to run at 5:30 AM IST
-		fmt.Println("Generating new EPG file... Please wait, this may take a while")
+		fmt.Println("Generating new EPG file... Please wait, this may take a while. You will be notified here when it's done.")
 		if err := GenXMLGz(epgFile); err != nil {
 			utils.Log.Fatal(err)
 		}
@@ -223,5 +223,6 @@ func GenXMLGz(filename string) error {
 	if _, err := gz.Write(xml); err != nil {
 		return err
 	}
+	fmt.Println("EPG file generated successfully")
 	return nil
 }

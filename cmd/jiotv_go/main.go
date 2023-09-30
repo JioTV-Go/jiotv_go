@@ -28,7 +28,7 @@ func main() {
 
 	// if os.Getenv("JIOTV_DEBUG") == "true" or file epg.xml.gz exists
 	if os.Getenv("JIOTV_EPG") == "true" || utils.FileExists("epg.xml.gz") {
-		epg.Init()
+		go epg.Init()
 	}
 
 	engine := html.NewFileSystem(http.FS(viewFiles), ".html")
