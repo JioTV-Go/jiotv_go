@@ -92,6 +92,6 @@ func (id *EpochString) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
-func (id EpochString) String() string {
-	return string(id)
+func (id *EpochString) String() string {
+	return string(*id)
 }

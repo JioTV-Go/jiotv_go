@@ -55,7 +55,7 @@ func Init() {
 	go utils.ScheduleFunctionCall(genepg, schedule_time)
 }
 
-func NewChannel(id int, displayName, iconSrc string) Channel {
+func NewChannel(id int, displayName string) Channel {
 	return Channel{
 		ID:      id,
 		Display: displayName,
@@ -163,7 +163,7 @@ func genXML() ([]byte, error) {
 	}
 
 	for _, channel := range channelsResponse.Channels {
-		channels = append(channels, NewChannel(channel.ChannelID, channel.ChannelName, channel.LogoURL))
+		channels = append(channels, NewChannel(channel.ChannelID, channel.ChannelName))
 	}
 	utils.Log.Println("Fetched", len(channels), "channels")
 	// Use a worker pool to fetch EPG data concurrently
@@ -214,7 +214,7 @@ func GenXMLGz(filename string) error {
 	if err != nil {
 		return err
 	}
-	defer f.Close()
+	defer f.Close() // skipcq: GO-S2307
 
 	utils.Log.Println("Writing XML to gzip file")
 	gz := gzip.NewWriter(f)
