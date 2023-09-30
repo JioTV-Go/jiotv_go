@@ -21,6 +21,7 @@ Ready to dive in? Download the latest binary for your operating system from [her
     - [**Android Users, We've Got You Covered!**](#android-users-weve-got-you-covered)
     - [**Docker Enthusiasts, Here's Your Shortcut!**](#docker-enthusiasts-heres-your-shortcut)
     - [**Optional Customizations**](#optional-customizations)
+    - [EPG (Electronic Program Guide)](#epg-electronic-program-guide)
     - [**Proxy 🌐**](#proxy-)
     - [**Remote Deployment Made Easy**](#remote-deployment-made-easy)
   - [Explore JioTV Go's Paths and Endpoints 🌐](#explore-jiotv-gos-paths-and-endpoints-)
@@ -98,6 +99,12 @@ Ready to dive in? Download the latest binary for your operating system from [her
 - Disable TS Handler by setting the environment variable `JIOTV_DISABLE_TS_HANDLER=true` before running the binary. By disabling TS Handler, TS video requests will be served directly from JioTV servers instead of being served through the JioTV Go server. This will reduce the load on the server and will also reduce the latency. This is useful on low-end devices where the server is not able to handle the load and the video playback is laggy/buffering. But remember not to set this variable in remote servers or when using proxy as JioTV servers will block the requests due to different IP address.
 
 - If you prefer a specific path or folder for your `credentials.json`, set the environment variable `JIOTV_CREDENTIALS_PATH=/path` before running the binary.
+
+### EPG (Electronic Program Guide) 
+
+- To enable EPG, set the environment variable `JIOTV_EPG=true` before running the binary. This will generate an EPG file at `/epg.xml.gz` which can be used in IPTV players. M3U playlist will contain the link to this EPG file automatically. You can also access the EPG file at `http://localhost:5001/epg.xml.gz`.
+
+- If enabled, the EPG file is scheduled to be updated at 12:00 AM IST everyday.
 
 ### **Proxy 🌐**
 
