@@ -26,7 +26,8 @@ var staticFiles embed.FS
 func main() {
 	utils.Log = utils.GetLogger()
 
-	if os.Getenv("JIOTV_EPG") == "true" {
+	// if os.Getenv("JIOTV_DEBUG") == "true" or file epg.xml.gz exists
+	if os.Getenv("JIOTV_EPG") == "true" || utils.FileExists("epg.xml.gz") {
 		epg.Init()
 	}
 

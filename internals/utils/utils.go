@@ -440,3 +440,13 @@ func GetRequestClient() *fasthttp.Client {
 		}),
 	}
 }
+
+func FileExists(filename string) bool {
+	// check if given file exists
+	_, err := os.Stat(filename)
+	if os.IsNotExist(err) {
+		return false
+	} else {
+		return true
+	}
+}
