@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/rabilrbl/jiotv_go/internals/utils"
+	"github.com/schollz/progressbar/v3"
 	"github.com/valyala/fasthttp"
 )
 
@@ -40,7 +41,7 @@ func Init() {
 
 	genepg := func() {
 		// schedule to run at 5:30 AM IST
-		fmt.Println("Generating new EPG file... Please wait, this may take a while. You will be notified here when it's done.")
+		fmt.Println("\tGenerating new EPG file... Please wait.")
 		if err := GenXMLGz(epgFile); err != nil {
 			utils.Log.Fatal(err)
 		}
@@ -98,7 +99,7 @@ func genXML() ([]byte, error) {
 	var programmes []Programme
 
 	// Define a worker function for fetching EPG data
-	fetchEPG := func(channel Channel) {
+	fetchEPG := func(channel Channel, bar *progressbar.ProgressBar) {
 		req := fasthttp.AcquireRequest()
 		req.Header.SetUserAgent("okhttp/4.2.2")
 		defer fasthttp.ReleaseRequest(req)
@@ -138,7 +139,7 @@ func genXML() ([]byte, error) {
 				programmes = append(programmes, NewProgramme(channel.ID, startTime, endTime, programme.Title, programme.Description, programme.Poster))
 			}
 		}
-
+		bar.Add(1)
 		fasthttp.ReleaseResponse(resp)
 	}
 
@@ -171,14 +172,17 @@ func genXML() ([]byte, error) {
 	channelQueue := make(chan Channel, len(channels))
 	var wg sync.WaitGroup
 
+	// Create a progress bar
+	totalChannels := len(channels) // Replace with the actual number of channels
+	bar := progressbar.Default(int64(totalChannels))
+
 	utils.Log.Println("Fetching EPG for channels")
 	for i := 0; i < numWorkers; i++ {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
 			for channel := range channelQueue {
-				// utils.Log.Println("Fetching EPG for channel", channel.ID)
-				fetchEPG(channel)
+				fetchEPG(channel, bar)
 			}
 		}()
 	}
@@ -223,6 +227,6 @@ func GenXMLGz(filename string) error {
 	if _, err := gz.Write(xml); err != nil {
 		return err
 	}
-	fmt.Println("EPG file generated successfully")
+	fmt.Println("\tEPG file generated successfully")
 	return nil
 }
