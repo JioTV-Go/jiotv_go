@@ -278,8 +278,8 @@ func ChannelsHandler(c *fiber.Ctx) error {
 				channelURL = fmt.Sprintf("%s/live/%d.m3u8", hostURL, channel.ID)
 			}
 			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
-			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
-				channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], television.CategoryMap[channel.Category], channel.Name, channelURL)
+			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-id=%d tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
+				channel.ID, channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], television.CategoryMap[channel.Category], channel.Name, channelURL)
 		}
 
 		// Set the Content-Disposition header for file download
