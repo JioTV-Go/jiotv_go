@@ -268,7 +268,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	// Check if the query parameter "type" is set to "m3u"
 	if c.Query("type") == "m3u" {
 		// Create an M3U playlist
-		m3uContent := "#EXTM3U\n"
+		m3uContent := "#EXTM3U x-tvg-url=\""+hostURL+"/epg.xml.gz\"\n"
 		logoURL := hostURL+"/jtvimage"
 		for _, channel := range apiResponse.Result {
 			var channelURL string
@@ -432,6 +432,17 @@ func LoginHandler(c *fiber.Ctx) error {
 	}
 	InitLogin()
 	return c.JSON(result)
+}
+
+func EPGHandler(c *fiber.Ctx) error {
+	// if epg.xml.gz exists, return it
+	if _, err := os.Stat("epg.xml.gz"); err == nil {
+		return c.SendFile("epg.xml.gz", true)
+	} else {
+		err_message := "EPG not found. Please restart the server after setting the environment variable JIOTV_EPG to true."
+		fmt.Println(err_message)
+		return c.Status(fiber.StatusNotFound).SendString(err_message)
+	}
 }
 
 func LoginRefreshAccessToken() error {

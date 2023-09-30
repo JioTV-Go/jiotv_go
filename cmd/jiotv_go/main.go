@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/rabilrbl/jiotv_go/internals/epg"
 	"github.com/rabilrbl/jiotv_go/internals/handlers"
 	"github.com/rabilrbl/jiotv_go/internals/middleware"
 	"github.com/rabilrbl/jiotv_go/internals/utils"
@@ -23,6 +24,11 @@ var viewFiles embed.FS
 var staticFiles embed.FS
 
 func main() {
+	utils.Log = utils.GetLogger()
+
+	if os.Getenv("JIOTV_EPG") == "true" {
+		epg.Init()
+	}
 
 	engine := html.NewFileSystem(http.FS(viewFiles), ".html")
 	if os.Getenv("JIOTV_DEBUG") == "true" {
@@ -38,7 +44,6 @@ func main() {
 		AppName:           "JioTV Go",
 	})
 
-	utils.Log = utils.GetLogger()
 
 	app.Use(recover.New(recover.Config{
 		EnableStackTrace: true,
@@ -79,6 +84,7 @@ func main() {
 	app.Get("/clappr/:id", handlers.ClapprHandler)
 	app.Get("/favicon.ico", handlers.FaviconHandler)
 	app.Get("/jtvimage/:file", handlers.ImageHandler)
+	app.Get("/epg.xml.gz", handlers.EPGHandler)
 
 	addr := "localhost:5001"
 
