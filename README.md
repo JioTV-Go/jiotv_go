@@ -104,7 +104,7 @@ Ready to dive in? Download the latest binary for your operating system from [her
 
 - To enable EPG, set the environment variable `JIOTV_EPG=true` before running the binary. This will generate an EPG file at `/epg.xml.gz` which can be used in IPTV players. M3U playlist will contain the link to this EPG file automatically. You can also access the EPG file at `http://localhost:5001/epg.xml.gz`.
 
-- If enabled, the EPG file is scheduled to be updated at 12:00 AM IST everyday.
+- If enabled, the EPG file is scheduled to be updated at random time during midnight.
 
 ### **Proxy 🌐**
 

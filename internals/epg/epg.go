@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"math/rand"
 	"strconv"
 
 	"os"
@@ -50,8 +51,11 @@ func Init() {
 	if flag {
 		genepg()
 	}
+	// setup random time to avoid server load 
+	random_hour := -5+rand.Intn(2) + 1 // random number between 
+	random_min := -30+rand.Intn(60)    // random number between 0 and 59
 	time_now := time.Now()
-	schedule_time := time.Date(time_now.Year(), time_now.Month(), time_now.Day()+1, -5, -30, 0, 0, time.UTC)
+	schedule_time := time.Date(time_now.Year(), time_now.Month(), time_now.Day()+1, random_hour, random_min, 0, 0, time.UTC)
 	utils.Log.Println("Scheduled EPG generation in", time.Until(schedule_time).Truncate(time.Second))
 	go utils.ScheduleFunctionCall(genepg, schedule_time)
 }
