@@ -45,7 +45,6 @@ func main() {
 		AppName:           "JioTV Go",
 	})
 
-
 	app.Use(recover.New(recover.Config{
 		EnableStackTrace: true,
 	}))

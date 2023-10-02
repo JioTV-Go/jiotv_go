@@ -2,9 +2,9 @@
 
 Introducing JioTV Go: Your gateway to streaming Live TV channels on the web and IPTV! 📺🌐 Say goodbye to the JioTV App, as this project lets you enjoy JioTV's offerings hassle-free. Currently in the development stage, it's designed purely for educational exploration.
 
-Ready to dive in? Download the latest binary for your operating system from [here](https://github.com/rabilrbl/jiotv_go/releases/latest), and explore the [API endpoints](#api-endpoints) to start your JioTV Go adventure!  🚀📡🔥
+Ready to dive in? Download the latest binary for your operating system from [here](https://github.com/rabilrbl/jiotv_go/releases/latest), and explore the [API endpoints](#api-endpoints) to start your JioTV Go adventure! 🚀📡🔥
 
-*Give us 🌟 on GitHub.*
+_Give us 🌟 on GitHub._
 
 ### Join the community on Telegram:
 
@@ -14,7 +14,7 @@ Ready to dive in? Download the latest binary for your operating system from [her
 ## Table of Contents
 
 - [JioTV Go 🌟](#jiotv-go-)
-    - [Join the community on Telegram:](#join-the-community-on-telegram)
+  - [Join the community on Telegram:](#join-the-community-on-telegram)
   - [Table of Contents](#table-of-contents)
   - [Usage Guide 🚀](#usage-guide-)
     - [**Using JioTV Go Natively**](#using-jiotv-go-natively)
@@ -67,7 +67,7 @@ Ready to dive in? Download the latest binary for your operating system from [her
 3. Download our android script by running `curl -Lo jiotv_go.sh https://raw.githubusercontent.com/rabilrbl/jiotv_go/main/android.sh`.
 
 4. Grant executable permissions to the script with `chmod +x jiotv_go.sh`.
-  
+
 5. Execute the install script with `./jiotv_go.sh install`. The script will automatically download the latest binary for your device and install it.
 
 6. Start the server with `./jiotv_go.sh run`.
@@ -80,17 +80,18 @@ Ready to dive in? Download the latest binary for your operating system from [her
 
 1. If you're a Docker enthusiast, begin by installing [Docker](https://docs.docker.com/get-docker/).
 
-2. Run the command 
-     ```sh
-     docker run -p 5001:5001 -v ./.jiotv_go/secrets:/app/secrets ghcr.io/rabilrbl/jiotv_go
-     ```
+2. Run the command
+
+   ```sh
+   docker run -p 5001:5001 -v ./.jiotv_go/secrets:/app/secrets ghcr.io/rabilrbl/jiotv_go
+   ```
 
 3. Open your web browser and visit `http://localhost:5001`.
 
 4. To update to latest version, run
-    ```sh
-    docker pull ghcr.io/rabilrbl/jiotv_go:latest
-    ```
+   ```sh
+   docker pull ghcr.io/rabilrbl/jiotv_go:latest
+   ```
 
 ### **Optional Customizations**
 
@@ -100,7 +101,7 @@ Ready to dive in? Download the latest binary for your operating system from [her
 
 - If you prefer a specific path or folder for your `credentials.json`, set the environment variable `JIOTV_CREDENTIALS_PATH=/path` before running the binary.
 
-### EPG (Electronic Program Guide) 
+### EPG (Electronic Program Guide)
 
 - To enable EPG, set the environment variable `JIOTV_EPG=true` before running the binary. This will generate an EPG file at `/epg.xml.gz` which can be used in IPTV players. M3U playlist will contain the link to this EPG file automatically. You can also access the EPG file at `http://localhost:5001/epg.xml.gz`.
 
@@ -110,7 +111,7 @@ Ready to dive in? Download the latest binary for your operating system from [her
 
 If you want to use a proxy, set the environment variable `JIOTV_PROXY` before running the binary.
 
-Example: 
+Example:
 
 - Socks5 Proxy `export JIOTV_PROXY="socks5://user:pass@host:port"`
 - All other Proxy `export JIOTV_PROXY="user:pass@host:port"`
@@ -181,14 +182,15 @@ Set `JIOTV_DEBUG=true` to enable automatic reloading on templates changes in vie
 1. First, make sure you have Golang installed on your system.
 
 2. Install the necessary dependencies using:
-    ```sh
-    go mod download
-    ```
+
+   ```sh
+   go mod download
+   ```
 
 3. Finally, fire up the server with:
    ```sh
    go run ./cmd/jiotv_go
-    ```
+   ```
 
 That's it! You're now all set to explore and contribute to JioTV Go. Happy coding! 🖥️👩‍💻👨‍💻
 
@@ -201,19 +203,21 @@ At JioTV Go, we use the versatile [TailwindCSS](https://tailwindcss.com/) to sty
 2. Open a new terminal window and navigate to the project's root directory.
 
 3. Install the necessary dependencies by running:
-    ```sh
-      npm install
-    ```
+
+   ```sh
+     npm install
+   ```
 
 4. To keep TailwindCSS up to date with your changes in real-time, run the following command:
-    ```sh
-    npm run watch
-    ```
+
+   ```sh
+   npm run watch
+   ```
 
 5. Once you're satisfied with your style modifications, it's time to build the minified CSS file:
-    ```sh
-    npm run build
-    ```
+   ```sh
+   npm run build
+   ```
 
 ## Building JioTV Go from Source 🛠️
 
@@ -222,9 +226,9 @@ Building JioTV Go from source is a breeze! Follow these simple steps:
 1. Open your terminal and navigate to the project's root directory.
 
 2. Run the following command to build JioTV Go:
-    ```sh
-    go build ./cmd/jiotv_go
-    ```
+   ```sh
+   go build ./cmd/jiotv_go
+   ```
 
 ## Let's Make JioTV Go Better Together! 🤝
 

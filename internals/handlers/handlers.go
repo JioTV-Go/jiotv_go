@@ -61,7 +61,7 @@ func IndexHandler(c *fiber.Ctx) error {
 			"IsNotLoggedIn": !utils.CheckLoggedIn(),
 			"Categories":    categoryMap,
 			"Languages":     languageMap,
-			"Qualities":     map[string]string{
+			"Qualities": map[string]string{
 				"auto":   "Quality (Auto)",
 				"high":   "High",
 				"medium": "Medium",
@@ -74,7 +74,7 @@ func IndexHandler(c *fiber.Ctx) error {
 			"IsNotLoggedIn": !utils.CheckLoggedIn(),
 			"Categories":    categoryMap,
 			"Languages":     languageMap,
-			"Qualities":     map[string]string{
+			"Qualities": map[string]string{
 				"auto":   "Quality (Auto)",
 				"high":   "High",
 				"medium": "Medium",
@@ -268,8 +268,8 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	// Check if the query parameter "type" is set to "m3u"
 	if c.Query("type") == "m3u" {
 		// Create an M3U playlist
-		m3uContent := "#EXTM3U x-tvg-url=\""+hostURL+"/epg.xml.gz\"\n"
-		logoURL := hostURL+"/jtvimage"
+		m3uContent := "#EXTM3U x-tvg-url=\"" + hostURL + "/epg.xml.gz\"\n"
+		logoURL := hostURL + "/jtvimage"
 		for _, channel := range apiResponse.Result {
 			var channelURL string
 			if quality != "" {
@@ -342,7 +342,7 @@ func PlaylistHandler(c *fiber.Ctx) error {
 }
 
 func ImageHandler(c *fiber.Ctx) error {
-	url := "http://jiotv.catchup.cdn.jio.com/dare_images/images/"+c.Params("file")
+	url := "http://jiotv.catchup.cdn.jio.com/dare_images/images/" + c.Params("file")
 	if err := proxy.Do(c, url, TV.Client); err != nil {
 		return err
 	}

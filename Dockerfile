@@ -14,7 +14,7 @@ RUN go build -ldflags="-s -w" -trimpath -o /app/jiotv_go ./cmd/jiotv_go
 
 # Stage 2: Create the final minimal image
 # skipcq: DOK-DL3007
-FROM alpine:latest 
+FROM alpine:latest
 
 # Set the working directory inside the container
 WORKDIR /app

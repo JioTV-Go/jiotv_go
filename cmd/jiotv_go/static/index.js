@@ -134,7 +134,7 @@ const loginOTPVerifyClick = () => {
     },
     body: JSON.stringify({ number: `+91${number}`, otp }),
   })
-    .then((res) =>  res.json())
+    .then((res) => res.json())
     .then((data) => {
       if (data.status) {
         alert("OTP verification success. Enjoy!");
