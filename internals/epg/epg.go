@@ -28,11 +28,15 @@ func Init() {
 	flag := false
 	utils.Log.Println("Checking EPG file")
 	if stat, err := os.Stat(epgFile); err == nil {
+		// If file was modified today, don't generate new EPG
+		// Else generate new EPG
 		lastModTime = stat.ModTime()
-		if time.Since(lastModTime).Hours() < 24 {
-			utils.Log.Println("EPG file is up to date")
+		fileDate := lastModTime.Format("2006-01-02")
+		todayDate := time.Now().Format("2006-01-02")
+		if fileDate == todayDate {
+			utils.Log.Println("EPG file is up to date.")
 		} else {
-			utils.Log.Println("EPG file is older than 24 hours")
+			utils.Log.Println("EPG file is old.")
 			flag = true
 		}
 	} else {
@@ -41,7 +45,6 @@ func Init() {
 	}
 
 	genepg := func() {
-		// schedule to run at 5:30 AM IST
 		fmt.Println("\tGenerating new EPG file... Please wait.")
 		if err := GenXMLGz(epgFile); err != nil {
 			utils.Log.Fatal(err)
@@ -52,11 +55,11 @@ func Init() {
 		genepg()
 	}
 	// setup random time to avoid server load 
-	random_hour := -5+rand.Intn(2) + 1 // random number between 
+	random_hour := -5+rand.Intn(5) + 1 // random number between 1 and 5
 	random_min := -30+rand.Intn(60)    // random number between 0 and 59
 	time_now := time.Now()
 	schedule_time := time.Date(time_now.Year(), time_now.Month(), time_now.Day()+1, random_hour, random_min, 0, 0, time.UTC)
-	utils.Log.Println("Scheduled EPG generation in", time.Until(schedule_time).Truncate(time.Second))
+	utils.Log.Println("Scheduled EPG generation on", schedule_time.Local())
 	go utils.ScheduleFunctionCall(genepg, schedule_time)
 }
 
