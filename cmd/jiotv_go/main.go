@@ -5,10 +5,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/rabilrbl/jiotv_go/internals/epg"
-	"github.com/rabilrbl/jiotv_go/internals/handlers"
-	"github.com/rabilrbl/jiotv_go/internals/middleware"
-	"github.com/rabilrbl/jiotv_go/internals/utils"
+	"github.com/rabilrbl/jiotv_go/internal/epg"
+	"github.com/rabilrbl/jiotv_go/internal/handlers"
+	"github.com/rabilrbl/jiotv_go/internal/middleware"
+	"github.com/rabilrbl/jiotv_go/internal/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"

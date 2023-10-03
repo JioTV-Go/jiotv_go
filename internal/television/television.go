@@ -7,7 +7,7 @@ import (
 
 	"github.com/valyala/fasthttp"
 
-	"github.com/rabilrbl/jiotv_go/internals/utils"
+	"github.com/rabilrbl/jiotv_go/internal/utils"
 )
 
 func NewTelevision(credentials *utils.JIOTV_CREDENTIALS) *Television {

@@ -11,8 +11,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rabilrbl/jiotv_go/internals/television"
-	"github.com/rabilrbl/jiotv_go/internals/utils"
+	"github.com/rabilrbl/jiotv_go/internal/television"
+	"github.com/rabilrbl/jiotv_go/internal/utils"
 	"github.com/valyala/fasthttp"
 
 	"github.com/gofiber/fiber/v2"

@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/rabilrbl/jiotv_go/internals/utils"
+	"github.com/rabilrbl/jiotv_go/internal/utils"
 	"github.com/schollz/progressbar/v3"
 	"github.com/valyala/fasthttp"
 )
