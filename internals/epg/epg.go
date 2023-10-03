@@ -127,6 +127,8 @@ func genXML() ([]byte, error) {
 			if err := json.Unmarshal(resp.Body(), &epgResponse); err != nil {
 				// Handle error
 				utils.Log.Printf("Error unmarshaling EPG response for channel %d, offset %d: %v", channel.ID, offset, err)
+				// Print response body for debugging
+				utils.Log.Printf("Response body: %s", resp.Body())
 				continue
 			}
 
