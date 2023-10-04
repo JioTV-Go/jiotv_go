@@ -44,6 +44,7 @@ type LiveURLOutput struct {
 }
 
 var CategoryMap = map[int]string{
+	0:	"All Categories",
 	5:  "Entertainment",
 	6:  "Movies",
 	7:  "Kids",
@@ -60,6 +61,7 @@ var CategoryMap = map[int]string{
 }
 
 var LanguageMap = map[int]string{
+	0:	"All Languages",
 	1:  "Hindi",
 	2:  "Marathi",
 	3:  "Punjabi",

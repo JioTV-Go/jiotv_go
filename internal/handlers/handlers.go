@@ -24,77 +24,93 @@ var (
 	DisableTSHandler bool
 )
 
+// Initialize the necessary operations required for the handlers to work
 func Init() {
 	DisableTSHandler = os.Getenv("JIOTV_DISABLE_TS_HANDLER") == "true"
 	if DisableTSHandler {
 		utils.Log.Println("TS Handler disabled!. All TS video requests will be served directly from JioTV servers.")
 	}
+	// Get credentials from file
 	credentials, err := utils.GetJIOTVCredentials()
+	// Initialize TV object with nil credentials
 	TV = television.New(nil)
 	if err != nil {
 		utils.Log.Println("Login error!", err)
 	} else {
+		// If AccessToken is present, check for its validity and schedule a refresh if required
 		if credentials.AccessToken != "" {
 			// Check validity of credentials
 			go RefreshTokenIfExpired(credentials)
 		}
+		// Initialize TV object with credentials
 		TV = television.New(credentials)
 	}
 }
 
+func ErrorMessageHandler(c *fiber.Ctx, err error) error {
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err.Error(),
+		})
+	}
+	return nil
+}
+
+// IndexHandler handles the index page for `/` route
 func IndexHandler(c *fiber.Ctx) error {
+	// Get all channels
 	channels := television.Channels()
 
+	// Get language and category from query params
 	language := c.Query("language")
 	category := c.Query("category")
 
-	categoryMap := television.CategoryMap
-	categoryMap[0] = "All Categories"
-	languageMap := television.LanguageMap
-	languageMap[0] = "All Languages"
-
-	if language != "" || category != "" {
-		language_int, _ := strconv.Atoi(language)
-		category_int, _ := strconv.Atoi(category)
-		channels_list := television.FilterChannels(channels.Result, language_int, category_int)
-		return c.Render("views/index", fiber.Map{
-			"Channels":      channels_list,
-			"IsNotLoggedIn": !utils.CheckLoggedIn(),
-			"Categories":    categoryMap,
-			"Languages":     languageMap,
-			"Qualities": map[string]string{
-				"auto":   "Quality (Auto)",
-				"high":   "High",
-				"medium": "Medium",
-				"low":    "Low",
-			},
-		})
-	} else {
-		return c.Render("views/index", fiber.Map{
-			"Channels":      channels.Result,
-			"IsNotLoggedIn": !utils.CheckLoggedIn(),
-			"Categories":    categoryMap,
-			"Languages":     languageMap,
-			"Qualities": map[string]string{
-				"auto":   "Quality (Auto)",
-				"high":   "High",
-				"medium": "Medium",
-				"low":    "Low",
-			},
-		})
+	// Context data for index page
+	indexContext := fiber.Map{
+		"Channels":      nil,
+		"IsNotLoggedIn": !utils.CheckLoggedIn(),
+		"Categories":    television.CategoryMap,
+		"Languages":     television.LanguageMap,
+		"Qualities": map[string]string{
+			"auto":   "Quality (Auto)",
+			"high":   "High",
+			"medium": "Medium",
+			"low":    "Low",
+		},
 	}
+
+	// Filter channels by language and category if provided
+	if language != "" || category != "" {
+		language_int, err := strconv.Atoi(language)
+		if err != nil {
+			return ErrorMessageHandler(c, err)
+		}
+		category_int, err := strconv.Atoi(category)
+		if err != nil {
+			return ErrorMessageHandler(c, err)
+		}
+		channels_list := television.FilterChannels(channels.Result, language_int, category_int)
+		indexContext["Channels"] = channels_list
+		return c.Render("views/index", indexContext)
+	}
+	// If language and category are not provided, return all channels
+	indexContext["Channels"] = channels.Result
+	return c.Render("views/index", indexContext)
 }
 
-func checkFieldExist(field string, check bool, c *fiber.Ctx) {
+// Check if the field is provided in the request
+// If not, send a bad request response
+func checkFieldExist(field string, check bool, c *fiber.Ctx) error {
 	if !check {
 		utils.Log.Println(field + " not provided")
-		c.Status(fiber.StatusBadRequest)
-		c.JSON(fiber.Map{
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
 			"message": field + " not provided",
 		})
 	}
+	return nil
 }
 
+// Live channel stream route `/live/:id.m3u8`
 func LiveHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
@@ -108,11 +124,13 @@ func LiveHandler(c *fiber.Ctx) error {
 			})
 		}
 	}
-	// quote url
+	// quote url as it will be passed as a query parameter
+	// It is required to quote the url as it may contain special characters like ? and &
 	coded_url := url.QueryEscape(liveResult.Auto)
 	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
 }
 
+// Live channel stream route `/live/:quality/:id.m3u8`
 func LiveQualityHandler(c *fiber.Ctx) error {
 	quality := c.Params("quality")
 	id := c.Params("id")
@@ -132,8 +150,9 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 		quality = "auto"
 	}
 	var liveURL string
+	// select quality level based on query parameter
 	switch quality {
-	case "high" , "h":
+	case "high", "h":
 		liveURL = liveResult.High
 	case "medium", "med", "m":
 		liveURL = liveResult.Medium
@@ -142,12 +161,16 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	default:
 		liveURL = liveResult.Auto
 	}
-	// quote url
+	// quote url as it will be passed as a query parameter
+	// It is required to quote the url as it may contain special characters like ? and &
 	coded_url := url.QueryEscape(liveURL)
 	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
 }
 
+// Render M3U8 file
+// This handler shall replace JioTV server URLs with our own server URLs
 func RenderHandler(c *fiber.Ctx) error {
+	// URL to be rendered
 	auth := c.Query("auth")
 	if auth == "" {
 		utils.Log.Println("Auth not provided")
@@ -155,6 +178,7 @@ func RenderHandler(c *fiber.Ctx) error {
 			"message": "Auth not provided",
 		})
 	}
+	// Channel ID to be used for key rendering
 	channel_id := c.Query("channel_key_id")
 	if channel_id == "" {
 		utils.Log.Println("Channel ID not provided")
@@ -172,11 +196,15 @@ func RenderHandler(c *fiber.Ctx) error {
 	// baseUrl is the part of the url excluding suffix file.m3u8 and params is the part of the url after the suffix
 	split_url_by_params := strings.Split(decoded_url, "?")
 	baseUrl := split_url_by_params[0]
+	// Pattern to match file names ending with .m3u8
 	pattern := `[a-z0-9=\_\-A-Z]*\.m3u8`
 	re := regexp.MustCompile(pattern)
+	// Add baseUrl to all the file names ending with .m3u8
 	baseUrl = re.ReplaceAllString(baseUrl, "")
 	params := split_url_by_params[1]
 
+	// replacer replaces all the file names ending with .m3u8 and .ts with our own server URLs
+	// More info: https://golang.org/pkg/regexp/#Regexp.ReplaceAllFunc
 	replacer := func(match []byte) []byte {
 		switch {
 		case bytes.HasSuffix(match, []byte(".m3u8")):
@@ -191,10 +219,13 @@ func RenderHandler(c *fiber.Ctx) error {
 		}
 	}
 
+	// Pattern to match file names ending with .m3u8 and .ts
 	pattern = `[a-z0-9=\_\-A-Z\/]*\.(m3u8|ts)`
 	re = regexp.MustCompile(pattern)
+	// Execute replacer function on renderResult
 	renderResult = re.ReplaceAllFunc(renderResult, replacer)
 
+	// replacer_key replaces all the URLs ending with .key and .pkey with our own server URLs
 	replacer_key := func(match []byte) []byte {
 		switch {
 		case bytes.HasSuffix(match, []byte(".key")) || bytes.HasSuffix(match, []byte(".pkey")):
@@ -204,13 +235,16 @@ func RenderHandler(c *fiber.Ctx) error {
 		}
 	}
 
+	// Pattern to match URLs ending with .key and .pkey
 	pattern_key := `http[\S]+\.(pkey|key)`
 	re_key := regexp.MustCompile(pattern_key)
+	// Execute replacer_key function on renderResult
 	renderResult = re_key.ReplaceAllFunc(renderResult, replacer_key)
 
 	return c.Send(renderResult)
 }
 
+// Load Key file from JioTV server
 func RenderKeyHandler(c *fiber.Ctx) error {
 	channel_id := c.Query("channel_key_id")
 	auth := c.Query("auth")
@@ -224,6 +258,7 @@ func RenderKeyHandler(c *fiber.Ctx) error {
 	return c.Status(status).Send(keyResult)
 }
 
+// Load TS file from JioTV server
 func RenderTSHandler(c *fiber.Ctx) error {
 	auth := c.Query("auth")
 	// decode url
@@ -240,6 +275,8 @@ func RenderTSHandler(c *fiber.Ctx) error {
 	return nil
 }
 
+// Get all channels from JioTV API
+// Also to generate M3U playlist
 func ChannelsHandler(c *fiber.Ctx) error {
 	quality := strings.TrimSpace(c.Query("q"))
 	apiResponse := television.Channels()
@@ -276,6 +313,8 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	return c.JSON(apiResponse)
 }
 
+// HTML Page with video player iframe embedded with video URL
+// URL is generated from the channel ID
 func PlayHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	quality := c.Query("q")
@@ -285,6 +324,7 @@ func PlayHandler(c *fiber.Ctx) error {
 	})
 }
 
+// Web Player to stream live TV
 func PlayerHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	quality := c.Query("q")
@@ -299,6 +339,7 @@ func PlayerHandler(c *fiber.Ctx) error {
 	})
 }
 
+// Old Web Player to stream live TV
 func ClapprHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	quality := c.Query("q")
@@ -313,15 +354,19 @@ func ClapprHandler(c *fiber.Ctx) error {
 	})
 }
 
+// Response for favicon.ico request
 func FaviconHandler(c *fiber.Ctx) error {
 	return c.Redirect("/static/favicon.ico", fiber.StatusMovedPermanently)
 }
 
+// Route for generating M3U playlist only
+// For user convenience, redirect to /channels?type=m3u
 func PlaylistHandler(c *fiber.Ctx) error {
 	quality := c.Query("q")
 	return c.Redirect("/channels?type=m3u&q="+quality, fiber.StatusMovedPermanently)
 }
 
+// Load image from JioTV server
 func ImageHandler(c *fiber.Ctx) error {
 	url := "http://jiotv.catchup.cdn.jio.com/dare_images/images/" + c.Params("file")
 	if err := proxy.Do(c, url, TV.Client); err != nil {
@@ -331,6 +376,7 @@ func ImageHandler(c *fiber.Ctx) error {
 	return nil
 }
 
+// Send OTP for login
 func LoginSendOTPHandler(c *fiber.Ctx) error {
 	// get mobile number from post request
 	formBody := new(LoginSendOTPRequestBodyData)
@@ -356,6 +402,7 @@ func LoginSendOTPHandler(c *fiber.Ctx) error {
 	})
 }
 
+// Verify OTP and login
 func LoginVerifyOTPHandler(c *fiber.Ctx) error {
 	// get mobile number and otp from post request
 	formBody := new(LoginVerifyOTPRequestBodyData)
@@ -382,7 +429,8 @@ func LoginVerifyOTPHandler(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
-func LoginHandler(c *fiber.Ctx) error {
+// Login with password
+func LoginPasswordHandler(c *fiber.Ctx) error {
 	var username, password string
 	if c.Method() == "GET" {
 		username = c.Query("username")
@@ -415,6 +463,7 @@ func LoginHandler(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
+// EPG route
 func EPGHandler(c *fiber.Ctx) error {
 	// if epg.xml.gz exists, return it
 	if _, err := os.Stat("epg.xml.gz"); err == nil {
@@ -426,6 +475,7 @@ func EPGHandler(c *fiber.Ctx) error {
 	}
 }
 
+// Function to refresh AccessToken
 func LoginRefreshAccessToken() error {
 	utils.Log.Println("Refreshing AccessToken...")
 	tokenData, err := utils.GetJIOTVCredentials()
@@ -503,6 +553,7 @@ func LoginRefreshAccessToken() error {
 	}
 }
 
+// Function to handle AccessToken refresh
 func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) {
 	utils.Log.Println("Checking if AccessToken is expired...")
 	lastTokenRefreshTime, err := strconv.ParseInt(credentials.LastTokenRefreshTime, 10, 64)
