@@ -251,21 +251,21 @@ func Login(username, password string) (map[string]string, error) {
 	}
 
 	// Construct payload
-	payload := map[string]interface{}{
-		"identifier":           user,
-		"password":             passw,
-		"rememberUser":         "T",
-		"upgradeAuth":          "Y",
-		"returnSessionDetails": "T",
-		"deviceInfo": map[string]interface{}{
-			"consumptionDeviceName": "Jio",
-			"info": map[string]interface{}{
-				"type": "android",
-				"platform": map[string]string{
-					"name":    "vbox86p",
-					"version": "8.0.0",
+	payload := LoginPayload{
+		Identifier:           user,
+		Password:             passw,
+		RememberUser:         "T",
+		UpgradeAuth:          "Y",
+		ReturnSessionDetails: "T",
+		DeviceInfo: LoginPayloadDeviceInfo{
+			ConsumptionDeviceName: "Jio",
+			Info: LoginPayloadDeviceInfoInfo{
+				Type: "android",
+				Platform: LoginPayloadDeviceInfoInfoPlatform{
+					Name:    "vbox86p",
+					Version: "8.0.0",
 				},
-				"androidId": "6fcadeb7b4b10d77",
+				AndroidID: "6fcadeb7b4b10d77",
 			},
 		},
 	}
