@@ -19,9 +19,13 @@ import (
 )
 
 var (
+	// Log is a global logger
+	// initialized in main.go
+	// used to log debug messages and errors
 	Log *log.Logger
 )
 
+// Create a new logger instance with custom settings
 func GetLogger() *log.Logger {
 	var logger *log.Logger
 	if os.Getenv("JIOTV_DEBUG") == "true" {
@@ -34,6 +38,7 @@ func GetLogger() *log.Logger {
 		}
 		logger = log.New(file, "[DEBUG] ", log.Ldate|log.Ltime|log.Lshortfile)
 		// rotate log file if it is larger than 10MB
+		// neccessary to prevent filling up disk space with logs
 		logger.SetOutput(&lumberjack.Logger{
 			Filename:   "jiotv_go.log",
 			MaxSize:    5, // megabytes
@@ -44,6 +49,7 @@ func GetLogger() *log.Logger {
 	return logger
 }
 
+// Get the path to credentials file
 func GetCredentialsPath() string {
 	filename := "jiotv_credentials_v2.json"
 	credentials_path := os.Getenv("JIOTV_CREDENTIALS_PATH")
@@ -67,6 +73,7 @@ func GetCredentialsPath() string {
 	return credentials_path
 }
 
+// Send OTP to the given number for login
 func LoginSendOTP(number string) (bool, error) {
 	postData := map[string]string{
 		"number": number,
@@ -122,6 +129,7 @@ func LoginSendOTP(number string) (bool, error) {
 	}
 }
 
+// Verify OTP for login
 func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 	// convert number string to base64
 	encoded_number := base64.StdEncoding.EncodeToString([]byte(number))
@@ -222,6 +230,7 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 	}
 }
 
+// Login with username and password
 func Login(username, password string) (map[string]string, error) {
 	postData := map[string]string{
 		"username": username,
@@ -332,6 +341,8 @@ func Login(username, password string) (map[string]string, error) {
 	}
 }
 
+// Load credentials from file if available
+// Returns JIOTV_CREDENTIALS struct
 func loadCredentialsFromFile(filename string) (*JIOTV_CREDENTIALS, error) {
 	// check if given file exists, if not ask user username and password then call Login()
 	_, err := os.Stat(filename)
@@ -359,6 +370,8 @@ func loadCredentialsFromFile(filename string) (*JIOTV_CREDENTIALS, error) {
 	return nil, err
 }
 
+// Get credentials from environment variables or credentials file
+// Important note: If credentials are provided from environment variables, they will be used instead of credentials file
 func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
 	// Use credentials from environment variables if available
 	jiotv_ssoToken := os.Getenv("JIOTV_SSO_TOKEN")
@@ -381,6 +394,7 @@ func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
 	return credentials, nil
 }
 
+// Write credentials data to file
 func WriteJIOTVCredentials(credentials *JIOTV_CREDENTIALS) error {
 	credentialsPath := GetCredentialsPath()
 	file, err := os.Create(credentialsPath)
@@ -392,6 +406,7 @@ func WriteJIOTVCredentials(credentials *JIOTV_CREDENTIALS) error {
 	return file.Close()
 }
 
+// Check if user is logged in
 func CheckLoggedIn() bool {
 	// Check if credentials.json exists
 	_, err := GetJIOTVCredentials()
@@ -402,6 +417,7 @@ func CheckLoggedIn() bool {
 	}
 }
 
+// Schedule a function call at a given time
 func ScheduleFunctionCall(fn func(), executeTime time.Time) {
 	now := time.Now()
 	if executeTime.After(now) {
@@ -410,6 +426,9 @@ func ScheduleFunctionCall(fn func(), executeTime time.Time) {
 	fn()
 }
 
+// Create a HTTP client with proxy if given
+// Otherwise create a HTTP client without proxy
+// Returns a fasthttp.Client
 func GetRequestClient() *fasthttp.Client {
 	// The function shall return a fasthttp.client with proxy if given
 	proxy := os.Getenv("JIOTV_PROXY")
@@ -436,6 +455,7 @@ func GetRequestClient() *fasthttp.Client {
 	}
 }
 
+// Check if given file exists
 func FileExists(filename string) bool {
 	// check if given file exists
 	_, err := os.Stat(filename)
