@@ -30,6 +30,7 @@ func InitLogin() {
 		utils.Log.Println("TS Handler disabled!. All TS video requests will be served directly from JioTV servers.")
 	}
 	credentials, err := utils.GetJIOTVCredentials()
+	TV = television.New(nil)
 	if err != nil {
 		utils.Log.Println("Login error!", err)
 	} else {
@@ -37,7 +38,7 @@ func InitLogin() {
 			// Check validity of credentials
 			go RefreshTokenIfExpired(credentials)
 		}
-		TV = television.NewTelevision(credentials)
+		TV = television.New(credentials)
 	}
 }
 
@@ -514,7 +515,7 @@ func LoginRefreshAccessToken() error {
 			utils.Log.Fatalln(err)
 			return err
 		}
-		TV = television.NewTelevision(tokenData)
+		TV = television.New(tokenData)
 		go RefreshTokenIfExpired(tokenData)
 		return nil
 	} else {

@@ -10,7 +10,16 @@ import (
 	"github.com/rabilrbl/jiotv_go/internal/utils"
 )
 
-func NewTelevision(credentials *utils.JIOTV_CREDENTIALS) *Television {
+func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
+	if credentials == nil {
+		// If credentials are not provided, set them to empty strings
+		credentials = &utils.JIOTV_CREDENTIALS{
+			AccessToken: "",
+			SSOToken:    "",
+			CRM:         "",
+			UniqueID:    "",
+		}
+	}
 	headers := map[string]string{
 		"Content-type": "application/x-www-form-urlencoded",
 		"appkey":       "NzNiMDhlYzQyNjJm",
