@@ -7,7 +7,7 @@ WORKDIR /app
 COPY go.mod ./
 COPY go.sum ./
 COPY cmd ./cmd
-COPY internals ./internals
+COPY internal ./internal
 
 # Build the Go app with optimizations
 RUN go build -ldflags="-s -w" -trimpath -o /app/jiotv_go ./cmd/jiotv_go
