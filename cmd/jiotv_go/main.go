@@ -64,7 +64,7 @@ func main() {
 	}))
 
 	// Initialize the television object
-	handlers.InitLogin()
+	handlers.Init()
 
 	app.Get("/", handlers.IndexHandler)
 	app.Post("/login/sendOTP", handlers.LoginSendOTPHandler)

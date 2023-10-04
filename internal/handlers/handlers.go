@@ -24,7 +24,7 @@ var (
 	DisableTSHandler bool
 )
 
-func InitLogin() {
+func Init() {
 	DisableTSHandler = os.Getenv("JIOTV_DISABLE_TS_HANDLER") == "true"
 	if DisableTSHandler {
 		utils.Log.Println("TS Handler disabled!. All TS video requests will be served directly from JioTV servers.")
@@ -398,7 +398,7 @@ func LoginVerifyOTPHandler(c *fiber.Ctx) error {
 			"message": "Internal server error",
 		})
 	}
-	InitLogin()
+	Init()
 	return c.JSON(result)
 }
 
@@ -431,7 +431,7 @@ func LoginHandler(c *fiber.Ctx) error {
 			"message": "Internal server error",
 		})
 	}
-	InitLogin()
+	Init()
 	return c.JSON(result)
 }
 
