@@ -4,6 +4,7 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
+// Television struct to store credentials and client required for making requests to JioTV API
 type Television struct {
 	accessToken string
 	ssoToken    string
@@ -13,6 +14,7 @@ type Television struct {
 	Client      *fasthttp.Client
 }
 
+// Individual channel details from JioTV API
 type Channel struct {
 	ID       int    `json:"channel_id"`
 	Name     string `json:"channel_name"`
@@ -23,12 +25,14 @@ type Channel struct {
 	IsHD     bool   `json:"isHD"`
 }
 
-type APIResponse struct {
+// Response body for channels request to JioTV API
+type ChannelsResponse struct {
 	Code    int       `json:"code"`
 	Message string    `json:"message"`
 	Result  []Channel `json:"result"`
 }
 
+// Quality levels for live streams for JioTV API
 type Bitrates struct {
 	Auto   string `json:"auto"`
 	High   string `json:"high"`
@@ -36,6 +40,7 @@ type Bitrates struct {
 	Medium string `json:"medium"`
 }
 
+// Response of live stream URL request to JioTV API
 type LiveURLOutput struct {
 	Bitrates Bitrates `json:"bitrates"`
 	Code     int      `json:"code"`
@@ -43,8 +48,9 @@ type LiveURLOutput struct {
 	Result   string   `json:"result"`
 }
 
+// Categories for channels
 var CategoryMap = map[int]string{
-	0:	"All Categories",
+	0:  "All Categories",
 	5:  "Entertainment",
 	6:  "Movies",
 	7:  "Kids",
@@ -60,8 +66,9 @@ var CategoryMap = map[int]string{
 	19: "JioDarshan",
 }
 
+// Languages for channels
 var LanguageMap = map[int]string{
-	0:	"All Languages",
+	0:  "All Languages",
 	1:  "Hindi",
 	2:  "Marathi",
 	3:  "Punjabi",

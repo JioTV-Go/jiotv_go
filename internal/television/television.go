@@ -10,7 +10,14 @@ import (
 	"github.com/rabilrbl/jiotv_go/internal/utils"
 )
 
+const (
+	// URL for fetching channels from JioTV API
+	CHANNELS_API_URL = "https://jiotvapi.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?langId=6&os=android&devicetype=phone&usertype=JIO&version=315&langId=6"
+)
+
+// Create a new Television instance with the provided credentials
 func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
+	// Check if credentials are provided
 	if credentials == nil {
 		// If credentials are not provided, set them to empty strings
 		credentials = &utils.JIOTV_CREDENTIALS{
@@ -40,8 +47,10 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 		"versionCode":  "315",
 	}
 
+	// Create a fasthttp.Client
 	client := utils.GetRequestClient()
 
+	// Return a new Television instance
 	return &Television{
 		accessToken: credentials.AccessToken,
 		ssoToken:    credentials.SSOToken,
@@ -52,6 +61,7 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 	}
 }
 
+// Generate m3u8 link from JioTV API with the provided channel ID
 func (tv *Television) Live(channelID string) (*Bitrates, error) {
 	formData := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(formData)
@@ -116,6 +126,7 @@ func (tv *Television) Live(channelID string) (*Bitrates, error) {
 	return &result.Bitrates, nil
 }
 
+// Send an HTTP GET request to the provided URL and return the response body
 func (tv *Television) Render(url string) []byte {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
@@ -141,6 +152,8 @@ func (tv *Television) Render(url string) []byte {
 	return buf
 }
 
+// Fetch the key for the provided channel ID
+// URL is the URL of the key from the Original m3u8 file from JioTV
 func (tv *Television) RenderKey(url, channelID string) ([]byte, int) {
 	// extract params from url
 	params := strings.Split(url, "?")[1]
@@ -179,8 +192,8 @@ func (tv *Television) RenderKey(url, channelID string) ([]byte, int) {
 	return buf, resp.StatusCode()
 }
 
-func Channels() APIResponse {
-	url := "https://jiotvapi.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?langId=6&os=android&devicetype=phone&usertype=JIO&version=315&langId=6"
+// Fetch channels from JioTV API
+func Channels() ChannelsResponse {
 
 	// Create a fasthttp.Client
 	client := utils.GetRequestClient()
@@ -188,7 +201,7 @@ func Channels() APIResponse {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 
-	req.SetRequestURI(url)
+	req.SetRequestURI(CHANNELS_API_URL)
 
 	req.Header.SetMethod("GET")
 	req.Header.Add("User-Agent", "okhttp/4.2.2")
@@ -208,7 +221,7 @@ func Channels() APIResponse {
 		utils.Log.Panic(err)
 	}
 
-	var apiResponse APIResponse
+	var apiResponse ChannelsResponse
 
 	// Check the response status code
 	if resp.StatusCode() != fasthttp.StatusOK {
@@ -228,6 +241,7 @@ func Channels() APIResponse {
 	return apiResponse
 }
 
+// Function to filter channels by language and category
 func FilterChannels(channels []Channel, language, category int) []Channel {
 	var filteredChannels []Channel
 	for _, channel := range channels {
