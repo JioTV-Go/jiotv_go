@@ -26,7 +26,11 @@ body:
   - type: textarea
     attributes:
       label: Relevant log output
-      description: Please copy and paste any relevant log output. This will be automatically formatted into code, so no need for backticks. Copy from terminal or log file and paste here.
+      description: |
+        Please copy and paste any relevant log output. 
+        This will be automatically formatted into code, so no need for backticks. 
+        Copy from terminal or log file and paste here. 
+        If there is no log output, please write "n/a"
       render: shell
     validations:
       required: true
