@@ -18,10 +18,13 @@ import (
 )
 
 const (
+	// URL for fetching channels from JioTV API
 	CHANNEL_URL = "https://jiotv.data.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?os=android&devicetype=phone&usertype=tvYR7NSNn7rymo3F"
+	// URL for fetching EPG data for individual channels from JioTV API
 	EPG_URL     = "https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get/?offset=%d&channel_id=%d"
 )
 
+// Function to initialize EPG generation and schedule it for the next day
 func Init() {
 	epgFile := "epg.xml.gz"
 	var lastModTime time.Time
@@ -63,13 +66,8 @@ func Init() {
 	go utils.ScheduleFunctionCall(genepg, schedule_time)
 }
 
-func NewChannel(id int, displayName string) Channel {
-	return Channel{
-		ID:      id,
-		Display: displayName,
-	}
-}
 
+// Creates a new Programme struct with the given parameters
 func NewProgramme(channelID int, start, stop, title, desc, iconSrc string) Programme {
 	iconURL := fmt.Sprintf("https://jiotv.catchup.cdn.jio.com/dare_images/shows/%s", iconSrc)
 	return Programme{
@@ -90,13 +88,8 @@ func NewProgramme(channelID int, start, stop, title, desc, iconSrc string) Progr
 	}
 }
 
-func NewEPG(channels []Channel, programmes []Programme) EPG {
-	return EPG{
-		Channel:   channels,
-		Programme: programmes,
-	}
-}
-
+// Generate XML EPG from JioTV API
+// Returns XML as a byte slice
 func genXML() ([]byte, error) {
 	// Create a reusable fasthttp client with common headers
 	client := utils.GetRequestClient()
@@ -173,7 +166,10 @@ func genXML() ([]byte, error) {
 	}
 
 	for _, channel := range channelsResponse.Channels {
-		channels = append(channels, NewChannel(channel.ChannelID, channel.ChannelName))
+		channels = append(channels, Channel{
+			ID:      channel.ChannelID,
+			Display: channel.ChannelName,
+		})
 	}
 	utils.Log.Println("Fetched", len(channels), "channels")
 	// Use a worker pool to fetch EPG data concurrently
@@ -204,18 +200,23 @@ func genXML() ([]byte, error) {
 
 	utils.Log.Println("Fetched programmes")
 	// Create EPG and marshal it to XML
-	epg := NewEPG(channels, programmes)
-	xml, err := xml.MarshalIndent(epg, "", "  ")
+	epg := EPG{
+		Channel:   channels,
+		Programme: programmes,
+	}
+	xml, err := xml.Marshal(epg)
 	if err != nil {
 		return nil, err
 	}
 	return xml, nil
 }
 
+// Format time to YYYYMMDDHHMMSS -0700
 func formatTime(t time.Time) string {
 	return t.Format("20060102150405 -0700")
 }
 
+// Generate XML EPG from JioTV API and write it to a compressed gzip file
 func GenXMLGz(filename string) error {
 	utils.Log.Println("Generating XML")
 	xml, err := genXML()

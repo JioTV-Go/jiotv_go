@@ -6,79 +6,95 @@ import (
 	"strconv"
 )
 
+// Channel XML tag structure for the EPG
 type Channel struct {
-	XMLName xml.Name `xml:"channel"`
-	ID      int      `xml:"id,attr"`
-	Display string   `xml:"display-name"`
+	XMLName xml.Name `xml:"channel"`	// XML tag name
+	ID      int      `xml:"id,attr"`	// ID is attribute of channel tag
+	Display string   `xml:"display-name"`	// Display name of the channel
 }
 
+// Icon XML tag for Programme XML tag in EPG
 type Icon struct {
-	XMLName xml.Name `xml:"icon"`
-	Src     string   `xml:"src,attr"`
+	XMLName xml.Name `xml:"icon"`	// XML tag name
+	Src     string   `xml:"src,attr"`	// Src is attribute of the icon tag
 }
 
+// Title XML tag for Programme XML tag in EPG
+// Title is the name of the programme or show being aired on the channel
 type Title struct {
 	XMLName xml.Name `xml:"title"`
-	Value   string   `xml:",chardata"`
-	Lang    string   `xml:"lang,attr"`
+	Value   string   `xml:",chardata"` // Title of the programme
+	Lang    string   `xml:"lang,attr"` // Language of the title
 }
 
+// Description XML tag for Programme XML tag in EPG
 type Desc struct {
 	XMLName xml.Name `xml:"desc"`
-	Value   string   `xml:",chardata"`
-	Lang    string   `xml:"lang,attr"`
+	Value   string   `xml:",chardata"` // Description of the programme
+	Lang    string   `xml:"lang,attr"` // Language of the description
 }
 
+// Programme XML tag structure for EPG
+// Each programme tag represents a show being aired on a channel
 type Programme struct {
-	XMLName xml.Name `xml:"programme"`
-	Channel string   `xml:"channel,attr"`
-	Start   string   `xml:"start,attr"`
-	Stop    string   `xml:"stop,attr"`
-	Title   Title    `xml:"title"`
-	Desc    Desc     `xml:"desc"`
-	Icon    Icon     `xml:"icon"`
+	XMLName xml.Name `xml:"programme"` // XML tag name
+	Channel string   `xml:"channel,attr"` // Channel is attribute of programme tag
+	Start   string   `xml:"start,attr"` // Start time of the programme
+	Stop    string   `xml:"stop,attr"`	// Stop time of the programme
+	Title   Title    `xml:"title"`	// Title of the programme
+	Desc    Desc     `xml:"desc"`	// Description of the programme
+	Icon    Icon     `xml:"icon"`	// Icon of the programme
 }
 
+// EPG XML tag structure
 type EPG struct {
-	XMLName     xml.Name    `xml:"tv"`
-	XMLVersion  string      `xml:"version,attr"`
-	XMLEncoding string      `xml:"encoding,attr"`
-	Channel     []Channel   `xml:"channel"`
-	Programme   []Programme `xml:"programme"`
+	XMLName     xml.Name    `xml:"tv"` // XML tag name
+	XMLVersion  string      `xml:"version,attr"` // XML version
+	XMLEncoding string      `xml:"encoding,attr"` // XML encoding
+	Channel     []Channel   `xml:"channel"` // Channel tags
+	Programme   []Programme `xml:"programme"` // Programme tags
 }
 
+// Individual channel detail from JioTV API response
 type ChannelObject struct {
-	ChannelID   int    `json:"channel_id"`
-	ChannelName string `json:"channel_name"`
-	LogoURL     string `json:"logoUrl"`
+	ChannelID   int    `json:"channel_id"` // Channel ID
+	ChannelName string `json:"channel_name"` // Channel name
+	LogoURL     string `json:"logoUrl"`	// Channel logo URL
 }
 
+// Channel details from JioTV API response
 type ChannelsResponse struct {
-	Channels []ChannelObject `json:"result"`
-	Code     int             `json:"code"`
-	Message  string          `json:"message"`
+	Channels []ChannelObject `json:"result"` // Channels
+	Code     int             `json:"code"`	// Response code
+	Message  string          `json:"message"` // Response message
 }
 
+// Individual EPG detail from JioTV EPG API response
 type EPGObject struct {
-	StartEpoch   EpochString `json:"startEpoch"`
-	EndEpoch     EpochString `json:"endEpoch"`
-	ChannelID    uint16      `json:"channel_id"`
-	ChannelName  string      `json:"channel_name"`
-	ShowCategory string      `json:"showCategory"`
-	Description  string      `json:"description"`
-	Title        string      `json:"showname"`
-	Thumbnail    string      `json:"episodeThumbnail"`
-	Poster       string      `json:"episodePoster"`
+	StartEpoch   EpochString `json:"startEpoch"` // Start time of the programme
+	EndEpoch     EpochString `json:"endEpoch"`	// End time of the programme
+	ChannelID    uint16      `json:"channel_id"`	// Channel ID
+	ChannelName  string      `json:"channel_name"`	// Channel name
+	ShowCategory string      `json:"showCategory"`	// Category of the show
+	Description  string      `json:"description"`	// Description of the show
+	Title        string      `json:"showname"`	// Title of the show
+	Thumbnail    string      `json:"episodeThumbnail"`	// Thumbnail of the show
+	Poster       string      `json:"episodePoster"`	// Poster of the show
 }
 
+// EPG details from JioTV EPG API response
 type EPGResponse struct {
-	EPG []EPGObject `json:"epg"`
+	EPG []EPGObject `json:"epg"` // EPG details for a channel
 }
 
+// Custom type for unmarshaling epoch integers to strings from JioTV EPG API
 type EpochString string
 
+// UnmarshalJSON unmarshals epoch integers to strings from JioTV EPG API
 func (id *EpochString) UnmarshalJSON(data []byte) error {
+	// Try to unmarshal as integer
 	var intValue int
+	// If it fails, unmarshal as string
 	if err := json.Unmarshal(data, &intValue); err != nil {
 		var stringValue string
 		if err := json.Unmarshal(data, &stringValue); err != nil {
@@ -92,6 +108,7 @@ func (id *EpochString) UnmarshalJSON(data []byte) error {
 	return nil
 }
 
+// String returns the string representation of the EpochString
 func (id *EpochString) String() string {
 	return string(*id)
 }
