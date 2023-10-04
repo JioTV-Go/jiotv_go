@@ -123,26 +123,21 @@ func LoginSendOTP(number string) (bool, error) {
 }
 
 func LoginVerifyOTP(number, otp string) (map[string]string, error) {
-	postData := map[string]string{
-		"number": number,
-		"otp":    otp,
-	}
-
 	// convert number string to base64
-	postData["number"] = base64.StdEncoding.EncodeToString([]byte(postData["number"]))
+	encoded_number := base64.StdEncoding.EncodeToString([]byte(number))
 
 	// Construct payload
-	payload := map[string]interface{}{
-		"number": postData["number"],
-		"otp":    postData["otp"],
-		"deviceInfo": map[string]interface{}{
-			"consumptionDeviceName": "SM-G930F",
-			"info": map[string]interface{}{
-				"type": "android",
-				"platform": map[string]string{
-					"name": "SM-G930F",
+	payload := LoginOTPPayload{
+		Number: encoded_number,
+		OTP:    otp,
+		DeviceInfo: LoginPayloadDeviceInfo{
+			ConsumptionDeviceName: "SM-G930F",
+			Info: LoginPayloadDeviceInfoInfo{
+				Type: "android",
+				Platform: LoginPayloadDeviceInfoInfoPlatform{
+					Name: "SM-G930F",
 				},
-				"androidId": "6fcadeb7b4b10d77",
+				AndroidID: "6fcadeb7b4b10d77",
 			},
 		},
 	}
@@ -189,33 +184,33 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 	// Read response body
 	body := resp.Body()
 
-	var result map[string]interface{}
+	var result LoginResponse
 
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
 
-	accessToken := result["authToken"].(string)
+	accessToken := result.AuthToken
 
 	if accessToken != "" {
-		refreshtoken := result["refreshToken"].(string)
-		ssotoken := result["ssoToken"].(string)
-		crm := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["subscriberId"].(string)
-		uniqueId := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["unique"].(string)
+		refreshToken := result.RefreshToken
+		ssoToken := result.SSOToken
+		crm := result.SessionAttributes.User.SubscriberID
+		uniqueId := result.SessionAttributes.User.Unique
 
 		WriteJIOTVCredentials(&JIOTV_CREDENTIALS{
-			SSOToken:             ssotoken,
+			SSOToken:             ssoToken,
 			CRM:                  crm,
 			UniqueID:             uniqueId,
 			AccessToken:          accessToken,
-			RefreshToken:         refreshtoken,
+			RefreshToken:         refreshToken,
 			LastTokenRefreshTime: strconv.FormatInt(time.Now().Unix(), 10),
 		})
 		return map[string]string{
 			"status":       "success",
 			"accessToken":  accessToken,
-			"refreshToken": refreshtoken,
-			"ssoToken":     ssotoken,
+			"refreshToken": refreshToken,
+			"ssoToken":     ssoToken,
 			"crm":          crm,
 			"uniqueId":     uniqueId,
 		}, nil
@@ -251,7 +246,7 @@ func Login(username, password string) (map[string]string, error) {
 	}
 
 	// Construct payload
-	payload := LoginPayload{
+	payload := LoginPasswordPayload{
 		Identifier:           user,
 		Password:             passw,
 		RememberUser:         "T",
@@ -306,15 +301,15 @@ func Login(username, password string) (map[string]string, error) {
 	// Read response body
 	body := resp.Body()
 
-	var result map[string]interface{}
+	var result LoginResponse
 	if err := json.Unmarshal(body, &result); err != nil {
 		return nil, err
 	}
 
-	ssoToken := result["ssoToken"].(string)
+	ssoToken := result.SSOToken
 	if ssoToken != "" {
-		crm := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["subscriberId"].(string)
-		uniqueId := result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["unique"].(string)
+		crm := result.SessionAttributes.User.SubscriberID
+		uniqueId := result.SessionAttributes.User.Unique
 
 		WriteJIOTVCredentials(&JIOTV_CREDENTIALS{
 			SSOToken:    ssoToken,
@@ -326,8 +321,8 @@ func Login(username, password string) (map[string]string, error) {
 		return map[string]string{
 			"status":   "success",
 			"ssoToken": ssoToken,
-			"crm":      result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["subscriberId"].(string),
-			"uniqueId": result["sessionAttributes"].(map[string]interface{})["user"].(map[string]interface{})["unique"].(string),
+			"crm":      crm,
+			"uniqueId": uniqueId,
 		}, nil
 	} else {
 		return map[string]string{
