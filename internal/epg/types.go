@@ -27,7 +27,7 @@ type Title struct {
 	Lang    string   `xml:"lang,attr"` // Language of the title
 }
 
-// Description XML tag for Programme XML tag in EPG
+// Desc represents Description XML tag for Programme XML tag in EPG
 type Desc struct {
 	XMLName xml.Name `xml:"desc"`
 	Value   string   `xml:",chardata"` // Description of the programme
@@ -55,21 +55,21 @@ type EPG struct {
 	Programme   []Programme `xml:"programme"` // Programme tags
 }
 
-// Individual channel detail from JioTV API response
+// ChannelObject represents Individual channel detail from JioTV API response
 type ChannelObject struct {
 	ChannelID   int    `json:"channel_id"` // Channel ID
 	ChannelName string `json:"channel_name"` // Channel name
 	LogoURL     string `json:"logoUrl"`	// Channel logo URL
 }
 
-// Channel details from JioTV API response
+// ChannelsResponse represents Channel details from JioTV API response
 type ChannelsResponse struct {
 	Channels []ChannelObject `json:"result"` // Channels
 	Code     int             `json:"code"`	// Response code
 	Message  string          `json:"message"` // Response message
 }
 
-// Individual EPG detail from JioTV EPG API response
+// EPGObject represents Individual EPG detail from JioTV EPG API response
 type EPGObject struct {
 	StartEpoch   EpochString `json:"startEpoch"` // Start time of the programme
 	EndEpoch     EpochString `json:"endEpoch"`	// End time of the programme
@@ -82,7 +82,7 @@ type EPGObject struct {
 	Poster       string      `json:"episodePoster"`	// Poster of the show
 }
 
-// EPG details from JioTV EPG API response
+// EPGResponse represents EPG details from JioTV EPG API response
 type EPGResponse struct {
 	EPG []EPGObject `json:"epg"` // EPG details for a channel
 }

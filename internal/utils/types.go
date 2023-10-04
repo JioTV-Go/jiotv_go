@@ -9,7 +9,7 @@ type JIOTV_CREDENTIALS struct {
 	LastTokenRefreshTime string `json:"lastTokenRefreshTime"`
 }
 
-// Request payload for password based login
+// LoginPasswordPayload represents Request payload for password based login
 type LoginPasswordPayload struct {
 	// Username or phone number of the Jio account
 	Identifier string `json:"identifier"`
@@ -22,33 +22,33 @@ type LoginPasswordPayload struct {
 	DeviceInfo           LoginPayloadDeviceInfo `json:"deviceInfo"`
 }
 
-// Request payload for OTP based login
+// LoginOTPPayload represents Request payload for OTP based login
 type LoginOTPPayload struct {
 	Number     string                 `json:"number"`
 	OTP        string                 `json:"otp"`
 	DeviceInfo LoginPayloadDeviceInfo `json:"deviceInfo"`
 }
 
-// Device info for the login API
+// LoginPayloadDeviceInfo represents Device info for the login API
 type LoginPayloadDeviceInfo struct {
 	ConsumptionDeviceName string                     `json:"consumptionDeviceName"`
 	Info                  LoginPayloadDeviceInfoInfo `json:"info"`
 }
 
-// Info for the login API
+// LoginPayloadDeviceInfoInfo represents Info for the login API
 type LoginPayloadDeviceInfoInfo struct {
 	Type      string                             `json:"type"`
 	Platform  LoginPayloadDeviceInfoInfoPlatform `json:"platform"`
 	AndroidID string                             `json:"androidId"`
 }
 
-// Platform info for the login API
+// LoginPayloadDeviceInfoInfoPlatform represents Platform info for the login API
 type LoginPayloadDeviceInfoInfoPlatform struct {
 	Name    string `json:"name"`
 	Version string `json:"version"`
 }
 
-// Response from the JioTV login API
+// LoginResponse represents Response from the JioTV login API
 type LoginResponse struct {
 	AuthToken         string `json:"authToken"`
 	RefreshToken      string `json:"refreshToken"`

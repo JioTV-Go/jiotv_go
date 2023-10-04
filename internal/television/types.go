@@ -14,7 +14,7 @@ type Television struct {
 	Client      *fasthttp.Client
 }
 
-// Individual channel details from JioTV API
+// Channel represents Individual channel details from JioTV API
 type Channel struct {
 	ID       int    `json:"channel_id"`
 	Name     string `json:"channel_name"`
@@ -25,14 +25,14 @@ type Channel struct {
 	IsHD     bool   `json:"isHD"`
 }
 
-// Response body for channels request to JioTV API
+// ChannelsResponse is the response body for channels from JioTV API
 type ChannelsResponse struct {
 	Code    int       `json:"code"`
 	Message string    `json:"message"`
 	Result  []Channel `json:"result"`
 }
 
-// Quality levels for live streams for JioTV API
+// Bitrates represents Quality levels for live streams for JioTV API
 type Bitrates struct {
 	Auto   string `json:"auto"`
 	High   string `json:"high"`
@@ -40,7 +40,7 @@ type Bitrates struct {
 	Medium string `json:"medium"`
 }
 
-// Response of live stream URL request to JioTV API
+// LiveURLOutput represents Response of live stream URL request to JioTV API
 type LiveURLOutput struct {
 	Bitrates Bitrates `json:"bitrates"`
 	Code     int      `json:"code"`
@@ -48,7 +48,7 @@ type LiveURLOutput struct {
 	Result   string   `json:"result"`
 }
 
-// Categories for channels
+// CategoryMap represents Categories for channels
 var CategoryMap = map[int]string{
 	0:  "All Categories",
 	5:  "Entertainment",
@@ -66,7 +66,7 @@ var CategoryMap = map[int]string{
 	19: "JioDarshan",
 }
 
-// Languages for channels
+// LanguageMap represents Languages for channels
 var LanguageMap = map[int]string{
 	0:  "All Languages",
 	1:  "Hindi",

@@ -1,6 +1,6 @@
 package handlers
 
-// Request body for password based login request
+// LoginRequestBodyData represents Request body for password based login request
 type LoginRequestBodyData struct {
 	// Username or mobile number of Jio account
 	Username string `json:"username" xml:"username" form:"username"`
@@ -8,13 +8,13 @@ type LoginRequestBodyData struct {
 	Password string `json:"password" xml:"password" form:"password"`
 }
 
-// Request body for OTP based login request
+// LoginSendOTPRequestBodyData represents Request body for OTP based login request
 type LoginSendOTPRequestBodyData struct {
 	// Mobile number of Jio account
 	MobileNumber string `json:"number" xml:"number" form:"number"`
 }
 
-// Request body for OTP verification request
+// LoginVerifyOTPRequestBodyData  represents Request body for OTP verification request
 type LoginVerifyOTPRequestBodyData struct {
 	// Mobile number of Jio account
 	MobileNumber string `json:"number" xml:"number" form:"number"`
@@ -22,7 +22,7 @@ type LoginVerifyOTPRequestBodyData struct {
 	OTP          string `json:"otp" xml:"otp" form:"otp"`
 }
 
-// Response body for refresh token request
+// RefreshTokenResponse represents Response body for refresh token request
 type RefreshTokenResponse struct {
 	// Access token for JioTV API
 	AccessToken string `json:"authToken"`
