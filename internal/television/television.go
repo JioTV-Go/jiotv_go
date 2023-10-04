@@ -7,7 +7,7 @@ import (
 
 	"github.com/valyala/fasthttp"
 
-	"github.com/rabilrbl/jiotv_go/internal/utils"
+	"github.com/rabilrbl/jiotv_go/v2/internal/utils"
 )
 
 const (

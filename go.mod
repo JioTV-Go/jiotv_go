@@ -1,6 +1,6 @@
-module github.com/rabilrbl/jiotv_go
+module github.com/rabilrbl/jiotv_go/v2
 
-go 1.21.0
+go 1.21
 
 require (
 	github.com/gofiber/template v1.8.2 // indirect

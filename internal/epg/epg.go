@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/rabilrbl/jiotv_go/internal/utils"
+	"github.com/rabilrbl/jiotv_go/v2/internal/utils"
 	"github.com/schollz/progressbar/v3"
 	"github.com/valyala/fasthttp"
 )
@@ -21,7 +21,7 @@ const (
 	// URL for fetching channels from JioTV API
 	CHANNEL_URL = "https://jiotv.data.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?os=android&devicetype=phone&usertype=tvYR7NSNn7rymo3F"
 	// URL for fetching EPG data for individual channels from JioTV API
-	EPG_URL     = "https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get/?offset=%d&channel_id=%d"
+	EPG_URL = "https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get/?offset=%d&channel_id=%d"
 )
 
 // Init initializes EPG generation and schedules it for the next day.
@@ -65,7 +65,6 @@ func Init() {
 	utils.Log.Println("Scheduled EPG generation on", schedule_time.Local())
 	go utils.ScheduleFunctionCall(genepg, schedule_time)
 }
-
 
 // NewProgramme creates a new Programme with the given parameters.
 func NewProgramme(channelID int, start, stop, title, desc, iconSrc string) Programme {
