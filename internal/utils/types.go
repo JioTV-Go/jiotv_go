@@ -1,5 +1,7 @@
 package utils
 
+// JIOTV_CREDENTIALS represents JioTV Go credentials.
+// Includes some mandatory header values required for making requests to JioTV API
 type JIOTV_CREDENTIALS struct {
 	SSOToken             string `json:"ssoToken"`
 	UniqueID             string `json:"uniqueId"`
