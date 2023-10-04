@@ -61,7 +61,7 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 	}
 }
 
-// Generate m3u8 link from JioTV API with the provided channel ID
+// Live method generates m3u8 link from JioTV API with the provided channel ID
 func (tv *Television) Live(channelID string) (*Bitrates, error) {
 	formData := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(formData)
@@ -126,7 +126,7 @@ func (tv *Television) Live(channelID string) (*Bitrates, error) {
 	return &result.Bitrates, nil
 }
 
-// Send an HTTP GET request to the provided URL and return the response body
+// Render method does HTTP GET request to the provided URL and return the response body
 func (tv *Television) Render(url string) []byte {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
@@ -152,7 +152,7 @@ func (tv *Television) Render(url string) []byte {
 	return buf
 }
 
-// Fetch the key for the provided channel ID
+// RenderKey fetches the key for the provided channel ID
 // URL is the URL of the key from the Original m3u8 file from JioTV
 func (tv *Television) RenderKey(url, channelID string) ([]byte, int) {
 	// extract params from url
@@ -192,7 +192,7 @@ func (tv *Television) RenderKey(url, channelID string) ([]byte, int) {
 	return buf, resp.StatusCode()
 }
 
-// Fetch channels from JioTV API
+// Channels fetch channels from JioTV API
 func Channels() ChannelsResponse {
 
 	// Create a fasthttp.Client
@@ -241,7 +241,7 @@ func Channels() ChannelsResponse {
 	return apiResponse
 }
 
-// Function to filter channels by language and category
+// FilterChannels Function is used to filter channels by language and category
 func FilterChannels(channels []Channel, language, category int) []Channel {
 	var filteredChannels []Channel
 	for _, channel := range channels {

@@ -24,7 +24,7 @@ var (
 	DisableTSHandler bool
 )
 
-// Initialize the necessary operations required for the handlers to work
+// Init initializes the necessary operations required for the handlers to work.
 func Init() {
 	DisableTSHandler = os.Getenv("JIOTV_DISABLE_TS_HANDLER") == "true"
 	if DisableTSHandler {
@@ -47,6 +47,8 @@ func Init() {
 	}
 }
 
+// ErrorMessageHandler handles error messages
+// Responds with 500 status code and error message
 func ErrorMessageHandler(c *fiber.Ctx, err error) error {
 	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
@@ -98,7 +100,7 @@ func IndexHandler(c *fiber.Ctx) error {
 	return c.Render("views/index", indexContext)
 }
 
-// Check if the field is provided in the request
+// checkFieldExist checks if the field is provided in the request.
 // If not, send a bad request response
 func checkFieldExist(field string, check bool, c *fiber.Ctx) error {
 	if !check {
@@ -110,7 +112,7 @@ func checkFieldExist(field string, check bool, c *fiber.Ctx) error {
 	return nil
 }
 
-// Live channel stream route `/live/:id.m3u8`
+// LiveHandler handles the live channel stream route `/live/:id.m3u8`.
 func LiveHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
@@ -130,7 +132,7 @@ func LiveHandler(c *fiber.Ctx) error {
 	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
 }
 
-// Live channel stream route `/live/:quality/:id.m3u8`
+// LiveQualityHandler handles the live channel stream route `/live/:quality/:id.m3u8`.
 func LiveQualityHandler(c *fiber.Ctx) error {
 	quality := c.Params("quality")
 	id := c.Params("id")
@@ -167,7 +169,7 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
 }
 
-// Render M3U8 file
+// RenderHandler handles M3U8 file for modification
 // This handler shall replace JioTV server URLs with our own server URLs
 func RenderHandler(c *fiber.Ctx) error {
 	// URL to be rendered
@@ -244,7 +246,7 @@ func RenderHandler(c *fiber.Ctx) error {
 	return c.Send(renderResult)
 }
 
-// Load Key file from JioTV server
+// RenderKeyHandler requests m3u8 key from JioTV server
 func RenderKeyHandler(c *fiber.Ctx) error {
 	channel_id := c.Query("channel_key_id")
 	auth := c.Query("auth")
@@ -258,7 +260,7 @@ func RenderKeyHandler(c *fiber.Ctx) error {
 	return c.Status(status).Send(keyResult)
 }
 
-// Load TS file from JioTV server
+// RenderTSHandler loads TS file from JioTV server
 func RenderTSHandler(c *fiber.Ctx) error {
 	auth := c.Query("auth")
 	// decode url
@@ -275,7 +277,7 @@ func RenderTSHandler(c *fiber.Ctx) error {
 	return nil
 }
 
-// Get all channels from JioTV API
+// ChannelsHandler fetch all channels from JioTV API
 // Also to generate M3U playlist
 func ChannelsHandler(c *fiber.Ctx) error {
 	quality := strings.TrimSpace(c.Query("q"))
@@ -313,7 +315,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	return c.JSON(apiResponse)
 }
 
-// HTML Page with video player iframe embedded with video URL
+// PlayHandler loads HTML Page with video player iframe embedded with video URL
 // URL is generated from the channel ID
 func PlayHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
@@ -324,7 +326,7 @@ func PlayHandler(c *fiber.Ctx) error {
 	})
 }
 
-// Web Player to stream live TV
+// PlayerHandler loads Web Player to stream live TV
 func PlayerHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	quality := c.Query("q")
@@ -339,7 +341,7 @@ func PlayerHandler(c *fiber.Ctx) error {
 	})
 }
 
-// Old Web Player to stream live TV
+// ClapprHandler is previous (old) Web Player to stream live TV
 func ClapprHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	quality := c.Query("q")
@@ -354,19 +356,19 @@ func ClapprHandler(c *fiber.Ctx) error {
 	})
 }
 
-// Response for favicon.ico request
+// FaviconHandler Responds for favicon.ico request
 func FaviconHandler(c *fiber.Ctx) error {
 	return c.Redirect("/static/favicon.ico", fiber.StatusMovedPermanently)
 }
 
-// Route for generating M3U playlist only
+// PlaylistHandler is the route for generating M3U playlist only
 // For user convenience, redirect to /channels?type=m3u
 func PlaylistHandler(c *fiber.Ctx) error {
 	quality := c.Query("q")
 	return c.Redirect("/channels?type=m3u&q="+quality, fiber.StatusMovedPermanently)
 }
 
-// Load image from JioTV server
+// ImageHandler loads image from JioTV server
 func ImageHandler(c *fiber.Ctx) error {
 	url := "http://jiotv.catchup.cdn.jio.com/dare_images/images/" + c.Params("file")
 	if err := proxy.Do(c, url, TV.Client); err != nil {
@@ -376,7 +378,7 @@ func ImageHandler(c *fiber.Ctx) error {
 	return nil
 }
 
-// Send OTP for login
+// LoginSendOTPHandler sends OTP for login
 func LoginSendOTPHandler(c *fiber.Ctx) error {
 	// get mobile number from post request
 	formBody := new(LoginSendOTPRequestBodyData)
@@ -402,7 +404,7 @@ func LoginSendOTPHandler(c *fiber.Ctx) error {
 	})
 }
 
-// Verify OTP and login
+// LoginVerifyOTPHandler verifies OTP and login
 func LoginVerifyOTPHandler(c *fiber.Ctx) error {
 	// get mobile number and otp from post request
 	formBody := new(LoginVerifyOTPRequestBodyData)
@@ -429,7 +431,7 @@ func LoginVerifyOTPHandler(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
-// Login with password
+// LoginPasswordHandler is used to login with password
 func LoginPasswordHandler(c *fiber.Ctx) error {
 	var username, password string
 	if c.Method() == "GET" {
@@ -463,7 +465,7 @@ func LoginPasswordHandler(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
-// EPG route
+// EPGHandler handles EPG requests
 func EPGHandler(c *fiber.Ctx) error {
 	// if epg.xml.gz exists, return it
 	if _, err := os.Stat("epg.xml.gz"); err == nil {
@@ -475,7 +477,7 @@ func EPGHandler(c *fiber.Ctx) error {
 	}
 }
 
-// Function to refresh AccessToken
+// LoginRefreshAccessToken Function is used to refresh AccessToken
 func LoginRefreshAccessToken() error {
 	utils.Log.Println("Refreshing AccessToken...")
 	tokenData, err := utils.GetJIOTVCredentials()
@@ -553,7 +555,7 @@ func LoginRefreshAccessToken() error {
 	}
 }
 
-// Function to handle AccessToken refresh
+// RefreshTokenIfExpired Function is used to handle AccessToken refresh
 func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) {
 	utils.Log.Println("Checking if AccessToken is expired...")
 	lastTokenRefreshTime, err := strconv.ParseInt(credentials.LastTokenRefreshTime, 10, 64)

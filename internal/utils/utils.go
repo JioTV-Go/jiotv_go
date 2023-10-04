@@ -25,7 +25,7 @@ var (
 	Log *log.Logger
 )
 
-// Create a new logger instance with custom settings
+// GetLogger creates a new logger instance with custom settings
 func GetLogger() *log.Logger {
 	var logger *log.Logger
 	if os.Getenv("JIOTV_DEBUG") == "true" {
@@ -49,7 +49,7 @@ func GetLogger() *log.Logger {
 	return logger
 }
 
-// Get the path to credentials file
+// GetCredentialsPath returns the file path to credentials file
 func GetCredentialsPath() string {
 	filename := "jiotv_credentials_v2.json"
 	credentials_path := os.Getenv("JIOTV_CREDENTIALS_PATH")
@@ -73,7 +73,7 @@ func GetCredentialsPath() string {
 	return credentials_path
 }
 
-// Send OTP to the given number for login
+// LoginSendOTP sends OTP to the given number for login
 func LoginSendOTP(number string) (bool, error) {
 	postData := map[string]string{
 		"number": number,
@@ -129,7 +129,7 @@ func LoginSendOTP(number string) (bool, error) {
 	}
 }
 
-// Verify OTP for login
+// LoginVerifyOTP verifies OTP for login
 func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 	// convert number string to base64
 	encoded_number := base64.StdEncoding.EncodeToString([]byte(number))
@@ -230,7 +230,7 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 	}
 }
 
-// Login with username and password
+// Login is used to login with username and password
 func Login(username, password string) (map[string]string, error) {
 	postData := map[string]string{
 		"username": username,
@@ -341,7 +341,7 @@ func Login(username, password string) (map[string]string, error) {
 	}
 }
 
-// Load credentials from file if available
+// loadCredentialsFromFile loads credentials from file if available
 // Returns JIOTV_CREDENTIALS struct
 func loadCredentialsFromFile(filename string) (*JIOTV_CREDENTIALS, error) {
 	// check if given file exists, if not ask user username and password then call Login()
@@ -370,7 +370,7 @@ func loadCredentialsFromFile(filename string) (*JIOTV_CREDENTIALS, error) {
 	return nil, err
 }
 
-// Get credentials from environment variables or credentials file
+// GetJIOTVCredentials return credentials from environment variables or credentials file
 // Important note: If credentials are provided from environment variables, they will be used instead of credentials file
 func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
 	// Use credentials from environment variables if available
@@ -394,7 +394,7 @@ func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
 	return credentials, nil
 }
 
-// Write credentials data to file
+// WriteJIOTVCredentials writes credentials data to file
 func WriteJIOTVCredentials(credentials *JIOTV_CREDENTIALS) error {
 	credentialsPath := GetCredentialsPath()
 	file, err := os.Create(credentialsPath)
@@ -406,7 +406,7 @@ func WriteJIOTVCredentials(credentials *JIOTV_CREDENTIALS) error {
 	return file.Close()
 }
 
-// Check if user is logged in
+// CheckLoggedIn function checks if user is logged in
 func CheckLoggedIn() bool {
 	// Check if credentials.json exists
 	_, err := GetJIOTVCredentials()
@@ -417,7 +417,7 @@ func CheckLoggedIn() bool {
 	}
 }
 
-// Schedule a function call at a given time
+// ScheduleFunctionCall schedules a function call at a given time
 func ScheduleFunctionCall(fn func(), executeTime time.Time) {
 	now := time.Now()
 	if executeTime.After(now) {
@@ -426,7 +426,7 @@ func ScheduleFunctionCall(fn func(), executeTime time.Time) {
 	fn()
 }
 
-// Create a HTTP client with proxy if given
+// GetRequestClient create a HTTP client with proxy if given
 // Otherwise create a HTTP client without proxy
 // Returns a fasthttp.Client
 func GetRequestClient() *fasthttp.Client {
@@ -455,7 +455,7 @@ func GetRequestClient() *fasthttp.Client {
 	}
 }
 
-// Check if given file exists
+// FileExists function check if given file exists
 func FileExists(filename string) bool {
 	// check if given file exists
 	_, err := os.Stat(filename)

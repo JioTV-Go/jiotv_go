@@ -24,7 +24,7 @@ const (
 	EPG_URL     = "https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get/?offset=%d&channel_id=%d"
 )
 
-// Function to initialize EPG generation and schedule it for the next day
+// Init initializes EPG generation and schedules it for the next day.
 func Init() {
 	epgFile := "epg.xml.gz"
 	var lastModTime time.Time
@@ -67,7 +67,7 @@ func Init() {
 }
 
 
-// Creates a new Programme struct with the given parameters
+// NewProgramme creates a new Programme with the given parameters.
 func NewProgramme(channelID int, start, stop, title, desc, iconSrc string) Programme {
 	iconURL := fmt.Sprintf("https://jiotv.catchup.cdn.jio.com/dare_images/shows/%s", iconSrc)
 	return Programme{
@@ -88,8 +88,7 @@ func NewProgramme(channelID int, start, stop, title, desc, iconSrc string) Progr
 	}
 }
 
-// Generate XML EPG from JioTV API
-// Returns XML as a byte slice
+// genXML generates XML EPG from JioTV API and returns it as a byte slice.
 func genXML() ([]byte, error) {
 	// Create a reusable fasthttp client with common headers
 	client := utils.GetRequestClient()
@@ -211,12 +210,12 @@ func genXML() ([]byte, error) {
 	return xml, nil
 }
 
-// Format time to YYYYMMDDHHMMSS -0700
+// formatTime formats the given time to the string representation "20060102150405 -0700".
 func formatTime(t time.Time) string {
 	return t.Format("20060102150405 -0700")
 }
 
-// Generate XML EPG from JioTV API and write it to a compressed gzip file
+// GenXMLGz generates XML EPG from JioTV API and writes it to a compressed gzip file.
 func GenXMLGz(filename string) error {
 	utils.Log.Println("Generating XML")
 	xml, err := genXML()
