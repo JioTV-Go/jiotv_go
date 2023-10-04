@@ -14,7 +14,7 @@ _Give us 🌟 on GitHub._
 ## Table of Contents
 
 - [JioTV Go 🌟](#jiotv-go-)
-  - [Join the community on Telegram:](#join-the-community-on-telegram)
+    - [Join the community on Telegram:](#join-the-community-on-telegram)
   - [Table of Contents](#table-of-contents)
   - [Usage Guide 🚀](#usage-guide-)
     - [**Using JioTV Go Natively**](#using-jiotv-go-natively)
@@ -137,7 +137,7 @@ With these environment variables set, the `credentials.json` will be bypassed, a
 
 - **`/play/:channel_id`**: Dive into the world of specific channels with ID `channel_id`.
 
-- **`/playlist.m3u`**: Instantly obtain an M3U playlist for IPTV. (Redirects to `/channels?type=m3u` for your convenience.) Add `?q={resolution}` resolution: `low`, `medium`, `high` to get the playlist for specific resolution.
+- **`/playlist.m3u`**: Instantly obtain an M3U playlist for IPTV. (Redirects to `/channels?type=m3u` for your convenience.) Add `?q=<level>` where `<level>` should be replaced with `low`, `medium`, `high` or `l`, `m`, `h` respectively to set the quality of the stream. Default is `auto`.
 
 - **`/player/:channel_id`**: Immerse yourself with the default player (Flowplayer) for Channel `channel_id`.
 
@@ -151,7 +151,7 @@ With these environment variables set, the `credentials.json` will be bypassed, a
 
 - **`/channels`**: Discover the complete list of available channels.
 
-- **`/channels?type=m3u`**: Effortlessly acquire an M3U playlist for IPTV.
+- **`/channels?type=m3u`**: Effortlessly acquire an M3U playlist for IPTV. Add `q=<level>` where `<level>` should be replaced with `low`, `medium`, `high` or `l`, `m`, `h` respectively to set the quality of the stream. Default is `auto`.
 
 - **`/live/:channel_id`**: Tune in to live TV with the specified channel ID.
 

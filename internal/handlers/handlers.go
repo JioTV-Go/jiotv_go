@@ -113,7 +113,8 @@ func LiveHandler(c *fiber.Ctx) error {
 	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
 }
 
-func LiveHighHandler(c *fiber.Ctx) error {
+func LiveQualityHandler(c *fiber.Ctx) error {
+	quality := c.Params("quality")
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
@@ -126,44 +127,23 @@ func LiveHighHandler(c *fiber.Ctx) error {
 			})
 		}
 	}
-	// quote url
-	coded_url := url.QueryEscape(liveResult.High)
-	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
-}
-
-func LiveMediumHandler(c *fiber.Ctx) error {
-	id := c.Params("id")
-	// remove suffix .m3u8 if exists
-	id = strings.Replace(id, ".m3u8", "", 1)
-	liveResult, err := TV.Live(id)
-	if err != nil {
-		utils.Log.Println(err)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": err,
-			})
-		}
+	// Channels with following IDs output audio only m3u8 when quality level is enforced
+	if id == "1349" || id == "1322" {
+		quality = "auto"
+	}
+	var liveURL string
+	switch quality {
+	case "high" , "h":
+		liveURL = liveResult.High
+	case "medium", "med", "m":
+		liveURL = liveResult.Medium
+	case "low", "l":
+		liveURL = liveResult.Low
+	default:
+		liveURL = liveResult.Auto
 	}
 	// quote url
-	coded_url := url.QueryEscape(liveResult.Medium)
-	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
-}
-
-func LiveLowHandler(c *fiber.Ctx) error {
-	id := c.Params("id")
-	// remove suffix .m3u8 if exists
-	id = strings.Replace(id, ".m3u8", "", 1)
-	liveResult, err := TV.Live(id)
-	if err != nil {
-		utils.Log.Println(err)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": err,
-			})
-		}
-	}
-	// quote url
-	coded_url := url.QueryEscape(liveResult.Low)
+	coded_url := url.QueryEscape(liveURL)
 	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
 }
 
