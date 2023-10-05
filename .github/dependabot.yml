@@ -8,7 +8,7 @@ updates:
     target-branch: main
 
   - package-ecosystem: npm
-    directory: /
+    directory: web/
     schedule:
       interval: weekly
     target-branch: main
