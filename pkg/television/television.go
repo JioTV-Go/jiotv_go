@@ -7,7 +7,7 @@ import (
 
 	"github.com/valyala/fasthttp"
 
-	"github.com/rabilrbl/jiotv_go/v2/internal/utils"
+	"github.com/rabilrbl/jiotv_go/v2/pkg/utils"
 )
 
 const (
@@ -15,7 +15,7 @@ const (
 	CHANNELS_API_URL = "https://jiotvapi.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?langId=6&os=android&devicetype=phone&usertype=JIO&version=315&langId=6"
 )
 
-// Create a new Television instance with the provided credentials
+// New function creates a new Television instance with the provided credentials
 func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 	// Check if credentials are provided
 	if credentials == nil {
