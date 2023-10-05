@@ -87,7 +87,7 @@ type EPGResponse struct {
 	EPG []EPGObject `json:"epg"` // EPG details for a channel
 }
 
-// Custom type for unmarshaling epoch integers to strings from JioTV EPG API
+// EpochString is a custom type for unmarshaling epoch from integers to strings in JioTV EPG API
 type EpochString string
 
 // UnmarshalJSON unmarshals epoch integers to strings from JioTV EPG API
