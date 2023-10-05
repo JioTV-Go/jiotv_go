@@ -7,6 +7,7 @@ WORKDIR /app
 COPY go.mod ./
 COPY go.sum ./
 COPY cmd ./cmd
+COPY pkg ./pkg
 COPY web ./web
 COPY internal ./internal
 
