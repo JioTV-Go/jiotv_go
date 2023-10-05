@@ -31,6 +31,7 @@ jiotv_credentials_v2.json
 
 # Node
 node_modules/
+web/node_modules/
 
 # Logs
 jiotv_go.log

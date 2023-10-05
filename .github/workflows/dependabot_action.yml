@@ -34,8 +34,9 @@ jobs:
             name: Update tailwindcss with build changes
             if: steps.dependabot-metadata.outputs.package-ecosystem == 'npm_and_yarn'
             run: |
+                cd web
                 npm ci && npm run build
-                git add cmd/jiotv_go/static/tailwind.css
+                git add web/static/tailwind.css
                 git config user.name "github-actions[bot]"
                 git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
                 git commit -m "[dependabot skip] Update tailwindcss with build changes" || exit 0

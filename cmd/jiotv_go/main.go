@@ -1,7 +1,6 @@
 package main
 
 import (
-	"embed"
 	"net/http"
 	"os"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/rabilrbl/jiotv_go/v2/internal/handlers"
 	"github.com/rabilrbl/jiotv_go/v2/internal/middleware"
 	"github.com/rabilrbl/jiotv_go/v2/internal/utils"
+	"github.com/rabilrbl/jiotv_go/v2/web"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
@@ -16,12 +16,6 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/template/html/v2"
 )
-
-//go:embed views/*
-var viewFiles embed.FS
-
-//go:embed static/*
-var staticFiles embed.FS
 
 func main() {
 	utils.Log = utils.GetLogger()
@@ -31,7 +25,7 @@ func main() {
 		go epg.Init()
 	}
 
-	engine := html.NewFileSystem(http.FS(viewFiles), ".html")
+	engine := html.NewFileSystem(http.FS(web.GetViewFiles()), ".html")
 	if os.Getenv("JIOTV_DEBUG") == "true" {
 		engine.Reload(true)
 	}
@@ -58,7 +52,7 @@ func main() {
 	}))
 
 	app.Use("/static", filesystem.New(filesystem.Config{
-		Root:       http.FS(staticFiles),
+		Root:       http.FS(web.GetStaticFiles()),
 		PathPrefix: "static",
 		Browse:     false,
 	}))

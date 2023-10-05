@@ -201,20 +201,26 @@ At JioTV Go, we use the versatile [TailwindCSS](https://tailwindcss.com/) to sty
 1. Ensure you have NodeJS installed on your system.
 
 2. Open a new terminal window and navigate to the project's root directory.
+   
+3. Switch to the `web` directory by running:
 
-3. Install the necessary dependencies by running:
+   ```sh
+   cd web
+   ```
+
+4. Install the necessary dependencies by running:
 
    ```sh
      npm install
    ```
 
-4. To keep TailwindCSS up to date with your changes in real-time, run the following command:
+5. To keep TailwindCSS up to date with your changes in real-time, run the following command:
 
    ```sh
    npm run watch
    ```
 
-5. Once you're satisfied with your style modifications, it's time to build the minified CSS file:
+6. Once you're satisfied with your style modifications, it's time to build the minified CSS file:
    ```sh
    npm run build
    ```
