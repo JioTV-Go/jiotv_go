@@ -36,7 +36,7 @@ jobs:
             run: |
                 cd web
                 npm ci && npm run build
-                git add web/static/tailwind.css
+                git add static/tailwind.css
                 git config user.name "github-actions[bot]"
                 git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
                 git commit -m "[dependabot skip] Update tailwindcss with build changes" || exit 0
