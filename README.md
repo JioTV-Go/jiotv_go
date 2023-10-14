@@ -14,7 +14,7 @@ _Give us 🌟 on GitHub._
 ## Table of Contents
 
 - [JioTV Go 🌟](#jiotv-go-)
-  - [Join the community on Telegram:](#join-the-community-on-telegram)
+    - [Join the community on Telegram:](#join-the-community-on-telegram)
   - [Table of Contents](#table-of-contents)
   - [Usage Guide 🚀](#usage-guide-)
     - [**Using JioTV Go Natively**](#using-jiotv-go-natively)
@@ -32,7 +32,9 @@ _Give us 🌟 on GitHub._
     - [**Player Page**](#player-page)
     - [**Login Dialog**](#login-dialog)
     - [**Playing Live TV on VLC Media Player**](#playing-live-tv-on-vlc-media-player)
-  - [Ready to Contribute? Let's Dive into Development! 🚀](#ready-to-contribute-lets-dive-into-development-)
+  - [Dive into Development! 🚀](#dive-into-development-)
+    - [Using Docker Compose](#using-docker-compose)
+    - [Using Go Natively](#using-go-natively)
   - [Customize the Look with TailwindCSS 🎨](#customize-the-look-with-tailwindcss-)
   - [Building JioTV Go from Source 🛠️](#building-jiotv-go-from-source-️)
   - [Let's Make JioTV Go Better Together! 🤝](#lets-make-jiotv-go-better-together-)
