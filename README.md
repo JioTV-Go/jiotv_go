@@ -14,7 +14,7 @@ _Give us 🌟 on GitHub._
 ## Table of Contents
 
 - [JioTV Go 🌟](#jiotv-go-)
-    - [Join the community on Telegram:](#join-the-community-on-telegram)
+  - [Join the community on Telegram:](#join-the-community-on-telegram)
   - [Table of Contents](#table-of-contents)
   - [Usage Guide 🚀](#usage-guide-)
     - [**Using JioTV Go Natively**](#using-jiotv-go-natively)
@@ -173,7 +173,35 @@ With these environment variables set, the `credentials.json` will be bypassed, a
 
 ![Playing Live TV on VLC Media Player](./assets/image.webp)
 
-## Ready to Contribute? Let's Dive into Development! 🚀
+## Dive into Development! 🚀
+
+### Using Docker Compose
+
+2. Clone the repository and navigate to the project's root directory.
+
+3. Run the command
+
+   ```sh
+   docker-compose up
+   ```
+
+   It will automatically reload the server when you make changes to the code. (_.go and _.html files).
+
+   To run the server in background, run
+
+   ```sh
+   docker-compose up -d
+   ```
+
+   To stop the server, run
+
+   ```sh
+   docker-compose down
+   ```
+
+4. Server will be listening on `http://localhost:5001`.
+
+### Using Go Natively
 
 JioTV Go is powered by [Golang](https://golang.org/), so let's get started! Here's how to set up and run the server:
 
@@ -181,16 +209,11 @@ Set `JIOTV_DEBUG=true` to enable automatic reloading on templates changes in vie
 
 1. First, make sure you have Golang installed on your system.
 
-2. Install the necessary dependencies using:
-
-   ```sh
-   go mod download
-   ```
-
-3. Finally, fire up the server with:
+2. Fire up the server with:
    ```sh
    go run ./cmd/jiotv_go
    ```
+   You will need to stop and restart the server manually when you make changes to the code.
 
 That's it! You're now all set to explore and contribute to JioTV Go. Happy coding! 🖥️👩‍💻👨‍💻
 
@@ -201,7 +224,7 @@ At JioTV Go, we use the versatile [TailwindCSS](https://tailwindcss.com/) to sty
 1. Ensure you have NodeJS installed on your system.
 
 2. Open a new terminal window and navigate to the project's root directory.
-   
+
 3. Switch to the `web` directory by running:
 
    ```sh
@@ -229,12 +252,15 @@ At JioTV Go, we use the versatile [TailwindCSS](https://tailwindcss.com/) to sty
 
 Building JioTV Go from source is a breeze! Follow these simple steps:
 
-1. Open your terminal and navigate to the project's root directory.
+1. After cloning the repository,
+navigate to the project's directory.
 
 2. Run the following command to build JioTV Go:
    ```sh
-   go build ./cmd/jiotv_go
+   go build ./cmd/jiotv_go -o build/jiotv_go
    ```
+
+This will create a binary named `jiotv_go` in the `build` directory.
 
 ## Let's Make JioTV Go Better Together! 🤝
 
