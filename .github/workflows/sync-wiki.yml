@@ -26,6 +26,8 @@ jobs:
                 # overwrite the wiki with the docs
                 rm -rf *
                 cp -r ../jiotv_go/docs/* .
+                git config user.name "GitHub Action"
+                git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
                 git add .
                 git commit -m "Sync Wiki on $(TZ="Asia/Kolkata" date)"
                 git push origin master
