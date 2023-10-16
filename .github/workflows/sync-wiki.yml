@@ -9,6 +9,7 @@ on:
   repository_dispatch:
     types: [docs]
   gollum:
+  workflow_dispatch:
 
 jobs:
   job-sync-docs-to-wiki:
