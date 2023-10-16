@@ -15,6 +15,7 @@ on:
       - ".github/workflows/test-build.yml"
       - ".github/workflows/docker.yml"
       - ".github/dependabot.yml"
+      - ".github/workflows/sync-wiki.yml"
 
 concurrency:
   group: ${{ github.ref }}-release

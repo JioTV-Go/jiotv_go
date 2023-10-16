@@ -20,6 +20,7 @@ on:
       - ".github/workflows/test-build.yml"
       - ".github/workflows/docker.yml"
       - ".github/dependabot.yml"
+      - ".github/workflows/sync-wiki.yml"
   workflow_dispatch:
 
 concurrency:
