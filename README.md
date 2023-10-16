@@ -24,8 +24,9 @@ _Give us 🌟 on GitHub._
 
 ## Documentation
 
-Documentation has been moved to the Wiki.
-Refer to the Wiki Documentation available at https://github.com/rabilrbl/jiotv_go/wiki
+Get started with JioTV Go by reading the [Usage Guide](https://rabilrbl.github.io/jiotv_go/Usage-Guide/) guide.
+
+Full project documentation can be found at https://rabilrbl.github.io/jiotv-go/.
 
 ## Let's Make JioTV Go Better Together! 🤝
 
