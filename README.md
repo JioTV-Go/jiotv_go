@@ -238,7 +238,7 @@ At JioTV Go, we use the versatile [TailwindCSS](https://tailwindcss.com/) to sty
 4. Install the necessary dependencies by running:
 
    ```sh
-     npm install
+   npm install
    ```
 
 5. To keep TailwindCSS up to date with your changes in real-time, run the following command:
@@ -257,7 +257,7 @@ At JioTV Go, we use the versatile [TailwindCSS](https://tailwindcss.com/) to sty
 Building JioTV Go from source is a breeze! Follow these simple steps:
 
 1. After cloning the repository,
-navigate to the project's directory.
+   navigate to the project's directory.
 
 2. Run the following command to build JioTV Go:
    ```sh
