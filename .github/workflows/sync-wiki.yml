@@ -22,7 +22,7 @@ jobs:
 
             - name: Sync Wiki
               run: |
-                cd wiki
+                cd ${{ github.workspace }}/wiki
                 # overwrite the wiki with the docs
                 rm -rf *
                 cp -r ../jiotv_go/docs/* .
