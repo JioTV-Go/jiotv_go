@@ -9,3 +9,5 @@ services:
       - 5001:5001
     volumes:
       - ./:/app
+    env_file:
+      - ./.env
