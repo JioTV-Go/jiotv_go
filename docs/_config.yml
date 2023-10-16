@@ -1,1 +1,28 @@
-theme: hacker
+remote_theme: vsoch/tw-jekyll
+
+title: JioTV Go
+email: jiotv_go@rbst.eu.org
+author: Mohammed Rabil
+description: >
+ Unlock the magic of JioTV across all your devices, without the need for the JioTV App. 
+ Crafted with love in Golang for a delightful blend of speed and efficiency! 🌟✨
+
+# Add your baseurl here (your repository) but DO NOT CHANGE THE LINE NUMBER without editing .circleci/circle_urls.sh
+baseurl: "/jiotv_go" # the subpath of your site, e.g. /blog
+
+# This is mostly for testing
+url: "https://rabilrbl.github.io" # the base hostname & protocol for your site
+
+# Keywords (space separated)
+keywords: "jiotv jio tv jiotv_go client go jiotv-go jiotvgo jiotv-go"
+
+# Add colorful permalinks to headers
+# change colors in _includes/permalinks.html
+add_permalinks: true
+
+# twitter: vsoch
+# linkedin: vsochat
+support: https://telegram.me/jiotv_go_chat
+repo: https://github.com/rabilrbl/jiotv_go
+github_user: rabilrbl
+github_repo: jiotv_go
