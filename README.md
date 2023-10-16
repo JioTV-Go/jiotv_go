@@ -26,7 +26,7 @@ _Give us 🌟 on GitHub._
 
 Get started with JioTV Go by reading the [Usage Guide](https://rabilrbl.github.io/jiotv_go/Usage-Guide/) guide.
 
-Full project documentation can be found at https://rabilrbl.github.io/jiotv-go/.
+Full project documentation can be found at https://rabilrbl.github.io/jiotv_go/.
 
 ## Let's Make JioTV Go Better Together! 🤝
 
