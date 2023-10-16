@@ -6,7 +6,7 @@ JioTV Go is an open-source project, which means you can build it from its source
 
 Before you begin building JioTV Go from source, ensure you have the following prerequisites:
 
-1. **Golang Installed**: Make sure you have [Golang](https://golang.org/) installed on your system. If you don't have it, you can download and install it from the official website.
+1. **Golang Installed**: Make sure you have [Go](https://golang.org/) installed on your system. If you don't have it, you can download and install it from the official website.
 
 2. **Access to JioTV Go Source Code**: You should have access to the JioTV Go source code, typically available in a Git repository.
 
