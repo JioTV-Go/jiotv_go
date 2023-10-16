@@ -3,6 +3,17 @@ name: Test build for PR
 on:
   pull_request:
     types: [opened, synchronize]
+    paths-ignore:
+      - "README.md"
+      - "LICENSE"
+      - "docs/**"
+      - "**.sh"
+      - "**.md"
+      - ".github/workflows/dependabot_action.yml"
+      - ".github/workflows/pre-release.yml"
+      - ".github/workflows/test-build.yml"
+      - ".github/workflows/docker.yml"
+      - ".github/dependabot.yml"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

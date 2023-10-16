@@ -14,6 +14,7 @@ on:
       - ".dockerignore"
       - "Dockerfile"
       - "**.sh"
+      - "docs/**"
 
 concurrency:
   group: ${{ github.ref }}-pre-release

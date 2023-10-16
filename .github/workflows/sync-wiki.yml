@@ -1,0 +1,33 @@
+name: Sync JioTV Go Docs
+
+on:
+    push:
+        paths: 
+            - 'docs/**'
+    workflow_dispatch:
+
+jobs:
+    sync:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout Project
+              uses: actions/checkout@v4
+              with:
+                path: jiotv_go
+
+            - name: Checkout Wiki
+              uses: actions/checkout@v4
+              with:
+                path: wiki
+
+            - name: Sync Wiki
+              run: |
+                cd wiki
+                # overwrite the wiki with the docs
+                rm -rf *
+                cp -r ../jiotv_go/docs/* .
+                git add .
+                git commit -m "Sync Wiki on $(TZ="Asia/Kolkata" date)"
+                git push origin master
+
+              
