@@ -203,6 +203,8 @@ With these environment variables set, the `credentials.json` will be bypassed, a
 
 4. Server will be listening on `http://localhost:5001`.
 
+5. Set environment variables in `.env` file for customizations.
+
 ### Using Go Natively
 
 JioTV Go is powered by [Golang](https://golang.org/), so let's get started! Here's how to set up and run the server:
