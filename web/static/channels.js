@@ -42,6 +42,7 @@ const onQualityChange = (elem) => {
     const href = elem.getAttribute("href");
     elem.setAttribute("href", href.split("?")[0] + url.search);
   }
+  init();
 };
 
 if (url.searchParams.get("q")) {
