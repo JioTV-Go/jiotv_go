@@ -32,8 +32,13 @@ const onQualityChange = (elem) => {
   if (quality === "auto") {
     // remove quality from url
     url.searchParams.delete("q");
+    // remove quality from local storage
+    localStorage.removeItem("quality");
   } else {
+    // set quality in url
     url.searchParams.set("q", quality);
+    // set quality in local storage
+    localStorage.setItem("quality", quality);
   }
   history.pushState({}, "", url.href);
   const playElems = document.getElementsByClassName("btn btn-outline btn-info btn-md");
@@ -44,6 +49,12 @@ const onQualityChange = (elem) => {
   }
   init();
 };
+
+const quality = localStorage.getItem("quality");
+if (quality) {
+  qualityElement.value = quality;
+  url.searchParams.set("q", quality);
+}
 
 if (url.searchParams.get("q")) {
   qualityElement.value = url.searchParams.get("q");
