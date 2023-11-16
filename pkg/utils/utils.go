@@ -417,6 +417,16 @@ func CheckLoggedIn() bool {
 	}
 }
 
+// Logout function deletes credentials file
+func Logout() error {
+	credentialsPath := GetCredentialsPath()
+	err := os.Remove(credentialsPath)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // ScheduleFunctionCall schedules a function call at a given time
 func ScheduleFunctionCall(fn func(), executeTime time.Time) {
 	now := time.Now()

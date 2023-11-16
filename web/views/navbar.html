@@ -66,13 +66,22 @@
       </svg>
       Back
     </button>
-    {{ else }}
-    <button
-      onclick="login_modal.showModal()"
-      class="btn btn-outline btn-success btn-md"
-    >
-      {{ if .IsNotLoggedIn }} Login {{else}} Logged In {{end}}
-    </button>
+    {{ else }} 
+      {{ if .IsNotLoggedIn }}
+        <button
+          onclick="login_modal.showModal()"
+          class="btn btn-outline btn-success btn-md"
+        >
+          Login
+        </button>
+      {{else}}
+        <button
+          onclick="window.location.href='/logout'"
+          class="btn btn-outline btn-error btn-md"
+        >
+          Logout
+        </button>
+      {{end}} 
     {{ end }}
   </div>
 </div>

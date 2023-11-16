@@ -465,6 +465,19 @@ func LoginPasswordHandler(c *fiber.Ctx) error {
 	return c.JSON(result)
 }
 
+// LogoutHandler is used to logout
+func LogoutHandler(c *fiber.Ctx) error {
+	err := utils.Logout()
+	if err != nil {
+		utils.Log.Println(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Internal server error",
+		})
+	}
+	Init()
+	return c.Redirect("/", fiber.StatusFound)
+}
+
 // EPGHandler handles EPG requests
 func EPGHandler(c *fiber.Ctx) error {
 	// if epg.xml.gz exists, return it
