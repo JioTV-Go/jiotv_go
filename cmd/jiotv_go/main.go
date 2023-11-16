@@ -64,6 +64,7 @@ func main() {
 	app.Post("/login/sendOTP", handlers.LoginSendOTPHandler)
 	app.Post("/login/verifyOTP", handlers.LoginVerifyOTPHandler)
 	app.Post("/login", handlers.LoginPasswordHandler)
+	app.Get("/logout", handlers.LogoutHandler)
 	app.Get("/live/:id", handlers.LiveHandler)
 	app.Get("/live/:quality/:id", handlers.LiveQualityHandler)
 	app.Get("/render.m3u8", handlers.RenderHandler)
