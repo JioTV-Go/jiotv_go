@@ -14,6 +14,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/template/html/v2"
 )
 
@@ -58,6 +59,8 @@ func main() {
 		PathPrefix: "static",
 		Browse:     false,
 	}))
+
+	app.Use(helmet.New())
 
 	// Initialize the television object
 	handlers.Init()
