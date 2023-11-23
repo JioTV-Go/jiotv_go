@@ -8,9 +8,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/url"
 	"os"
+
+	"github.com/rabilrbl/jiotv_go/v2/pkg/utils"
 )
 
 var (
@@ -22,7 +23,7 @@ func generateKey() []byte {
 	key := make([]byte, 32) // 32 bytes for AES-256
 	_, err := rand.Read(key)
 	if err != nil {
-		log.Fatal("Error generating random key: ", err)
+		utils.Log.Panicln("Error generating random key: ", err)
 	}
 	return key
 }
