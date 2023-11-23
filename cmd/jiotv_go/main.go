@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/rabilrbl/jiotv_go/v2/pkg/epg"
 	"github.com/rabilrbl/jiotv_go/v2/internal/handlers"
 	"github.com/rabilrbl/jiotv_go/v2/internal/middleware"
+	"github.com/rabilrbl/jiotv_go/v2/pkg/epg"
 	"github.com/rabilrbl/jiotv_go/v2/pkg/utils"
 	"github.com/rabilrbl/jiotv_go/v2/web"
 
@@ -32,6 +32,7 @@ func main() {
 
 	app := fiber.New(fiber.Config{
 		Views:             engine,
+		Prefork:           os.Getenv("JIOTV_PREFORK") == "true",
 		CaseSensitive:     false,
 		StrictRouting:     false,
 		EnablePrintRoutes: false,
