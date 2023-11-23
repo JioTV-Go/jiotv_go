@@ -40,6 +40,12 @@ type Bitrates struct {
 	Medium string `json:"medium"`
 }
 
+type MPD struct {
+	Result string `json:"result"`
+	Key   string `json:"key"`
+	Bitrates Bitrates `json:"bitrates"`
+}
+
 // LiveURLOutput represents Response of live stream URL request to JioTV API
 type LiveURLOutput struct {
     SonyVodStitchAdsCpCustomerID struct {
@@ -57,6 +63,7 @@ type LiveURLOutput struct {
     Result      string  `json:"result"`
     StartTime   float64 `json:"startTime"`
     VodStitch   bool    `json:"vodStitch"`
+	Mpd      MPD      `json:"mpd"`
 }
 
 // CategoryMap represents Categories for channels
