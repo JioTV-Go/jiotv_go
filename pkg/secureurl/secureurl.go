@@ -33,24 +33,19 @@ func EncryptURL(inputURL string) (string, error) {
 		return url.QueryEscape(inputURL), nil
 	}
 
-	u, err := url.Parse(inputURL)
-	if err != nil {
-		return "", err
-	}
-
 	block, err := aes.NewCipher(key)
 	if err != nil {
 		return "", err
 	}
 
-	ciphertext := make([]byte, aes.BlockSize+len(u.String()))
+	ciphertext := make([]byte, aes.BlockSize+len(inputURL))
 	iv := ciphertext[:aes.BlockSize]
 	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
 		return "", err
 	}
 
 	stream := cipher.NewCFBEncrypter(block, iv)
-	stream.XORKeyStream(ciphertext[aes.BlockSize:], []byte(u.String()))
+	stream.XORKeyStream(ciphertext[aes.BlockSize:], []byte(inputURL))
 
 	encryptedURL := base64.URLEncoding.EncodeToString(ciphertext)
 	return encryptedURL, nil
@@ -83,17 +78,8 @@ func DecryptURL(encryptedURL string) (string, error) {
 	stream.XORKeyStream(ciphertext, ciphertext)
 
 	decryptedURL := string(ciphertext)
-	decodedURL, err := url.QueryUnescape(decryptedURL)
-	if err != nil {
-		return "", errors.New("invalid URL")
-	}
 
-	_, err = url.Parse(decodedURL)
-	if err != nil {
-		return "", errors.New("invalid URL")
-	}
-
-	return decodedURL, nil
+	return decryptedURL, nil
 }
 
 func Init() {
