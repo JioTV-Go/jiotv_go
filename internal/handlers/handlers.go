@@ -22,11 +22,13 @@ import (
 var (
 	TV               *television.Television
 	DisableTSHandler bool
+	isLogoutDisabled  bool
 )
 
 // Init initializes the necessary operations required for the handlers to work.
 func Init() {
 	DisableTSHandler = os.Getenv("JIOTV_DISABLE_TS_HANDLER") == "true"
+	isLogoutDisabled = os.Getenv("JIOTV_LOGOUT") == "false"
 	if DisableTSHandler {
 		utils.Log.Println("TS Handler disabled!. All TS video requests will be served directly from JioTV servers.")
 	}
@@ -467,14 +469,16 @@ func LoginPasswordHandler(c *fiber.Ctx) error {
 
 // LogoutHandler is used to logout
 func LogoutHandler(c *fiber.Ctx) error {
-	err := utils.Logout()
-	if err != nil {
-		utils.Log.Println(err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Internal server error",
-		})
+	if !isLogoutDisabled {
+		err := utils.Logout()
+		if err != nil {
+			utils.Log.Println(err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Internal server error",
+			})
+		}
+		Init()
 	}
-	Init()
 	return c.Redirect("/", fiber.StatusFound)
 }
 
