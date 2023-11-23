@@ -8,6 +8,7 @@ import (
 	"github.com/rabilrbl/jiotv_go/v2/internal/middleware"
 	"github.com/rabilrbl/jiotv_go/v2/pkg/epg"
 	"github.com/rabilrbl/jiotv_go/v2/pkg/utils"
+	"github.com/rabilrbl/jiotv_go/v2/pkg/secureurl"
 	"github.com/rabilrbl/jiotv_go/v2/web"
 
 	"github.com/gofiber/fiber/v2"
@@ -19,7 +20,11 @@ import (
 )
 
 func main() {
+	// Initialize the logger object
 	utils.Log = utils.GetLogger()
+
+	// Initialize the secureurl object
+	secureurl.Init()
 
 	// if os.Getenv("JIOTV_DEBUG") == "true" or file epg.xml.gz exists
 	if os.Getenv("JIOTV_EPG") == "true" || utils.FileExists("epg.xml.gz") {

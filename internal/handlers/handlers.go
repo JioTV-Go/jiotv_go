@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/url"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/rabilrbl/jiotv_go/v2/pkg/secureurl"
 	"github.com/rabilrbl/jiotv_go/v2/pkg/television"
 	"github.com/rabilrbl/jiotv_go/v2/pkg/utils"
 	"github.com/valyala/fasthttp"
@@ -130,7 +130,13 @@ func LiveHandler(c *fiber.Ctx) error {
 	}
 	// quote url as it will be passed as a query parameter
 	// It is required to quote the url as it may contain special characters like ? and &
-	coded_url := url.QueryEscape(liveResult.Auto)
+	coded_url, err := secureurl.EncryptURL(liveResult.Auto)
+	if err != nil {
+		utils.Log.Println(err)
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"message": err,
+		})
+	}
 	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
 }
 
@@ -163,11 +169,17 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	case "low", "l":
 		liveURL = liveResult.Low
 	default:
+		fmt.Println("LiveURL: ",liveResult.Auto)
 		liveURL = liveResult.Auto
 	}
 	// quote url as it will be passed as a query parameter
-	// It is required to quote the url as it may contain special characters like ? and &
-	coded_url := url.QueryEscape(liveURL)
+	coded_url, err := secureurl.EncryptURL(liveURL)
+	if err != nil {
+		utils.Log.Println(err)
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"message": err,
+		})
+	}
 	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
 }
 
@@ -190,11 +202,13 @@ func RenderHandler(c *fiber.Ctx) error {
 			"message": "Channel ID not provided",
 		})
 	}
-	// unquote url
-	decoded_url, err := url.QueryUnescape(auth)
+	// decrypt url
+	decoded_url, err := secureurl.DecryptURL(auth)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.SendStatus(fiber.StatusInternalServerError)
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"message": err,
+		})
 	}
 	renderResult := TV.Render(decoded_url)
 	// baseUrl is the part of the url excluding suffix file.m3u8 and params is the part of the url after the suffix
@@ -212,12 +226,22 @@ func RenderHandler(c *fiber.Ctx) error {
 	replacer := func(match []byte) []byte {
 		switch {
 		case bytes.HasSuffix(match, []byte(".m3u8")):
-			return []byte("/render.m3u8?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params) + "&channel_key_id=" + channel_id)
+			coded_url, err := secureurl.EncryptURL(baseUrl+string(match)+"?"+params)
+			if err != nil {
+				utils.Log.Println(err)
+				return nil
+			}
+			return []byte("/render.m3u8?auth=" + coded_url + "&channel_key_id=" + channel_id)
 		case bytes.HasSuffix(match, []byte(".ts")):
 			if DisableTSHandler {
 				return []byte(baseUrl + string(match) + "?" + params)
 			}
-			return []byte("/render.ts?auth=" + url.QueryEscape(baseUrl+string(match)+"?"+params))
+			coded_url, err := secureurl.EncryptURL(baseUrl+string(match)+"?"+params)
+			if err != nil {
+				utils.Log.Println(err)
+				return nil
+			}
+			return []byte("/render.ts?auth=" + coded_url)
 		default:
 			return match
 		}
@@ -233,7 +257,12 @@ func RenderHandler(c *fiber.Ctx) error {
 	replacer_key := func(match []byte) []byte {
 		switch {
 		case bytes.HasSuffix(match, []byte(".key")) || bytes.HasSuffix(match, []byte(".pkey")):
-			return []byte("/render.key?auth=" + url.QueryEscape(string(match)+"?"+params) + "&channel_key_id=" + channel_id)
+			coded_url, err := secureurl.EncryptURL(string(match)+"?"+params)
+			if err != nil {
+				utils.Log.Println(err)
+				return nil
+			}
+			return []byte("/render.key?auth=" + coded_url + "&channel_key_id=" + channel_id)
 		default:
 			return match
 		}
@@ -253,10 +282,12 @@ func RenderKeyHandler(c *fiber.Ctx) error {
 	channel_id := c.Query("channel_key_id")
 	auth := c.Query("auth")
 	// decode url
-	decoded_url, err := url.QueryUnescape(auth)
+	decoded_url, err := secureurl.DecryptURL(auth)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.SendStatus(fiber.StatusInternalServerError)
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"message": err,
+		})
 	}
 	keyResult, status := TV.RenderKey(decoded_url, channel_id)
 	return c.Status(status).Send(keyResult)
@@ -266,10 +297,12 @@ func RenderKeyHandler(c *fiber.Ctx) error {
 func RenderTSHandler(c *fiber.Ctx) error {
 	auth := c.Query("auth")
 	// decode url
-	decoded_url, err := url.QueryUnescape(auth)
+	decoded_url, err := secureurl.DecryptURL(auth)
 	if err != nil {
 		utils.Log.Panicln(err)
-		return c.SendStatus(fiber.StatusBadRequest)
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"message": err,
+		})
 	}
 
 	if err := proxy.Do(c, decoded_url, TV.Client); err != nil {
