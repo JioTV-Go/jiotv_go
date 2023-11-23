@@ -33,6 +33,7 @@ func main() {
 	app := fiber.New(fiber.Config{
 		Views:             engine,
 		Prefork:           os.Getenv("JIOTV_PREFORK") == "true",
+		StreamRequestBody: true,
 		CaseSensitive:     false,
 		StrictRouting:     false,
 		EnablePrintRoutes: false,
