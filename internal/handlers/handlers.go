@@ -22,13 +22,19 @@ import (
 var (
 	TV               *television.Television
 	DisableTSHandler bool
-	isLogoutDisabled  bool
+	isLogoutDisabled bool
+	Title            string
 )
 
 // Init initializes the necessary operations required for the handlers to work.
 func Init() {
 	DisableTSHandler = os.Getenv("JIOTV_DISABLE_TS_HANDLER") == "true"
 	isLogoutDisabled = os.Getenv("JIOTV_LOGOUT") == "false"
+	if os.Getenv("JIOTV_TITLE") != "" {
+		Title = os.Getenv("JIOTV_TITLE")
+	} else {
+		Title = "JioTV Go"
+	}
 	if DisableTSHandler {
 		utils.Log.Println("TS Handler disabled!. All TS video requests will be served directly from JioTV servers.")
 	}
@@ -69,17 +75,9 @@ func IndexHandler(c *fiber.Ctx) error {
 	language := c.Query("language")
 	category := c.Query("category")
 
-	// Custom Title for index page
-	var title string
-	if os.Getenv("JIOTV_TITLE") != "" {
-		title = os.Getenv("JIOTV_TITLE")
-	} else {
-		title = "JioTV Go"
-	}
-
 	// Context data for index page
 	indexContext := fiber.Map{
-		"Title":         title,
+		"Title":         Title,
 		"Channels":      nil,
 		"IsNotLoggedIn": !utils.CheckLoggedIn(),
 		"Categories":    television.CategoryMap,
@@ -178,7 +176,7 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	case "low", "l":
 		liveURL = liveResult.Low
 	default:
-		fmt.Println("LiveURL: ",liveResult.Auto)
+		fmt.Println("LiveURL: ", liveResult.Auto)
 		liveURL = liveResult.Auto
 	}
 	// quote url as it will be passed as a query parameter
@@ -235,7 +233,7 @@ func RenderHandler(c *fiber.Ctx) error {
 	replacer := func(match []byte) []byte {
 		switch {
 		case bytes.HasSuffix(match, []byte(".m3u8")):
-			coded_url, err := secureurl.EncryptURL(baseUrl+string(match)+"?"+params)
+			coded_url, err := secureurl.EncryptURL(baseUrl + string(match) + "?" + params)
 			if err != nil {
 				utils.Log.Println(err)
 				return nil
@@ -245,7 +243,7 @@ func RenderHandler(c *fiber.Ctx) error {
 			if DisableTSHandler {
 				return []byte(baseUrl + string(match) + "?" + params)
 			}
-			coded_url, err := secureurl.EncryptURL(baseUrl+string(match)+"?"+params)
+			coded_url, err := secureurl.EncryptURL(baseUrl + string(match) + "?" + params)
 			if err != nil {
 				utils.Log.Println(err)
 				return nil
@@ -266,7 +264,7 @@ func RenderHandler(c *fiber.Ctx) error {
 	replacer_key := func(match []byte) []byte {
 		switch {
 		case bytes.HasSuffix(match, []byte(".key")) || bytes.HasSuffix(match, []byte(".pkey")):
-			coded_url, err := secureurl.EncryptURL(string(match)+"?"+params)
+			coded_url, err := secureurl.EncryptURL(string(match) + "?" + params)
 			if err != nil {
 				utils.Log.Println(err)
 				return nil
@@ -366,6 +364,7 @@ func PlayHandler(c *fiber.Ctx) error {
 	quality := c.Query("q")
 	player_url := "/player/" + id + "?q=" + quality
 	return c.Render("views/play", fiber.Map{
+		"Title":	  Title,
 		"player_url": player_url,
 	})
 }
