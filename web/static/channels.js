@@ -41,13 +41,12 @@ const onQualityChange = (elem) => {
     localStorage.setItem("quality", quality);
   }
   history.pushState({}, "", url.href);
-  const playElems = document.getElementsByClassName("btn btn-outline btn-info btn-md");
+  const playElems = document.getElementsByClassName("card");
   for (let i = 0; i < playElems.length; i++) {
     const elem = playElems[i];
     const href = elem.getAttribute("href");
     elem.setAttribute("href", href.split("?")[0] + url.search);
   }
-  init();
 };
 
 const quality = localStorage.getItem("quality");
