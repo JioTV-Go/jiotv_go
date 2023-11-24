@@ -1,52 +1,41 @@
-const fetchTableData = async () => {
-  return new Promise((resolve) => {
-    // Simulate an asynchronous data fetching operation
-    setTimeout(() => {
-      const searchData = [];
-      const tableEl = document.getElementById("portexe-data-table");
+const search = (searchTerm) => {
+  const channels = document.querySelectorAll('.card');
+  const urlParams = new URLSearchParams(window.location.search);
 
-      Array.from(tableEl.children[1].children).forEach((_bodyRowEl) => {
-        const rowData = Array.from(_bodyRowEl.children).map(
-          (_celEl) => _celEl.innerHTML
-        );
-        searchData.push(rowData);
-      }); // tbody
+  // Update URL search parameter
+  if (searchTerm.trim() !== '') {
+    urlParams.set('search', searchTerm);
+  } else {
+    urlParams.delete('search');
+  }
 
-      resolve(searchData);
-    }, 1000); // Simulated delay of 1 second
+  // Update the URL without reloading the page
+  window.history.replaceState({}, '', `${window.location.pathname}?${urlParams}`);
+
+  channels.forEach((channel) => {
+    const name = channel.querySelector('.font-bold').textContent.toLowerCase();
+    if (name.includes(searchTerm.toLowerCase())) {
+      channel.style.display = 'block';
+    } else {
+      channel.style.display = 'none';
+    }
   });
 };
 
-const search = (arr, searchTerm) => {
-  if (!searchTerm) return arr;
-  return arr.filter((_row) =>
-    _row[1].toLowerCase().includes(searchTerm.toLowerCase())
-  );
-};
+const init = () => {
+  const searchInput = document.getElementById('portexe-search-input');
 
-const refreshTable = (data) => {
-  const tableBody = document.getElementById("portexe-data-table").children[1];
-  tableBody.innerHTML = "";
+  // Check for search parameter on page load
+  const urlParams = new URLSearchParams(window.location.search);
+  const searchParam = urlParams.get('search');
 
-  data.forEach((_row) => {
-    const curRow = document.createElement("tr");
-    _row.forEach((_dataItem) => {
-      const curCell = document.createElement("td");
-      curCell.innerHTML = _dataItem;
-      curRow.appendChild(curCell);
-    });
+  if (searchParam) {
+    search(searchParam);
+    searchInput.value = searchParam; // Set input value to the search parameter
+  }
 
-    tableBody.appendChild(curRow);
-  });
-};
-
-const init = async () => {
-  const initialTableData = await fetchTableData();
-
-  const searchInput = document.getElementById("portexe-search-input");
-  searchInput.addEventListener("keyup", async (e) => {
-    const filteredData = search(initialTableData, e.target.value);
-    refreshTable(filteredData);
+  searchInput.addEventListener('keyup', (e) => {
+    search(e.target.value);
   });
 };
 

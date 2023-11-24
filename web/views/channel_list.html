@@ -56,7 +56,6 @@
           class="h-14 w-14 sm:h-16 sm:w-16 md:h-18 md:w-18 lg:h-20 lg:w-20 rounded-full bg-gray-200"
         />
         <span class="text-lg font-bold mt-2">{{$channel.Name}}</span>
-        <!-- Top right corner of box -->
         <div class="absolute top-2 right-2">
           {{ if $channel.IsHD }}
           <div class="badge badge-primary">
@@ -65,7 +64,7 @@
           {{ else }}
           <div class="badge badge-outline badge-primary">
             SD
-                 </div>
+          </div>
           {{ end }}
         </div>
       </div>
