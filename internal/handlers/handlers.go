@@ -69,8 +69,17 @@ func IndexHandler(c *fiber.Ctx) error {
 	language := c.Query("language")
 	category := c.Query("category")
 
+	// Custom Title for index page
+	var title string
+	if os.Getenv("JIOTV_TITLE") != "" {
+		title = os.Getenv("JIOTV_TITLE")
+	} else {
+		title = "JioTV Go"
+	}
+
 	// Context data for index page
 	indexContext := fiber.Map{
+		"Title":         title,
 		"Channels":      nil,
 		"IsNotLoggedIn": !utils.CheckLoggedIn(),
 		"Categories":    television.CategoryMap,
