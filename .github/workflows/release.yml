@@ -95,25 +95,29 @@ jobs:
           mkdir -p bin
           allowed_archs="amd64 arm arm64 386"
           for var in $(go tool dist list); do
-            if [[ ! $allowed_archs =~ "$(cut -d '/' -f 2 <<<$var)" ]]; then
-                echo "Skipping: $var"
-                continue
-            fi
-            file_name="jiotv_go-${{ steps.gen_tag.outputs.tag }}-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)"
-            case "$(cut -d '/' -f 1 <<<$var)" in
-                "windows")
-                    echo "Building $var"
-                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build -o bin/"$file_name.exe" -trimpath -ldflags="-s -w" ./cmd/jiotv_go
-                  ;;
+              if [[ ! $allowed_archs =~ "$(cut -d '/' -f 2 <<< $var)" ]]; then
+                  echo "Skipping: $var"
+                  continue
+              fi
+              
+              file_name="jiotv_go-${{ steps.gen_tag.outputs.tag }}-$(cut -d '/' -f 1 <<< $var)-$(cut -d '/' -f 2 <<< $var)"
+              case "$(cut -d '/' -f 1 <<< $var)" in
+                  "windows")
+                      echo "Building $var"
+                      GOOS="$(cut -d '/' -f 1 <<< $var)" GOARCH="$(cut -d '/' -f 2 <<< $var)" go build -o bin/"$file_name.exe" -trimpath -ldflags="-s -w" ./cmd/jiotv_go &
+                      ;;
                   "linux" | "darwin")
-                    echo "Building $var"
-                    GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build -o bin/"$file_name" -trimpath -ldflags="-s -w" ./cmd/jiotv_go
-                  ;;
+                      echo "Building $var"
+                      GOOS="$(cut -d '/' -f 1 <<< $var)" GOARCH="$(cut -d '/' -f 2 <<< $var)" go build -o bin/"$file_name" -trimpath -ldflags="-s -w" ./cmd/jiotv_go &
+                      ;;
                   *)
-                    echo "Skipping: $var"
-                  ;;
-            esac
+                      echo "Skipping: $var"
+                      ;;
+              esac
           done
+          
+          # Wait for all background jobs to finish
+          wait
 
       - name: Release 📦
         uses: softprops/action-gh-release@v1
