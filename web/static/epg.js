@@ -40,7 +40,7 @@ function updateEPG(epgData) {
     const shownameElement = document.getElementById('showname');
     const descriptionElement = document.getElementById('description');
     const episodePosterElement = document.getElementById('episodePoster');
-    shownameElement.innerHTML = shows[0].showname + shownameElement.innerHTML;
+    shownameElement.innerText = shows[0].showname;
     descriptionElement.innerText = shows[0].description;
     const posterUrl = new URL("/jtvposter/", window.location.href);
     posterUrl.pathname += shows[0].episodePoster;
