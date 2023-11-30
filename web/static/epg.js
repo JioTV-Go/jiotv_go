@@ -66,7 +66,7 @@ function updateEPG(epgData) {
 
         if (difference <= 0) {
             clearInterval(timerInterval);
-            updateEPG();
+            updateEPG(epgData);
             return;
         }
         
