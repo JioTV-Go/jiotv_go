@@ -103,6 +103,7 @@ epgParent.style.display = 'none';
     const epgResponse = await fetch(`/epg/${channelID}/${offset}`);
 
     if (!epgResponse.ok) {
+        console.error('Failed to fetch EPG data');
         return;
     }
 
