@@ -26,6 +26,11 @@ var (
 	Title            string
 )
 
+const (
+	REFRESH_TOKEN_URL = "https://auth.media.jio.com/tokenservice/apis/v1/refreshtoken?langId=6"
+	
+)
+
 // Init initializes the necessary operations required for the handlers to work.
 func Init() {
 	DisableTSHandler = os.Getenv("JIOTV_DISABLE_TS_HANDLER") == "true"
@@ -558,7 +563,7 @@ func LoginRefreshAccessToken() error {
 
 	// Prepare the request
 	req := fasthttp.AcquireRequest()
-	req.SetRequestURI("https://auth.media.jio.com/tokenservice/apis/v1/refreshtoken?langId=6")
+	req.SetRequestURI(REFRESH_TOKEN_URL)
 	req.Header.SetMethod("POST")
 	req.Header.Set("devicetype", "phone")
 	req.Header.Set("versionCode", "315")

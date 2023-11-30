@@ -39,6 +39,7 @@ web/node_modules/
 
 # Logs
 jiotv_go.log
+jiotv_go*.log
 
 # EPG
 epg.xml.gz

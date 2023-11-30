@@ -77,7 +77,7 @@ func Init() {
 
 // NewProgramme creates a new Programme with the given parameters.
 func NewProgramme(channelID int, start, stop, title, desc, iconSrc string) Programme {
-	iconURL := fmt.Sprintf("https://jiotv.catchup.cdn.jio.com/dare_images/shows/%s", iconSrc)
+	iconURL := fmt.Sprintf("/jtvposter/%s", iconSrc)
 	return Programme{
 		Channel: fmt.Sprint(channelID),
 		Start:   start,
