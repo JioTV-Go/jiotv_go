@@ -66,6 +66,12 @@ function updateEPG(epgData) {
 
         if (difference <= 0) {
             clearInterval(timerInterval);
+            if (document.getElementById('countdown_hour').style.display === 'none') {
+                document.getElementById('countdown_hour').style.display = 'block';
+            }
+            if (document.getElementById('countdown_minute').style.display === 'none') {
+                document.getElementById('countdown_minute').style.display = 'block';
+            }
             updateEPG(epgData);
             return;
         }
