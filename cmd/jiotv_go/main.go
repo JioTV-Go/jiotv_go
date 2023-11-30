@@ -88,6 +88,8 @@ func main() {
 	app.Get("/favicon.ico", handlers.FaviconHandler)
 	app.Get("/jtvimage/:file", handlers.ImageHandler)
 	app.Get("/epg.xml.gz", handlers.EPGHandler)
+	app.Get("/epg/:channelID/:offset", handlers.WebEPGHandler)
+	app.Get("/jtvposter/:date/:file", handlers.PosterHandler)
 
 	addr := "localhost:5001"
 
