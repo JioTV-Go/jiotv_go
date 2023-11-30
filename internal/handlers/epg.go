@@ -10,6 +10,10 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/proxy"
 )
 
+const (
+	EPG_POSTER_URL = "https://jiotv.catchup.cdn.jio.com/dare_images/shows/"
+)
+
 // WebEPGHandler responds to requests for EPG data for individual channels.
 func WebEPGHandler(c *fiber.Ctx) error {
 	// Get channel ID from URL
@@ -37,7 +41,7 @@ func WebEPGHandler(c *fiber.Ctx) error {
 func PosterHandler(c *fiber.Ctx) error {
 	// catch all params
 	fmt.Println(c.Params("*"))
-	url := "https://jiotv.catchup.cdn.jio.com/dare_images/shows/" + c.Params("date") + "/" + c.Params("file")
+	url := EPG_POSTER_URL + c.Params("date") + "/" + c.Params("file")
 	if err := proxy.Do(c, url, TV.Client); err != nil {
 		return err
 	}
