@@ -36,6 +36,8 @@ This section provides a detailed guide on how to use JioTV Go for various platfo
 3. **Download Android Script:**
    - Download the Android script by running `curl -Lo jiotv_go.sh https://raw.githubusercontent.com/rabilrbl/jiotv_go/main/android.sh`.
 
+   *NOTE: If the above link does not work, try changing your internet connection or DNS settings. You may also consider using a VPN.*
+
 4. **Grant Executable Permissions:**
    - Grant executable permissions to the script with `chmod +x jiotv_go.sh`.
 
