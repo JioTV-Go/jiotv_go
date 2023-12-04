@@ -104,11 +104,11 @@ jobs:
               case "$(cut -d '/' -f 1 <<< $var)" in
                   "windows")
                       echo "Building $var"
-                      GOOS="$(cut -d '/' -f 1 <<< $var)" GOARCH="$(cut -d '/' -f 2 <<< $var)" go build -o bin/"$file_name.exe" -trimpath -ldflags="-s -w" ./cmd/jiotv_go &
+                      CGO_ENABLED=0 GOOS="$(cut -d '/' -f 1 <<< $var)" GOARCH="$(cut -d '/' -f 2 <<< $var)" go build -o bin/"$file_name.exe" -trimpath -ldflags="-s -w" ./cmd/jiotv_go &
                       ;;
                   "linux" | "darwin")
                       echo "Building $var"
-                      GOOS="$(cut -d '/' -f 1 <<< $var)" GOARCH="$(cut -d '/' -f 2 <<< $var)" go build -o bin/"$file_name" -trimpath -ldflags="-s -w" ./cmd/jiotv_go &
+                      CGO_ENABLED=0 GOOS="$(cut -d '/' -f 1 <<< $var)" GOARCH="$(cut -d '/' -f 2 <<< $var)" go build -o bin/"$file_name" -trimpath -ldflags="-s -w" ./cmd/jiotv_go &
                       ;;
                   *)
                       echo "Skipping: $var"
