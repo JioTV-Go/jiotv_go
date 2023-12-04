@@ -142,7 +142,7 @@ func LiveHandler(c *fiber.Ctx) error {
 	}
 	// quote url as it will be passed as a query parameter
 	// It is required to quote the url as it may contain special characters like ? and &
-	coded_url, err := secureurl.EncryptURL(liveResult.Auto)
+	coded_url, err := secureurl.EncryptURL(liveResult.Bitrates.Auto)
 	if err != nil {
 		utils.Log.Println(err)
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
@@ -159,6 +159,7 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
 	liveResult, err := TV.Live(id)
+	Bitrates := liveResult.Bitrates
 	if err != nil {
 		utils.Log.Println(err)
 		if err != nil {
@@ -175,14 +176,14 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	// select quality level based on query parameter
 	switch quality {
 	case "high", "h":
-		liveURL = liveResult.High
+		liveURL = Bitrates.High
 	case "medium", "med", "m":
-		liveURL = liveResult.Medium
+		liveURL = Bitrates.Medium
 	case "low", "l":
-		liveURL = liveResult.Low
+		liveURL = Bitrates.Low
 	default:
-		fmt.Println("LiveURL: ", liveResult.Auto)
-		liveURL = liveResult.Auto
+		fmt.Println("LiveURL: ", Bitrates.Auto)
+		liveURL = Bitrates.Auto
 	}
 	// quote url as it will be passed as a query parameter
 	coded_url, err := secureurl.EncryptURL(liveURL)

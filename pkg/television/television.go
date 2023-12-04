@@ -62,7 +62,7 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 }
 
 // Live method generates m3u8 link from JioTV API with the provided channel ID
-func (tv *Television) Live(channelID string) (*Bitrates, error) {
+func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
 	formData := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(formData)
 
@@ -125,7 +125,7 @@ func (tv *Television) Live(channelID string) (*Bitrates, error) {
 		return nil, err
 	}
 
-	return &result.Bitrates, nil
+	return &result, nil
 }
 
 // Render method does HTTP GET request to the provided URL and return the response body
