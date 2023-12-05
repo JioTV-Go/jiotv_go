@@ -44,7 +44,7 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 		"uniqueId":     credentials.UniqueID,
 		"User-Agent":   "okhttp/4.2.2",
 		"usergroup":    "tvYR7NSNn7rymo3F",
-		"versionCode":  "315",
+		"versionCode":  "330",
 	}
 
 	// Create a fasthttp.Client
@@ -68,6 +68,8 @@ func (tv *Television) Live(channelID string) (*Bitrates, error) {
 
 	formData.Add("channel_id", channelID)
 	formData.Add("stream_type", "Seek")
+	formData.Add("begin", utils.GenerateCurrentTime())
+	formData.Add("srno", utils.GenerateDate())
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)

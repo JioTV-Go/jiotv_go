@@ -475,3 +475,14 @@ func FileExists(filename string) bool {
 		return true
 	}
 }
+
+func GenerateCurrentTime() string {
+	currentTime := time.Now().UTC().Format("20060102T150405")
+	return currentTime
+}
+
+func GenerateDate() string {
+	// 20231205
+	currentTime := time.Now().UTC().Format("20060102")
+	return currentTime
+}

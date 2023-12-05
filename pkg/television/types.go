@@ -42,10 +42,21 @@ type Bitrates struct {
 
 // LiveURLOutput represents Response of live stream URL request to JioTV API
 type LiveURLOutput struct {
-	Bitrates Bitrates `json:"bitrates"`
-	Code     int      `json:"code"`
-	Message  string   `json:"message"`
-	Result   string   `json:"result"`
+    SonyVodStitchAdsCpCustomerID struct {
+        Midroll   string `json:"midroll"`
+        Postroll  string `json:"postroll"`
+        Preroll   string `json:"preroll"`
+    } `json:"sonyVodStitchAdsCpCustomerID"`
+    VmapURL string `json:"vmapUrl"`
+    Bitrates Bitrates `json:"bitrates"`
+    Code        int     `json:"code"`
+    ContentID   float64 `json:"contentId"`
+    CurrentTime float64 `json:"currentTime"`
+    EndTime     float64 `json:"endTime"`
+    Message     string  `json:"message"`
+    Result      string  `json:"result"`
+    StartTime   float64 `json:"startTime"`
+    VodStitch   bool    `json:"vodStitch"`
 }
 
 // CategoryMap represents Categories for channels

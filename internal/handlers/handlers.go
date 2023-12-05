@@ -254,13 +254,23 @@ func RenderHandler(c *fiber.Ctx) error {
 				return nil
 			}
 			return []byte("/render.ts?auth=" + coded_url)
+		case bytes.HasSuffix(match, []byte(".aac")):
+			if DisableTSHandler {
+				return []byte(baseUrl + string(match) + "?" + params)
+			}
+			coded_url, err := secureurl.EncryptURL(baseUrl + string(match) + "?" + params)
+			if err != nil {
+				utils.Log.Println(err)
+				return nil
+			}
+			return []byte("/render.ts?auth=" + coded_url)
 		default:
 			return match
 		}
 	}
 
 	// Pattern to match file names ending with .m3u8 and .ts
-	pattern = `[a-z0-9=\_\-A-Z\/]*\.(m3u8|ts)`
+	pattern = `[a-z0-9=\_\-A-Z\/]*\.(m3u8|ts|aac)`
 	re = regexp.MustCompile(pattern)
 	// Execute replacer function on renderResult
 	renderResult = re.ReplaceAllFunc(renderResult, replacer)
