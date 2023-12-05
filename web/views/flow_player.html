@@ -16,6 +16,7 @@
     <script src="/static/flowplayer.min.js"></script>
     <script src="/static/hls.min.js"></script>
     <script src="/static/qsel.min.js"></script>
+    <script src="/static/asel.min.js"></script>
     <script src="/static/keyboard.min.js"></script>
   </head>
 
@@ -29,6 +30,7 @@
         seekable: true,
         autplay: flowplayer.autoplay.AUDIO_REQUIRED,
         qsel: {},
+        asel: {},
         ui: flowplayer.ui.USE_THIN_CONTROLBAR,
       });
       player.on(flowplayer.events.FULLSCREEN_ENTER, (e) => {
