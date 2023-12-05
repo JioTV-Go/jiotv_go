@@ -52,10 +52,10 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 
 	// Return a new Television instance
 	return &Television{
-		accessToken: credentials.AccessToken,
-		ssoToken:    credentials.SSOToken,
-		crm:         credentials.CRM,
-		uniqueID:    credentials.UniqueID,
+		AccessToken: credentials.AccessToken,
+		SsoToken:    credentials.SSOToken,
+		Crm:         credentials.CRM,
+		UniqueID:    credentials.UniqueID,
 		headers:     headers,
 		Client:      client,
 	}
@@ -80,12 +80,12 @@ func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
 	}
 
 	var url string
-	if tv.accessToken != "" {
+	if tv.AccessToken != "" {
 		url = "https://jiotvapi.media.jio.com/playback/apis/v1/geturl?langId=6"
-		req.Header.Set("accesstoken", tv.accessToken)
+		req.Header.Set("accesstoken", tv.AccessToken)
 	} else {
 		req.Header.Set("osVersion", "8.1.0")
-		req.Header.Set("ssotoken", tv.ssoToken)
+		req.Header.Set("ssotoken", tv.SsoToken)
 		req.Header.Set("versionCode", "277")
 		url = "https://tv.media.jio.com/apis/v2.2/getchannelurl/getchannelurl"
 		req.Header.SetUserAgent("plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7")
@@ -178,7 +178,7 @@ func (tv *Television) RenderKey(url, channelID string) ([]byte, int) {
 		req.Header.Set(key, value) // Assuming only one value for each header
 	}
 	req.Header.Set("srno", "230203144000")
-	req.Header.Set("ssotoken", tv.ssoToken)
+	req.Header.Set("ssotoken", tv.SsoToken)
 	req.Header.Set("channelId", channelID)
 
 	resp := fasthttp.AcquireResponse()
