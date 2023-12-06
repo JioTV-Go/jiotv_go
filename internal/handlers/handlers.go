@@ -24,6 +24,7 @@ var (
 	DisableTSHandler bool
 	isLogoutDisabled bool
 	Title            string
+	EnableDRM		 bool
 	SONY_LIST		= []string{"154", "155", "162", "289", "291", "471", "474", "476", "483", "514", "524", "525", "697", "872", "873", "874", "891", "892", "1146", "1393", "1772", "1773", "1774", "1775"}
 )
 
@@ -36,6 +37,7 @@ const (
 func Init() {
 	DisableTSHandler = os.Getenv("JIOTV_DISABLE_TS_HANDLER") == "true"
 	isLogoutDisabled = os.Getenv("JIOTV_LOGOUT") == "false"
+	EnableDRM = os.Getenv("JIOTV_DRM") == "true"
 	if os.Getenv("JIOTV_TITLE") != "" {
 		Title = os.Getenv("JIOTV_TITLE")
 	} else {
@@ -380,7 +382,7 @@ func PlayHandler(c *fiber.Ctx) error {
 	quality := c.Query("q")
 	
 	var player_url string
-	if !utils.ContainsString(id, SONY_LIST) {
+	if !utils.ContainsString(id, SONY_LIST) && EnableDRM {
 		player_url = "/mpd/" + id + "?q=" + quality
 	} else {
 		player_url = "/player/" + id + "?q=" + quality
