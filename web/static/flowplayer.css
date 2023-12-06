@@ -594,7 +594,7 @@
   height: 0;
 }
 .no-autoplay {
-  background-color: #262626;
+  background-color: transparent;
 }
 .is-starting .fp-controls {
   visibility: hidden;
@@ -674,7 +674,7 @@
   max-width: 100% !important;
   z-index: 99999 !important;
   border-radius: 0px !important;
-  background-color: #262626;
+  background-color: transparent;
 }
 .is-fullscreen .fp-fullscreen {
   display: none;
