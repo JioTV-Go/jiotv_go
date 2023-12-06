@@ -25,7 +25,7 @@ import (
 func LiveMpdHandler(c *fiber.Ctx) error {
 	// Get channel ID from URL
 	channelID := c.Params("channelID")
-
+	quality := c.Query("q")
 	// Get live stream URL from JioTV API
 	liveResult, err := TV.Live(channelID)
 	if err != nil {
@@ -47,7 +47,18 @@ func LiveMpdHandler(c *fiber.Ctx) error {
 	// 		"message": err,
 	// 	})
 	// }
-	tv_url := liveResult.Mpd.Bitrates.Auto
+	var tv_url string
+	switch quality {
+	case "high", "h":
+		tv_url = liveResult.Mpd.Bitrates.High
+	case "medium", "med", "m":
+		tv_url = liveResult.Mpd.Bitrates.Medium
+	case "low", "l":
+		tv_url = liveResult.Mpd.Bitrates.Low
+	default:
+		tv_url = liveResult.Mpd.Bitrates.Auto
+	}
+		
 	
 	// Send the response
 	// return c.JSON(
