@@ -24,11 +24,12 @@ var (
 	DisableTSHandler bool
 	isLogoutDisabled bool
 	Title            string
+	SONY_LIST		= []string{"154", "155", "162", "289", "291", "471", "474", "476", "483", "514", "524", "525", "697", "872", "873", "874", "891", "892", "1146", "1393", "1772", "1773", "1774", "1775"}
 )
 
 const (
 	REFRESH_TOKEN_URL = "https://auth.media.jio.com/tokenservice/apis/v1/refreshtoken?langId=6"
-	
+ 
 )
 
 // Init initializes the necessary operations required for the handlers to work.
@@ -377,7 +378,13 @@ func ChannelsHandler(c *fiber.Ctx) error {
 func PlayHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	quality := c.Query("q")
-	player_url := "/player/" + id + "?q=" + quality
+	
+	var player_url string
+	if !utils.ContainsString(id, SONY_LIST) {
+		player_url = "/mpd/" + id + "?q=" + quality
+	} else {
+		player_url = "/player/" + id + "?q=" + quality
+	}
 	return c.Render("views/play", fiber.Map{
 		"Title":	  Title,
 		"player_url": player_url,
