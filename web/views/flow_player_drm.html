@@ -60,6 +60,14 @@
           screen.orientation.unlock();
         }
       });
+      // if src is empty, then redirect to HLS Stream
+      player.on(flowplayer.events.PLAY, (e) => {
+        if (!player.src) {
+        window.location.replace(
+          window.location.href.replace("/mpd/", "/player/")
+        );
+      }
+      });
     </script>
   </body>
 </html>
