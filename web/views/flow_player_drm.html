@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JioTV Go</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: black;
+        overflow-y: hidden;
+      }
+    </style>
+    <link rel="stylesheet" href="/static/flowplayer.css" />
+    <script src="/static/flowplayer.min.js"></script>
+    <script src="/static/dash.min.js"></script>
+    <script src="/static/qsel.min.js"></script>
+    <script src="/static/keyboard.min.js"></script>
+    <script src="/static/drm.min.js"></script>
+  </head>
+
+  <body>
+    <div id="jiotv_go_player"></div>
+    <script>
+      var player = flowplayer("#jiotv_go_player", {
+        src: [
+          {
+            src: "{{ .play_url }}",
+            type: "application/dash+xml",
+            drm: {
+              [flowplayer.drm.WIDEVINE]: {
+                [flowplayer.drm.LICENSE_SERVER]: "{{ .license_url }}",
+              },
+            },
+          },
+        ],
+        auto_orient: true,
+        live: true,
+        seekable: false,
+        autplay: flowplayer.autoplay.AUDIO_REQUIRED,
+        qsel: {},
+        ui: flowplayer.ui.USE_THIN_CONTROLBAR,
+      });
+      player.on(flowplayer.events.FULLSCREEN_ENTER, (e) => {
+        // rotate to landscape on mobile devices
+        if (screen.orientation) {
+          screen.orientation.lock("landscape").catch((e) => {
+            if (e.name === "NotSupportedError") {
+              // ignore
+            } else {
+              console.error(e);
+            }
+          });
+        }
+      });
+      player.on(flowplayer.events.FULLSCREEN_EXIT, (e) => {
+        // release orientation lock on mobile devices
+        if (screen.orientation) {
+          screen.orientation.unlock();
+        }
+      });
+    </script>
+  </body>
+</html>

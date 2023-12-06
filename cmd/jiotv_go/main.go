@@ -67,6 +67,9 @@ func main() {
 
 	app.Use(helmet.New())
 
+	// Handle all /bpk-tv/* routes
+	app.Use("/bpk-tv/", handlers.BpkProxyHandler)
+
 	// Initialize the television object
 	handlers.Init()
 
@@ -90,6 +93,8 @@ func main() {
 	app.Get("/epg.xml.gz", handlers.EPGHandler)
 	app.Get("/epg/:channelID/:offset", handlers.WebEPGHandler)
 	app.Get("/jtvposter/:date/:file", handlers.PosterHandler)
+	app.Get("/mpd/:channelID", handlers.LiveMpdHandler)
+	app.Post("/drm", handlers.DRMKeyHandler)
 
 	addr := "localhost:5001"
 

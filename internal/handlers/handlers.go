@@ -24,17 +24,20 @@ var (
 	DisableTSHandler bool
 	isLogoutDisabled bool
 	Title            string
+	EnableDRM		 bool
+	SONY_LIST		= []string{"154", "155", "162", "289", "291", "471", "474", "476", "483", "514", "524", "525", "697", "872", "873", "874", "891", "892", "1146", "1393", "1772", "1773", "1774", "1775"}
 )
 
 const (
 	REFRESH_TOKEN_URL = "https://auth.media.jio.com/tokenservice/apis/v1/refreshtoken?langId=6"
-	
+ 
 )
 
 // Init initializes the necessary operations required for the handlers to work.
 func Init() {
 	DisableTSHandler = os.Getenv("JIOTV_DISABLE_TS_HANDLER") == "true"
 	isLogoutDisabled = os.Getenv("JIOTV_LOGOUT") == "false"
+	EnableDRM = os.Getenv("JIOTV_DRM") == "true"
 	if os.Getenv("JIOTV_TITLE") != "" {
 		Title = os.Getenv("JIOTV_TITLE")
 	} else {
@@ -142,7 +145,7 @@ func LiveHandler(c *fiber.Ctx) error {
 	}
 	// quote url as it will be passed as a query parameter
 	// It is required to quote the url as it may contain special characters like ? and &
-	coded_url, err := secureurl.EncryptURL(liveResult.Auto)
+	coded_url, err := secureurl.EncryptURL(liveResult.Bitrates.Auto)
 	if err != nil {
 		utils.Log.Println(err)
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
@@ -159,6 +162,7 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
 	liveResult, err := TV.Live(id)
+	Bitrates := liveResult.Bitrates
 	if err != nil {
 		utils.Log.Println(err)
 		if err != nil {
@@ -175,14 +179,13 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	// select quality level based on query parameter
 	switch quality {
 	case "high", "h":
-		liveURL = liveResult.High
+		liveURL = Bitrates.High
 	case "medium", "med", "m":
-		liveURL = liveResult.Medium
+		liveURL = Bitrates.Medium
 	case "low", "l":
-		liveURL = liveResult.Low
+		liveURL = Bitrates.Low
 	default:
-		fmt.Println("LiveURL: ", liveResult.Auto)
-		liveURL = liveResult.Auto
+		liveURL = Bitrates.Auto
 	}
 	// quote url as it will be passed as a query parameter
 	coded_url, err := secureurl.EncryptURL(liveURL)
@@ -377,7 +380,13 @@ func ChannelsHandler(c *fiber.Ctx) error {
 func PlayHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	quality := c.Query("q")
-	player_url := "/player/" + id + "?q=" + quality
+	
+	var player_url string
+	if !utils.ContainsString(id, SONY_LIST) && EnableDRM {
+		player_url = "/mpd/" + id + "?q=" + quality
+	} else {
+		player_url = "/player/" + id + "?q=" + quality
+	}
 	return c.Render("views/play", fiber.Map{
 		"Title":	  Title,
 		"player_url": player_url,
