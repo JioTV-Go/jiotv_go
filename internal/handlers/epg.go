@@ -40,7 +40,6 @@ func WebEPGHandler(c *fiber.Ctx) error {
 // PosterHandler loads image from JioTV server
 func PosterHandler(c *fiber.Ctx) error {
 	// catch all params
-	fmt.Println(c.Params("*"))
 	url := EPG_POSTER_URL + c.Params("date") + "/" + c.Params("file")
 	if err := proxy.Do(c, url, TV.Client); err != nil {
 		return err

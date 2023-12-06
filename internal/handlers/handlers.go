@@ -182,7 +182,6 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	case "low", "l":
 		liveURL = Bitrates.Low
 	default:
-		fmt.Println("LiveURL: ", Bitrates.Auto)
 		liveURL = Bitrates.Auto
 	}
 	// quote url as it will be passed as a query parameter

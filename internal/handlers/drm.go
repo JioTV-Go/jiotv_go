@@ -63,7 +63,6 @@ func LiveMpdHandler(c *fiber.Ctx) error {
 			"message": err,
 		})
 	}
-	fmt.Println("deb channel:", tv_url)
 	tv_url = strings.Replace(tv_url, "https://jiotvmblive.cdn.jio.com", "", 1)
 	return c.Render("views/flow_player_drm", fiber.Map{
 		"play_url": tv_url,
@@ -114,7 +113,6 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 
 	// Get the cookies from the response
 	cookies := resp.Header.Peek("Set-Cookie")
-	fmt.Println("Cookie:", string(cookies))
 
 	// Set the cookies in the request
 	c.Request().Header.Set("Cookie", string(cookies))
@@ -127,7 +125,6 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 			"message": err,
 		})
 	}
-	fmt.Println(decoded_url)
 	// params := strings.Split(decoded_url, "?")[1]
 	// // set params as cookies as JioTV uses cookies to authenticate
 	// cred_cookie := strings.Split(params, "__hdnea__=")[1]
@@ -213,7 +210,6 @@ func BpkProxyHandler(c *fiber.Ctx) error {
 	if url[len(url)-1:] == "?" {
 		url = url[:len(url)-1]
 	}
-	fmt.Println("deb Path:", url)
 
 	if err := proxy.Do(c, url, TV.Client); err != nil {
 		return err
@@ -231,8 +227,6 @@ func BpkProxyHandler(c *fiber.Ctx) error {
 		
 		// Modify Set-Cookie header
 		c.Response().Header.SetBytesV("Set-Cookie", cookies)
-
-		fmt.Println("deb Cookies:", string(cookies))
 	}
 
 	return nil
