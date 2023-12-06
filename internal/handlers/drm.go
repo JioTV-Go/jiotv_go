@@ -1,21 +1,14 @@
 package handlers
 
 import (
-	// "bytes"
 	"bytes"
 	"fmt"
 	"time"
-
-	// "regexp"
-	// "strconv"
 	"strings"
-	// "time"
 
 	"github.com/rabilrbl/jiotv_go/v2/pkg/secureurl"
 	"github.com/rabilrbl/jiotv_go/v2/pkg/utils"
 	"github.com/valyala/fasthttp"
-
-	// "github.com/valyala/fasthttp"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/proxy"
@@ -38,15 +31,7 @@ func LiveMpdHandler(c *fiber.Ctx) error {
 			"message": err,
 		})
 	}
-	
-	
-	// tv_url, err := secureurl.EncryptURL(liveResult.Mpd.Bitrates.Auto)
-	// if err != nil {
-	// 	utils.Log.Panicln(err)
-	// 	return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-	// 		"message": err,
-	// 	})
-	// }
+
 	var tv_url string
 	switch quality {
 	case "high", "h":
@@ -58,15 +43,7 @@ func LiveMpdHandler(c *fiber.Ctx) error {
 	default:
 		tv_url = liveResult.Mpd.Bitrates.Auto
 	}
-		
-	
-	// Send the response
-	// return c.JSON(
-	// 	fiber.Map{
-	// 		"result": liveResult.Mpd,
-	// 		"key":	"/drm?auth=" + enc_key + "&channel=" + tv_url + "&channel_id=" + channelID,
-	// 	},
-	// )
+
 	channel, err := secureurl.EncryptURL(tv_url)
 	if err != nil {
 		utils.Log.Panicln(err)
@@ -74,6 +51,7 @@ func LiveMpdHandler(c *fiber.Ctx) error {
 			"message": err,
 		})
 	}
+
 	tv_url = strings.Replace(tv_url, "https://jiotvmblive.cdn.jio.com", "", 1)
 	return c.Render("views/flow_player_drm", fiber.Map{
 		"play_url": tv_url,
@@ -136,31 +114,6 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 			"message": err,
 		})
 	}
-	// params := strings.Split(decoded_url, "?")[1]
-	// // set params as cookies as JioTV uses cookies to authenticate
-	// cred_cookie := strings.Split(params, "__hdnea__=")[1]
-
-	// del_regex := `\/bpk-tv\/[^\/]+\/WDVLive`
-	// re := regexp.MustCompile(del_regex)
-
-	// cred_cookie = re.ReplaceAllString(cred_cookie, "")
-
-	// exp_regex := `exp=([0-9]+)`
-	// re = regexp.MustCompile(exp_regex)
-	// match := re.FindStringSubmatch(cred_cookie)
-	// expValue := match[1]
-	// expUnix, _ := strconv.ParseInt(expValue, 10, 64)
-	// expTime := time.Unix(expUnix, 0).UTC()
-	// expFormatted := expTime.Format("Mon, 02 Jan 2006 15:04:05 GMT")
-	// fmt.Println("Exp value:", expFormatted)
-
-	// fmt.Println(cred_cookie)
-	// c.Request().Header.SetCookie("__hdnea__", cred_cookie)
-	// c.Request().Header.SetCookie("Domain", "jiotvmblive.cdn.jio.com")
-	// c.Request().Header.SetCookie("Path", "/")
-	// c.Request().Header.SetCookie("Expires", expFormatted)
-	// c.Request().Header.SetCookie("SameSite", "None; Secure")
-
 	
 	// Add headers to the request
 	c.Request().Header.Set("accesstoken", TV.AccessToken)
@@ -205,16 +158,6 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 func BpkProxyHandler(c *fiber.Ctx) error {
 	c.Request().Header.Set("Host", "jiotvmblive.cdn.jio.com")
 	c.Request().Header.Set("User-Agent", "plaYtv/7.1.3 (Linux;Android 13) ExoPlayerLib/2.11.7")
-	
-	// Delete headers
-	// delete_headers := []string{"Accept", "Sec-Fetch-Dest", "Sec-Fetch-Mode", "Sec-Fetch-Site", "Sec-Fetch-User", "Upgrade-Insecure-Requests", "Accept-Language"}
-	
-	// for _, header := range delete_headers {
-	// 	c.Request().Header.Del(header)
-	// }
-	
-	// Print ALL request headers
-	utils.Log.Println("Request headers:", c.Request().Header.String())
 	
 	// Request path with query params
 	url := "https://jiotvmblive.cdn.jio.com" + c.Path() + "?" + string(c.Request().URI().QueryString())
