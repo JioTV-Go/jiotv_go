@@ -476,13 +476,25 @@ func FileExists(filename string) bool {
 	}
 }
 
+// GenerateCurrentTime generates current time in YYYYMMDDTHHMMSS format
 func GenerateCurrentTime() string {
 	currentTime := time.Now().UTC().Format("20060102T150405")
 	return currentTime
 }
 
+// GenerateDate generates date in YYYYMMDD format
 func GenerateDate() string {
 	// 20231205
 	currentTime := time.Now().UTC().Format("20060102")
 	return currentTime
+}
+
+// ContainsString checks if item string is present in slice
+func ContainsString(item string, slice []string) bool {
+	for _, s := range slice {
+		if s == item {
+			return true
+		}
+	}
+	return false
 }
