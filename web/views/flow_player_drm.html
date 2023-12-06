@@ -3,89 +3,63 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>F1</title>
-    <!-- <meta name="referrer" content="no-referrer" /> -->
-    <script src="https://cdn.jsdelivr.net/gh/clappr/clappr@latest/dist/clappr.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/clappr/dash-shaka-playback@latest/dist/dash-shaka-playback.js"></script>
-    <script
-      type="text/javascript"
-      src="https://cdn.jsdelivr.net/gh/clappr/clappr-level-selector-plugin@latest/dist/level-selector.min.js"
-    ></script>
-    <script
-      type="text/javascript"
-      src="https://cdn.jsdelivr.net/npm/clappr-pip-plugin@latest/dist/clappr-pip-plugin.js"
-    ></script>
-    <script type="text/javascript">
-      const initPlayer = (source, options) => {
-        var player = new Clappr.Player({
-          source: source,
-          autoplay: true,
-          width: "100%",
-          height: "540",
-          plugins: [DashShakaPlayback, LevelSelector, ClapprPIPPlugin],
-          shakaConfiguration: {
-            streaming: {
-              rebufferingGoal: 15,
-            },
-          },
-          shakaOnBeforeLoad: function (player) {
-              player.configure(options);
-              // player
-              // .getNetworkingEngine()
-              // .registerRequestFilter(function (type, request, context) {
-              //     request.headers["Content-Type"] = "application/octet-stream";
-              //   });
-          },
-          events: {
-            onReady: function () {
-              if (Clappr.Browser.isMobile) {
-                var plugin = this.getPlugin("click_to_pause");
-                plugin && plugin.disable();
-              }
-            },
-          },
-          parentId: "#player",
-        });
-        player.on(Clappr.Events.PLAYER_FULLSCREEN, function (isFullscreen) {
-          // rotate to landscape on mobile devices when in fullscreen
-          if (isFullscreen) {
-            if (screen.orientation) {
-              screen.orientation.lock("landscape");
-            } else if (screen.mozLockOrientation) {
-              screen.mozLockOrientation("landscape");
-            } else if (screen.msLockOrientation) {
-              screen.msLockOrientation("landscape");
-            } else if (screen.lockOrientation) {
-              screen.lockOrientation("landscape");
-            }
-          } else {
-            if (screen.orientation) {
-              screen.orientation.unlock();
-            } else if (screen.mozUnlockOrientation) {
-              screen.mozUnlockOrientation();
-            } else if (screen.msUnlockOrientation) {
-              screen.msUnlockOrientation();
-            } else if (screen.unlockOrientation) {
-              screen.unlockOrientation();
-            }
-          }
-        });
-      };
-    </script>
+    <title>JioTV Go</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: black;
+        overflow-y: hidden;
+      }
+    </style>
+    <link rel="stylesheet" href="/static/flowplayer.css" />
+    <script src="/static/flowplayer.min.js"></script>
+    <script src="https://cdn.flowplayer.com/releases/native/3/stable/plugins/dash.min.js"></script>
+    <script src="/static/qsel.min.js"></script>
+    <script src="/static/keyboard.min.js"></script>
+    <script src="https://cdn.flowplayer.com/releases/native/3/stable/plugins/drm.min.js"></script>
   </head>
+
   <body>
-    <div id="player"></div>
+    <div id="jiotv_go_player"></div>
     <script>
-      initPlayer(
-        "{{ .play_url }}",
-        {
-          drm: {
-          servers: {
-            "com.widevine.alpha": "{{ .license_url }}",
+      var player = flowplayer("#jiotv_go_player", {
+        src: [
+          {
+            src: "{{ .play_url }}",
+            type: "application/dash+xml",
+            drm: {
+              [flowplayer.drm.WIDEVINE]: {
+                [flowplayer.drm.LICENSE_SERVER]: "{{ .license_url }}",
+              },
+            },
           },
-        },
+        ],
+        auto_orient: true,
+        live: true,
+        seekable: false,
+        autplay: flowplayer.autoplay.AUDIO_REQUIRED,
+        qsel: {},
+        ui: flowplayer.ui.USE_THIN_CONTROLBAR,
+      });
+      player.on(flowplayer.events.FULLSCREEN_ENTER, (e) => {
+        // rotate to landscape on mobile devices
+        if (screen.orientation) {
+          screen.orientation.lock("landscape").catch((e) => {
+            if (e.name === "NotSupportedError") {
+              // ignore
+            } else {
+              console.error(e);
+            }
+          });
         }
-      );
+      });
+      player.on(flowplayer.events.FULLSCREEN_EXIT, (e) => {
+        // release orientation lock on mobile devices
+        if (screen.orientation) {
+          screen.orientation.unlock();
+        }
+      });
     </script>
   </body>
 </html>
