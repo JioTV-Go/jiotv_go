@@ -19,7 +19,7 @@ func CORS() fiber.Handler {
 			}
 		}
 		c.Set("Access-Control-Allow-Origin", "*")
-		c.Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET")
+		c.Set("Access-Control-Allow-Methods", "GET, POST, HEAD, OPTIONS")
 
 		// handle preflight requests
 		if c.Method() == "OPTIONS" {
