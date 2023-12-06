@@ -654,3 +654,7 @@ func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) {
 		go utils.ScheduleFunctionCall(func() { RefreshTokenIfExpired(credentials) }, thresholdTime)
 	}
 }
+
+func DASHTimeHandler(c *fiber.Ctx) error {
+	return c.SendString(time.Now().UTC().Format("2006-01-02T15:04:05.000Z"))
+}

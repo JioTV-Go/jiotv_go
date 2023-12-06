@@ -100,6 +100,7 @@ func main() {
 	app.Get("/jtvposter/:date/:file", handlers.PosterHandler)
 	app.Get("/mpd/:channelID", handlers.LiveMpdHandler)
 	app.Post("/drm", handlers.DRMKeyHandler)
+	app.Get("/dashtime", handlers.DASHTimeHandler)
 
 	addr := "localhost:5001"
 
