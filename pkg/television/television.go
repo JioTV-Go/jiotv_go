@@ -3,15 +3,22 @@ package television
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/valyala/fasthttp"
 
+	"github.com/rabilrbl/jiotv_go/v2/pkg/secureurl"
 	"github.com/rabilrbl/jiotv_go/v2/pkg/utils"
 )
 
 const (
 	// URL for fetching channels from JioTV API
 	CHANNELS_API_URL = "https://jiotvapi.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?langId=6&os=android&devicetype=phone&usertype=JIO&version=315&langId=6"
+)
+
+var (
+	// DisableTSHandler is used to serve .ts files directly from JioTV Servers
+	DisableTSHandler = os.Getenv("JIOTV_DISABLE_TS_HANDLER") == "true"
 )
 
 // New function creates a new Television instance with the provided credentials
@@ -224,4 +231,46 @@ func FilterChannels(channels []Channel, language, category int) []Channel {
 		}
 	}
 	return filteredChannels
+}
+
+func ReplaceM3U8(baseUrl []byte, match []byte, params string, channel_id string) []byte {
+	coded_url, err := secureurl.EncryptURL(string(baseUrl) + string(match) + "?" + params)
+	if err != nil {
+		utils.Log.Println(err)
+		return nil
+	}
+	return []byte("/render.m3u8?auth=" + coded_url + "&channel_key_id=" + channel_id)
+}
+
+func ReplaceTS(baseUrl []byte, match []byte, params string) []byte {
+	if DisableTSHandler {
+		return []byte(string(baseUrl) + string(match) + "?" + params)
+	}
+	coded_url, err := secureurl.EncryptURL(string(baseUrl) + string(match) + "?" + params)
+	if err != nil {
+		utils.Log.Println(err)
+		return nil
+	}
+	return []byte("/render.ts?auth=" + coded_url)
+}
+
+func ReplaceAAC(baseUrl []byte, match []byte, params string) []byte {
+	if DisableTSHandler {
+		return []byte(string(baseUrl) + string(match) + "?" + params)
+	}
+	coded_url, err := secureurl.EncryptURL(string(baseUrl) + string(match) + "?" + params)
+	if err != nil {
+		utils.Log.Println(err)
+		return nil
+	}
+	return []byte("/render.ts?auth=" + coded_url)
+}
+
+func ReplaceKey(baseUrl []byte, match []byte, params string, channel_id string) []byte {
+	coded_url, err := secureurl.EncryptURL(string(match) + "?" + params)
+	if err != nil {
+		utils.Log.Println(err)
+		return nil
+	}
+	return []byte("/render.key?auth=" + coded_url + "&channel_key_id=" + channel_id)
 }

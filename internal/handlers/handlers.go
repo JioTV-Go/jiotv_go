@@ -22,18 +22,16 @@ var (
 	DisableTSHandler bool
 	isLogoutDisabled bool
 	Title            string
-	EnableDRM		 bool
-	SONY_LIST		= []string{"154", "155", "162", "289", "291", "471", "474", "476", "483", "514", "524", "525", "697", "872", "873", "874", "891", "892", "1146", "1393", "1772", "1773", "1774", "1775"}
+	EnableDRM        bool
+	SONY_LIST        = []string{"154", "155", "162", "289", "291", "471", "474", "476", "483", "514", "524", "525", "697", "872", "873", "874", "891", "892", "1146", "1393", "1772", "1773", "1774", "1775"}
 )
 
 const (
 	REFRESH_TOKEN_URL = "https://auth.media.jio.com/tokenservice/apis/v1/refreshtoken?langId=6"
- 
 )
 
 // Init initializes the necessary operations required for the handlers to work.
 func Init() {
-	DisableTSHandler = os.Getenv("JIOTV_DISABLE_TS_HANDLER") == "true"
 	isLogoutDisabled = os.Getenv("JIOTV_LOGOUT") == "false"
 	EnableDRM = os.Getenv("JIOTV_DRM") == "true"
 	if os.Getenv("JIOTV_TITLE") != "" {
@@ -220,12 +218,12 @@ func RenderHandler(c *fiber.Ctx) error {
 	renderResult, statusCode := TV.Render(decoded_url)
 	// baseUrl is the part of the url excluding suffix file.m3u8 and params is the part of the url after the suffix
 	split_url_by_params := strings.Split(decoded_url, "?")
-	baseUrl := split_url_by_params[0]
+	baseStringUrl := split_url_by_params[0]
 	// Pattern to match file names ending with .m3u8
 	pattern := `[a-z0-9=\_\-A-Z]*\.m3u8`
 	re := regexp.MustCompile(pattern)
 	// Add baseUrl to all the file names ending with .m3u8
-	baseUrl = re.ReplaceAllString(baseUrl, "")
+	baseUrl := []byte(re.ReplaceAllString(baseStringUrl, ""))
 	params := split_url_by_params[1]
 
 	// replacer replaces all the file names ending with .m3u8 and .ts with our own server URLs
@@ -233,32 +231,11 @@ func RenderHandler(c *fiber.Ctx) error {
 	replacer := func(match []byte) []byte {
 		switch {
 		case bytes.HasSuffix(match, []byte(".m3u8")):
-			coded_url, err := secureurl.EncryptURL(baseUrl + string(match) + "?" + params)
-			if err != nil {
-				utils.Log.Println(err)
-				return nil
-			}
-			return []byte("/render.m3u8?auth=" + coded_url + "&channel_key_id=" + channel_id)
+			return television.ReplaceM3U8(baseUrl, match, params, channel_id)
 		case bytes.HasSuffix(match, []byte(".ts")):
-			if DisableTSHandler {
-				return []byte(baseUrl + string(match) + "?" + params)
-			}
-			coded_url, err := secureurl.EncryptURL(baseUrl + string(match) + "?" + params)
-			if err != nil {
-				utils.Log.Println(err)
-				return nil
-			}
-			return []byte("/render.ts?auth=" + coded_url)
+			return television.ReplaceTS(baseUrl, match, params)
 		case bytes.HasSuffix(match, []byte(".aac")):
-			if DisableTSHandler {
-				return []byte(baseUrl + string(match) + "?" + params)
-			}
-			coded_url, err := secureurl.EncryptURL(baseUrl + string(match) + "?" + params)
-			if err != nil {
-				utils.Log.Println(err)
-				return nil
-			}
-			return []byte("/render.ts?auth=" + coded_url)
+			return television.ReplaceAAC(baseUrl, match, params)
 		default:
 			return match
 		}
@@ -274,12 +251,7 @@ func RenderHandler(c *fiber.Ctx) error {
 	replacer_key := func(match []byte) []byte {
 		switch {
 		case bytes.HasSuffix(match, []byte(".key")) || bytes.HasSuffix(match, []byte(".pkey")):
-			coded_url, err := secureurl.EncryptURL(string(match) + "?" + params)
-			if err != nil {
-				utils.Log.Println(err)
-				return nil
-			}
-			return []byte("/render.key?auth=" + coded_url + "&channel_key_id=" + channel_id)
+			return television.ReplaceKey(baseUrl, match, params, channel_id)
 		default:
 			return match
 		}
@@ -288,9 +260,10 @@ func RenderHandler(c *fiber.Ctx) error {
 	// Pattern to match URLs ending with .key and .pkey
 	pattern_key := `http[\S]+\.(pkey|key)`
 	re_key := regexp.MustCompile(pattern_key)
+
 	// Execute replacer_key function on renderResult
 	renderResult = re_key.ReplaceAllFunc(renderResult, replacer_key)
-	
+
 	if statusCode != fiber.StatusOK {
 		utils.Log.Println("Error rendering M3U8 file")
 		utils.Log.Println(string(renderResult))
@@ -395,7 +368,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 func PlayHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	quality := c.Query("q")
-	
+
 	var player_url string
 	if !utils.ContainsString(id, SONY_LIST) && EnableDRM {
 		player_url = "/mpd/" + id + "?q=" + quality
@@ -403,7 +376,7 @@ func PlayHandler(c *fiber.Ctx) error {
 		player_url = "/player/" + id + "?q=" + quality
 	}
 	return c.Render("views/play", fiber.Map{
-		"Title":	  Title,
+		"Title":      Title,
 		"player_url": player_url,
 	})
 }
