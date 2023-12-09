@@ -128,7 +128,7 @@ func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
 }
 
 // Render method does HTTP GET request to the provided URL and return the response body
-func (tv *Television) Render(url string) []byte {
+func (tv *Television) Render(url string) ([]byte, int) {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 
@@ -150,7 +150,7 @@ func (tv *Television) Render(url string) []byte {
 
 	buf := resp.Body()
 
-	return buf
+	return buf, resp.StatusCode()
 }
 
 // Channels fetch channels from JioTV API

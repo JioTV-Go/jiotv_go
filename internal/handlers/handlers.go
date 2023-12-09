@@ -203,27 +203,21 @@ func RenderHandler(c *fiber.Ctx) error {
 	auth := c.Query("auth")
 	if auth == "" {
 		utils.Log.Println("Auth not provided")
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Auth not provided",
-		})
+		return fmt.Errorf("auth not provided")
 	}
 	// Channel ID to be used for key rendering
 	channel_id := c.Query("channel_key_id")
 	if channel_id == "" {
 		utils.Log.Println("Channel ID not provided")
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Channel ID not provided",
-		})
+		return fmt.Errorf("channel ID not provided")
 	}
 	// decrypt url
 	decoded_url, err := secureurl.DecryptURL(auth)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"message": err,
-		})
+		return err
 	}
-	renderResult := TV.Render(decoded_url)
+	renderResult, statusCode := TV.Render(decoded_url)
 	// baseUrl is the part of the url excluding suffix file.m3u8 and params is the part of the url after the suffix
 	split_url_by_params := strings.Split(decoded_url, "?")
 	baseUrl := split_url_by_params[0]
@@ -297,7 +291,7 @@ func RenderHandler(c *fiber.Ctx) error {
 	// Execute replacer_key function on renderResult
 	renderResult = re_key.ReplaceAllFunc(renderResult, replacer_key)
 
-	return c.Send(renderResult)
+	return c.Status(statusCode).Send(renderResult)
 }
 
 // RenderKeyHandler requests m3u8 key from JioTV server
@@ -308,9 +302,7 @@ func RenderKeyHandler(c *fiber.Ctx) error {
 	decoded_url, err := secureurl.DecryptURL(auth)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"message": err,
-		})
+		return err
 	}
 
 	// extract params from url
@@ -345,9 +337,7 @@ func RenderTSHandler(c *fiber.Ctx) error {
 	decoded_url, err := secureurl.DecryptURL(auth)
 	if err != nil {
 		utils.Log.Panicln(err)
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"message": err,
-		})
+		return err
 	}
 
 	if err := proxy.Do(c, decoded_url, TV.Client); err != nil {
