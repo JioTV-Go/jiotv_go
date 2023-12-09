@@ -312,8 +312,30 @@ func RenderKeyHandler(c *fiber.Ctx) error {
 			"message": err,
 		})
 	}
-	keyResult, status := TV.RenderKey(decoded_url, channel_id)
-	return c.Status(status).Send(keyResult)
+
+	// extract params from url
+	params := strings.Split(decoded_url, "?")[1]
+
+	// set params as cookies as JioTV uses cookies to authenticate
+	for _, param := range strings.Split(params, "&") {
+		key := strings.Split(param, "=")[0]
+		value := strings.Split(param, "=")[1]
+		c.Request().Header.SetCookie(key, value)
+	}
+
+	// Copy headers from the Television headers map to the request
+	for key, value := range TV.Headers {
+		c.Request().Header.Set(key, value) // Assuming only one value for each header
+	}
+	c.Request().Header.Set("srno", "230203144000")
+	c.Request().Header.Set("ssotoken", TV.SsoToken)
+	c.Request().Header.Set("channelId", channel_id)
+
+	if err := proxy.Do(c, decoded_url, TV.Client); err != nil {
+		return err
+	}
+	c.Response().Header.Del(fiber.HeaderServer)
+	return nil
 }
 
 // RenderTSHandler loads TS file from JioTV server

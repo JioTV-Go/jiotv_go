@@ -10,7 +10,7 @@ type Television struct {
 	SsoToken    string
 	Crm         string
 	UniqueID    string
-	headers     map[string]string
+	Headers     map[string]string
 	Client      *fasthttp.Client
 }
 
@@ -48,22 +48,22 @@ type MPD struct {
 
 // LiveURLOutput represents Response of live stream URL request to JioTV API
 type LiveURLOutput struct {
-    SonyVodStitchAdsCpCustomerID struct {
-        Midroll   string `json:"midroll"`
-        Postroll  string `json:"postroll"`
-        Preroll   string `json:"preroll"`
-    } `json:"sonyVodStitchAdsCpCustomerID"`
-    VmapURL string `json:"vmapUrl"`
-    Bitrates Bitrates `json:"bitrates"`
-    Code        int     `json:"code"`
-    ContentID   float64 `json:"contentId"`
-    CurrentTime float64 `json:"currentTime"`
-    EndTime     float64 `json:"endTime"`
-    Message     string  `json:"message"`
-    Result      string  `json:"result"`
-    StartTime   float64 `json:"startTime"`
-    VodStitch   bool    `json:"vodStitch"`
-	Mpd      MPD      `json:"mpd"`
+	SonyVodStitchAdsCpCustomerID struct {
+		Midroll  string `json:"midroll"`
+		Postroll string `json:"postroll"`
+		Preroll  string `json:"preroll"`
+	} `json:"sonyVodStitchAdsCpCustomerID"`
+	VmapURL     string   `json:"vmapUrl"`
+	Bitrates    Bitrates `json:"bitrates"`
+	Code        int      `json:"code"`
+	ContentID   float64  `json:"contentId"`
+	CurrentTime float64  `json:"currentTime"`
+	EndTime     float64  `json:"endTime"`
+	Message     string   `json:"message"`
+	Result      string   `json:"result"`
+	StartTime   float64  `json:"startTime"`
+	VodStitch   bool     `json:"vodStitch"`
+	Mpd         MPD      `json:"mpd"`
 }
 
 // CategoryMap represents Categories for channels

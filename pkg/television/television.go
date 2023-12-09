@@ -3,7 +3,6 @@ package television
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 
 	"github.com/valyala/fasthttp"
 
@@ -56,7 +55,7 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 		SsoToken:    credentials.SSOToken,
 		Crm:         credentials.CRM,
 		UniqueID:    credentials.UniqueID,
-		headers:     headers,
+		Headers:     headers,
 		Client:      client,
 	}
 }
@@ -75,7 +74,7 @@ func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
 	defer fasthttp.ReleaseRequest(req)
 
 	// Copy headers from the Television headers map to the request
-	for key, value := range tv.headers {
+	for key, value := range tv.Headers {
 		req.Header.Set(key, value)
 	}
 
@@ -137,7 +136,7 @@ func (tv *Television) Render(url string) []byte {
 	req.Header.SetMethod("GET")
 
 	// Copy headers from the Television headers map to the request
-	for key, value := range tv.headers {
+	for key, value := range tv.Headers {
 		req.Header.Set(key, value)
 	}
 
@@ -152,46 +151,6 @@ func (tv *Television) Render(url string) []byte {
 	buf := resp.Body()
 
 	return buf
-}
-
-// RenderKey fetches the key for the provided channel ID
-// URL is the URL of the key from the Original m3u8 file from JioTV
-func (tv *Television) RenderKey(url, channelID string) ([]byte, int) {
-	// extract params from url
-	params := strings.Split(url, "?")[1]
-
-	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
-
-	req.SetRequestURI(url)
-	req.Header.SetMethod("GET")
-
-	// set params as cookies as JioTV uses cookies to authenticate
-	for _, param := range strings.Split(params, "&") {
-		key := strings.Split(param, "=")[0]
-		value := strings.Split(param, "=")[1]
-		req.Header.SetCookie(key, value)
-	}
-
-	// Copy headers from the Television headers map to the request
-	for key, value := range tv.headers {
-		req.Header.Set(key, value) // Assuming only one value for each header
-	}
-	req.Header.Set("srno", "230203144000")
-	req.Header.Set("ssotoken", tv.SsoToken)
-	req.Header.Set("channelId", channelID)
-
-	resp := fasthttp.AcquireResponse()
-	defer fasthttp.ReleaseResponse(resp)
-
-	// Perform the HTTP GET request
-	if err := tv.Client.Do(req, resp); err != nil {
-		utils.Log.Panic(err)
-	}
-
-	buf := resp.Body()
-
-	return buf, resp.StatusCode()
 }
 
 // Channels fetch channels from JioTV API
