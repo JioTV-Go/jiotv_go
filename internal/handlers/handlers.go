@@ -290,6 +290,11 @@ func RenderHandler(c *fiber.Ctx) error {
 	re_key := regexp.MustCompile(pattern_key)
 	// Execute replacer_key function on renderResult
 	renderResult = re_key.ReplaceAllFunc(renderResult, replacer_key)
+	
+	if statusCode != fiber.StatusOK {
+		utils.Log.Println("Error rendering M3U8 file")
+		utils.Log.Println(string(renderResult))
+	}
 
 	return c.Status(statusCode).Send(renderResult)
 }
