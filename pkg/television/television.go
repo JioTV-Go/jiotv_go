@@ -266,7 +266,7 @@ func ReplaceAAC(baseUrl []byte, match []byte, params string) []byte {
 	return []byte("/render.ts?auth=" + coded_url)
 }
 
-func ReplaceKey(baseUrl []byte, match []byte, params string, channel_id string) []byte {
+func ReplaceKey(match []byte, params string, channel_id string) []byte {
 	coded_url, err := secureurl.EncryptURL(string(match) + "?" + params)
 	if err != nil {
 		utils.Log.Println(err)
