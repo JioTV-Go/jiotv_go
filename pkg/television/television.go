@@ -233,7 +233,7 @@ func FilterChannels(channels []Channel, language, category int) []Channel {
 	return filteredChannels
 }
 
-func ReplaceM3U8(baseUrl []byte, match []byte, params string, channel_id string) []byte {
+func ReplaceM3U8(baseUrl, match []byte, params, channel_id string) []byte {
 	coded_url, err := secureurl.EncryptURL(string(baseUrl) + string(match) + "?" + params)
 	if err != nil {
 		utils.Log.Println(err)
@@ -242,7 +242,7 @@ func ReplaceM3U8(baseUrl []byte, match []byte, params string, channel_id string)
 	return []byte("/render.m3u8?auth=" + coded_url + "&channel_key_id=" + channel_id)
 }
 
-func ReplaceTS(baseUrl []byte, match []byte, params string) []byte {
+func ReplaceTS(baseUrl, match []byte, params string) []byte {
 	if DisableTSHandler {
 		return []byte(string(baseUrl) + string(match) + "?" + params)
 	}
@@ -254,7 +254,7 @@ func ReplaceTS(baseUrl []byte, match []byte, params string) []byte {
 	return []byte("/render.ts?auth=" + coded_url)
 }
 
-func ReplaceAAC(baseUrl []byte, match []byte, params string) []byte {
+func ReplaceAAC(baseUrl, match []byte, params string) []byte {
 	if DisableTSHandler {
 		return []byte(string(baseUrl) + string(match) + "?" + params)
 	}
@@ -266,7 +266,7 @@ func ReplaceAAC(baseUrl []byte, match []byte, params string) []byte {
 	return []byte("/render.ts?auth=" + coded_url)
 }
 
-func ReplaceKey(match []byte, params string, channel_id string) []byte {
+func ReplaceKey(match []byte, params, channel_id string) []byte {
 	coded_url, err := secureurl.EncryptURL(string(match) + "?" + params)
 	if err != nil {
 		utils.Log.Println(err)
