@@ -249,7 +249,7 @@ func RenderHandler(c *fiber.Ctx) error {
 	replacer_key := func(match []byte) []byte {
 		switch {
 		case bytes.HasSuffix(match, []byte(".key")) || bytes.HasSuffix(match, []byte(".pkey")):
-			return television.ReplaceKey(baseUrl, match, params, channel_id)
+			return television.ReplaceKey(match, params, channel_id)
 		default:
 			return match
 		}
