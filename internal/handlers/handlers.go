@@ -370,12 +370,12 @@ func ChannelsHandler(c *fiber.Ctx) error {
 		for _, channel := range apiResponse.Result {
 			var channelURL string
 			if quality != "" {
-				channelURL = fmt.Sprintf("%s/live/%s/%d.m3u8", hostURL, quality, channel.ID)
+				channelURL = fmt.Sprintf("%s/live/%s/%s.m3u8", hostURL, quality, channel.ID)
 			} else {
-				channelURL = fmt.Sprintf("%s/live/%d.m3u8", hostURL, channel.ID)
+				channelURL = fmt.Sprintf("%s/live/%s.m3u8", hostURL, channel.ID)
 			}
 			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
-			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-id=%d tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
+			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-id=%s tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
 				channel.ID, channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], television.CategoryMap[channel.Category], channel.Name, channelURL)
 		}
 
@@ -386,7 +386,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	}
 
 	for i, channel := range apiResponse.Result {
-		apiResponse.Result[i].URL = fmt.Sprintf("%s/live/%d", hostURL, channel.ID)
+		apiResponse.Result[i].URL = fmt.Sprintf("%s/live/%s", hostURL, channel.ID)
 	}
 
 	return c.JSON(apiResponse)
@@ -482,7 +482,6 @@ func DASHTimeHandler(c *fiber.Ctx) error {
 // sonylivRedirect redirects to sonyliv channels
 func sonyLivRedirect(c *fiber.Ctx, liveResult *television.LiveURLOutput) error {
 	ch_url := liveResult.Bitrates.Auto
-		fmt.Println(ch_url)
 		// remove origin from url
 		cho_url, err := url.Parse(ch_url)
 		if err != nil {
