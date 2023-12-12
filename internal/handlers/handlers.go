@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"fmt"
+	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -137,9 +138,19 @@ func LiveHandler(c *fiber.Ctx) error {
 			})
 		}
 	}
-	// if id[:2] == "sl" {
-	// 	return c.Redirect(liveResult.Bitrates.Auto, fiber.StatusFound)
-	// }
+	if id[:2] == "sl" {
+		ch_url := liveResult.Bitrates.Auto
+		fmt.Println(ch_url)
+		// remove origin from url
+		cho_url, err := url.Parse(ch_url)
+		if err != nil {
+			utils.Log.Println(err)
+			return err
+		}
+
+		// remove origin from url
+		return c.Redirect(cho_url.Path+"?"+cho_url.RawQuery, fiber.StatusFound)
+	}
 	// quote url as it will be passed as a query parameter
 	// It is required to quote the url as it may contain special characters like ? and &
 	coded_url, err := secureurl.EncryptURL(liveResult.Bitrates.Auto)
@@ -169,12 +180,16 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 		}
 	}
 	if id[:2] == "sl" {
-		enc_url, err := secureurl.EncryptURL(Bitrates.Auto)
+		ch_url := Bitrates.Auto
+		// remove origin from url
+		cho_url, err := url.Parse(ch_url)
 		if err != nil {
 			utils.Log.Println(err)
 			return err
 		}
-		return c.Redirect("/render.m3u8?auth="+enc_url+"&channel_key_id="+id, fiber.StatusFound)
+
+		// remove origin from url
+		return c.Redirect(cho_url.RawPath, fiber.StatusFound)
 	}
 	// Channels with following IDs output audio only m3u8 when quality level is enforced
 	if id == "1349" || id == "1322" {
@@ -279,6 +294,30 @@ func RenderHandler(c *fiber.Ctx) error {
 	}
 
 	return c.Status(statusCode).Send(renderResult)
+}
+
+// RenderSLHandler handles M3U8 file for modification
+// This handler shall replace SonyLiv server URLs with our own server URLs
+func SLHandler(c *fiber.Ctx) error {
+	// Request path with query params
+	url := "https://lin-gd-001-cf.slivcdn.com" + c.Path() + "?" + string(c.Request().URI().QueryString())
+	if url[len(url)-1:] == "?" {
+		url = url[:len(url)-1]
+	}
+	// Delete all browser headers
+	c.Request().Header.Del("Accept")
+	c.Request().Header.Del("Accept-Encoding")
+	c.Request().Header.Del("Accept-Language")
+	c.Request().Header.Del("Origin")
+	c.Request().Header.Del("Referer")
+	if err := proxy.Do(c, url, TV.Client); err != nil {
+		return err
+	}
+
+	c.Response().Header.Del(fiber.HeaderServer)
+	c.Response().Header.Add("Access-Control-Allow-Origin", "*")
+
+	return nil
 }
 
 // RenderKeyHandler requests m3u8 key from JioTV server

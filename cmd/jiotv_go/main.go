@@ -75,6 +75,9 @@ func main() {
 	// Handle all /bpk-tv/* routes
 	app.Use("/bpk-tv/", handlers.BpkProxyHandler)
 
+	// Handle all /out/* routes
+	app.Use("/out/", handlers.SLHandler)
+
 	// Initialize the television object
 	handlers.Init()
 
