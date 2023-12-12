@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	key []byte
+	key                  []byte
 	disableUrlEncryption bool
 )
 

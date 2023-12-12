@@ -8,15 +8,15 @@ import (
 
 // Channel XML tag structure for the EPG
 type Channel struct {
-	XMLName xml.Name `xml:"channel"`	// XML tag name
-	ID      int      `xml:"id,attr"`	// ID is attribute of channel tag
-	Display string   `xml:"display-name"`	// Display name of the channel
+	XMLName xml.Name `xml:"channel"`      // XML tag name
+	ID      int      `xml:"id,attr"`      // ID is attribute of channel tag
+	Display string   `xml:"display-name"` // Display name of the channel
 }
 
 // Icon XML tag for Programme XML tag in EPG
 type Icon struct {
-	XMLName xml.Name `xml:"icon"`	// XML tag name
-	Src     string   `xml:"src,attr"`	// Src is attribute of the icon tag
+	XMLName xml.Name `xml:"icon"`     // XML tag name
+	Src     string   `xml:"src,attr"` // Src is attribute of the icon tag
 }
 
 // Title XML tag for Programme XML tag in EPG
@@ -37,49 +37,49 @@ type Desc struct {
 // Programme XML tag structure for EPG
 // Each programme tag represents a show being aired on a channel
 type Programme struct {
-	XMLName xml.Name `xml:"programme"` // XML tag name
+	XMLName xml.Name `xml:"programme"`    // XML tag name
 	Channel string   `xml:"channel,attr"` // Channel is attribute of programme tag
-	Start   string   `xml:"start,attr"` // Start time of the programme
-	Stop    string   `xml:"stop,attr"`	// Stop time of the programme
-	Title   Title    `xml:"title"`	// Title of the programme
-	Desc    Desc     `xml:"desc"`	// Description of the programme
-	Icon    Icon     `xml:"icon"`	// Icon of the programme
+	Start   string   `xml:"start,attr"`   // Start time of the programme
+	Stop    string   `xml:"stop,attr"`    // Stop time of the programme
+	Title   Title    `xml:"title"`        // Title of the programme
+	Desc    Desc     `xml:"desc"`         // Description of the programme
+	Icon    Icon     `xml:"icon"`         // Icon of the programme
 }
 
 // EPG XML tag structure
 type EPG struct {
-	XMLName     xml.Name    `xml:"tv"` // XML tag name
-	XMLVersion  string      `xml:"version,attr"` // XML version
+	XMLName     xml.Name    `xml:"tv"`            // XML tag name
+	XMLVersion  string      `xml:"version,attr"`  // XML version
 	XMLEncoding string      `xml:"encoding,attr"` // XML encoding
-	Channel     []Channel   `xml:"channel"` // Channel tags
-	Programme   []Programme `xml:"programme"` // Programme tags
+	Channel     []Channel   `xml:"channel"`       // Channel tags
+	Programme   []Programme `xml:"programme"`     // Programme tags
 }
 
 // ChannelObject represents Individual channel detail from JioTV API response
 type ChannelObject struct {
-	ChannelID   int    `json:"channel_id"` // Channel ID
+	ChannelID   int    `json:"channel_id"`   // Channel ID
 	ChannelName string `json:"channel_name"` // Channel name
-	LogoURL     string `json:"logoUrl"`	// Channel logo URL
+	LogoURL     string `json:"logoUrl"`      // Channel logo URL
 }
 
 // ChannelsResponse represents Channel details from JioTV API response
 type ChannelsResponse struct {
-	Channels []ChannelObject `json:"result"` // Channels
-	Code     int             `json:"code"`	// Response code
+	Channels []ChannelObject `json:"result"`  // Channels
+	Code     int             `json:"code"`    // Response code
 	Message  string          `json:"message"` // Response message
 }
 
 // EPGObject represents Individual EPG detail from JioTV EPG API response
 type EPGObject struct {
-	StartEpoch   EpochString `json:"startEpoch"` // Start time of the programme
-	EndEpoch     EpochString `json:"endEpoch"`	// End time of the programme
-	ChannelID    uint16      `json:"channel_id"`	// Channel ID
-	ChannelName  string      `json:"channel_name"`	// Channel name
-	ShowCategory string      `json:"showCategory"`	// Category of the show
-	Description  string      `json:"description"`	// Description of the show
-	Title        string      `json:"showname"`	// Title of the show
-	Thumbnail    string      `json:"episodeThumbnail"`	// Thumbnail of the show
-	Poster       string      `json:"episodePoster"`	// Poster of the show
+	StartEpoch   EpochString `json:"startEpoch"`       // Start time of the programme
+	EndEpoch     EpochString `json:"endEpoch"`         // End time of the programme
+	ChannelID    uint16      `json:"channel_id"`       // Channel ID
+	ChannelName  string      `json:"channel_name"`     // Channel name
+	ShowCategory string      `json:"showCategory"`     // Category of the show
+	Description  string      `json:"description"`      // Description of the show
+	Title        string      `json:"showname"`         // Title of the show
+	Thumbnail    string      `json:"episodeThumbnail"` // Thumbnail of the show
+	Poster       string      `json:"episodePoster"`    // Poster of the show
 }
 
 // EPGResponse represents EPG details from JioTV EPG API response

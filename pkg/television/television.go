@@ -288,7 +288,7 @@ func GetSLChannel(channelID string) (*LiveURLOutput, error) {
 		// If the channel is available in the SONY_CHANNELS map, then return the link
 		result := new(LiveURLOutput)
 
-		channel_url := SONY_CHANNELS[val]		
+		channel_url := SONY_CHANNELS[val]
 
 		// Make a get request to the channel url and store location header in actual_url
 		req := fasthttp.AcquireRequest()

@@ -60,15 +60,15 @@ func Init() {
 	}
 	// setup random time to avoid server load
 	random_hour_bigint, err := rand.Int(rand.Reader, big.NewInt(3))
-    if err != nil {
-        panic(err)
-    }
+	if err != nil {
+		panic(err)
+	}
 	random_min_bigint, err := rand.Int(rand.Reader, big.NewInt(60))
 	if err != nil {
 		panic(err)
 	}
 	random_hour := int(-5 + random_hour_bigint.Int64()) // random number between 1 and 5
-	random_min := int(-30 + random_min_bigint.Int64())    // random number between 0 and 59
+	random_min := int(-30 + random_min_bigint.Int64())  // random number between 0 and 59
 	time_now := time.Now()
 	schedule_time := time.Date(time_now.Year(), time_now.Month(), time_now.Day()+1, random_hour, random_min, 0, 0, time.UTC)
 	utils.Log.Println("Scheduled EPG generation on", schedule_time.Local())
