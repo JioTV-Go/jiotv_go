@@ -314,8 +314,6 @@ func GetSLChannel(channelID string) (*LiveURLOutput, error) {
 	// Check if the channel is available in the SONY_CHANNELS map
 	if val, ok := SONY_JIO_MAP[channelID]; ok {
 		// If the channel is available in the SONY_CHANNELS map, then return the link
-		fmt.Println(val)
-		fmt.Println(SONY_CHANNELS[val])
 		result := new(LiveURLOutput)
 
 		channel_url := SONY_CHANNELS[val]		
