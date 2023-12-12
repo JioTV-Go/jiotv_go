@@ -7,16 +7,16 @@ import (
 	"github.com/rabilrbl/jiotv_go/v2/internal/handlers"
 	"github.com/rabilrbl/jiotv_go/v2/internal/middleware"
 	"github.com/rabilrbl/jiotv_go/v2/pkg/epg"
-	"github.com/rabilrbl/jiotv_go/v2/pkg/utils"
 	"github.com/rabilrbl/jiotv_go/v2/pkg/secureurl"
+	"github.com/rabilrbl/jiotv_go/v2/pkg/utils"
 	"github.com/rabilrbl/jiotv_go/v2/web"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
+	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
-	"github.com/gofiber/fiber/v2/middleware/helmet"
-	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/template/html/v2"
 )
 
@@ -74,6 +74,9 @@ func main() {
 
 	// Handle all /bpk-tv/* routes
 	app.Use("/bpk-tv/", handlers.BpkProxyHandler)
+
+	// Handle all /out/* routes
+	app.Use("/out/", handlers.SLHandler)
 
 	// Initialize the television object
 	handlers.Init()

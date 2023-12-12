@@ -19,7 +19,7 @@ type LoginVerifyOTPRequestBodyData struct {
 	// Mobile number of Jio account
 	MobileNumber string `json:"number" xml:"number" form:"number"`
 	// OTP received on mobile number
-	OTP          string `json:"otp" xml:"otp" form:"otp"`
+	OTP string `json:"otp" xml:"otp" form:"otp"`
 }
 
 // RefreshTokenResponse represents Response body for refresh token request

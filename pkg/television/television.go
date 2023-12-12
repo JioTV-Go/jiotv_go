@@ -1,6 +1,7 @@
 package television
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -69,6 +70,11 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 
 // Live method generates m3u8 link from JioTV API with the provided channel ID
 func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
+	// If channelID starts with sl, then it is a Sony Channel
+	if channelID[:2] == "sl" {
+		return getSLChannel(channelID)
+	}
+
 	formData := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(formData)
 
@@ -206,6 +212,8 @@ func Channels() ChannelsResponse {
 		utils.Log.Panic(err)
 	}
 
+	apiResponse.Result = append(apiResponse.Result, SONY_CHANNELS_API...)
+
 	return apiResponse
 }
 
@@ -273,4 +281,50 @@ func ReplaceKey(match []byte, params, channel_id string) []byte {
 		return nil
 	}
 	return []byte("/render.key?auth=" + coded_url + "&channel_key_id=" + channel_id)
+}
+
+func getSLChannel(channelID string) (*LiveURLOutput, error) {
+	// Check if the channel is available in the SONY_CHANNELS map
+	if val, ok := SONY_JIO_MAP[channelID]; ok {
+		// If the channel is available in the SONY_CHANNELS map, then return the link
+		result := new(LiveURLOutput)
+
+		chu, err := base64.StdEncoding.DecodeString(SONY_CHANNELS[val])
+		if err != nil {
+			utils.Log.Panic(err)
+			return nil, err
+		}
+
+		channel_url := string(chu)
+
+		// Make a get request to the channel url and store location header in actual_url
+		req := fasthttp.AcquireRequest()
+		defer fasthttp.ReleaseRequest(req)
+
+		req.SetRequestURI(channel_url)
+		req.Header.SetMethod("GET")
+
+		resp := fasthttp.AcquireResponse()
+		defer fasthttp.ReleaseResponse(resp)
+
+		// Perform the HTTP GET request
+		if err := utils.GetRequestClient().Do(req, resp); err != nil {
+			utils.Log.Panic(err)
+		}
+
+		if resp.StatusCode() != fasthttp.StatusFound {
+			utils.Log.Panicf("Request failed with status code: %d", resp.StatusCode())
+			utils.Log.Panicln("Response: ", string(resp.Body()))
+		}
+
+		// Store the location header in actual_url
+		actual_url := string(resp.Header.Peek("Location"))
+
+		result.Result = actual_url
+		result.Bitrates.Auto = actual_url
+		return result, nil
+	} else {
+		// If the channel is not available in the SONY_CHANNELS map, then return an error
+		return nil, fmt.Errorf("Channel not found")
+	}
 }

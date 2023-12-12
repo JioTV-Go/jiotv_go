@@ -17,7 +17,13 @@ const (
 // WebEPGHandler responds to requests for EPG data for individual channels.
 func WebEPGHandler(c *fiber.Ctx) error {
 	// Get channel ID from URL
-	channelID, err := strconv.Atoi(c.Params("channelID"))
+	channelID := c.Params("channelID")
+
+	if channelID[:2] == "sl" {
+		channelID = channelID[2:]
+	}
+
+	channelIntID, err := strconv.Atoi(channelID)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid channel ID")
 	}
@@ -28,7 +34,7 @@ func WebEPGHandler(c *fiber.Ctx) error {
 		return fiber.NewError(fiber.StatusBadRequest, "Invalid offset")
 	}
 
-	url := fmt.Sprintf(epg.EPG_URL, offset, channelID)
+	url := fmt.Sprintf(epg.EPG_URL, offset, channelIntID)
 	if err := proxy.Do(c, url, TV.Client); err != nil {
 		return err
 	}

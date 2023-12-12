@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"fmt"
+	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -137,6 +138,9 @@ func LiveHandler(c *fiber.Ctx) error {
 			})
 		}
 	}
+	if id[:2] == "sl" {
+		return sonyLivRedirect(c, liveResult)
+	}
 	// quote url as it will be passed as a query parameter
 	// It is required to quote the url as it may contain special characters like ? and &
 	coded_url, err := secureurl.EncryptURL(liveResult.Bitrates.Auto)
@@ -164,6 +168,9 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 				"message": err,
 			})
 		}
+	}
+	if id[:2] == "sl" {
+		return sonyLivRedirect(c, liveResult)
 	}
 	// Channels with following IDs output audio only m3u8 when quality level is enforced
 	if id == "1349" || id == "1322" {
@@ -270,6 +277,29 @@ func RenderHandler(c *fiber.Ctx) error {
 	return c.Status(statusCode).Send(renderResult)
 }
 
+// SLHandler proxies requests to SonyLiv CDN
+func SLHandler(c *fiber.Ctx) error {
+	// Request path with query params
+	url := "https://lin-gd-001-cf.slivcdn.com" + c.Path() + "?" + string(c.Request().URI().QueryString())
+	if url[len(url)-1:] == "?" {
+		url = url[:len(url)-1]
+	}
+	// Delete all browser headers
+	c.Request().Header.Del("Accept")
+	c.Request().Header.Del("Accept-Encoding")
+	c.Request().Header.Del("Accept-Language")
+	c.Request().Header.Del("Origin")
+	c.Request().Header.Del("Referer")
+	if err := proxy.Do(c, url, TV.Client); err != nil {
+		return err
+	}
+
+	c.Response().Header.Del(fiber.HeaderServer)
+	c.Response().Header.Add("Access-Control-Allow-Origin", "*")
+
+	return nil
+}
+
 // RenderKeyHandler requests m3u8 key from JioTV server
 func RenderKeyHandler(c *fiber.Ctx) error {
 	channel_id := c.Query("channel_key_id")
@@ -339,12 +369,12 @@ func ChannelsHandler(c *fiber.Ctx) error {
 		for _, channel := range apiResponse.Result {
 			var channelURL string
 			if quality != "" {
-				channelURL = fmt.Sprintf("%s/live/%s/%d.m3u8", hostURL, quality, channel.ID)
+				channelURL = fmt.Sprintf("%s/live/%s/%s.m3u8", hostURL, quality, channel.ID)
 			} else {
-				channelURL = fmt.Sprintf("%s/live/%d.m3u8", hostURL, channel.ID)
+				channelURL = fmt.Sprintf("%s/live/%s.m3u8", hostURL, channel.ID)
 			}
 			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
-			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-id=%d tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
+			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-id=%s tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
 				channel.ID, channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], television.CategoryMap[channel.Category], channel.Name, channelURL)
 		}
 
@@ -355,7 +385,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	}
 
 	for i, channel := range apiResponse.Result {
-		apiResponse.Result[i].URL = fmt.Sprintf("%s/live/%d", hostURL, channel.ID)
+		apiResponse.Result[i].URL = fmt.Sprintf("%s/live/%s", hostURL, channel.ID)
 	}
 
 	return c.JSON(apiResponse)
@@ -445,4 +475,19 @@ func EPGHandler(c *fiber.Ctx) error {
 
 func DASHTimeHandler(c *fiber.Ctx) error {
 	return c.SendString(time.Now().UTC().Format("2006-01-02T15:04:05.000Z"))
+}
+
+// sonylivRedirect redirects to sonyliv channels
+func sonyLivRedirect(c *fiber.Ctx, liveResult *television.LiveURLOutput) error {
+	ch_url := liveResult.Bitrates.Auto
+	// remove origin from url
+	cho_url, err := url.Parse(ch_url)
+	if err != nil {
+		utils.Log.Println(err)
+		return err
+	}
+
+	// remove origin from url
+	return c.Redirect(cho_url.Path+"?"+cho_url.RawQuery, fiber.StatusFound)
+
 }
