@@ -1,6 +1,7 @@
 package television
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -71,7 +72,7 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
 	// If channelID starts with sl, then it is a Sony Channel
 	if channelID[:2] == "sl" {
-		return GetSLChannel(channelID)
+		return getSLChannel(channelID)
 	}
 
 	formData := fasthttp.AcquireArgs()
@@ -282,13 +283,19 @@ func ReplaceKey(match []byte, params, channel_id string) []byte {
 	return []byte("/render.key?auth=" + coded_url + "&channel_key_id=" + channel_id)
 }
 
-func GetSLChannel(channelID string) (*LiveURLOutput, error) {
+func getSLChannel(channelID string) (*LiveURLOutput, error) {
 	// Check if the channel is available in the SONY_CHANNELS map
 	if val, ok := SONY_JIO_MAP[channelID]; ok {
 		// If the channel is available in the SONY_CHANNELS map, then return the link
 		result := new(LiveURLOutput)
 
-		channel_url := SONY_CHANNELS[val]
+		chu, err := base64.StdEncoding.DecodeString(SONY_CHANNELS[val])
+		if err != nil {
+			utils.Log.Panic(err)
+			return nil, err
+		}
+
+		channel_url := string(chu)
 
 		// Make a get request to the channel url and store location header in actual_url
 		req := fasthttp.AcquireRequest()
