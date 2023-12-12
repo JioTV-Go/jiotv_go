@@ -139,17 +139,7 @@ func LiveHandler(c *fiber.Ctx) error {
 		}
 	}
 	if id[:2] == "sl" {
-		ch_url := liveResult.Bitrates.Auto
-		fmt.Println(ch_url)
-		// remove origin from url
-		cho_url, err := url.Parse(ch_url)
-		if err != nil {
-			utils.Log.Println(err)
-			return err
-		}
-
-		// remove origin from url
-		return c.Redirect(cho_url.Path+"?"+cho_url.RawQuery, fiber.StatusFound)
+		return sonyLivRedirect(c, liveResult)
 	}
 	// quote url as it will be passed as a query parameter
 	// It is required to quote the url as it may contain special characters like ? and &
@@ -180,16 +170,7 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 		}
 	}
 	if id[:2] == "sl" {
-		ch_url := Bitrates.Auto
-		// remove origin from url
-		cho_url, err := url.Parse(ch_url)
-		if err != nil {
-			utils.Log.Println(err)
-			return err
-		}
-
-		// remove origin from url
-		return c.Redirect(cho_url.RawPath, fiber.StatusFound)
+		return sonyLivRedirect(c, liveResult)
 	}
 	// Channels with following IDs output audio only m3u8 when quality level is enforced
 	if id == "1349" || id == "1322" {
@@ -495,4 +476,21 @@ func EPGHandler(c *fiber.Ctx) error {
 
 func DASHTimeHandler(c *fiber.Ctx) error {
 	return c.SendString(time.Now().UTC().Format("2006-01-02T15:04:05.000Z"))
+}
+
+
+// sonylivRedirect redirects to sonyliv channels
+func sonyLivRedirect(c *fiber.Ctx, liveResult *television.LiveURLOutput) error {
+	ch_url := liveResult.Bitrates.Auto
+		fmt.Println(ch_url)
+		// remove origin from url
+		cho_url, err := url.Parse(ch_url)
+		if err != nil {
+			utils.Log.Println(err)
+			return err
+		}
+
+	// remove origin from url
+	return c.Redirect(cho_url.Path+"?"+cho_url.RawQuery, fiber.StatusFound)
+
 }
