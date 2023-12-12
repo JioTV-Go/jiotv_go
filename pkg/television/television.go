@@ -19,6 +19,36 @@ const (
 var (
 	// DisableTSHandler is used to serve .ts files directly from JioTV Servers
 	DisableTSHandler = os.Getenv("JIOTV_DISABLE_TS_HANDLER") == "true"
+	SONY_CHANNELS = map[string]string{
+		"sonyhd": "https://dai.google.com/linear/hls/event/dBdwOiGaQvy0TA1zOsjV6w/master.m3u8",
+		"sonysabhd": "https://dai.google.com/linear/hls/event/CrTivkDESWqwvUj3zFEYEA/master.m3u8",
+		"sonypal": "https://dai.google.com/linear/hls/event/dhPrGRwDRvuMQtmlzppzQQ/master.m3u8",
+		"sonypixhd": "https://dai.google.com/linear/hls/event/x7rXWd2ERZ2tvyQWPmO1HA/master.m3u8",
+		"sonymaxhd": "https://dai.google.com/linear/hls/event/UcjHNJmCQ1WRlGKlZm73QA/master.m3u8",
+		"sonymax2": "https://dai.google.com/linear/hls/event/MdQ5Zy-PSraOccXu8jflCg/master.m3u8",
+		"sonywah": "https://dai.google.com/linear/hls/event/gX5rCBf6Q7-D5AWY-sovzQ/master.m3u8",
+		"sonyten1hd": "https://dai.google.com/linear/hls/event/wG75n5U8RrOKiFzaWObXbA/master.m3u8",
+		"sonyten2hd": "https://dai.google.com/linear/hls/event/V9h-iyOxRiGp41ppQScDSQ/master.m3u8",
+		"sonyten3hd": "https://dai.google.com/linear/hls/event/ltsCG7TBSCSDmyq0rQtvSA/master.m3u8",
+		"sonyten4hd": "https://dai.google.com/linear/hls/event/smYybI_JToWaHzwoxSE9qA/master.m3u8",
+		"sonyten5hd": "https://dai.google.com/linear/hls/event/Sle_TR8rQIuZHWzshEXYjQ/master.m3u8",
+		"sonybbcearthhd": "https://dai.google.com/linear/hls/event/6bVWYIKGS0CIa-cOpZZJPQ/master.m3u8",
+	}
+	SONY_JIO_MAP = map[string]string{
+		"sl291": "sonyhd",
+		"sl154": "sonysabhd",
+		"sl474": "sonypal",
+		"sl762": "sonypixhd",
+		"sl476": "sonymaxhd",
+		"sl483": "sonymax2",
+		"sl1393": "sonywah",
+		"sl162": "sonyten1hd",
+		"sl891": "sonyten2hd",
+		"sl892": "sonyten3hd",
+		"sl1772": "sonyten4hd",
+		"sl155": "sonyten5hd",
+		"sl852": "sonybbcearthhd",
+	}
 )
 
 // New function creates a new Television instance with the provided credentials
@@ -69,6 +99,11 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 
 // Live method generates m3u8 link from JioTV API with the provided channel ID
 func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
+	// If channelID starts with sl, then it is a Sony Channel
+	if channelID[:2] == "sl" {
+		return GetSLChannel(channelID)
+	}
+
 	formData := fasthttp.AcquireArgs()
 	defer fasthttp.ReleaseArgs(formData)
 
@@ -273,4 +308,23 @@ func ReplaceKey(match []byte, params, channel_id string) []byte {
 		return nil
 	}
 	return []byte("/render.key?auth=" + coded_url + "&channel_key_id=" + channel_id)
+}
+
+func GetSLChannel(channelID string) (*LiveURLOutput, error) {
+	// Check if the channel is available in the SONY_CHANNELS map
+	if val, ok := SONY_JIO_MAP[channelID]; ok {
+		// If the channel is available in the SONY_CHANNELS map, then return the link
+		fmt.Println(val)
+		fmt.Println(SONY_CHANNELS[val])
+		result := new(LiveURLOutput)
+
+		channel_url := SONY_CHANNELS[val]		
+
+		result.Result = channel_url
+		result.Bitrates.Auto = channel_url
+		return result, nil
+	} else {
+		// If the channel is not available in the SONY_CHANNELS map, then return an error
+		return nil, fmt.Errorf("Channel not found")
+	}
 }
