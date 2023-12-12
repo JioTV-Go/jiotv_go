@@ -320,8 +320,31 @@ func GetSLChannel(channelID string) (*LiveURLOutput, error) {
 
 		channel_url := SONY_CHANNELS[val]		
 
-		result.Result = channel_url
-		result.Bitrates.Auto = channel_url
+		// Make a get request to the channel url and store location header in actual_url
+		req := fasthttp.AcquireRequest()
+		defer fasthttp.ReleaseRequest(req)
+
+		req.SetRequestURI(channel_url)
+		req.Header.SetMethod("GET")
+
+		resp := fasthttp.AcquireResponse()
+		defer fasthttp.ReleaseResponse(resp)
+
+		// Perform the HTTP GET request
+		if err := utils.GetRequestClient().Do(req, resp); err != nil {
+			utils.Log.Panic(err)
+		}
+
+		if resp.StatusCode() != fasthttp.StatusOK {
+			utils.Log.Panicf("Request failed with status code: %d", resp.StatusCode())
+			utils.Log.Panicln("Response: ", string(resp.Body()))
+		}
+
+		// Store the location header in actual_url
+		actual_url := string(resp.Header.Peek("Location"))
+
+		result.Result = actual_url
+		result.Bitrates.Auto = actual_url
 		return result, nil
 	} else {
 		// If the channel is not available in the SONY_CHANNELS map, then return an error
