@@ -160,7 +160,7 @@ var SONY_JIO_MAP = map[string]string{
 var SONY_CHANNELS_API = []Channel{
 	{
 		ID:       "sl291",
-		Name:     "SL: Sony HD",
+		Name:     "SL Sony HD",
 		Language: 1,
 		Category: 5,
 		IsHD:     true,
@@ -168,7 +168,7 @@ var SONY_CHANNELS_API = []Channel{
 	},
 	{
 		ID:       "sl154",
-		Name:     "SL: Sony SAB HD",
+		Name:     "SL Sony SAB HD",
 		Language: 1,
 		Category: 5,
 		IsHD:     true,
@@ -176,7 +176,7 @@ var SONY_CHANNELS_API = []Channel{
 	},
 	{
 		ID:       "sl474",
-		Name:     "SL: Sony PAL",
+		Name:     "SL Sony PAL",
 		Language: 1,
 		Category: 5,
 		IsHD:     false,
@@ -184,7 +184,7 @@ var SONY_CHANNELS_API = []Channel{
 	},
 	{
 		ID:       "sl762",
-		Name:     "SL: Sony PIX HD",
+		Name:     "SL Sony PIX HD",
 		Language: 6,
 		Category: 6,
 		IsHD:     true,
@@ -192,7 +192,7 @@ var SONY_CHANNELS_API = []Channel{
 	},
 	{
 		ID:       "sl476",
-		Name:     "SL: Sony MAX HD",
+		Name:     "SL Sony MAX HD",
 		Language: 1,
 		Category: 6,
 		IsHD:     true,
@@ -200,7 +200,7 @@ var SONY_CHANNELS_API = []Channel{
 	},
 	{
 		ID:       "sl483",
-		Name:     "SL: Sony MAX 2",
+		Name:     "SL Sony MAX 2",
 		Language: 1,
 		Category: 6,
 		IsHD:     false,
@@ -209,7 +209,7 @@ var SONY_CHANNELS_API = []Channel{
 	// Disabled as it requires CORS bypass
 	// {
 	// 	ID:       "sl1393",
-	// 	Name:     "SL: Sony WAH",
+	// 	Name:     "SL Sony WAH",
 	// 	Language: 1,
 	// 	Category: 5,
 	// 	IsHD:     false,
@@ -217,7 +217,7 @@ var SONY_CHANNELS_API = []Channel{
 	// },
 	{
 		ID:       "sl162",
-		Name:     "SL: Sony TEN 1 HD",
+		Name:     "SL Sony TEN 1 HD",
 		Language: 6,
 		Category: 8,
 		IsHD:     true,
@@ -225,7 +225,7 @@ var SONY_CHANNELS_API = []Channel{
 	},
 	{
 		ID:       "sl891",
-		Name:     "SL: Sony TEN 2 HD",
+		Name:     "SL Sony TEN 2 HD",
 		Language: 6,
 		Category: 8,
 		IsHD:     true,
@@ -233,7 +233,7 @@ var SONY_CHANNELS_API = []Channel{
 	},
 	{
 		ID:       "sl892",
-		Name:     "SL: Sony TEN 3 HD",
+		Name:     "SL Sony TEN 3 HD",
 		Language: 1,
 		Category: 8,
 		IsHD:     true,
@@ -241,7 +241,7 @@ var SONY_CHANNELS_API = []Channel{
 	},
 	{
 		ID:       "sl1772",
-		Name:     "SL: Sony TEN 4 HD",
+		Name:     "SL Sony TEN 4 HD",
 		Language: 8,
 		Category: 8,
 		IsHD:     true,
@@ -249,7 +249,7 @@ var SONY_CHANNELS_API = []Channel{
 	},
 	{
 		ID:       "sl155",
-		Name:     "SL: Sony TEN 5 HD",
+		Name:     "SL Sony TEN 5 HD",
 		Language: 6,
 		Category: 8,
 		IsHD:     true,
@@ -257,7 +257,7 @@ var SONY_CHANNELS_API = []Channel{
 	},
 	{
 		ID:       "sl852",
-		Name:     "SL: Sony BBC Earth HD",
+		Name:     "SL Sony BBC Earth HD",
 		Language: 6,
 		Category: 10,
 		IsHD:     true,
