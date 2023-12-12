@@ -335,7 +335,7 @@ func GetSLChannel(channelID string) (*LiveURLOutput, error) {
 			utils.Log.Panic(err)
 		}
 
-		if resp.StatusCode() != fasthttp.StatusOK {
+		if resp.StatusCode() != fasthttp.StatusFound {
 			utils.Log.Panicf("Request failed with status code: %d", resp.StatusCode())
 			utils.Log.Panicln("Response: ", string(resp.Body()))
 		}
