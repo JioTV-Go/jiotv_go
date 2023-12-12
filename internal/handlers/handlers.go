@@ -137,6 +137,9 @@ func LiveHandler(c *fiber.Ctx) error {
 			})
 		}
 	}
+	// if id[:2] == "sl" {
+	// 	return c.Redirect(liveResult.Bitrates.Auto, fiber.StatusFound)
+	// }
 	// quote url as it will be passed as a query parameter
 	// It is required to quote the url as it may contain special characters like ? and &
 	coded_url, err := secureurl.EncryptURL(liveResult.Bitrates.Auto)
@@ -164,6 +167,14 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 				"message": err,
 			})
 		}
+	}
+	if id[:2] == "sl" {
+		enc_url, err := secureurl.EncryptURL(Bitrates.Auto)
+		if err != nil {
+			utils.Log.Println(err)
+			return err
+		}
+		return c.Redirect("/render.m3u8?auth="+enc_url+"&channel_key_id="+id, fiber.StatusFound)
 	}
 	// Channels with following IDs output audio only m3u8 when quality level is enforced
 	if id == "1349" || id == "1322" {
