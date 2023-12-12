@@ -28,7 +28,7 @@ type Channel struct {
 	IsHD     bool   `json:"isHD"`
 }
 
-// Override Channel.ID to convert int from json to string
+// UnmarshalJSON to Override Channel.ID to convert int from json to string
 func (c *Channel) UnmarshalJSON(b []byte) error {
 	type Alias Channel
 	aux := &struct {

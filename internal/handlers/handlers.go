@@ -277,8 +277,7 @@ func RenderHandler(c *fiber.Ctx) error {
 	return c.Status(statusCode).Send(renderResult)
 }
 
-// RenderSLHandler handles M3U8 file for modification
-// This handler shall replace SonyLiv server URLs with our own server URLs
+// SLHandler proxies requests to SonyLiv CDN
 func SLHandler(c *fiber.Ctx) error {
 	// Request path with query params
 	url := "https://lin-gd-001-cf.slivcdn.com" + c.Path() + "?" + string(c.Request().URI().QueryString())
