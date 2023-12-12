@@ -206,14 +206,15 @@ var SONY_CHANNELS_API = []Channel{
 		IsHD:     false,
 		LogoURL:  "Sony_MAX2.png",
 	},
-	{
-		ID:       "sl1393",
-		Name:     "SL: Sony WAH",
-		Language: 1,
-		Category: 5,
-		IsHD:     false,
-		LogoURL:  "Sony_Wah.png",
-	},
+	// Disabled as it requires CORS bypass
+	// {
+	// 	ID:       "sl1393",
+	// 	Name:     "SL: Sony WAH",
+	// 	Language: 1,
+	// 	Category: 5,
+	// 	IsHD:     false,
+	// 	LogoURL:  "Sony_Wah.png",
+	// },
 	{
 		ID:       "sl162",
 		Name:     "SL: Sony TEN 1 HD",
