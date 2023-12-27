@@ -28,6 +28,16 @@ Get started with JioTV Go by reading the [Usage Guide](https://rabilrbl.github.i
 
 Full project documentation can be found at https://rabilrbl.github.io/jiotv_go/.
 
+## Star History
+
+<a href="https://star-history.com/#rabilrbl/jiotv_go&Date">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=rabilrbl/jiotv_go&type=Date&theme=dark" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=rabilrbl/jiotv_go&type=Date" />
+    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=rabilrbl/jiotv_go&type=Date" />
+  </picture>
+</a>
+
 ## Let's Make JioTV Go Better Together! 🤝
 
 ### **Report Bugs**
