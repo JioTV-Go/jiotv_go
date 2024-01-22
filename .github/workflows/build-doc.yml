@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - dev
     paths:
       - 'docs/**'
 
@@ -27,8 +28,7 @@ jobs:
 
       - name: Build Book
         run: |
-          cd docs
-          mdbook build
+          mdbook build docs
 
       - name: Setup Pages
         uses: actions/configure-pages@v4
