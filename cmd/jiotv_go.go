@@ -1,4 +1,4 @@
-package main
+package cmd
 
 import (
 	"net/http"
@@ -20,7 +20,7 @@ import (
 	"github.com/gofiber/template/html/v2"
 )
 
-func main() {
+func JioTVServer(host, port string) {
 	// Initialize the logger object
 	utils.Log = utils.GetLogger()
 
@@ -105,13 +105,7 @@ func main() {
 	app.Post("/drm", handlers.DRMKeyHandler)
 	app.Get("/dashtime", handlers.DASHTimeHandler)
 
-	addr := "localhost:5001"
-
-	if len(os.Args) > 1 {
-		addr = os.Args[1]
-	}
-
-	err := app.Listen(addr)
+	err := app.Listen(host + ":" + port)
 	if err != nil {
 		utils.Log.Fatal(err)
 	}
