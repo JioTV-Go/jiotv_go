@@ -42,6 +42,20 @@ Yes. Read the [Cloud Hosting](../cloud_hosting.md) page for more information.
 
 This error occurs when you have not logged in to JioTV Go or your session has expired. To fix this error, simply delete the `jiotv_credentials_v2.json` file and restart JioTV Go, then log in again.
 
+## Does JioTV Go support catchup?
+
+No. JioTV Go does not support catchup. Because I don't know how to implement it. If you know how to implement it, please open a pull request. I will be very grateful. See the [IPTV Guide](../usage/iptv.md#catchup) for more information. And [contributing](../contributing.md) page for more information about contributing.
+
+## Why do I get buffering in the IPTV player?
+
+Read the [Buffering issues on IPTV](./miscellaneous.md#buffering-issues-on-iptv-players) guide.
+
+## Why do I see same resolution under quality options?
+
+The two resolutions are same but with different bitrates.
+
+If there are two same resolutions with different bitrates, higher bitrate will be selected based on your internet bandwidth/speed.
+
 ## How do I update JioTV Go?
 
 Read the [Update command section](./usage/usage.md#2-update-command) in the [Usage](../usage/usage.md) page for more information.

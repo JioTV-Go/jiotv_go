@@ -11,6 +11,8 @@
 - [Cloud Hosting](./cloud_hosting.md)
 - [Development](./development.md)
 - [Contributing](./contributing.md)
+- [Miscellaneous](./miscellaneous.md)
+- [FAQ](./faq.md)
 
 ---
 
