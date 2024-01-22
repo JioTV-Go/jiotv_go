@@ -2,6 +2,8 @@
 
 You must have latest version of Termux installed from [F-Droid](https://f-droid.org/en/packages/com.termux/) or [GitHub Release](https://github.com/termux/termux-app/releases/latest).
 
+In any typical Linux system, the nameserver is defined in `/etc/resolv.conf`. But in Termux, it is defined in `$PREFIX/etc/resolv.conf`. So, we need to mount `$PREFIX/etc/resolv.conf` to `/etc/resolv.conf` in the container to prevent DNS Lookup errors.
+
 ## Install required packages
 
 Start by updating pkg index and install `wget` and `openssl`
