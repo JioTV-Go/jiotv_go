@@ -6,6 +6,7 @@ import (
 
 	"github.com/rabilrbl/jiotv_go/v2/internal/handlers"
 	"github.com/rabilrbl/jiotv_go/v2/internal/middleware"
+	"github.com/rabilrbl/jiotv_go/v2/internal/config"
 	"github.com/rabilrbl/jiotv_go/v2/pkg/epg"
 	"github.com/rabilrbl/jiotv_go/v2/pkg/secureurl"
 	"github.com/rabilrbl/jiotv_go/v2/pkg/utils"
@@ -20,7 +21,11 @@ import (
 	"github.com/gofiber/template/html/v2"
 )
 
-func JioTVServer(host, port string, prefork bool) error {
+func JioTVServer(host, port, configPath string, prefork bool) error {
+	// Load the config file
+	if err := config.Cfg.Load(configPath); err != nil {
+		return err
+	}
 	// Initialize the logger object
 	utils.Log = utils.GetLogger()
 

@@ -34,9 +34,16 @@ func main() {
 					}
 					port := c.String("port")
 					prefork := c.Bool("prefork")
-					return cmd.JioTVServer(host, port, prefork)
+					configPath := c.String("config")
+					return cmd.JioTVServer(host, port, configPath, prefork)
 				},
 				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:    "config",
+						Aliases: []string{"c"},
+						Value:   "config.yml",
+						Usage:   "Path to config file",
+					},
 					&cli.StringFlag{
 						Name:    "host",
 						Aliases: []string{"H"},
