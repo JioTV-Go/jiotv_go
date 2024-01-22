@@ -19,7 +19,7 @@ type JioTVConfig struct {
 	DisableLogout bool `yaml:"disable_logout" env:"JIOTV_DISABLE_LOGOUT"`
 	// Enable Or Disable DRM. As DRM is not supported by most of the players, it is disabled by default. Default: false
 	DRM bool `yaml:"drm" env:"JIOTV_DRM"`
-	// Title of the server. Default: JioTV Go
+	// Title of the webpage. Default: JioTV Go
 	Title string `yaml:"title" env:"JIOTV_TITLE"`
 	// Enable Or Disable URL Encryption. URL Encryption prevents hackers from injecting URLs into the server. Default: true
 	DisableURLEncryption bool `yaml:"disable_url_encryption" env:"JIOTV_DISABLE_URL_ENCRYPTION"`
