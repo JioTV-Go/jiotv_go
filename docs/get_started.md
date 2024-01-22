@@ -76,3 +76,7 @@ To update to the latest version, run:
 docker pull ghcr.io/rabilrbl/jiotv_go:latest
 ```
 
+---
+
+- Also read the [Usage](./usage/usage.md) page for more information.
+- See the [Config](./config.md) page for more information about the configuration options.
