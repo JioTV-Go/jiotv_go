@@ -41,7 +41,7 @@ func main() {
 					&cli.StringFlag{
 						Name:    "config",
 						Aliases: []string{"c"},
-						Value:   "config.yml",
+						Value:   "",
 						Usage:   "Path to config file",
 					},
 					&cli.StringFlag{

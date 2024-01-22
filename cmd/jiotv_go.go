@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"net/http"
-	"os"
 
 	"github.com/rabilrbl/jiotv_go/v2/internal/handlers"
 	"github.com/rabilrbl/jiotv_go/v2/internal/middleware"
@@ -32,13 +31,13 @@ func JioTVServer(host, port, configPath string, prefork bool) error {
 	// Initialize the secureurl object
 	secureurl.Init()
 
-	// if os.Getenv("JIOTV_DEBUG") == "true" or file epg.xml.gz exists
-	if os.Getenv("JIOTV_EPG") == "true" || utils.FileExists("epg.xml.gz") {
+	// if config EPG is true or file epg.xml.gz exists
+	if config.Cfg.EPG || utils.FileExists("epg.xml.gz") {
 		go epg.Init()
 	}
 
 	engine := html.NewFileSystem(http.FS(web.GetViewFiles()), ".html")
-	if os.Getenv("JIOTV_DEBUG") == "true" {
+	if config.Cfg.Debug {
 		engine.Reload(true)
 	}
 

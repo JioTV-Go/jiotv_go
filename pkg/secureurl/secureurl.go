@@ -9,8 +9,8 @@ import (
 	"fmt"
 	"io"
 	"net/url"
-	"os"
 
+	"github.com/rabilrbl/jiotv_go/v2/internal/config"
 	"github.com/rabilrbl/jiotv_go/v2/pkg/utils"
 )
 
@@ -83,7 +83,7 @@ func DecryptURL(encryptedURL string) (string, error) {
 }
 
 func Init() {
-	disableUrlEncryption = os.Getenv("JIOTV_URL_ENCRYPTION") == "false"
+	disableUrlEncryption = config.Cfg.URLEncryption == false
 	if disableUrlEncryption {
 		fmt.Println("Warning! URL encryption is disabled. Anyone can pass modified URLs to your server.")
 		return
