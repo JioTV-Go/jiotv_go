@@ -20,7 +20,7 @@ import (
 	"github.com/gofiber/template/html/v2"
 )
 
-func JioTVServer(host, port string) {
+func JioTVServer(host, port string) error {
 	// Initialize the logger object
 	utils.Log = utils.GetLogger()
 
@@ -105,8 +105,5 @@ func JioTVServer(host, port string) {
 	app.Post("/drm", handlers.DRMKeyHandler)
 	app.Get("/dashtime", handlers.DASHTimeHandler)
 
-	err := app.Listen(host + ":" + port)
-	if err != nil {
-		utils.Log.Fatal(err)
-	}
+	return app.Listen(host + ":" + port)
 }

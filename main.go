@@ -1,39 +1,50 @@
 package main
 
 import (
-	"fmt"
-	"flag"
+	"log"
 	"github.com/rabilrbl/jiotv_go/v2/cmd"
+	"os"
+
+	"github.com/urfave/cli/v2"
 )
 
 func main() {
-	var config string
-	var serve bool
-	var host string
-	var port string
+	app := &cli.App{
+        Name:  "JioTV Go",
+        Usage: "Stream JioTV on any device",
+		HelpName: "jiotv_go",
+		Version: "v3.0.0",
+		Commands: []*cli.Command{
+			{
+				Name:    "serve",
+				Aliases: []string{"run", "start"},
+				Usage:   "Start JioTV Go server",
+				Action: func(c *cli.Context) error {
+					host := c.String("host")
+					port := c.String("port")
+					return cmd.JioTVServer(host, port)
+				},
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:  "host",
+						Aliases: []string{"H"},
+						Value: "localhost",
+						Usage: "Host to listen on",
+					},
+					&cli.StringFlag{
+						Name:  "port",
+						Aliases: []string{"p"},
+						Value: "5001",
+						Usage: "Port to listen on",
+					},
+				},
+			},
+		},
+		
+    }
 
-	flag.StringVar(&config, "config", "", "Path to config file")
-
-	flag.BoolVar(&serve, "serve", false, "Start JioTV Go server")
-
-	flag.StringVar(&host, "host", "localhost", "Host to listen on")
-
-	flag.StringVar(&port, "port", "5001", "Port to listen on")
-
-	flag.Usage = func() {
-		fmt.Println("Usage:")
-		flag.PrintDefaults()
-	}
-
-	flag.Parse()
-
-	if serve {
-		cmd.JioTVServer(host, port)
-	}
-	
-	if flag.NArg() == 0 {
-		flag.Usage()
-		return
-	}
+    if err := app.Run(os.Args); err != nil {
+        log.Fatal(err)
+    }
 
 }
