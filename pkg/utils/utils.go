@@ -14,7 +14,7 @@ import (
 
 	"gopkg.in/natefinch/lumberjack.v2"
 
-	"github.com/rabilrbl/jiotv_go/v2/internal/config"
+	"github.com/rabilrbl/jiotv_go/v3/internal/config"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/fasthttpproxy"
 )

@@ -1,23 +1,24 @@
 package main
 
 import (
-	"github.com/rabilrbl/jiotv_go/v2/cmd"
 	"log"
 	"os"
 	"time"
+
+	"github.com/rabilrbl/jiotv_go/v3/cmd"
 
 	"github.com/urfave/cli/v2"
 )
 
 func main() {
 	app := &cli.App{
-		Name:     "JioTV Go",
-		Usage:    "Stream JioTV on any device",
-		HelpName: "jiotv_go",
-		Version:  "v3.0.0",
+		Name:      "JioTV Go",
+		Usage:     "Stream JioTV on any device",
+		HelpName:  "jiotv_go",
+		Version:   "v3.0.0",
 		Copyright: "© JioTV Go by Mohammed Rabil (https://github.com/rabilrbl/jiotv_go)",
-		Compiled: time.Now(),
-		Suggest: true,
+		Compiled:  time.Now(),
+		Suggest:   true,
 		Commands: []*cli.Command{
 			{
 				Name:        "serve",
@@ -62,8 +63,8 @@ func main() {
 						Usage:   "Open server to public. This will expose your server outside your local network. Equivalent to passing --host 0.0.0.0",
 					},
 					&cli.BoolFlag{
-						Name:    "prefork",
-						Usage:   "Enable prefork. This will enable preforking the server to multiple processes. This is useful for production deployment.",
+						Name:  "prefork",
+						Usage: "Enable prefork. This will enable preforking the server to multiple processes. This is useful for production deployment.",
 					},
 				},
 			},

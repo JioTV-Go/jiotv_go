@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/rabilrbl/jiotv_go/v2/pkg/epg"
+	"github.com/rabilrbl/jiotv_go/v3/pkg/epg"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/proxy"
