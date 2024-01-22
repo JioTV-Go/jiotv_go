@@ -1,6 +1,6 @@
 {
     "epg": false,
-    "debug": true,
+    "debug": false,
     "disable_ts_handler": false,
     "disable_logout": false,
     "drm": false,
