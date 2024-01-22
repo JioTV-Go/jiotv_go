@@ -26,7 +26,7 @@ type JioTVConfig struct {
 	// Path to the credentials file. Default: credentials.json
 	CredentialsPath string `yaml:"credentials_path" env:"JIOTV_CREDENTIALS_PATH" env-default:""`
 	// Proxy URL. Proxy is useful to bypass geo-restrictions and ip-restrictions for JioTV API. Default: ""
-	Proxy string `yaml:"proxy" env:"JIOTV_PROXY"`
+	Proxy string `yaml:"proxy" env:"JIOTV_PROXY" env-default:""`
 }
 
 // Global config variable
@@ -36,7 +36,6 @@ func (c *JioTVConfig) Load(filename string) error {
 	if filename == "" {
 		//  check if config.yml exists
 		if fileExists("config.yml") {
-			log.Println("INFO: Using config.yml")
 			filename = "config.yml"
 		} else {
 			log.Println("INFO: No config file found, using environment variables")
