@@ -55,6 +55,10 @@ For Android, you can use any terminal emulator app. For example, [Termux](https:
 systeminfo
 ```
 
+## Build from Source
+
+Refer the guide in [Development](./development.md#build-from-source) page.
+
 ## Docker Setup
 
 Make sure you have [Docker](https://docs.docker.com/get-docker/) installed on your system.
