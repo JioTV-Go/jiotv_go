@@ -40,6 +40,11 @@ func main() {
 						Value:   "5001",
 						Usage:   "Port to listen on",
 					},
+					&cli.BoolFlag{
+						Name:    "public",
+						Aliases: []string{"P"},
+						Usage:   "Open server to listen on all interfaces. This will expose your server outside your local network. Equivalent to passing --host 0.0.0.0",
+					},
 				},
 			},
 			{
