@@ -4,7 +4,7 @@
 
 ### Pre-Built Binaries
 
-You can download the pre-built binaries for your platform from the [releases](https://github.com/rabilrbl/jiotv-go/releases) page.
+You can download the pre-built binaries for your platform from the [releases](https://github.com/rabilrbl/jiotv-go/releases) page or click on `Binary Name` links in the table below.
 
 > Android Termux users, please read the [Note for Termux Users](#note-for-termuxandroid-users) section below.
 
@@ -30,13 +30,18 @@ The following table lists the binaries available for download:
 
 If you are unsure about your OS and Architecture, you can use the following commands to identify them:
 
-##### Linux/macOS
+#### Linux / Anroid / macOS
+
+Execute the following command in your terminal:
 
 ```bash
-uname -a
+uname -m
 ```
 
-##### Windows
+For Android, you can use any terminal emulator app. For example, [Termux](https://f-droid.org/en/packages/com.termux/) or [UserLAnd](https://f-droid.org/en/packages/tech.ula/). We recommend UserLAnd with Alpine as it emulates a Linux environment.
+
+
+#### Windows (PowerShell)
 
 ```powershell
 systeminfo
