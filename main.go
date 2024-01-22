@@ -54,7 +54,6 @@ func main() {
 					},
 					&cli.BoolFlag{
 						Name:    "prefork",
-						Aliases: []string{"f"},
 						Usage:   "Enable prefork. This will enable preforking the server to multiple processes. This is useful for production deployment.",
 					},
 				},
