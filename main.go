@@ -4,6 +4,7 @@ import (
 	"github.com/rabilrbl/jiotv_go/v2/cmd"
 	"log"
 	"os"
+	"time"
 
 	"github.com/urfave/cli/v2"
 )
@@ -15,6 +16,7 @@ func main() {
 		HelpName: "jiotv_go",
 		Version:  "v3.0.0",
 		Copyright: "© JioTV Go by Mohammed Rabil (https://github.com/rabilrbl/jiotv_go)",
+		Compiled: time.Now(),
 		Suggest: true,
 		Commands: []*cli.Command{
 			{
