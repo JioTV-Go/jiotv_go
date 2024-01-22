@@ -1,16 +1,17 @@
 package cmd
 
 import (
-	"os"
 	"encoding/json"
 	"fmt"
+	"os"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/valyala/fasthttp"
 )
 
-func Update() error {
+func Update(currentVersion string) error {
 	fmt.Println("Updating JioTV Go...")
 
 	// Determine the architecture and operating system
@@ -24,6 +25,17 @@ func Update() error {
 	if err != nil {
 		return err
 	}
+
+	latestVersion := release.TagName
+	fmt.Printf("Latest version: %s\n", latestVersion)
+
+	// Compare versions
+	if compareVersions(currentVersion, latestVersion) >= 0 {
+		fmt.Println("You are already using the latest version. No update needed.")
+		return nil
+	}
+
+	fmt.Println("Newer version available. Updating...")
 
 	// Choose the appropriate asset based on os and arch
 	assetName := fmt.Sprintf("jiotv_go-%s-%s", os_name, arch)
@@ -105,6 +117,7 @@ type Asset struct {
 
 type Release struct {
 	Assets []Asset `json:"assets"`
+	TagName string `json:"tag_name"`
 }
 
 func downloadBinary(url, outputPath string) error {
@@ -147,4 +160,37 @@ func replaceBinary(newBinaryPath string) error {
 	os.Remove(oldBinaryPath)
 
 	return nil
+}
+
+func compareVersions(currentVersion, latestVersion string) int {
+	// Implement version comparison logic based on your versioning scheme
+	// This is a simplified example assuming semantic versioning (major.minor.patch)
+
+	// Split versions into components
+	currentComponents := strings.Split(currentVersion, ".")
+	latestComponents := strings.Split(latestVersion, ".")
+
+	// Compare major version
+	currentMajor := atoiOrZero(currentComponents[0])
+	latestMajor := atoiOrZero(latestComponents[0])
+	if currentMajor != latestMajor {
+		return currentMajor - latestMajor
+	}
+
+	// Compare minor version
+	currentMinor := atoiOrZero(currentComponents[1])
+	latestMinor := atoiOrZero(latestComponents[1])
+	if currentMinor != latestMinor {
+		return currentMinor - latestMinor
+	}
+
+	// Compare patch version
+	currentPatch := atoiOrZero(currentComponents[2])
+	latestPatch := atoiOrZero(latestComponents[2])
+	return currentPatch - latestPatch
+}
+
+func atoiOrZero(s string) int {
+	i, _ := strconv.Atoi(s)
+	return i
 }
