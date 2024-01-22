@@ -51,3 +51,7 @@ config.toml
 jiotv.yml
 jiotv.toml
 jiotv.json
+
+# MdBook Docs
+docs/book/
+book/
