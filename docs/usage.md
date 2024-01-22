@@ -27,7 +27,8 @@ jiotv_go serve [command options] [arguments...]
 
 **Options:**
 
-- `--config value, -c value`: Path to the configuration file.
+- `--config value, -c value`: Path to the configuration file. 
+  <br>By default, JioTV Go will look for a file named `jiotv_go.(toml|yaml|json)` or `config.(toml|yaml|json)` in the same directory as the binary.
 - `--host value, -H value`: Host to listen on (default: "localhost").
 - `--port value, -p value`: Port to listen on (default: "5001").
 - `--public, -P`: Open the server to the public. This will expose your server outside your local network. Equivalent to passing `--host 0.0.0.0` (default: false).
@@ -35,24 +36,23 @@ jiotv_go serve [command options] [arguments...]
 - `--help, -h`: Show help for the `serve` command.
 
 **Example:**
+
+This will start the server on port 8080 and open it to the public.
+
 ```bash
-jiotv_go serve --host 127.0.0.1 --port 8080 --public
+jiotv_go serve --port 8080 --public
 ```
+
+<div class="warning">
+Use of the <code>--public</code> flag is not recommended. It exposes your server outside your local network. Use it only if it is necessary for you in some cases where you want to access JioTV Go server in your phone to TV or other devices.
+</div>
+
 
 #### 2. Update Command
 
 The `update` command updates JioTV Go to the latest version.
 
 ```
-jiotv_go update [command options] [arguments...]
-```
-
-**Options:**
-
-- `--help, -h`: Show help for the `update` command.
-
-**Example:**
-```bash
 jiotv_go update
 ```
 
