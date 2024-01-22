@@ -18,7 +18,7 @@ If you are unsure about your architecture, you can use the following command to 
 uname -m
 ```
 
-Now look for the architecture in the [table above](./get_started.md#the-following-table-lists-the-binaries-available-for-download).
+Now look for the architecture in the [table](./get_started.md#the-following-table-lists-the-binaries-available-for-download).
 
 
 ## Download binary
@@ -61,7 +61,9 @@ don't freak out, we have a shortcut below
 
 ## PRoot Shortcut
 
-I know that the above command is too long to type every time you want to execute the binary. So, here is a shortcut for you:
+I know that the above command is too long to type every time you want to execute the binary. So, here is a shortcut for you.
+
+Paste the following command in your terminal and execute it:
 
 ```bash
 echo "alias jiotv_go="proot -b \"$PREFIX/etc/resolv.conf:/etc/resolv.conf\" $PWD/jiotv_go-linux-{arch}" >> $PREFIX/etc/bash.bashrc

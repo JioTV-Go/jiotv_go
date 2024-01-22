@@ -45,7 +45,7 @@ go build . -o build/jiotv_go
      ```
 
 4. **Access JioTV Go:**
-   - The server will be listening at `http://localhost:5001`.
+   - The server will be listening at [http://localhost:5001](http://localhost:5001).
 
 5. **Set Environment Variables:**
    - You can set environment variables in the `.env` file for customizations.

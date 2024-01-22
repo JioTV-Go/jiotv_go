@@ -2,6 +2,12 @@
 
 ## Installation
 
+<div class="warning">
+
+See the [Docker Setup](#docker-setup) section for Docker installation instructions.
+
+</div>
+
 ### Pre-Built Binaries
 
 You can download the pre-built binaries for your platform from the [releases](https://github.com/rabilrbl/jiotv-go/releases) page or click on `Binary Name` links in the table below.
@@ -15,7 +21,7 @@ You can download the pre-built binaries for your platform from the [releases](ht
 
 #### The following table lists the binaries available for download:
 
-| OS Name                      | Architecture  | Binary Name                        |
+| OS Name                      | Architecture (AKA)  | Binary Name                        |
 | ---------------------------- | ------------- | ----------------------------------- |
 | Linux / Android                        | arm64 (aarch64)        | [jiotv_go-linux-arm64](https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-linux-arm64)                |
 | Linux / Android                        | amd64 (x86_64)        | [jiotv_go-linux-amd64](https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-linux-amd64)                |
@@ -48,3 +54,25 @@ For Android, you can use any terminal emulator app. For example, [Termux](https:
 ```powershell
 systeminfo
 ```
+
+## Docker Setup
+
+Make sure you have [Docker](https://docs.docker.com/get-docker/) installed on your system.
+
+### Run JioTV Go with Docker
+Run the command:
+
+```sh
+docker run -p 5001:5001 -v ./.jiotv_go/secrets:/app/secrets ghcr.io/rabilrbl/jiotv_go
+```
+
+Open your web browser and visit [http://localhost:5001/](http://localhost:5001/).
+
+### Keep JioTV Go Updated
+
+To update to the latest version, run:
+
+```sh
+docker pull ghcr.io/rabilrbl/jiotv_go:latest
+```
+
