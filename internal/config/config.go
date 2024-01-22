@@ -1,8 +1,8 @@
 package config
 
 import (
-	"os"
 	"log"
+	"os"
 	"reflect"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -34,13 +34,11 @@ var Cfg JioTVConfig
 
 func (c *JioTVConfig) Load(filename string) error {
 	if filename == "" {
-		//  check if config.yml exists
-		if fileExists("config.yml") {
-			filename = "config.yml"
-		} else {
-			log.Println("INFO: No config file found, using environment variables")
-			return cleanenv.ReadEnv(c)
-		}
+		filename = commonfileExists()
+	}
+	if filename == "" {
+		log.Println("INFO: No config file found, using environment variables")
+		return cleanenv.ReadEnv(c)
 	}
 	log.Println("INFO: Using config file:", filename)
 	return cleanenv.ReadConfig(filename, c)
@@ -55,13 +53,14 @@ func (c *JioTVConfig) Get(key string) interface{} {
 	return nil
 }
 
-// FileExists function check if given file exists
-func fileExists(filename string) bool {
-	// check if given file exists
-	_, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		return false
-	} else {
-		return true
+// commonfileExists checks if any of the common config files exists
+func commonfileExists() string {
+
+	commonfiles := []string{"config.json", "config.yml", "config.toml", "jiotv.yml", "jiotv.toml", "jiotv.json"}
+	for _, filename := range commonfiles {
+		if _, err := os.Stat(filename); err == nil {
+			return filename
+		}
 	}
+	return ""
 }
