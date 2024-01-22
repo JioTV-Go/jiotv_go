@@ -97,11 +97,17 @@ All Other Proxy (user:pass@host:port).
 
 If your proxy does not require authentication, you can omit the `user:pass@` part.
 
-## Example Configuration (TOML)
+## Example Configurations
 
-Here is an example TOML configuration file for JioTV Go. All fields are optional, and the values shown are the default settings:
+Below are example configuration file for JioTV Go. All fields are optional, and the values shown are the default settings:
 
-You can save the following configuration in a file named `jiotv_go.toml`. JioTV Go will automatically load the configuration from this file if it is present in the same directory as the binary. You can also specify the path to the configuration file using the `--config` flag.
+You can also specify the path to the configuration file using the `--config` flag.
+
+### Example TOML Configuration
+
+You can save the following configuration in a file named `jiotv_go.toml`. JioTV Go will automatically load the configuration from this file if it is present in the same directory as the binary.
+
+Omit the lines with `#` as they are comments. They are only for explanation purposes.
 
 ```toml
 # Example config file for JioTV Go
@@ -137,3 +143,33 @@ proxy = ""
 ```
 
 This example demonstrates how to customize the configuration parameters using TOML syntax. Feel free to modify the values based on your preferences and requirements.
+
+### Example YAML Configuration
+
+```yaml
+epg: false
+debug: false
+disable_ts_handler: false
+disable_logout: false
+drm: false
+title: ""
+disable_url_encryption: false
+credentials_path: ""
+proxy: ""
+```
+
+### Example JSON Configuration
+
+```json
+{
+    "epg": false,
+    "debug": false,
+    "disable_ts_handler": false,
+    "disable_logout": false,
+    "drm": false,
+    "title": "",
+    "disable_url_encryption": false,
+    "credentials_path": "",
+    "proxy": ""
+}
+```
