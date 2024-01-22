@@ -83,6 +83,9 @@ jobs:
           # Calculate the new version number.
           new_version="v${major}.${minor}.${patch}"
           echo "New version: $new_version"
+          sed -i 's/Version:  "[^"]*"/Version:  "$new_version"/' main.go
+          git add main.go && git commit -m "Bump version to $new_version"
+          git push origin HEAD:main
           # Mirrors tags
           git tag -fa v$major -m "Mirror tag $new_version"
           git tag -fa v$major.$minor -m "Mirror tag $new_version"
@@ -100,7 +103,7 @@ jobs:
                   continue
               fi
               
-              file_name="jiotv_go-${{ steps.gen_tag.outputs.tag }}-$(cut -d '/' -f 1 <<< $var)-$(cut -d '/' -f 2 <<< $var)"
+              file_name="jiotv_go-$(cut -d '/' -f 1 <<< $var)-$(cut -d '/' -f 2 <<< $var)"
               case "$(cut -d '/' -f 1 <<< $var)" in
                   "windows")
                       echo "Building $var"
