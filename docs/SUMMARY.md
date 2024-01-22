@@ -1,8 +1,15 @@
 # Summary
 
-[Introduction](./Home.md)
+[Introduction](./README.md)
 
 - [Get Started](./get_started.md)
-- [Usage](./usage.md)
+  - [Termux](./termux.md)
+- [Usage](./usage/usage.md)
+  - [IPTV Guide](./usage/iptv.md)
+  - [URL Paths](./usage/paths.md)
 - [Config](./config.md)
+- [Development](./development.md)
+
+---
+
 - [License](./License.md)

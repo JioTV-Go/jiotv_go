@@ -4,3 +4,8 @@ language = "en"
 multilingual = false
 src = "."
 title = "JioTV Go"
+
+[output.html]
+site-url = "/jiotv_go/"
+git-repository-url = "https://github.com/rabilrbl/jiotv_go"
+edit-url-template = "https://github.com/rabilrbl/jiotv_go/edit/main/docs/{path}"
