@@ -15,6 +15,7 @@ func main() {
 		HelpName: "jiotv_go",
 		Version:  "v3.0.0",
 		Copyright: "© JioTV Go by Mohammed Rabil (https://github.com/rabilrbl/jiotv_go)",
+		Suggest: true,
 		Commands: []*cli.Command{
 			{
 				Name:        "serve",
