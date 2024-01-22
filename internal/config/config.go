@@ -2,14 +2,16 @@ package config
 
 import (
 	"reflect"
+
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/rabilrbl/jiotv_go/v2/pkg/utils"
 )
 
 type JioTVConfig struct {
 	// Enable Or Disable EPG Generation. Default: false
-    EPG     bool `yaml:"epg" env:"JIOTV_EPG"`
+	EPG bool `yaml:"epg" env:"JIOTV_EPG"`
 	// Enable Or Disable Debug Mode. Default: false
-	Debug   bool `yaml:"debug" env:"JIOTV_DEBUG"`
+	Debug bool `yaml:"debug" env:"JIOTV_DEBUG"`
 	// Enable Or Disable TS Handler. While TS Handler is enabled, the server will serve the TS files directly from JioTV API. Default: false
 	DisableTSHandler bool `yaml:"disable_ts_handler" env:"JIOTV_DISABLE_TS_HANDLER"`
 	// Enable Or Disable Logout feature. Default: true
@@ -30,6 +32,17 @@ type JioTVConfig struct {
 var Cfg JioTVConfig
 
 func (c *JioTVConfig) Load(filename string) error {
+	if filename == "" {
+		//  check if config.yml exists
+		if utils.FileExists("config.yml") {
+			utils.Log.Println("INFO: Using config.yml")
+			filename = "config.yml"
+		} else {
+			utils.Log.Println("INFO: No config file found, using environment variables")
+			return cleanenv.ReadEnv(c)
+		}
+	}
+	utils.Log.Println("INFO: Using config file:", filename)
 	return cleanenv.ReadConfig(filename, c)
 }
 
