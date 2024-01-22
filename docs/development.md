@@ -4,7 +4,11 @@ In this section, we'll explore how to contribute to JioTV Go and make customizat
 
 ## Build from Source
 
+To build JioTV Go from source, you'll need to have [Go](https://golang.org/) installed on your system. If you don't have Go installed, you can download it from [here](https://golang.org/dl/).
+
 ### Clone
+
+Let's start by cloning the repository:
 
 ```bash
 git clone https://github.com/rabilrbl/jiotv_go.git
@@ -13,11 +17,15 @@ cd jiotv_go
 
 ### Build
 
+Now, let's build the project:
+
 ```bash
 go build . -o build/jiotv_go
 ```
 
 ### Run
+
+Finally, let's run the server:
 
 ```bash
 ./build/jiotv_go [commands]
