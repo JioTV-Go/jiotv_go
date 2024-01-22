@@ -37,21 +37,3 @@ Once EPG is generated, it will be updated every 24 hours. The duration of the EP
 ## Catchup
 
 Currently, JioTV Go does not support catchup. Because I don't know how to implement it. If you know how to implement it, please open a pull request. I will be very grateful.
-
-## Categories
-
-JioTV Go M3U playlist provides the following categories:
-
-- Entertainment
-- Movies
-- Kids
-- Sports
-- Lifestyle
-- Infotainment
-- News
-- Music
-- Devotional
-- Business
-- Educational
-- Shopping
-
