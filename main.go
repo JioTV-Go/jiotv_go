@@ -24,6 +24,12 @@ func main() {
 				Description: "The serve command starts JioTV Go server, and listens on the host and port. The default host is localhost and port is 5001.",
 				Action: func(c *cli.Context) error {
 					host := c.String("host")
+					// overwrite host if --public flag is passed
+					if c.Bool("public") {
+						log.Println("INFO: You are exposing your server to outside your local network (public)!")
+						log.Println("INFO: Overwriting host to 0.0.0.0 for public access")
+						host = "0.0.0.0"
+					}
 					port := c.String("port")
 					return cmd.JioTVServer(host, port)
 				},
@@ -43,7 +49,7 @@ func main() {
 					&cli.BoolFlag{
 						Name:    "public",
 						Aliases: []string{"P"},
-						Usage:   "Open server to listen on all interfaces. This will expose your server outside your local network. Equivalent to passing --host 0.0.0.0",
+						Usage:   "Open server to public. This will expose your server outside your local network. Equivalent to passing --host 0.0.0.0",
 					},
 				},
 			},
