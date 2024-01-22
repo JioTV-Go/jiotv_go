@@ -34,7 +34,7 @@ var Cfg JioTVConfig
 
 func (c *JioTVConfig) Load(filename string) error {
 	if filename == "" {
-		filename = commonfileExists()
+		filename = commonFileExists()
 	}
 	if filename == "" {
 		log.Println("INFO: No config file found, using environment variables")
@@ -53,11 +53,11 @@ func (c *JioTVConfig) Get(key string) interface{} {
 	return nil
 }
 
-// commonfileExists checks if any of the common config files exists
-func commonfileExists() string {
+// commonFileExists checks if any of the common config files exists
+func commonFileExists() string {
 
-	commonfiles := []string{"config.json", "config.yml", "config.toml", "jiotv.yml", "jiotv.toml", "jiotv.json"}
-	for _, filename := range commonfiles {
+	commonFiles := []string{"jiotv_go.yml", "jiotv_go.toml", "jiotv_go.json", "config.json", "config.yml", "config.toml"}
+	for _, filename := range commonFiles {
 		if _, err := os.Stat(filename); err == nil {
 			return filename
 		}
