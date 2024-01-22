@@ -83,7 +83,7 @@ func DecryptURL(encryptedURL string) (string, error) {
 }
 
 func Init() {
-	disableUrlEncryption = config.Cfg.URLEncryption == false
+	disableUrlEncryption = config.Cfg.DisableURLEncryption
 	if disableUrlEncryption {
 		fmt.Println("Warning! URL encryption is disabled. Anyone can pass modified URLs to your server.")
 		return

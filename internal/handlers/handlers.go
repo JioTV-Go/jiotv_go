@@ -22,7 +22,7 @@ import (
 var (
 	TV               *television.Television
 	DisableTSHandler = config.Cfg.DisableTSHandler
-	isLogoutDisabled = config.Cfg.Logout == false
+	isLogoutDisabled = config.Cfg.DisableLogout
 	Title            string
 	EnableDRM        = config.Cfg.DRM
 	SONY_LIST        = []string{"154", "155", "162", "289", "291", "471", "474", "476", "483", "514", "524", "525", "697", "872", "873", "874", "891", "892", "1146", "1393", "1772", "1773", "1774", "1775"}
