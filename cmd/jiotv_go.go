@@ -20,7 +20,7 @@ import (
 	"github.com/gofiber/template/html/v2"
 )
 
-func JioTVServer(host, port string) error {
+func JioTVServer(host, port string, prefork bool) error {
 	// Initialize the logger object
 	utils.Log = utils.GetLogger()
 
@@ -39,7 +39,7 @@ func JioTVServer(host, port string) error {
 
 	app := fiber.New(fiber.Config{
 		Views:             engine,
-		Prefork:           os.Getenv("JIOTV_PREFORK") == "true",
+		Prefork:           prefork,
 		StreamRequestBody: true,
 		CaseSensitive:     false,
 		StrictRouting:     false,

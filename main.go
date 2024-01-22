@@ -31,7 +31,8 @@ func main() {
 						host = "0.0.0.0"
 					}
 					port := c.String("port")
-					return cmd.JioTVServer(host, port)
+					prefork := c.Bool("prefork")
+					return cmd.JioTVServer(host, port, prefork)
 				},
 				Flags: []cli.Flag{
 					&cli.StringFlag{
@@ -50,6 +51,11 @@ func main() {
 						Name:    "public",
 						Aliases: []string{"P"},
 						Usage:   "Open server to public. This will expose your server outside your local network. Equivalent to passing --host 0.0.0.0",
+					},
+					&cli.BoolFlag{
+						Name:    "prefork",
+						Aliases: []string{"f"},
+						Usage:   "Enable prefork. This will enable preforking the server to multiple processes. This is useful for production deployment.",
 					},
 				},
 			},
