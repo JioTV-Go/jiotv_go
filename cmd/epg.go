@@ -8,11 +8,13 @@ import (
 	"github.com/rabilrbl/jiotv_go/v3/pkg/utils"
 )
 
+// GenEPG generates a new epg.xml.gz file with updated EPG data by first deleting any existing epg.xml.gz file.
+// It initializes the utils.Log global logger, calls epg.GenXMLGz() to generate the XML, and returns any errors.
 func GenEPG() error {
 	// Initialize the logger object as it is used in epg.GenXMLGz()
 	// Do not remove this line, it will result in nil pointer dereference panic
 	utils.Log = utils.GetLogger()
-	
+
 	log.Println("Deleting existing EPG file if exists")
 
 	err := os.Remove("epg.xml.gz")
@@ -29,6 +31,9 @@ func GenEPG() error {
 	return err
 }
 
+// DeleteEPG deletes the existing epg.xml.gz file if it exists.
+// It logs status messages about deleting or not finding the file.
+// Returns any errors encountered except os.ErrNotExist.
 func DeleteEPG() error {
 	log.Println("Deleting existing EPG file if exists")
 

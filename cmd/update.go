@@ -11,6 +11,21 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
+// Update checks for a newer version of the application
+// by calling getLatestRelease() to fetch the latest release
+// information from GitHub.
+
+// It compares the latest version to the provided currentVersion
+// using compareVersions(). If currentVersion is already
+// up-to-date, it returns without updating.
+
+// Otherwise, it finds the appropriate updated binary asset
+// for the current OS and architecture, downloads it to a
+// temporary location using downloadBinary(), and replaces
+// the current binary using replaceBinary().
+
+// Finally, it prints a message that the update was successful
+// and the app should be restarted.
 func Update(currentVersion string) error {
 	fmt.Println("Updating JioTV Go...")
 
@@ -72,6 +87,8 @@ func Update(currentVersion string) error {
 	return nil
 }
 
+// getLatestRelease fetches the latest release information from the GitHub API for the given owner and repo.
+// It returns a Release struct containing the release details like tag name, assets etc.
 func getLatestRelease() (*Release, error) {
 	owner := "rabilrbl"
 	repo := "jiotv_go"
@@ -104,18 +121,25 @@ func getLatestRelease() (*Release, error) {
 	return &release, nil
 }
 
-// Asset Define the structures to assets from GitHub API
+// Asset defines the structure of an asset
+// from the GitHub API release response. It contains
+// the asset name and browser download URL.
 type Asset struct {
 	Name               string `json:"name"`
 	BrowserDownloadURL string `json:"browser_download_url"`
 }
 
-// Release Define the structures to release from GitHub API
+// Release represents a GitHub release. It contains the release
+// tag name and associated assets.
 type Release struct {
 	Assets  []Asset `json:"assets"`
 	TagName string  `json:"tag_name"`
 }
 
+// downloadBinary downloads a binary file from the given URL
+// and saves it to the specified output path.
+// It returns an error if the request fails or the status code is not 200 OK.
+// The saved binary file is made executable.
 func downloadBinary(url, outputPath string) error {
 	statusCode, body, err := fasthttp.Get(nil, url)
 	if err != nil {
@@ -130,6 +154,10 @@ func downloadBinary(url, outputPath string) error {
 	return os.WriteFile(outputPath, body, 0744)
 }
 
+// replaceBinary replaces the current executable binary with a new binary.
+// It renames the current binary to a .old file, copies the new binary to the current
+// binary path, and attempts to roll back if there are any errors. Finally it removes
+// the old .old binary.
 func replaceBinary(newBinaryPath string) error {
 	currentBinaryPath, err := os.Executable()
 	if err != nil {
@@ -155,6 +183,14 @@ func replaceBinary(newBinaryPath string) error {
 	return nil
 }
 
+// compareVersions compares two semantic version strings and returns an integer
+// indicating whether the current version is less than, equal to, or greater
+// than the latest version.
+
+// It splits the version strings into major, minor and patch numeric components
+// and compares them sequentially. The first non-equal set of components
+// determines the return value. Returns -1 if currentVersion < latestVersion,
+// 0 if currentVersion == latestVersion, and 1 if currentVersion > latestVersion.
 func compareVersions(currentVersion, latestVersion string) int {
 	// Implement version comparison logic based on your versioning scheme
 	// This is a simplified example assuming semantic versioning (major.minor.patch)
@@ -183,6 +219,8 @@ func compareVersions(currentVersion, latestVersion string) int {
 	return currentPatch - latestPatch
 }
 
+// atoiOrZero converts a string to an integer, returning 0 if the
+// conversion fails.
 func atoiOrZero(s string) int {
 	i, _ := strconv.Atoi(s)
 	return i

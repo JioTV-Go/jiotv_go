@@ -20,6 +20,11 @@ import (
 	"github.com/gofiber/template/html/v2"
 )
 
+// JioTVServer starts the JioTV server.
+// It loads the config, initializes logging, secure URLs, and EPG.
+// It then configures the Fiber app with middleware and routes.
+// It starts listening on the provided host and port.
+// Returns an error if listening fails.
 func JioTVServer(host, port, configPath string, prefork bool) error {
 	// Load the config file
 	if err := config.Cfg.Load(configPath); err != nil {

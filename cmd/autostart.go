@@ -8,6 +8,11 @@ import (
 	"runtime"
 )
 
+// AutoStart adds or updates an auto start command for the current
+// executable in the bashrc file. It checks if auto start already
+// exists, gets user consent if needed, and adds the command
+// to run the executable on startup, passing any extra args.
+// It supports Linux, Android and OSX systems.
 func AutoStart(extraArgs string) error {
 	if runtime.GOOS == "linux" || runtime.GOOS == "android" || runtime.GOOS == "darwin" {
 		// Get the path to the current binary
@@ -88,11 +93,17 @@ func AutoStart(extraArgs string) error {
 	return nil
 }
 
+// isTermux checks if the environment variable PREFIX is set, which indicates
+// the program is running in Termux on Android. Returns true if running in
+// Termux, false otherwise.
 func isTermux() bool {
 	termuxProperty := os.Getenv("PREFIX")
 	return termuxProperty != ""
 }
 
+// getConsentFromUser prompts the user to consent to auto start and returns
+// a boolean indicating if consent was given. If running in Termux, consent
+// is assumed. Otherwise, the user is prompted in the terminal.
 func getConsentFromUser() bool {
 	if isTermux() {
 		return true
@@ -103,6 +114,8 @@ func getConsentFromUser() bool {
 	return strings.ToLower(response) == "y"
 }
 
+// grep searches the given filename for lines containing the pattern string.
+// It returns a bool indicating if the pattern was found, and an error if one occurred while reading the file.
 func grep(filename, pattern string) (bool, error) {
 	file, err := os.Open(filename)
 	if err != nil {
@@ -120,6 +133,9 @@ func grep(filename, pattern string) (bool, error) {
 	return false, file.Close()
 }
 
+// addToBashrc appends the given line to the specified bashrc file.
+// It opens the file in append mode, writes the line, and closes the file.
+// Returns any error encountered.
 func addToBashrc(filename, line string) error {
 	file, err := os.OpenFile(filename, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
 	if err != nil {
@@ -134,6 +150,10 @@ func addToBashrc(filename, line string) error {
 	return file.Close()
 }
 
+// removeFromBashrc removes the given line from the specified bashrc file.
+// It opens the file, scans each line to build a new slice excluding the given line,
+// closes and deletes the original file, recreates it, writes the new lines slice,
+// and closes the new file. Returns any error encountered.
 func removeFromBashrc(filename, line string) error {
 	file, err := os.Open(filename)
 	if err != nil {
