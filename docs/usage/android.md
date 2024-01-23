@@ -1,4 +1,4 @@
-# Guide to Run JioTV Go on Android Using Termux and UserLand
+# Guide to Run JioTV Go on Android
 
 This guide will walk you through the process of downloading the Go binary from GitHub Releases and running it on your Android device using two different methods: Termux and UserLand.
 
