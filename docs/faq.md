@@ -74,3 +74,11 @@ Simply run the following command:
 ```sh
 jiotv_go-linux-{arch} update
 ```
+
+## How do I stop JioTV Go server?
+
+Press `Ctrl + C` in the terminal where you have started JioTV Go.
+
+## How do I Uninstall JioTV Go completely?
+
+Simply delete all files related to JioTV Go. If you have installed JioTV Go using Docker, then delete the Docker image. If you have installed JioTV Go via pre-built binaries, then delete the binary file. 
