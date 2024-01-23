@@ -3,11 +3,11 @@ try {
     $architecture = (Get-WmiObject Win32_OperatingSystem).OSArchitecture
     switch ($architecture) {
         "64-bit" {
-            $arch = "x86_64"
+            $arch = "amd64"
             break
         }
         "32-bit" {
-            $arch = "x86"
+            $arch = "386"
             break
         }
         "ARM64" {
