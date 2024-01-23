@@ -78,15 +78,15 @@ echo "Step 5: Moved the binary to $HOME/.jiotv_go/"
 # Step 6: Add $HOME/.jiotv_go to PATH
 case "$SHELL_NAME" in
     "bash")
-        echo 'export PATH=$PATH:$HOME/.jiotv_go' >> "$HOME/.bashrc"  # Adjust this line for your shell
+        echo "export PATH=$PATH:$HOME/.jiotv_go" >> "$HOME/.bashrc"  # Adjust this line for your shell
         source "$HOME/.bashrc"  # Adjust this line for your shell
         ;;
     "zsh")
-        echo 'export PATH=$PATH:$HOME/.jiotv_go' >> "$HOME/.zshrc"
+        echo "export PATH=$PATH:$HOME/.jiotv_go" >> "$HOME/.zshrc"
         source "$HOME/.zshrc"
         ;;
     "fish")
-        echo 'set -gx PATH $PATH $HOME/.jiotv_go' >> "$HOME/.config/fish/config.fish"
+        echo "set -gx PATH $PATH $HOME/.jiotv_go" >> "$HOME/.config/fish/config.fish"
         source "$HOME/.config/fish/config.fish"
         ;;
     *)
