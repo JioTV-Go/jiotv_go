@@ -10,6 +10,7 @@ COPY cmd ./cmd
 COPY pkg ./pkg
 COPY web ./web
 COPY internal ./internal
+COPY main.go ./main.go
 
 # Build the Go app with optimizations
 RUN go build -ldflags="-s -w" -trimpath -o /app/jiotv_go .
