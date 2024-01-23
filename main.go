@@ -104,12 +104,38 @@ func main() {
 				},
 			},
 			{
-				Name:        "reset-login",
-				Aliases:     []string{"rl"},
-				Usage:       "Reset login",
-				Description: "The reset-login command deletes the existing login file if it exists. This will force you to login again.",
-				Action: func(c *cli.Context) error {
-					return cmd.ResetLogin()
+				Name:        "login",
+				Aliases:     []string{"l"},
+				Usage:       "Manage login",
+				Description: "The login command manages login. It can be used to login, logout.",
+				Subcommands: []*cli.Command{
+					{
+						Name:        "otp",
+						Aliases:     []string{"o"},
+						Usage:       "Login using OTP",
+						Description: "The otp command logs you in using OTP. It will send OTP to your mobile number, and you have to enter the OTP to login.",
+						Action: func(c *cli.Context) error {
+							return cmd.LoginOTP()
+						},
+					},
+					{
+						Name:        "password",
+						Aliases:     []string{"p"},
+						Usage:       "Login using password",
+						Description: "The password command logs you in using password. It will ask for your username and password, and login using that.",
+						Action: func(c *cli.Context) error {
+							return cmd.LoginPassword()
+						},
+					},
+					{
+						Name:        "reset",
+						Aliases:     []string{"lo", "logout"},
+						Usage:       "Logout",
+						Description: "The logout command logs you out. It will delete the login file.",
+						Action: func(c *cli.Context) error {
+							return cmd.Logout()
+						},
+					},
 				},
 			},
 		},
