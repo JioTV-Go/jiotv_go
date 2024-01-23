@@ -21,6 +21,12 @@ try {
 
     Write-Host "Detected architecture: $arch"
 
+    # If the binary already exists, delete it
+    if (Test-Path jiotv_go.exe) {
+        Write-Host "Deleting existing binary"
+        Remove-Item jiotv_go.exe
+    }
+
     # Fetch the latest binary
     $binaryUrl = "https://api.github.com/repos/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-windows-$arch.exe"
     Write-Host "Fetching the latest binary from $binaryUrl"
