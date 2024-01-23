@@ -1,8 +1,6 @@
 # Miscellaneous
 
-## Buffering issues on IPTV Players
-
-If you are facing buffering issues on IPTV players, try enforcing a specific quality. 
+## Enforce a specific quality
 
 If I want to use the `high` quality, I will use the following URL:
 
@@ -10,7 +8,7 @@ If I want to use the `high` quality, I will use the following URL:
 http://localhost:5001/playlist.m3u?q=high
 ```
 
-Where `q` can be `low`, `medium`, `high`, or `l`, `m`, `h`.
+Where `high` can be replaced with `low`, `medium`, `high`, or `l`, `m`, `h`.
 
 If your internet speed is low, you can use the `medium` or `low` quality.
 
