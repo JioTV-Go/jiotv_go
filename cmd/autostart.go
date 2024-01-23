@@ -154,7 +154,7 @@ func removeFromBashrc(filename, line string) error {
 	if err != nil {
 		return err
 	}
-	// skipcq: GSC-G307 - file.Close() should be called before return
+	// skipcq: GO-S2307 - file.Close() should be called before return
 	defer file.Close()
 
 	tempFilename := filename + ".tmp"
@@ -162,7 +162,7 @@ func removeFromBashrc(filename, line string) error {
 	if err != nil {
 		return err
 	}
-	// skipcq: GSC-G307 - tempFile.Close() should be called before return
+	// skipcq: GO-S2307 - tempFile.Close() should be called before return
 	defer tempFile.Close()
 
 	scanner := bufio.NewScanner(file)
