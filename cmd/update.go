@@ -42,7 +42,12 @@ func Update(currentVersion, customVersion string) error {
 	}
 
 	latestVersion := release.TagName
-	fmt.Printf("Latest version: %s\n", latestVersion)
+
+	if customVersion == "" {
+		fmt.Printf("Latest version: %s\n", latestVersion)
+	} else {
+		fmt.Printf("Custom version: %s\n", customVersion)
+	}
 
 	// Compare versions
 	if customVersion == "" && compareVersions(currentVersion, latestVersion) >= 0 {
@@ -57,7 +62,7 @@ func Update(currentVersion, customVersion string) error {
 	}
 
 	// Choose the appropriate asset based on os and arch
-	assetName := fmt.Sprintf("jiotv_go-%s-%s", os_name, arch)
+	assetName := fmt.Sprintf("jiotv_go-v2.21.7-%s-%s", os_name, arch)
 	if os_name == "windows" {
 		assetName += ".exe"
 	}
