@@ -37,6 +37,15 @@ Take advantage of JioTV Go's Electronic Program Guide to enrich your IPTV setup.
 
    EPG updates every 24 hours, providing program information for a 2-day duration.
 
+3. **Disable EPG:**
+   - If you have enabled EPG via configuration, set the `epg` config value to `false`. 
+   - Then run 
+     
+     ```
+     jiotv_go epg delete
+     ```
+
+   This will delete the existing EPG file if it exists and disable EPG on the server.
 
 ## Buffering issues on IPTV Players
 
@@ -56,4 +65,4 @@ If your internet speed is low, you can use the `medium` or `low` quality.
 
 Please note that JioTV Go currently does not support catch-up functionality. If you possess the expertise to implement this feature, we welcome your contribution! Open a pull request, and we appreciate your valuable input.
 
-Enjoy the seamless integration of JioTV Go into your IPTV setup. For any queries or assistance, refer to our user-friendly documentation or connect with our support team. Happy streaming!
+Enjoy the seamless integration of JioTV Go into your IPTV setup. For any queries or assistance, refer to our user-friendly documentation or connect with our community on [Telegram](/#community). Happy streaming!
