@@ -4,6 +4,7 @@
 
 - [Get Started](./get_started.md)
 - [Usage](./usage/usage.md)
+  - [Android](./usage/android.md)
   - [IPTV Guide](./usage/iptv.md)
   - [URL Paths](./usage/paths.md)
   - [Windows](./usage/windows.md)

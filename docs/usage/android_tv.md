@@ -31,7 +31,12 @@ You can use Termux to run JioTV Go on your Android TV. Follow the Linux instruct
 
 ## Auto Start JioTV Go on Android TV
 
-We recommend you using this app from [Siddharth](https://github.com/siddharthsky) called 
+We recommend you using this app from [Siddharth](https://github.com/siddharthsky) called [Sparkle-TV2](https://github.com/siddharthsky/SparkleTV2-auto-service) to auto start JioTV Go on Android TV. Download the APK from the [releases page](https://github.com/siddharthsky/SparkleTV2-auto-service/releases) and install it on your Android TV.
+
+Other apps that you can use to auto start JioTV Go on Android TV:
+
+- [Termux:Boot](https://play.google.com/store/apps/details?id=com.termux.boot)
+- [AutoStart](https://play.google.com/store/apps/details?id=com.autostart)
 
 ## Third-party EPG Providers
 
