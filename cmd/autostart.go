@@ -152,44 +152,41 @@ func addToBashrc(filename, line string) error {
 
 // removeFromBashrc removes the given line from the specified bashrc file.
 // It opens the file, scans each line to build a new slice excluding the given line,
-// closes and deletes the original file, recreates it, writes the new lines slice,
-// and closes the new file. Returns any error encountered.
+// and writes the modified content to a temporary file. Finally, it renames the
+// temporary file to the original filename. Returns any error encountered.
 func removeFromBashrc(filename, line string) error {
 	file, err := os.Open(filename)
 	if err != nil {
 		return err
 	}
+	defer file.Close()
 
-	var lines []string
+	tempFilename := filename + ".tmp"
+	tempFile, err := os.Create(tempFilename)
+	if err != nil {
+		return err
+	}
+	defer tempFile.Close()
+
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
 		currentLine := scanner.Text()
 		if !strings.Contains(currentLine, line) {
-			lines = append(lines, currentLine)
+			_, err := fmt.Fprintln(tempFile, currentLine)
+			if err != nil {
+				return err
+			}
 		}
 	}
 
-	err = file.Close()
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+
+	err = os.Rename(tempFilename, filename)
 	if err != nil {
 		return err
 	}
 
-	err = os.Remove(filename)
-	if err != nil {
-		return err
-	}
-
-	newFile, err := os.Create(filename)
-	if err != nil {
-		return err
-	}
-
-	for _, l := range lines {
-		_, err = fmt.Fprintln(newFile, l)
-		if err != nil {
-			return err
-		}
-	}
-
-	return newFile.Close()
+	return nil
 }
