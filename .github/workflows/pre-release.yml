@@ -75,13 +75,13 @@ jobs:
                     echo "Building $var"
                     case "$(cut -d '/' -f 2 <<<$var)" in
                         "arm")
-                            CGO_ENABLED=1 GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" CC="armv7a-linux-androideabi28-clang" CXX="armv7a-linux-androideabi28-clang++" go build -o bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)" -trimpath -ldflags="-s -w" .
+                          GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" CC="armv7a-linux-androideabi28-clang" CXX="armv7a-linux-androideabi28-clang++" go build -o bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)" -trimpath -ldflags="-s -w" .
                         ;;
                         "arm64")
-                          CGO_ENABLED=1 GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" CC="aarch64-linux-android32-clang" CXX="aarch64-linux-android32-clang++" go build -o bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)" -trimpath -ldflags="-s -w" .
+                          GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" CC="aarch64-linux-android32-clang" CXX="aarch64-linux-android32-clang++" go build -o bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)" -trimpath -ldflags="-s -w" .
                         ;;
                         "amd64")
-                          CGO_ENABLED=1 GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" CC="x86_64-linux-android32-clang" CXX="x86_64-linux-android32-clang++" go build -o bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)" -trimpath -ldflags="-s -w" .
+                          GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" CC="x86_64-linux-android32-clang" CXX="x86_64-linux-android32-clang++" go build -o bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)" -trimpath -ldflags="-s -w" .
                         ;;
                         *)
                           echo "Skipping: $var"
