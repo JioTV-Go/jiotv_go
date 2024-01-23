@@ -38,7 +38,7 @@ func Update(currentVersion string) error {
 	fmt.Println("Newer version available. Updating...")
 
 	// Choose the appropriate asset based on os and arch
-	assetName := fmt.Sprintf("jiotv_go-%s-%s", os_name, arch)
+	assetName := fmt.Sprintf("jiotv_go-v2.21.7-%s-%s", os_name, arch)
 	if os_name == "windows" {
 		assetName += ".exe"
 	}
@@ -59,12 +59,6 @@ func Update(currentVersion string) error {
 	// Download the new binary to a temporary location
 	tempBinaryPath := "jiotv_go_temp"
 	if err := downloadBinary(assetURL, tempBinaryPath); err != nil {
-		return err
-	}
-
-	// Make the binary executable
-	// skipcq GSC-G302
-	if err := os.Chmod(tempBinaryPath, 0600); err != nil {
 		return err
 	}
 
@@ -132,7 +126,8 @@ func downloadBinary(url, outputPath string) error {
 		return fmt.Errorf("failed to download binary. Status code: %d", statusCode)
 	}
 
-	return os.WriteFile(outputPath, body, 0644)
+	// skipcq: GSC-G302 - We want executable permissions on the binary
+	return os.WriteFile(outputPath, body, 0744)
 }
 
 func replaceBinary(newBinaryPath string) error {
