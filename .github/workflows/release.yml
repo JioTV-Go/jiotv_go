@@ -38,12 +38,6 @@ jobs:
         with:
           go-version-file: "go.mod"
 
-      - name: Setup android NDK
-        run: |
-          wget -q --show-progress https://dl.google.com/android/repository/android-ndk-r26b-linux.zip
-          unzip -qq android-ndk-r26b-linux.zip
-          echo "$PWD/android-ndk-r26b/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_PATH
-
       - name: Increment version 📈
         id: gen_tag
         run: |
@@ -98,6 +92,12 @@ jobs:
           git push --tags --force
           # Set the new tag.
           echo "tag=$new_version" >> $GITHUB_OUTPUT
+
+      - name: Setup android NDK
+        run: |
+          wget -q --show-progress https://dl.google.com/android/repository/android-ndk-r26b-linux.zip
+          unzip -qq android-ndk-r26b-linux.zip
+          echo "$PWD/android-ndk-r26b/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_PATH
 
       - name: Build Executables 🗄️ 🔃
         run: |
