@@ -43,12 +43,6 @@ func Update(currentVersion, customVersion string) error {
 
 	latestVersion := release.TagName
 
-	if customVersion == "" {
-		fmt.Printf("Latest version: %s\n", latestVersion)
-	} else {
-		fmt.Printf("Custom version: %s\n", customVersion)
-	}
-
 	// Compare versions
 	if customVersion == "" && compareVersions(currentVersion, latestVersion) >= 0 {
 		fmt.Println("You are already using the latest version. No update needed.")
@@ -56,7 +50,7 @@ func Update(currentVersion, customVersion string) error {
 	}
 
 	if customVersion == "" {
-		fmt.Println("Newer version available. Updating...")
+		fmt.Println("Newer version available. Updating to", latestVersion, "...")
 	} else {
 		fmt.Println("Updating to custom version", customVersion)
 	}
