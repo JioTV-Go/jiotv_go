@@ -86,15 +86,15 @@ echo "Step 5: Moved the binary to $HOME/.jiotv_go/bin"
 case "$SHELL_NAME" in
     "bash")
         echo "export PATH=$PATH:$HOME/.jiotv_go/bin" >> "$HOME/.bashrc"  # Adjust this line for your shell
-        source "$HOME/.bashrc"  # Adjust this line for your shell
+        echo "Please restart your terminal or run source $HOME/.bashrc"
         ;;
     "zsh")
         echo "export PATH=$PATH:$HOME/.jiotv_go/bin" >> "$HOME/.zshrc"
-        source "$HOME/.zshrc"
+        echo "Please restart your terminal or run source $HOME/.zshrc"
         ;;
     "fish")
         echo "set -gx PATH $PATH $HOME/.jiotv_go/bin" >> "$HOME/.config/fish/config.fish"
-        source "$HOME/.config/fish/config.fish"
+        echo "Please restart your terminal or run source $HOME/.config/fish/config.fish"
         ;;
     *)
         echo "Unsupported shell: $SHELL_NAME"
@@ -103,5 +103,4 @@ case "$SHELL_NAME" in
 esac
 
 # Step 7: Inform the user
-echo "JioTV Go has successfully installed. Start by running jiotv_go help"
-echo "If you get command not found error, restart your terminal and run jiotv_go"
+echo "JioTV Go has successfully installed. Restart your terminal and start by running \"jiotv_go help\""
