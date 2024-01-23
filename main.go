@@ -103,6 +103,15 @@ func main() {
 					},
 				},
 			},
+			{
+				Name:        "reset-login",
+				Aliases:     []string{"rl"},
+				Usage:       "Reset login",
+				Description: "The reset-login command deletes the existing login file if it exists. This will force you to login again.",
+				Action: func(c *cli.Context) error {
+					return cmd.ResetLogin()
+				},
+			},
 		},
 		CommandNotFound: func(c *cli.Context, command string) {
 			log.Printf("Command '%s' not found.\n", command)
