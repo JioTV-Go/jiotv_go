@@ -80,11 +80,6 @@ func AutoStart(extraArgs string) error {
 			if err != nil {
 				return err
 			}
-			// Add the auto start line with extra args
-			err = addToBashrc(bashrcPath, autoStartLine+" "+extraArgs)
-			if err != nil {
-				return err
-			}
 		}
 
 		return nil
