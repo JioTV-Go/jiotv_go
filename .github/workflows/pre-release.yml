@@ -50,6 +50,11 @@ jobs:
                 echo "Skipping: $var (windows/arm)"
                 continue
             fi
+            # skip 386 for android
+            if [[ "$(cut -d '/' -f 1 <<<$var)" == "android" && "$(cut -d '/' -f 2 <<<$var)" == "386" ]]; then
+                echo "Skipping: $var (android/386)"
+                continue
+            fi
             case "$(cut -d '/' -f 1 <<<$var)" in
                 "windows")
                     echo "Building $var"
