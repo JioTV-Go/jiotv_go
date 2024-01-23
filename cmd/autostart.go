@@ -108,7 +108,6 @@ func grep(filename, pattern string) (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	defer file.Close()
 
 	scanner := bufio.NewScanner(file)
 	for scanner.Scan() {
@@ -118,7 +117,7 @@ func grep(filename, pattern string) (bool, error) {
 		}
 	}
 
-	return false, nil
+	return false, file.Close()
 }
 
 func addToBashrc(filename, line string) error {
@@ -126,14 +125,13 @@ func addToBashrc(filename, line string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 
 	_, err = fmt.Fprintln(file, line)
 	if err != nil {
 		return err
 	}
 
-	return nil
+	return file.Close()
 }
 
 func removeFromBashrc(filename, line string) error {
@@ -141,7 +139,6 @@ func removeFromBashrc(filename, line string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
 
 	var lines []string
 	scanner := bufio.NewScanner(file)
@@ -150,6 +147,11 @@ func removeFromBashrc(filename, line string) error {
 		if !strings.Contains(currentLine, line) {
 			lines = append(lines, currentLine)
 		}
+	}
+
+	err = file.Close()
+	if err != nil {
+		return err
 	}
 
 	err = os.Remove(filename)
@@ -161,7 +163,6 @@ func removeFromBashrc(filename, line string) error {
 	if err != nil {
 		return err
 	}
-	defer newFile.Close()
 
 	for _, l := range lines {
 		_, err = fmt.Fprintln(newFile, l)
@@ -170,5 +171,5 @@ func removeFromBashrc(filename, line string) error {
 		}
 	}
 
-	return nil
+	return newFile.Close()
 }
