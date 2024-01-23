@@ -26,6 +26,8 @@ JioTV Go provides an EPG endpoint that you can use to generate an EPG for your I
 
 The EPG is disabled by default. To enable it, you need to set the `epg` config value to `true`. for more information, see the [Config](./config.md#epg-electronic-program-guide) page.
 
+You can also use the `epg generate` command to generate the EPG. Read the [EPG Command](./usage.md#3-epg-command) section for more information.
+
 Once you have enabled the EPG, wait for a few minutes for the EPG to be generated. Then you can use the following URL in your IPTV player:
 
 ```
