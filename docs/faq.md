@@ -47,7 +47,7 @@ No. JioTV Go does not support catchup. Because I don't know how to implement it.
 
 ## Why do I get buffering in the IPTV player?
 
-Read the [Buffering issues on IPTV](./miscellaneous.md#buffering-issues-on-iptv-players) guide.
+Read the [Buffering issues on IPTV](./usage/iptv.md#buffering-issues-on-iptv-players) guide.
 
 ## Why do I see same resolution under quality options?
 
