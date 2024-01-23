@@ -12,7 +12,7 @@ COPY web ./web
 COPY internal ./internal
 
 # Build the Go app with optimizations
-RUN go build -ldflags="-s -w" -trimpath -o /app/jiotv_go ./cmd/jiotv_go
+RUN go build -ldflags="-s -w" -trimpath -o /app/jiotv_go .
 
 # Stage 2: Create the final minimal image
 # skipcq: DOK-DL3007
