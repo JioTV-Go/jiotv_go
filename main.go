@@ -138,6 +138,22 @@ func main() {
 					},
 				},
 			},
+			{
+				Name:        "autostart",
+				Usage:       "Manage auto start for bash shell",
+				Description: "The autostart command manages auto start for bash shell. It can be used to enable or disable auto start. We only support BASH Terminal and recommend on Android Termux.",
+				Action: func(c *cli.Context) error {
+					return cmd.AutoStart(c.String("args"))
+				},
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:    "args",
+						Aliases: []string{"a"},
+						Value:   "",
+						Usage:   "String Value Arguments passed to serve/run/start command while auto starting",
+					},
+				},
+			},
 		},
 		CommandNotFound: func(c *cli.Context, command string) {
 			log.Printf("Command '%s' not found.\n", command)
