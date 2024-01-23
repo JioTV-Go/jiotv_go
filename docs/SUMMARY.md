@@ -15,6 +15,7 @@
 - [Development](./development.md)
 - [Contributing](./contributing.md)
 - [Miscellaneous](./miscellaneous.md)
+- [Screenshots](./screenshots.md)
 - [FAQ](./faq.md)
 
 ---
