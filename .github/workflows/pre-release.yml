@@ -40,8 +40,14 @@ jobs:
           mkdir -p bin
           allowed_archs="amd64 arm arm64 386"
           for var in $(go tool dist list); do
+            # skip disallowed archs
             if [[ ! $allowed_archs =~ "$(cut -d '/' -f 2 <<<$var)" ]]; then
                 echo "Skipping: $var"
+                continue
+            fi
+            # skip arm for windows
+            if [[ "$(cut -d '/' -f 1 <<<$var)" == "windows" && "$(cut -d '/' -f 2 <<<$var)" == "arm" ]]; then
+                echo "Skipping: $var (windows/arm)"
                 continue
             fi
             case "$(cut -d '/' -f 1 <<<$var)" in
