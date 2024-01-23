@@ -1,53 +1,68 @@
 #!/bin/bash
 
-# This script is used to detect os type and download auto install script and execute it.
-
-# If env var TERMUX_VERSION is set, then we are running in termux android app.
-# Otherwise, we are running in linux/darwin
-
-throw_install_failed() {
-    # Check if optional message is provided
-    if [ ! -z "$1" ]; then
-        echo "$1"
-    else
-        echo "Installation failed."
+# Step 1: Identify the operating system
+OS=""
+if [[ "$OSTYPE" == "linux-gnu" ]]; then
+    OS="linux"
+    if [[ -n "$OS_ENV" && "$OS_ENV" == "android" ]]; then
+        OS="android"
     fi
-    echo "Please perform manual installation by visiting https://github.com/rabilrbl/jiotv_go"
-    exit 1
-}
-
-check_previous_command_success() {
-    if [ $? -ne 0 ]; then
-        throw_install_failed "$@"
-    fi
-}
-
-install() {
-    OS_ENV=$1
-    if [ "$OS_ENV" == "android" ]; then
-        file_name="android.sh"
-    else
-        file_name="install.sh"
-    fi
-    if [ -f "jiotv_go.sh" ]; then
-        echo "Existing jiotv_go.sh found. Removing it"
-        rm "jiotv_go.sh"
-        check_previous_command_success "Failed to remove old jiotv_go.sh. Do you have permission to remove a file?"
-    fi
-    echo "Downloading JioTV Go installation script"
-    curl --progress-bar -Lo "jiotv_go.sh" "https://raw.githubusercontent.com/rabilrbl/jiotv_go/main/$file_name"
-    check_previous_command_success "Failed to download JioTV Go installation script. Do you have internet connection?"
-    chmod +x "jiotv_go.sh"
-    check_previous_command_success "Failed to make jiotv_go.sh executable. Do you have permission to make a file executable?"
-    ./jiotv_go.sh install
-    check_previous_command_success
-}
-
-# If $HOME == /data/data/com.termux/files/home then we are running in termux android app.
-if [ "$HOME" == "/data/data/com.termux/files/home" ]; then
-    # android
-    install "android"
+elif [[ "$OSTYPE" == "darwin"* ]]; then
+    OS="darwin"
 else
-    # linux or darwin
-    install "linux"
+    echo "Unsupported operating system: $OSTYPE"
+    exit 1
 fi
+
+echo "Step 1: Identified operating system as $OS"
+
+# Step 2: Identify processor architecture
+ARCH=$(uname -m)
+case $ARCH in
+    "x86_64")
+        ARCH="amd64"
+        ;;
+    "aarch64")
+        ARCH="arm64"
+        ;;
+    "i386" | "i686")
+        ARCH="386"
+        ;;
+    "armv7l")
+        ARCH="arm"
+        ;;
+    *)
+        echo "Unsupported architecture: $ARCH"
+        exit 1
+        ;;
+esac
+
+echo "Step 2: Identified processor architecture as $ARCH"
+
+# Step 3: Fetch the latest binary
+BINARY_URL="https://api.github.com/repos/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-$OS-$ARCH"
+echo "Step 3: Fetching the latest binary from $BINARY_URL"
+curl -SL --progress-bar --retry 5 --retry-delay 2 -o jiotv_go "$BINARY_URL" || { echo "Failed to download binary"; exit 1; }
+
+# Step 4: Give executable permissions
+chmod +x jiotv_go
+echo "Step 4: Granted executable permissions to the binary"
+
+# Step 5: Move binary to local bin folder
+if [[ "$OS" == "android" && -n "$PREFIX" ]]; then
+    BIN_FOLDER="$PREFIX/bin/"
+    if [[ ! -d "$BIN_FOLDER" ]]; then
+        mkdir -p "$BIN_FOLDER"
+    fi
+    mv jiotv_go "$BIN_FOLDER"
+    echo "Step 5: Moved the binary to $BIN_FOLDER"
+else
+    if [[ ! -d "$HOME/bin" ]]; then
+        mkdir -p "$HOME/bin"
+    fi
+    mv jiotv_go "$HOME/bin/"
+    echo "Step 5: Moved the binary to $HOME/bin/"
+fi
+
+# Step 6: Inform the user
+echo "JioTV Go has successfully installed. Start by running jiotv_go help"
