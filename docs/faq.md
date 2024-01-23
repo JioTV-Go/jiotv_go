@@ -4,7 +4,6 @@ Before proceeding to the FAQ, here are the pages that you should read first:
 
 - [Usage](../usage/usage.md)
 - [IPTV Guide](../usage/iptv.md)
-- [Termux Guide](./termux.md)
 - [Config](../config.md)
 - [Cloud Hosting](../cloud_hosting.md)
 
@@ -16,7 +15,7 @@ No. JioTV Go does not support JioFiber / JioFiber Set-Top Box. JioTV Go only sup
 
 You can use JioTV Go on your TV using the following methods:
 
-Install JioTV Go on your Android TV using [Termux](./termux.md). Read the [Termux Guide](./termux.md) for more information.
+Install JioTV Go on your Android TV using Termux or UserLand. Read the [Android TV](../usage/android_tv.md) page for more information.
 
 ## How can I access JioTV Go from another device (e.g. computer/TV/phone) in my local network?
 

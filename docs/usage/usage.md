@@ -2,12 +2,6 @@
 
 JioTV Go is a command-line application. It can be used to start the server, update JioTV Go and control certain aspects of the server.
 
-<div class="warning">
-
-Android users, if you face DNS Lookup errors, please read the [Note for Termux Users](./termux.md) page.
-
-</div>
-
 ## Command Line Interface
 
 The `jiotv_go` CLI has the following structure:

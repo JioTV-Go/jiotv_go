@@ -26,7 +26,7 @@ You can use UserLand to run JioTV Go on your Android TV. Choose the Alpine image
 
 ### Using Termux
 
-You can use Termux to run JioTV Go on your Android TV. Follow the Termux instructions to setup JioTV Go at [Termux](./termux.md).
+You can use Termux to run JioTV Go on your Android TV. Follow the Linux instructions to setup JioTV Go at [Android](../usage/android.md).
 
 
 ## Auto Start JioTV Go on Android TV
