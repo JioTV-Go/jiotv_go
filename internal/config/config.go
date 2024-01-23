@@ -8,6 +8,9 @@ import (
 	"github.com/ilyakaznacheev/cleanenv"
 )
 
+// JioTVConfig defines the configuration options for the JioTV client.
+// It includes options for enabling features like EPG, debug mode, DRM, etc.
+// As well as configuration for credentials, proxies, file paths and more.
 type JioTVConfig struct {
 	// Enable Or Disable EPG Generation. Default: false
 	EPG bool `yaml:"epg" env:"JIOTV_EPG" json:"epg" toml:"epg"`
@@ -32,6 +35,10 @@ type JioTVConfig struct {
 // Cfg is the global config variable
 var Cfg JioTVConfig
 
+// Load loads the JioTVConfig from a file.
+// It first checks if a filename is provided, otherwise tries to find a common config file.
+// If no file is found, it loads config from environment variables.
+// It logs messages about which config source is being used.
 func (c *JioTVConfig) Load(filename string) error {
 	if filename == "" {
 		filename = commonFileExists()
@@ -44,6 +51,9 @@ func (c *JioTVConfig) Load(filename string) error {
 	return cleanenv.ReadConfig(filename, c)
 }
 
+// Get retrieves the value of the config field specified by key.
+// It uses reflection to get the field value from the global Cfg variable.
+// Returns the field value as an interface{}, or nil if the field is invalid.
 func (*JioTVConfig) Get(key string) interface{} {
 	r := reflect.ValueOf(Cfg)
 	f := reflect.Indirect(r).FieldByName(key)
@@ -53,7 +63,13 @@ func (*JioTVConfig) Get(key string) interface{} {
 	return nil
 }
 
-// commonFileExists checks if any of the common config files exists
+// commonFileExists checks for the existence of common config
+// file names and returns the first one found. It searches
+// for config files in the following formats:
+//   - jiotv_go.{yml,toml,json}
+//   - config.{json,yml,toml}
+//
+// If no file is found, an empty string is returned.
 func commonFileExists() string {
 
 	commonFiles := []string{"jiotv_go.yml", "jiotv_go.toml", "jiotv_go.json", "config.json", "config.yml", "config.toml"}
