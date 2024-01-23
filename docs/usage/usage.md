@@ -17,93 +17,9 @@ jiotv_go [global options] command [command options]
 
 ### Commands
 
-#### 1. Serve Command
+#### 1. Login Command
 
-The `serve` command starts the JioTV Go server.
-
-```shell
-jiotv_go serve [command options] [arguments...]
-```
-
-**Options:**
-
-- `--config value, -c value`: Path to the configuration file.
-  <br>By default, JioTV Go will look for a file named `jiotv_go.(toml|yaml|json)` or `config.(toml|yaml|json)` in the same directory as the binary.
-- `--host value, -H value`: Host to listen on (default: "localhost").
-- `--port value, -p value`: Port to listen on (default: "5001").
-- `--public, -P`: Open the server to the public. This will expose your server outside your local network. Equivalent to passing `--host 0.0.0.0` (default: false).
-- `--prefork`: Enable prefork. This will enable preforking the server to multiple processes. This is useful for production deployment (default: false).
-- `--help, -h`: Show help for the `serve` command.
-
-**Example:**
-
-This will start the server on port 8080 and open it to the public.
-
-```shell
-jiotv_go serve --port 8080 --public
-```
-
-<div class="warning">
-Use of the <code>--public</code> flag is not recommended. It exposes your server outside your local network. Use it only if it is necessary for you in some cases where you want to access JioTV Go server in your phone to TV or other devices.
-</div>
-
-#### 2. Update Command
-
-The `update` command updates JioTV Go to the latest version.
-
-```
-jiotv_go update
-```
-
-#### 3. EPG Command
-
-The `epg` command helps you to manage the EPG feature of JioTV Go.
-
-```shell
-jiotv_go epg [command options] [arguments...]
-```
-
-### USAGE
-
-jiotv_go epg command [command options]
-
-### DESCRIPTION
-
-The `epg` command manages EPG. It can be used to generate EPG, regenerate EPG, and delete EPG.
-
-### COMMANDS
-
-- `generate`, `gen`, `g`: Generate EPG
-- `Delete`, `del`, `d`: Delete EPG
-- `help`, `h`: Shows a list of commands or help for one command
-
-### generate (gen, g)
-
-#### USAGE
-
-jiotv_go epg generate [command options] [arguments...]
-
-#### DESCRIPTION
-
-The `generate` command generates EPG by downloading the latest EPG from JioTV, and saving it to epg.xml.gz.
-
-It will delete the existing EPG file if it exists. Once the EPG file is generated, it will be automatically updated by the server. If you want to disable it, use the `epg delete` command.
-
-This is also shortcut method for enabling EPG than setting `epg` to `true` in the configuration file. Read the [EPG Config](../config.md#epg-electronic-program-guide) section for more information.
-
-### delete (del, d)
-
-#### USAGE
-
-jiotv_go epg Delete [command options] [arguments...]
-
-#### DESCRIPTION
-
-The `delete` command deletes the existing EPG file if it exists. This will disable EPG on the server.
-
-#### 4. Login Command
-
-The `login` command helps you to login to JioTV Go.
+The `login` command helps you to login to JioTV Go. Alternatively, you can also login using the web interface at `http://localhost:5001/`.
 
 ```
 jiotv_go login [command options] [arguments...]
@@ -156,7 +72,91 @@ jiotv_go login reset
 
 The `reset` command helps you to reset your credentials. This will delete the existing credentials. You have to login again to use JioTV Go.
 
+
+#### 2. Serve Command
+
+The `serve` command starts the JioTV Go server.
+
+```shell
+jiotv_go serve [command options] [arguments...]
+```
+
 **Options:**
+
+- `--config value, -c value`: Path to the configuration file.
+  <br>By default, JioTV Go will look for a file named `jiotv_go.(toml|yaml|json)` or `config.(toml|yaml|json)` in the same directory as the binary.
+- `--host value, -H value`: Host to listen on (default: "localhost").
+- `--port value, -p value`: Port to listen on (default: "5001").
+- `--public, -P`: Open the server to the public. This will expose your server outside your local network. Equivalent to passing `--host 0.0.0.0` (default: false).
+- `--prefork`: Enable prefork. This will enable preforking the server to multiple processes. This is useful for production deployment (default: false).
+- `--help, -h`: Show help for the `serve` command.
+
+**Example:**
+
+This will start the server on port 8080 and open it to the public.
+
+```shell
+jiotv_go serve --port 8080 --public
+```
+
+<div class="warning">
+Use of the <code>--public</code> flag is not recommended. It exposes your server outside your local network. Use it only if it is necessary for you in some cases where you want to access JioTV Go server in your phone to TV or other devices.
+</div>
+
+#### 3. Update Command
+
+The `update` command updates JioTV Go to the latest version.
+
+```
+jiotv_go update
+```
+
+#### 4. EPG Command
+
+The `epg` command helps you to manage the EPG feature of JioTV Go.
+
+```shell
+jiotv_go epg [command options] [arguments...]
+```
+
+### USAGE
+
+jiotv_go epg command [command options]
+
+### DESCRIPTION
+
+The `epg` command manages EPG. It can be used to generate EPG, regenerate EPG, and delete EPG.
+
+### COMMANDS
+
+- `generate`, `gen`, `g`: Generate EPG
+- `Delete`, `del`, `d`: Delete EPG
+- `help`, `h`: Shows a list of commands or help for one command
+
+### generate (gen, g)
+
+#### USAGE
+
+jiotv_go epg generate [command options] [arguments...]
+
+#### DESCRIPTION
+
+The `generate` command generates EPG by downloading the latest EPG from JioTV, and saving it to epg.xml.gz.
+
+It will delete the existing EPG file if it exists. Once the EPG file is generated, it will be automatically updated by the server. If you want to disable it, use the `epg delete` command.
+
+This is also shortcut method for enabling EPG than setting `epg` to `true` in the configuration file. Read the [EPG Config](../config.md#epg-electronic-program-guide) section for more information.
+
+### delete (del, d)
+
+#### USAGE
+
+jiotv_go epg Delete [command options] [arguments...]
+
+#### DESCRIPTION
+
+The `delete` command deletes the existing EPG file if it exists. This will disable EPG on the server.
+
 
 #### 5. Help Command
 
