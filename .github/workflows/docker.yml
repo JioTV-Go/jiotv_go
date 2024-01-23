@@ -13,6 +13,7 @@ on:
       - "run_server.bat"
       - "assets/**"
       - "docs/**"
+      - "scripts/**"
       - "**.sh"
       - "**.md"
       - ".github/workflows/dependabot_action.yml"
