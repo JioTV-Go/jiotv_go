@@ -1,17 +1,17 @@
 try {
-    # Identify processor architecture
-    $architecture = (Get-WmiObject Win32_Processor).Architecture
+    # Identify operating system architecture
+    $architecture = (Get-WmiObject Win32_OperatingSystem).OSArchitecture
     switch ($architecture) {
-        9 {
-            $arch = "arm64"
-            break
-        }
-        0 {
-            $arch = "386"
-            break
-        }
-        5 {
+        "64-bit" {
             $arch = "x86_64"
+            break
+        }
+        "32-bit" {
+            $arch = "x86"
+            break
+        }
+        "ARM64" {
+            $arch = "arm64"
             break
         }
         default {
