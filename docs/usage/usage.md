@@ -170,6 +170,34 @@ jiotv_go help [command]
 jiotv_go help serve
 ```
 
+## 6. Autostart Command for Unix
+
+The `autostart` command helps you to setup JioTV Go to start automatically when terminal starts.
+
+This is not recommended for devices other than Android Phone or TV.
+
+```bash
+jiotv_go autostart
+```
+
+**Options:**
+
+- `-a value, --args value`: Arguments for the `serve`/`run`/`start` command.
+
+If you want to arguments for the `serve`/`run`/`start` command, you can pass `-a` flag enclose all the arguments in quotes.
+
+For example if you want to run at port 8080 and pass a configuration file, you can use the following command:
+
+```bash
+jiotv_go autostart -a "--port 8080 --config config.toml"
+```
+
+<div class="warning">
+
+Auto detection of config files will only work if binary is in the same directory as the config file.
+
+</div>
+
 ## Support and Issues
 
 For any issues or feature requests, please check the [GitHub repository](https://github.com/rabilrbl/jiotv_go) or create a new issue.
