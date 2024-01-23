@@ -29,7 +29,7 @@ type JioTVConfig struct {
 	Proxy string `yaml:"proxy" env:"JIOTV_PROXY" json:"proxy" toml:"proxy"`
 }
 
-// Global config variable
+// Cfg is the global config variable
 var Cfg JioTVConfig
 
 func (c *JioTVConfig) Load(filename string) error {
