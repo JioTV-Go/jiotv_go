@@ -60,10 +60,13 @@ jobs:
                     echo "Building $var"
                     CGO_ENABLED=0 GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build -o bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var).exe" -trimpath -ldflags="-s -w" .
                   ;;
-                  "android" | "linux" | "darwin")
+                  "linux" | "darwin")
                     echo "Building $var"
                     CGO_ENABLED=0 GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build -o bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)" -trimpath -ldflags="-s -w" .
                   ;;
+                  "android")
+                    echo "Building $var"
+                    CGO_ENABLED=1 GOOS="$(cut -d '/' -f 1 <<<$var)" GOARCH="$(cut -d '/' -f 2 <<<$var)" go build -o bin/"jiotv_go-$(cut -d '/' -f 1 <<<$var)-$(cut -d '/' -f 2 <<<$var)" -trimpath -ldflags="-s -w" .
                   *)
                     echo "Skipping: $var"
                   ;;
