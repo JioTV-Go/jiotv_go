@@ -3,7 +3,7 @@ try {
     $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
     # URL of the PowerShell script
-    $scriptUrl = "https://raw.githubusercontent.com/rabilrbl/jiotv_go/main/install.ps1"
+    $scriptUrl = "https://raw.githubusercontent.com/rabilrbl/jiotv_go/main/scripts/install.ps1"
 
     # Download the script content
     $scriptContent = Invoke-WebRequest -Uri $scriptUrl -UseBasicParsing | Select-Object -ExpandProperty Content
