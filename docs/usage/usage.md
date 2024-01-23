@@ -182,7 +182,7 @@ jiotv_go autostart
 
 **Options:**
 
-- `-a value, --args value`: Arguments for the `serve`/`run`/`start` command.
+- `-a value, --args value`: Options for the `serve`/`run`/`start` command as mentioned in the [Serve Command](#2-serve-command) section.
 
 If you want to arguments for the `serve`/`run`/`start` command, you can pass `-a` flag enclose all the arguments in quotes.
 
@@ -194,7 +194,7 @@ jiotv_go autostart -a "--port 8080 --config config.toml"
 
 <div class="warning">
 
-Auto detection of config files will only work if binary is in the same directory as the config file.
+> Auto detection of config files will only work if binary is in the same directory as the config file.
 
 </div>
 
