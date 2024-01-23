@@ -14,12 +14,6 @@ Where `q` can be `low`, `medium`, `high`, or `l`, `m`, `h`.
 
 If your internet speed is low, you can use the `medium` or `low` quality.
 
-## Third-party EPG Providers
-
-For the individuals having issue with EPG in Android TV, they can use mitthu786's JioTV EPG as a source in IPTV Settings.
-
-Link: https://github.com/mitthu786/tvepg
-
 ## Check if you can run JioTV Go in your VPS/Cloud Server
 
 Execute this command in VPS,

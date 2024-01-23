@@ -27,3 +27,26 @@ You can use UserLand to run JioTV Go on your Android TV. Choose the Alpine image
 ### Using Termux
 
 You can use Termux to run JioTV Go on your Android TV. Follow the Termux instructions to setup JioTV Go at [Termux](./termux.md).
+
+
+## Auto Start JioTV Go on Android TV
+
+We recommend you using this app from [Siddharth](https://github.com/siddharthsky) called 
+
+## Third-party EPG Providers
+
+If you are having issue with EPG in Android TV, please see if you can resolve it by [`egp` command](usage.md#3-epg-command). If you are still having issue, you can use third-party EPG providers.
+
+Use mitthu786's JioTV EPG as a source in IPTV Settings.
+Link: https://github.com/mitthu786/tvepg
+
+There might be other EPG providers. You can search for them on the internet.
+
+## Using mouse and keyboard on Android TV
+
+For mouse and keyboard control such as using Ctrl key, etc. You can use any application that allows you to use mouse and keyboard on Android TV. 
+
+Here are some applications that you can use from your Android phone to control your Android TV:
+
+- [Bluetooth Mouse and Remote](https://play.google.com/store/apps/details?id=com.app.bluetoothremote)
+- [Zank Remote](https://play.google.com/store/apps/details?id=zank.remote)
