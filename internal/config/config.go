@@ -44,7 +44,7 @@ func (c *JioTVConfig) Load(filename string) error {
 	return cleanenv.ReadConfig(filename, c)
 }
 
-func (c *JioTVConfig) Get(key string) interface{} {
+func (*JioTVConfig) Get(key string) interface{} {
 	r := reflect.ValueOf(Cfg)
 	f := reflect.Indirect(r).FieldByName(key)
 	if f.IsValid() {

@@ -116,8 +116,8 @@ type Asset struct {
 }
 
 type Release struct {
-	Assets []Asset `json:"assets"`
-	TagName string `json:"tag_name"`
+	Assets  []Asset `json:"assets"`
+	TagName string  `json:"tag_name"`
 }
 
 func downloadBinary(url, outputPath string) error {
@@ -130,11 +130,7 @@ func downloadBinary(url, outputPath string) error {
 		return fmt.Errorf("failed to download binary. Status code: %d", statusCode)
 	}
 
-	if err := os.WriteFile(outputPath, body, 0644); err != nil {
-		return err
-	}
-
-	return nil
+	return os.WriteFile(outputPath, body, 0644)
 }
 
 func replaceBinary(newBinaryPath string) error {
