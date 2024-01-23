@@ -1,4 +1,28 @@
 try {
+    # Check if running with admin privileges
+    $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    
+     # If user wants to access from anywhere, add to PATH
+    # (Note: This section assumes that you have the user's consent to modify the system environment variable)
+    $accessFromAnywhere = $null
+    while ($accessFromAnywhere -eq $null) {
+        $accessFromAnywhere = Read-Host "Do you want to access jiotv_go from anywhere? (yes/no)"
+        if ($accessFromAnywhere -notin @("yes", "no")) {
+            Write-Host "Invalid choice. Please enter 'yes' or 'no'."
+            $accessFromAnywhere = $null
+        }
+    }
+
+    if ($accessFromAnywhere -eq "yes") {
+        if (-not $isAdmin) {
+            Write-Host "Requesting admin privileges..."
+            
+            # Relaunch the script with admin privileges
+            Start-Process -FilePath "powershell" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+            exit
+        }
+    }
+
     # Identify operating system architecture
     $architecture = (Get-WmiObject Win32_OperatingSystem).OSArchitecture
     switch ($architecture) {
@@ -43,11 +67,17 @@ try {
     Write-Host "Fetching the latest binary from $binaryUrl"
     Invoke-WebRequest -Uri $binaryUrl -OutFile jiotv_go.exe -UseBasicParsing
 
-    # Add the directory to PATH
-    $env:Path = "$env:Path;$homeDirectory"
-
-    # Inform the user
-    Write-Host "JioTV Go has successfully downloaded and added to PATH. Start by running jiotv_go help"
+    if ($accessFromAnywhere -eq "yes") {
+        # Add the directory to PATH in the current session
+        $env:Path = "$env:Path;$homeDirectory"
+        
+        # Modify system environment variable to persist
+        [System.Environment]::SetEnvironmentVariable("Path", [System.Environment]::GetEnvironmentVariable("Path", [System.EnvironmentVariableTarget]::Machine) + ";$homeDirectory", [System.EnvironmentVariableTarget]::Machine)
+        
+        Write-Host "JioTV Go has successfully downloaded and added to PATH. Start by running jiotv_go help"
+    } else {
+        Write-Host "JioTV Go has successfully downloaded. You can run it from the current folder."
+    }
 }
 catch {
     Write-Host "Error: $_"
