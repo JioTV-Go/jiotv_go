@@ -21,6 +21,17 @@ try {
 
     Write-Host "Detected architecture: $arch"
 
+    # Determine the user's home directory
+    $homeDirectory = [System.IO.Path]::Combine($env:USERPROFILE, ".jiotv_go")
+
+    # Create the directory if it doesn't exist
+    if (-not (Test-Path $homeDirectory -PathType Container)) {
+        New-Item -ItemType Directory -Force -Path $homeDirectory
+    }
+
+    # Change to the home directory
+    Set-Location -Path $homeDirectory
+
     # If the binary already exists, delete it
     if (Test-Path jiotv_go.exe) {
         Write-Host "Deleting existing binary"
@@ -30,13 +41,12 @@ try {
     # Fetch the latest binary
     # $binaryUrl = "https://api.github.com/repos/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-windows-$arch.exe"
     # for testing
-    $binaryUrl = "https://github.com/rabilrbl/jiotv_go/releases/download/dev.2024.01.23.18.48.1706035724/jiotv_go-windows-$arch.exe"
+    $binaryUrl = "https://github.com/rabilrbl/jiotv_go/releases/download/dev.2024.01.23.18.54.1706036066/jiotv_go-windows-$arch.exe"
     Write-Host "Fetching the latest binary from $binaryUrl"
     Invoke-WebRequest -Uri $binaryUrl -OutFile jiotv_go.exe -UseBasicParsing
 
     # Add the directory to PATH
-    $binaryPath = Convert-Path ".\"
-    [Environment]::SetEnvironmentVariable("Path", "$($env:Path);$binaryPath", [EnvironmentVariableTarget]::Machine)
+    $env:Path = "$env:Path;$homeDirectory"
 
     # Inform the user
     Write-Host "JioTV Go has successfully downloaded and added to PATH. Start by running jiotv_go help"
