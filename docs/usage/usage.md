@@ -12,6 +12,9 @@ jiotv_go command [command options]
 
 ## Commands
 
+You can always use the `help` command or `-h` / `--help` flag to get help about a command.
+
+
 ## 1. Login Command
 
 The `login` command helps you to login to JioTV Go. Alternatively, you can also login using the web interface at `http://localhost:5001/`.
