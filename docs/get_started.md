@@ -2,6 +2,31 @@
 
 ## Installation
 
+
+### Automatic Installation (Recommended)
+
+#### Linux/Android/macOS
+
+Here's a one-liner to download and install the latest version of JioTV Go on Linux/Android/macOS.
+
+Simply copy and paste the following command in your terminal and press `Enter`:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/rabilrbl/jiotv-go/main/install.sh | bash
+```
+
+The above command will download the latest version of JioTV Go and install it in your system.
+
+#### Windows
+
+Here's a one-liner to download and install the latest version of JioTV Go on Windows.
+
+Simply copy and paste the following command in your PowerShell terminal and press `Enter`:
+
+```powershell
+iwr -useb https://raw.githubusercontent.com/rabilrbl/jiotv-go/main/install.ps1 | iex
+```
+
 <div class="warning">
 
 See the [Docker Setup](#docker-setup) section for Docker installation instructions.
@@ -10,7 +35,7 @@ See the [Docker Setup](#docker-setup) section for Docker installation instructio
 
 ### Pre-Built Binaries
 
-You can download the pre-built binaries for your platform from the [releases](https://github.com/rabilrbl/jiotv-go/releases) page or click on `Binary Name` links in the table below.
+You can also download the pre-built binaries for your platform from the [releases](https://github.com/rabilrbl/jiotv-go/releases) page or click on `Binary Name` links in the table below.
 
 
 #### The following table lists the binaries available for download:

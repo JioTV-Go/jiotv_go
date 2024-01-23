@@ -24,10 +24,15 @@ This will take some time.
 3. Next, Install `wget` and `openssl` by running the following commands:
 
 ```bash
-pkg install wget openssl
+pkg install curl openssl
 ```
 
-3. Identify your architecture by running the following command:
+> For easy method, use [automatic install script](../get_started.md#automatic-installation-recommended) to install JioTV Go on Android.
+
+
+If you want to install manually, follow the steps below:
+
+4. Identify your architecture by running the following command:
 
 ```bash
 uname -m
@@ -85,8 +90,10 @@ jiotv_go [commands]
 1. Install `wget` and `openssl` by running the following commands:
 
 ```bash
-apk update && apk add wget openssl
+apk update && apk add curl openssl
 ```
+
+> For easy method, use [automatic install script](../get_started.md#automatic-installation-recommended) to install JioTV Go on Android.
 
 2. Identify your architecture by running the following command:
 

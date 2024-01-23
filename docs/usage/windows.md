@@ -2,6 +2,10 @@
 
 Welcome to JioTV Go, your gateway to a seamless TV streaming experience on Windows! Follow these straightforward steps to get started without delving into technical complexities:
 
+> Use [automatic install script](../get_started.md#automatic-installation-recommended) to install JioTV Go on Windows.
+>
+> If you want to install manually, follow the steps below:
+
 <div class="warning">
 
 We assume that you have already downloaded the [latest release of JioTV Go](../get_started.md#pre-built-binaries) for Windows. If not, please download it before proceeding.
