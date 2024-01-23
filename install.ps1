@@ -74,7 +74,7 @@ try {
     }
 
     # Fetch the latest binary
-    $binaryUrl = "https://api.github.com/repos/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-windows-$arch.exe"
+    $binaryUrl = "https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-windows-$arch.exe"
     Write-Host "Fetching the latest binary from $binaryUrl"
     Invoke-WebRequest -Uri $binaryUrl -OutFile jiotv_go.exe -UseBasicParsing
 

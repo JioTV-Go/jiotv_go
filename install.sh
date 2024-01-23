@@ -60,7 +60,7 @@ esac
 echo "Step 2: Identified processor architecture as $ARCH"
 
 # Step 3: Fetch the latest binary
-BINARY_URL="https://api.github.com/repos/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-$OS-$ARCH"
+BINARY_URL="https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-$OS-$ARCH"
 echo "Step 3: Fetching the latest binary from $BINARY_URL"
 # If any existing binary is present, delete it
 if [[ -f "jiotv_go" ]]; then
@@ -72,25 +72,28 @@ curl -SL --progress-bar --retry 5 --retry-delay 2 -o jiotv_go "$BINARY_URL" || {
 chmod +x jiotv_go
 echo "Step 4: Granted executable permissions to the binary"
 
-# Step 5: Move binary to $HOME/.jiotv_go
+# Step 5: Move binary to $HOME/.jiotv_go/bin
 if [[ ! -d "$HOME/.jiotv_go" ]]; then
     mkdir -p "$HOME/.jiotv_go"
 fi
-mv jiotv_go "$HOME/.jiotv_go/"
-echo "Step 5: Moved the binary to $HOME/.jiotv_go/"
+if [[ ! -d "$HOME/.jiotv_go/bin" ]]; then
+    mkdir -p "$HOME/.jiotv_go/bin"
+fi
+mv jiotv_go "$HOME/.jiotv_go/bin"
+echo "Step 5: Moved the binary to $HOME/.jiotv_go/bin"
 
 # Step 6: Add $HOME/.jiotv_go to PATH
 case "$SHELL_NAME" in
     "bash")
-        echo "export PATH=$PATH:$HOME/.jiotv_go" >> "$HOME/.bashrc"  # Adjust this line for your shell
+        echo "export PATH=$PATH:$HOME/.jiotv_go/bin" >> "$HOME/.bashrc"  # Adjust this line for your shell
         source "$HOME/.bashrc"  # Adjust this line for your shell
         ;;
     "zsh")
-        echo "export PATH=$PATH:$HOME/.jiotv_go" >> "$HOME/.zshrc"
+        echo "export PATH=$PATH:$HOME/.jiotv_go/bin" >> "$HOME/.zshrc"
         source "$HOME/.zshrc"
         ;;
     "fish")
-        echo "set -gx PATH $PATH $HOME/.jiotv_go" >> "$HOME/.config/fish/config.fish"
+        echo "set -gx PATH $PATH $HOME/.jiotv_go/bin" >> "$HOME/.config/fish/config.fish"
         source "$HOME/.config/fish/config.fish"
         ;;
     *)
@@ -101,3 +104,4 @@ esac
 
 # Step 7: Inform the user
 echo "JioTV Go has successfully installed. Start by running jiotv_go help"
+echo "If you get command not found error, restart your terminal and run jiotv_go"
