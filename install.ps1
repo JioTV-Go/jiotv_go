@@ -1,5 +1,5 @@
 try {
-    # Check if running with admin privileges
+        # Check if running with admin privileges
     $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
     # URL of the PowerShell script
@@ -7,6 +7,9 @@ try {
 
     # Download the script content
     $scriptContent = Invoke-WebRequest -Uri $scriptUrl -UseBasicParsing | Select-Object -ExpandProperty Content
+
+    # Save the script content to install-jiotv_go.ps1
+    $scriptContent | Out-File -FilePath ".\install-jiotv_go.ps1" -Force
 
     # If user wants to access from anywhere, add to PATH
     # (Note: This section assumes that you have the user's consent to modify the system environment variable)
@@ -22,9 +25,9 @@ try {
     if ($accessFromAnywhere -eq "yes") {
         if (-not $isAdmin) {
             Write-Host "Requesting admin privileges..."
-            
-            # Relaunch the script with admin privileges
-            Start-Process -FilePath PowerShell.exe -Verb Runas -ArgumentList "-Command $scriptContent"
+    
+            # Relaunch the script with admin privileges and pass the script path as an argument
+            Start-Process -FilePath PowerShell.exe -Verb Runas -ArgumentList "-File $($MyInvocation.MyCommand.Path) -ScriptPath '.\install-jiotv_go.ps1'"
             exit
         }
     }
