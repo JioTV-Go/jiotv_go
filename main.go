@@ -77,6 +77,32 @@ func main() {
 					return cmd.Update(c.App.Version)
 				},
 			},
+			{
+				Name:        "epg",
+				Aliases:     []string{"e"},
+				Usage:       "Manage EPG",
+				Description: "The epg command manages EPG. It can be used to generate EPG, regenerate EPG, and delete EPG.",
+				Subcommands: []*cli.Command{
+					{
+						Name:        "generate",
+						Aliases:     []string{"gen", "g"},
+						Usage:       "Generate EPG",
+						Description: "The generate command generates EPG by downloading the latest EPG from JioTV, and saving it to epg.xml.gz. It will delete the existing EPG file if it exists. Once the EPG file is generated, it will automatically updated by the server. If you want to disable, do epg delete command.",
+						Action: func(c *cli.Context) error {
+							return cmd.GenEPG()
+						},
+					},
+					{
+						Name:        "Delete",
+						Aliases:     []string{"del", "d"},
+						Usage:       "Delete EPG",
+						Description: "The delete command deletes the existing EPG file if it exists. This will disable EPG on the server.",
+						Action: func(c *cli.Context) error {
+							return cmd.DeleteEPG()
+						},
+					},
+				},
+			},
 		},
 		CommandNotFound: func(c *cli.Context, command string) {
 			log.Printf("Command '%s' not found.\n", command)

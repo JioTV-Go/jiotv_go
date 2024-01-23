@@ -62,6 +62,46 @@ The `update` command updates JioTV Go to the latest version.
 jiotv_go update
 ```
 
+#### 3. EPG Command
+
+The `epg` command helps you to manage the EPG feature of JioTV Go.
+
+```markdown
+jiotv_go epg [command options] [arguments...]
+```
+
+### USAGE
+   jiotv_go epg command [command options]
+
+### DESCRIPTION
+   The `epg` command manages EPG. It can be used to generate EPG, regenerate EPG, and delete EPG.
+
+### COMMANDS
+   - `generate`, `gen`, `g`: Generate EPG
+   - `Delete`, `del`, `d`: Delete EPG
+   - `help`, `h`: Shows a list of commands or help for one command
+
+### generate (gen, g)
+
+#### USAGE
+   jiotv_go epg generate [command options] [arguments...]
+
+#### DESCRIPTION
+   The `generate` command generates EPG by downloading the latest EPG from JioTV, and saving it to epg.xml.gz. 
+
+   It will delete the existing EPG file if it exists. Once the EPG file is generated, it will be automatically updated by the server. If you want to disable it, use the `epg delete` command.
+   
+   This is also shortcut method for enabling EPG than setting `epg` to `true` in the configuration file. Read the [EPG Config](../config.md#epg-electronic-program-guide) section for more information.
+   
+
+### delete  (del, d)
+
+#### USAGE
+   jiotv_go epg Delete [command options] [arguments...]
+
+#### DESCRIPTION
+   The `delete` command deletes the existing EPG file if it exists. This will disable EPG on the server.
+
 #### 3. Help Command
 
 The `help` command shows a list of commands or help for a specific command.
