@@ -4,12 +4,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"os"
 
 	"github.com/valyala/fasthttp"
 
-	"github.com/rabilrbl/jiotv_go/v2/pkg/secureurl"
-	"github.com/rabilrbl/jiotv_go/v2/pkg/utils"
+	"github.com/rabilrbl/jiotv_go/v3/internal/config"
+	"github.com/rabilrbl/jiotv_go/v3/pkg/secureurl"
+	"github.com/rabilrbl/jiotv_go/v3/pkg/utils"
 )
 
 const (
@@ -19,7 +19,7 @@ const (
 
 var (
 	// DisableTSHandler is used to serve .ts files directly from JioTV Servers
-	DisableTSHandler = os.Getenv("JIOTV_DISABLE_TS_HANDLER") == "true"
+	DisableTSHandler = config.Cfg.DisableTSHandler
 )
 
 // New function creates a new Television instance with the provided credentials

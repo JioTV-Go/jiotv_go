@@ -13,4 +13,4 @@ COPY . .
 RUN go get github.com/githubnemo/CompileDaemon
 RUN go install github.com/githubnemo/CompileDaemon
 
-ENTRYPOINT CompileDaemon -build="go build -o build/jiotv_go ./cmd/jiotv_go" -command="build/jiotv_go :5001" -include="*.html"
+ENTRYPOINT CompileDaemon -build="go build -o build/jiotv_go ." -command="build/jiotv_go serve --public" -include="*.html"

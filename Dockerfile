@@ -34,4 +34,4 @@ VOLUME /app/secrets
 EXPOSE 5001
 
 # Command to run the executable
-CMD ["./jiotv_go", ":5001"]
+CMD ["./jiotv_go", "serve", "--public"]

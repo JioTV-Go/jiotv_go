@@ -1,0 +1,30 @@
+# Example config file for JioTV Go
+# All fields mentioned below are optional.
+
+# Enable Or Disable EPG Generation. Default: false
+epg = false
+
+# Enable Or Disable Debug Mode. Default: false
+debug = false
+
+# Enable Or Disable TS Handler. While TS Handler is enabled, the server will serve the TS files directly from JioTV API. Default: false
+disable_ts_handler = false
+
+# Enable Or Disable Logout feature. Default: true
+disable_logout = false
+
+# Enable Or Disable DRM. As DRM is not supported by most of the players, it is disabled by default. Default: false
+drm = false
+
+# Title of the webpage. Default: JioTV Go
+title = ""
+
+# Enable Or Disable URL Encryption. URL Encryption prevents hackers from injecting URLs into the server. Default: true
+# If you think it is unnecessary, you can disable it. But it is recommended to enable it.
+disable_url_encryption = false
+
+# Path to the custom credentials file. 
+credentials_path = ""
+
+# Proxy URL. Proxy is useful to bypass geo-restrictions and ip-restrictions for JioTV API. Default: ""
+proxy = ""

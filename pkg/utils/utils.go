@@ -14,6 +14,7 @@ import (
 
 	"gopkg.in/natefinch/lumberjack.v2"
 
+	"github.com/rabilrbl/jiotv_go/v3/internal/config"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/fasthttpproxy"
 )
@@ -28,7 +29,7 @@ var (
 // GetLogger creates a new logger instance with custom settings
 func GetLogger() *log.Logger {
 	var logger *log.Logger
-	if os.Getenv("JIOTV_DEBUG") == "true" {
+	if config.Cfg.Debug {
 		logger = log.New(os.Stdout, "[DEBUG] ", log.Ldate|log.Ltime|log.Lshortfile)
 	} else {
 		// write logs to a file jiotv_go.log
@@ -52,7 +53,7 @@ func GetLogger() *log.Logger {
 // GetCredentialsPath returns the file path to credentials file
 func GetCredentialsPath() string {
 	filename := "jiotv_credentials_v2.json"
-	credentials_path := os.Getenv("JIOTV_CREDENTIALS_PATH")
+	credentials_path := config.Cfg.CredentialsPath
 	if credentials_path != "" {
 		// if trailing slash is not present, add it
 		if !strings.HasSuffix(credentials_path, "/") {
@@ -441,7 +442,7 @@ func ScheduleFunctionCall(fn func(), executeTime time.Time) {
 // Returns a fasthttp.Client
 func GetRequestClient() *fasthttp.Client {
 	// The function shall return a fasthttp.client with proxy if given
-	proxy := os.Getenv("JIOTV_PROXY")
+	proxy := config.Cfg.Proxy
 
 	if proxy != "" {
 		Log.Println("Using proxy: " + proxy)

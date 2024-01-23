@@ -1,15 +1,15 @@
-package main
+package cmd
 
 import (
 	"net/http"
-	"os"
 
-	"github.com/rabilrbl/jiotv_go/v2/internal/handlers"
-	"github.com/rabilrbl/jiotv_go/v2/internal/middleware"
-	"github.com/rabilrbl/jiotv_go/v2/pkg/epg"
-	"github.com/rabilrbl/jiotv_go/v2/pkg/secureurl"
-	"github.com/rabilrbl/jiotv_go/v2/pkg/utils"
-	"github.com/rabilrbl/jiotv_go/v2/web"
+	"github.com/rabilrbl/jiotv_go/v3/internal/config"
+	"github.com/rabilrbl/jiotv_go/v3/internal/handlers"
+	"github.com/rabilrbl/jiotv_go/v3/internal/middleware"
+	"github.com/rabilrbl/jiotv_go/v3/pkg/epg"
+	"github.com/rabilrbl/jiotv_go/v3/pkg/secureurl"
+	"github.com/rabilrbl/jiotv_go/v3/pkg/utils"
+	"github.com/rabilrbl/jiotv_go/v3/web"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/etag"
@@ -20,26 +20,35 @@ import (
 	"github.com/gofiber/template/html/v2"
 )
 
-func main() {
+// JioTVServer starts the JioTV server.
+// It loads the config, initializes logging, secure URLs, and EPG.
+// It then configures the Fiber app with middleware and routes.
+// It starts listening on the provided host and port.
+// Returns an error if listening fails.
+func JioTVServer(host, port, configPath string, prefork bool) error {
+	// Load the config file
+	if err := config.Cfg.Load(configPath); err != nil {
+		return err
+	}
 	// Initialize the logger object
 	utils.Log = utils.GetLogger()
 
 	// Initialize the secureurl object
 	secureurl.Init()
 
-	// if os.Getenv("JIOTV_DEBUG") == "true" or file epg.xml.gz exists
-	if os.Getenv("JIOTV_EPG") == "true" || utils.FileExists("epg.xml.gz") {
+	// if config EPG is true or file epg.xml.gz exists
+	if config.Cfg.EPG || utils.FileExists("epg.xml.gz") {
 		go epg.Init()
 	}
 
 	engine := html.NewFileSystem(http.FS(web.GetViewFiles()), ".html")
-	if os.Getenv("JIOTV_DEBUG") == "true" {
+	if config.Cfg.Debug {
 		engine.Reload(true)
 	}
 
 	app := fiber.New(fiber.Config{
 		Views:             engine,
-		Prefork:           os.Getenv("JIOTV_PREFORK") == "true",
+		Prefork:           prefork,
 		StreamRequestBody: true,
 		CaseSensitive:     false,
 		StrictRouting:     false,
@@ -105,14 +114,5 @@ func main() {
 	app.Post("/drm", handlers.DRMKeyHandler)
 	app.Get("/dashtime", handlers.DASHTimeHandler)
 
-	addr := "localhost:5001"
-
-	if len(os.Args) > 1 {
-		addr = os.Args[1]
-	}
-
-	err := app.Listen(addr)
-	if err != nil {
-		utils.Log.Fatal(err)
-	}
+	return app.Listen(host + ":" + port)
 }

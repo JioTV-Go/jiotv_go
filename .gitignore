@@ -43,3 +43,15 @@ jiotv_go*.log
 
 # EPG
 epg.xml.gz
+
+# config
+config.json
+config.yml
+config.toml
+jiotv.yml
+jiotv.toml
+jiotv.json
+
+# MdBook Docs
+docs/book/
+book/
