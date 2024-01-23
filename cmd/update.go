@@ -56,7 +56,7 @@ func Update(currentVersion, customVersion string) error {
 	}
 
 	// Choose the appropriate asset based on os and arch
-	assetName := fmt.Sprintf("jiotv_go-v2.21.7-%s-%s", os_name, arch)
+	assetName := fmt.Sprintf("jiotv_go-%s-%s", os_name, arch)
 	if os_name == "windows" {
 		assetName += ".exe"
 	}
