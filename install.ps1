@@ -27,7 +27,7 @@ try {
             Write-Host "Requesting admin privileges..."
     
             # Relaunch the script with admin privileges and pass the script path as an argument
-            Start-Process -FilePath PowerShell.exe -Verb Runas -ArgumentList "-File .\install-jiotv_go.ps1"
+            Start-Process -FilePath PowerShell.exe -Verb Runas -ArgumentList "-File `"$(".\install-jiotv_go.ps1")`"  `"$($MyInvocation.MyCommand.UnboundArguments)`""
             exit
         }
     }
