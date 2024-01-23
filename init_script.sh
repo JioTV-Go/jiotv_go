@@ -23,9 +23,10 @@ esac
 OS=""
 if [[ "$OSTYPE" == "linux-gnu" ]]; then
     OS="linux"
-    if [[ -n "$OS_ENV" && "$OS_ENV" == "android" ]]; then
-        OS="android"
-    fi
+elif [[ "$OSTYPE" == "linux-musl" ]]; then
+    OS="linux"
+elif [[ "$OSTYPE" == "linux-android" ]]; then
+    OS="android"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     OS="darwin"
 else
