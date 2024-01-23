@@ -18,7 +18,7 @@ try {
             Write-Host "Requesting admin privileges..."
             
             # Relaunch the script with admin privileges
-            Start-Process -FilePath "powershell" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+            Start-Process -FilePath PowerShell.exe -Verb Runas -ArgumentList "-File `"$($MyInvocation.MyCommand.Path)`"  `"$($MyInvocation.MyCommand.UnboundArguments)`""
             exit
         }
     }
