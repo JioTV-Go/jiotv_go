@@ -17,6 +17,8 @@ _Give us 🌟 on GitHub._
     - [Join the community on Telegram:](#join-the-community-on-telegram)
   - [Table of Contents](#table-of-contents)
   - [Documentation](#documentation)
+  - [Star History](#star-history)
+  - [Contributors](#contributors)
   - [Let's Make JioTV Go Better Together! 🤝](#lets-make-jiotv-go-better-together-)
     - [**Report Bugs**](#report-bugs)
     - [**Ready to Contribute? Join the Journey! 🚀**](#ready-to-contribute-join-the-journey-)
@@ -24,9 +26,7 @@ _Give us 🌟 on GitHub._
 
 ## Documentation
 
-Get started with JioTV Go by reading the [Usage Guide](https://rabilrbl.github.io/jiotv_go/Usage-Guide/) guide.
-
-Full project documentation can be found at https://rabilrbl.github.io/jiotv_go/.
+The complete documentation for JioTV Go is available at https://jiotv_go.rabil.me/ 📖
 
 ## Star History
 
@@ -37,6 +37,10 @@ Full project documentation can be found at https://rabilrbl.github.io/jiotv_go/.
     <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=rabilrbl/jiotv_go&type=Date" />
   </picture>
 </a>
+
+## Contributors
+
+[![Contributors](https://contributors-img.web.app/image?repo=rabilrbl/jiotv_go)](https://github.com/rabilrbl/jiotv_go/graphs/contributors)
 
 ## Let's Make JioTV Go Better Together! 🤝
 
