@@ -26,9 +26,9 @@ Run the JioTV Go server with `--public` flag:
 jiotv_go-linux-{arch} serve --public
 ```
 
-Then find the IP address of your device in your local network. You will have many tutorials on the internet on how to find the IP address of your device.
+Then find the IP address of your device with JioTV Go installed in your local network. You will have many tutorials on the internet on how to find the IP address of your device.
 
-Then open your web browser and visit `http://{ip_address}:5001/`. Replace `{ip_address}` with the IP address of your device.
+Now, on any device, access JioTV Go at `http://{ip_address}:5001/`. Replace `{ip_address}` with the IP address of your device.
 
 ## Can I host JioTV Go on a VPS or a cloud server?
 

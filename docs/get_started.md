@@ -13,7 +13,9 @@ See the [Docker Setup](#docker-setup) section for Docker installation instructio
 You can download the pre-built binaries for your platform from the [releases](https://github.com/rabilrbl/jiotv-go/releases) page or click on `Binary Name` links in the table below.
 
 <div class="warning">
-<b>Android Termux</b> users, please read the <a href="./termux.md">Note for Termux Users</a> page.
+
+> **Android Termux** users, please read the [Note for Termux Users](./termux.md) page.
+
 </div>
 
 <!-- Generate a detail note for android users, to have termux downloaded from fdroid and playstore version is outdated. And to prevent DNS loopup error in termux Install proot and execute -->
@@ -54,6 +56,12 @@ For Android, you can use any terminal emulator app. For example, [Termux](https:
 ```powershell
 systeminfo
 ```
+
+<div class="warning">
+
+> Windows users, if you are unsure on the next steps, after downloading the binary, please read the [Using JioTV Go on Windows](./usage/windows.md) page.
+
+</div>
 
 ## Build from Source
 

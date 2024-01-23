@@ -1,41 +1,44 @@
-# IPTV Guide
+# IPTV Guide for JioTV Go
 
-This section provides information about the various ways you can use JioTV Go in your IPTV setup.
+Explore the possibilities of integrating JioTV Go into your IPTV setup with these simple steps. Whether you're interested in generating playlists, setting up an Electronic Program Guide (EPG), or exploring catch-up options, we've got you covered.
 
 ## Generate M3U Playlist
 
-JioTV Go provides an M3U playlist endpoint that you can use to generate an M3U playlist for your IPTV setup.
+JioTV Go offers a convenient M3U playlist endpoint to enhance your IPTV experience. Simply follow these steps:
 
-You can directly paste the following URL in your IPTV player:
+1. Copy and paste the following URL into your IPTV player:
 
-```
-http://localhost:5001/playlist.m3u
-```
+    ```
+    http://localhost:5001/playlist.m3u
+    ```
 
-If you want to enforce a specific quality, you can use the `q` query parameter:
+2. If you desire a specific quality, append the `q` query parameter:
 
-```
-http://localhost:5001/playlist.m3u?q=high
-```
+    ```
+    http://localhost:5001/playlist.m3u?q=high
+    ```
 
-Where `q` can be `low`, `medium`, `high`, or `l`, `m`, `h`.
+    Available options for `q` include `low`, `medium`, `high`, or their shorthand forms `l`, `m`, `h`.
 
 ## Electronic Program Guide (EPG)
 
-JioTV Go provides an EPG endpoint that you can use to generate an EPG for your IPTV setup.
+Take advantage of JioTV Go's Electronic Program Guide to enrich your IPTV setup. Follow these steps:
 
-The EPG is disabled by default. To enable it, you need to set the `epg` config value to `true`. for more information, see the [Config](./config.md#epg-electronic-program-guide) page.
+1. **Enable EPG:**
+   - Set the `epg` config value to `true`. For detailed instructions, refer to the [Config](./config.md#epg-electronic-program-guide) page. Or you can also use the `epg generate` command. For additional details, consult the [EPG Command](./usage.md#3-epg-command) section.
 
-You can also use the `epg generate` command to generate the EPG. Read the [EPG Command](./usage.md#3-epg-command) section for more information.
+2. **Access EPG in Your IPTV Player:**
+   - Once enabled, wait a few minutes for EPG generation.
+   - Use the following URL in your IPTV player: 
+   
+      ```
+      http://localhost:5001/epg.xml.gz
+      ```
 
-Once you have enabled the EPG, wait for a few minutes for the EPG to be generated. Then you can use the following URL in your IPTV player:
-
-```
-http://localhost:5001/epg.xml.gz
-```
-
-Once EPG is generated, it will be updated every 24 hours. The duration of the EPG is 2 days.
+   EPG updates every 24 hours, providing program information for a 2-day duration.
 
 ## Catchup
 
-Currently, JioTV Go does not support catchup. Because I don't know how to implement it. If you know how to implement it, please open a pull request. I will be very grateful.
+Please note that JioTV Go currently does not support catch-up functionality. If you possess the expertise to implement this feature, we welcome your contribution! Open a pull request, and we appreciate your valuable input.
+
+Enjoy the seamless integration of JioTV Go into your IPTV setup. For any queries or assistance, refer to our user-friendly documentation or connect with our support team. Happy streaming!

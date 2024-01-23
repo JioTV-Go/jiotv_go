@@ -9,6 +9,7 @@
   - [URL Paths](./usage/paths.md)
   - [Windows](./usage/windows.md)
   - [Linux / macOS](./usage/linux-macos.md)
+  - [Android TV](./usage/android_tv.md)
 - [Config](./config.md)
 - [Cloud Hosting](./cloud_hosting.md)
 - [Development](./development.md)
