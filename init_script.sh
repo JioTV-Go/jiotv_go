@@ -62,6 +62,10 @@ echo "Step 2: Identified processor architecture as $ARCH"
 # Step 3: Fetch the latest binary
 BINARY_URL="https://api.github.com/repos/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-$OS-$ARCH"
 echo "Step 3: Fetching the latest binary from $BINARY_URL"
+# If any existing binary is present, delete it
+if [[ -f "jiotv_go" ]]; then
+    rm jiotv_go
+fi
 curl -SL --progress-bar --retry 5 --retry-delay 2 -o jiotv_go "$BINARY_URL" || { echo "Failed to download binary"; exit 1; }
 
 # Step 4: Give executable permissions
