@@ -90,5 +90,4 @@ try {
 }
 catch {
     Write-Host "Error: $_"
-    exit 1
 }
