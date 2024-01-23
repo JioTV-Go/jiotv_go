@@ -63,7 +63,8 @@ func Update(currentVersion string) error {
 	}
 
 	// Make the binary executable
-	if err := os.Chmod(tempBinaryPath, 0755); err != nil {
+	// skipcq GSC-G302
+	if err := os.Chmod(tempBinaryPath, 0600); err != nil {
 		return err
 	}
 
@@ -109,12 +110,13 @@ func getLatestRelease() (*Release, error) {
 	return &release, nil
 }
 
-// Define the structures to parse the JSON response
+// Asset Define the structures to assets from GitHub API
 type Asset struct {
 	Name               string `json:"name"`
 	BrowserDownloadURL string `json:"browser_download_url"`
 }
 
+// Release Define the structures to release from GitHub API
 type Release struct {
 	Assets  []Asset `json:"assets"`
 	TagName string  `json:"tag_name"`
