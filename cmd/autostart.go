@@ -5,81 +5,86 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"runtime"
 )
 
 func AutoStart(extraArgs string) error {
-	// Get the path to the current binary
-	selfPath, err := os.Executable()
-	if err != nil {
-		return err
-	}
-
-	var bashrcPath string
-
-	// Check if it's a Termux system
-	isTermux := isTermux()
-	if isTermux {
-		// For Termux, use the system-wide bashrc
-		bashrcPath = os.Getenv("PREFIX") + "/etc/bash.bashrc"
-	} else {
-		// For Linux, use the user-specific bashrc
-		userHomeDir, err := os.UserHomeDir()
+	if runtime.GOOS == "linux" || runtime.GOOS == "android" || runtime.GOOS == "darwin" {
+		// Get the path to the current binary
+		selfPath, err := os.Executable()
 		if err != nil {
 			return err
 		}
-		bashrcPath = userHomeDir + "/.bashrc"
 
-		// Check if the bashrc file exists
-		if _, err := os.Stat(bashrcPath); os.IsNotExist(err) {
-			//  ask consent to create the bashrc file
-			fmt.Printf("Make sure you have\nBashrc file not found at %s. Would you like to create it? (y/n): ", bashrcPath)
-			var response string
-			fmt.Scanln(&response)
-			if strings.ToLower(response) == "y" {
-				// Create the bashrc file
-				_, err := os.Create(bashrcPath)
-				if err != nil {
-					return err
+		var bashrcPath string
+
+		// Check if it's a Termux system
+		isTermux := isTermux()
+		if isTermux {
+			// For Termux, use the system-wide bashrc
+			bashrcPath = os.Getenv("PREFIX") + "/etc/bash.bashrc"
+		} else {
+			// For Linux, use the user-specific bashrc
+			userHomeDir, err := os.UserHomeDir()
+			if err != nil {
+				return err
+			}
+			bashrcPath = userHomeDir + "/.bashrc"
+
+			// Check if the bashrc file exists
+			if _, err := os.Stat(bashrcPath); os.IsNotExist(err) {
+				//  ask consent to create the bashrc file
+				fmt.Printf("Make sure you have\nBashrc file not found at %s. Would you like to create it? (y/n): ", bashrcPath)
+				var response string
+				fmt.Scanln(&response)
+				if strings.ToLower(response) == "y" {
+					// Create the bashrc file
+					_, err := os.Create(bashrcPath)
+					if err != nil {
+						return err
+					}
+				} else {
+					fmt.Println("Auto start canceled by user.")
+					return nil
 				}
-			} else {
+			}
+		}
+
+		// Check if the auto start line is already present
+		autoStartLine := fmt.Sprintf("%s run", selfPath)
+		exists, err := grep(bashrcPath, autoStartLine)
+		if err != nil {
+			return err
+		}
+
+		if !exists {
+			// Get user consent
+			consent := getConsentFromUser()
+			if !consent {
 				fmt.Println("Auto start canceled by user.")
 				return nil
 			}
+			fmt.Printf("Adding auto start to %s...\n", bashrcPath)
+			err := addToBashrc(bashrcPath, autoStartLine+" "+extraArgs)
+			if err != nil {
+				return err
+			}
+		} else {
+			fmt.Printf("Removing existing auto start from %s...\n", bashrcPath)
+			err := removeFromBashrc(bashrcPath, autoStartLine)
+			if err != nil {
+				return err
+			}
+			// Add the auto start line with extra args
+			err = addToBashrc(bashrcPath, autoStartLine+" "+extraArgs)
+			if err != nil {
+				return err
+			}
 		}
-	}
 
-	// Check if the auto start line is already present
-	autoStartLine := fmt.Sprintf("%s run", selfPath)
-	exists, err := grep(bashrcPath, autoStartLine)
-	if err != nil {
-		return err
+		return nil
 	}
-
-	if !exists {
-		// Get user consent
-		consent := getConsentFromUser()
-		if !consent {
-			fmt.Println("Auto start canceled by user.")
-			return nil
-		}
-		fmt.Printf("Adding auto start to %s...\n", bashrcPath)
-		err := addToBashrc(bashrcPath, autoStartLine+" "+extraArgs)
-		if err != nil {
-			return err
-		}
-	} else {
-		fmt.Printf("Removing existing auto start from %s...\n", bashrcPath)
-		err := removeFromBashrc(bashrcPath, autoStartLine)
-		if err != nil {
-			return err
-		}
-		// Add the auto start line with extra args
-		err = addToBashrc(bashrcPath, autoStartLine+" "+extraArgs)
-		if err != nil {
-			return err
-		}
-	}
-
+	fmt.Printf("Auto start is not supported on %s\n", runtime.GOOS)
 	return nil
 }
 
