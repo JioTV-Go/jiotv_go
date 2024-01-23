@@ -15,8 +15,8 @@ func Update(currentVersion string) error {
 	fmt.Println("Updating JioTV Go...")
 
 	// Determine the architecture and operating system
-	arch := runtime.GOARCH
-	os_name := runtime.GOOS
+	const arch = runtime.GOARCH
+	const os_name = runtime.GOOS
 
 	fmt.Println("System detected:", os_name, arch)
 
