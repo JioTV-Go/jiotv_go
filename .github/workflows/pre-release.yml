@@ -38,7 +38,7 @@ jobs:
 
       - name: Setup android NDK
         run: |
-          wget https://dl.google.com/android/repository/android-ndk-r26b-linux.zip
+          wget -q --show-progress https://dl.google.com/android/repository/android-ndk-r26b-linux.zip
           unzip -qq android-ndk-r26b-linux.zip
           echo "$PWD/android-ndk-r26b/toolchains/llvm/prebuilt/linux-x86_64/bin" >> $GITHUB_PATH
 
