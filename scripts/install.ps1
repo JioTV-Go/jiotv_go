@@ -1,38 +1,38 @@
 try {
         # Check if running with admin privileges
-    $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    # $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
-    # URL of the PowerShell script
-    $scriptUrl = "https://raw.githubusercontent.com/rabilrbl/jiotv_go/main/scripts/install.ps1"
+    # # URL of the PowerShell script
+    # $scriptUrl = "https://raw.githubusercontent.com/rabilrbl/jiotv_go/main/scripts/install.ps1"
 
-    # Download the script content
-    $scriptContent = Invoke-WebRequest -Uri $scriptUrl -UseBasicParsing | Select-Object -ExpandProperty Content
+    # # Download the script content
+    # $scriptContent = Invoke-WebRequest -Uri $scriptUrl -UseBasicParsing | Select-Object -ExpandProperty Content
 
-    # Save the script content to install-jiotv_go.ps1
-    $scriptContent | Out-File -FilePath ".\install-jiotv_go.ps1" -Force
+    # # Save the script content to install-jiotv_go.ps1
+    # $scriptContent | Out-File -FilePath ".\install-jiotv_go.ps1" -Force
 
-    # If user wants to access from anywhere, add to PATH
-    # (Note: This section assumes that you have the user's consent to modify the system environment variable)
+    # # If user wants to access from anywhere, add to PATH
+    # # (Note: This section assumes that you have the user's consent to modify the system environment variable)
     $accessFromAnywhere = $null
-    while ($accessFromAnywhere -eq $null) {
-        $accessFromAnywhere = Read-Host "Do you want to access jiotv_go from anywhere? (yes/no)"
-        if ($accessFromAnywhere -notin @("yes", "no")) {
-            Write-Host "Invalid choice. Please enter 'yes' or 'no'."
-            $accessFromAnywhere = $null
-        }
-    }
+    # while ($accessFromAnywhere -eq $null) {
+    #     $accessFromAnywhere = Read-Host "Do you want to access jiotv_go from anywhere? (yes/no)"
+    #     if ($accessFromAnywhere -notin @("yes", "no")) {
+    #         Write-Host "Invalid choice. Please enter 'yes' or 'no'."
+    #         $accessFromAnywhere = $null
+    #     }
+    # }
 
-    if ($accessFromAnywhere -eq "yes") {
-        if (-not $isAdmin) {
-            Write-Host "Requesting admin privileges..."
+    # if ($accessFromAnywhere -eq "yes") {
+    #     if (-not $isAdmin) {
+    #         Write-Host "Requesting admin privileges..."
     
-            # Relaunch the script with admin privileges and pass the script path as an argument
-            Start-Process -FilePath PowerShell.exe -Verb Runas -ArgumentList "-File `"$(".\install-jiotv_go.ps1")`"  `"$($MyInvocation.MyCommand.UnboundArguments)`""
+    #         # Relaunch the script with admin privileges and pass the script path as an argument
+    #         Start-Process -FilePath PowerShell.exe -Verb Runas -ArgumentList "-File `"$(".\install-jiotv_go.ps1")`"  `"$($MyInvocation.MyCommand.UnboundArguments)`""
 
-            Write-Host "Please use the new window opened."
-            exit 0
-        }
-    }
+    #         Write-Host "Please use the new window opened."
+    #         exit 0
+    #     }
+    # }
 
     # Identify operating system architecture
     $architecture = (Get-WmiObject Win32_OperatingSystem).OSArchitecture
