@@ -74,7 +74,15 @@ func main() {
 				Usage:       "Update JioTV Go to latest version",
 				Description: "The update command updates JioTV Go by identifying the operating system and architecture, downloading the latest release from GitHub, and replacing the current binary with the latest one.",
 				Action: func(c *cli.Context) error {
-					return cmd.Update(c.App.Version)
+					return cmd.Update(c.App.Version, c.String("version"))
+				},
+				Flags: []cli.Flag{
+					&cli.StringFlag{
+						Name:    "version",
+						Aliases: []string{"v"},
+						Value:   "",
+						Usage:   "Update to a custom specific version that is not latest",
+					},
 				},
 			},
 			{

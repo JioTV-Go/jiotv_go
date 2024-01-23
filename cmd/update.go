@@ -26,7 +26,7 @@ import (
 
 // Finally, it prints a message that the update was successful
 // and the app should be restarted.
-func Update(currentVersion string) error {
+func Update(currentVersion, customVersion string) error {
 	fmt.Println("Updating JioTV Go...")
 
 	// Determine the architecture and operating system
@@ -36,7 +36,7 @@ func Update(currentVersion string) error {
 	fmt.Println("System detected:", os_name, arch)
 
 	// Fetch the latest release information from GitHub
-	release, err := getLatestRelease()
+	release, err := getLatestRelease(customVersion)
 	if err != nil {
 		return err
 	}
@@ -45,12 +45,16 @@ func Update(currentVersion string) error {
 	fmt.Printf("Latest version: %s\n", latestVersion)
 
 	// Compare versions
-	if compareVersions(currentVersion, latestVersion) >= 0 {
+	if customVersion == "" && compareVersions(currentVersion, latestVersion) >= 0 {
 		fmt.Println("You are already using the latest version. No update needed.")
 		return nil
 	}
 
-	fmt.Println("Newer version available. Updating...")
+	if customVersion == "" {
+		fmt.Println("Newer version available. Updating...")
+	} else {
+		fmt.Println("Updating to custom version", customVersion)
+	}
 
 	// Choose the appropriate asset based on os and arch
 	assetName := fmt.Sprintf("jiotv_go-%s-%s", os_name, arch)
@@ -89,11 +93,16 @@ func Update(currentVersion string) error {
 
 // getLatestRelease fetches the latest release information from the GitHub API for the given owner and repo.
 // It returns a Release struct containing the release details like tag name, assets etc.
-func getLatestRelease() (*Release, error) {
+func getLatestRelease(customVersion string) (*Release, error) {
 	owner := "rabilrbl"
 	repo := "jiotv_go"
 
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", owner, repo)
+	var url string
+	if customVersion != "" {
+		url = fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/tags/%s", owner, repo, customVersion)
+	} else {
+		url = fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", owner, repo)
+	}
 
 	req := fasthttp.AcquireRequest()
 	resp := fasthttp.AcquireResponse()

@@ -109,6 +109,10 @@ The `update` command updates JioTV Go to the latest version.
 jiotv_go update
 ```
 
+**Options:**
+
+- `--version, -v`: Never use this flag, unless you know what you are doing. This will update JioTV Go to the specified version. This is useful for testing new features before release or to downgrade to a previous version. Supports all JioTV Go version above v3.0.0.
+
 ## 4. EPG Command
 
 The `epg` command helps you to manage the EPG feature of JioTV Go.
