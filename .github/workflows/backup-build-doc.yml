@@ -1,22 +1,27 @@
-name: Build MdBook Documentation
+name: Build MdBook Documentation for Pages
 
 on:
   push:
     branches:
       - main
     paths:
-      - 'docs/**'
+      - "docs/**"
       # as docs have symbolic links to the scripts folder, we need to include it
-      - 'scripts/**'
+      - "scripts/**"
+  workflow_dispatch:
 
 jobs:
-  run:
+  publish:
     runs-on: ubuntu-latest
     permissions:
-      pages: write      # to deploy to Pages
-      id-token: write   # to verify the deployment originates from an appropriate source
+      contents: read
+      deployments: write
+    environment:
+      name: pages
+      url: https://jiotv-go.pages.me
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Install mdbook
         shell: bash
@@ -31,14 +36,12 @@ jobs:
         run: |
           mdbook build docs
 
-      - name: Setup Pages
-        uses: actions/configure-pages@v4
-      
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
         with:
-          path: 'docs/book'
-      
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: jiotv-go
+          directory: docs/book
+          # Optional: Enable this if you want to have GitHub Deployments triggered
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
