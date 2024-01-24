@@ -17,6 +17,13 @@ curl -fsSL https://jiotv_go.rabil.me/install.sh | bash
 
 The above command will download the latest version of JioTV Go and install it in your system.
 
+> **Termux** users, if you get an errors, first update pkg index and install `curl`, `openssl` packages by running the following command:
+>
+> ```bash
+> pkg update
+> pkg install curl openssl
+> ```
+
 <div class="warning">
 
 See the [Docker Setup](#docker-setup) section for Docker installation instructions.
@@ -74,9 +81,13 @@ For Android, you can use any terminal emulator app. For example, [Termux](https:
 
 #### Windows (PowerShell)
 
+Run the following command in your PowerShell terminal:
+
 ```powershell
-systeminfo
+(Get-WmiObject Win32_OperatingSystem).OSArchitecture
 ```
+
+Then, look for your architecture in the [above table](#the-following-table-lists-the-binaries-available-for-download).
 
 <div class="warning">
 

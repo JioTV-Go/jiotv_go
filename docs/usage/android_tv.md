@@ -2,9 +2,15 @@
 
 JioTV Go is a web application that can be used on Android TV. This page provides information about how to use JioTV Go on Android TV.
 
-You can use [Termux](#using-termux) or [UserLand](#using-userland) to run JioTV Go on Android TV. We recommend [UserLand](#using-userland).
+You can use [Termux](#using-termux) or [UserLand](#using-userland) to run JioTV Go on Android TV.
 
-> Use [automatic install script](../get_started.md#automatic-installation-recommended) to install JioTV Go on Android TV.
+<div class="warning">
+
+> We recommend you use [automatic install script](../get_started.md#automatic-installation-recommended) to install JioTV Go on Android TV.
+>
+> However, if you want to install manually, refer manual installation guide for [Android](./android.md#step-3-download-jiotv-go-binary) from Step 3.
+
+</div>
 
 After setting up JioTV Go on your Android TV, first login using the web interface at `http://localhost:5001/`, then you can setup a IPTV App on your Android TV to access JioTV Go.
 

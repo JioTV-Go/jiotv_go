@@ -10,7 +10,7 @@ Download latest version of Termux installed from [F-Droid](https://f-droid.org/e
 
 Play store version of Termux is not recommended as it is outdated and can cause issues.
 
-### Step 2: Download JioTV Go Binary
+### Step 2: Install Dependencies
 
 1. Open Termux.
 2. Run the following command to update pkg index:
@@ -27,10 +27,15 @@ This will take some time.
 pkg install curl openssl
 ```
 
-> For easy method, use [automatic install script](../get_started.md#automatic-installation-recommended) to install JioTV Go on Android.
+<div class="warning">
 
+> After this, we recommend following the easy method, use [automatic install script](../get_started.md#automatic-installation-recommended) to install JioTV Go on Android.
+
+</div>
 
 If you want to install manually, follow the steps below:
+
+### Step 3: Download JioTV Go Binary
 
 4. Identify your architecture by running the following command:
 
@@ -43,10 +48,12 @@ Now look for the architecture in the [table](./get_started.md#the-following-tabl
 4. Paste the link in the following command and run it:
 
 ```bash
-wget -O jiotv_go "https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-android-{arch}"
+curl -LO jiotv_go --progress-bar "https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-android-{arch}"
 ```
 
 If you are using above URL, replace `{arch}` with your architecture.
+
+### Step 4: Make the binary executable and run it
 
 5. Make the binary executable by running the following command:
 
@@ -85,15 +92,25 @@ jiotv_go [commands]
 
 3. Wait for the setup to complete.
 
-### Step 2: Download JioTV Go Binary
+### Step 2: Install Dependencies
 
 1. Install `wget` and `openssl` by running the following commands:
 
 ```bash
-apk update && apk add curl openssl
+apk update && apk add curl
 ```
 
-> For easy method, use [automatic install script](../get_started.md#automatic-installation-recommended) to install JioTV Go on Android.
+<div class="warning">
+
+> Remember UserLand has a linux environment, hence you need to use linux binaries.
+> 
+> After this, we recommend following the easy method, use [automatic install script](../get_started.md#automatic-installation-recommended) to install JioTV Go on Linux.
+>
+> If you want to install manually, follow the steps below:
+
+</div>
+
+### Step 3: Download JioTV Go Binary
 
 2. Identify your architecture by running the following command:
 
@@ -101,15 +118,17 @@ apk update && apk add curl openssl
 uname -m
 ```
 
-Now look for the linux binaries with architecture in the [table](./get_started.md#the-following-table-lists-the-binaries-available-for-download). Long press on binary name and click on `Copy Link Address`. Do not use Android binaries, as they will not work in UserLand.
+Now look for the linux binaries with architecture in the [table](../get_started.md#the-following-table-lists-the-binaries-available-for-download). Long press on binary name and click on `Copy Link Address`. Do not use Android binaries, as they will not work in UserLand.
 
 3. Paste the link in the following command and run it:
 
 ```bash
-wget -O jiotv_go "https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-linux-{arch}"
+curl -LO jiotv_go --progress-bar "https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-linux-{arch}"
 ```
 
 If you are using above URL, replace `{arch}` with your architecture.
+
+### Step 4: Make the binary executable and run it
 
 4. Make the binary executable by running the following command:
 

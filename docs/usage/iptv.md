@@ -1,5 +1,11 @@
 # IPTV Guide for JioTV Go
 
+This is not an installation guide. If you are looking for installation instructions, 
+For Android TV, see [Android TV](./android_tv.md).
+For Android Phones, see [Android](./android.md).
+For Linux, see [Linux](./linux-macos.md).
+For Windows, see [Windows](./windows.md).
+
 Explore the possibilities of integrating JioTV Go into your IPTV setup with these simple steps. Whether you're interested in generating playlists, setting up an Electronic Program Guide (EPG), or exploring catch-up options, we've got you covered.
 
 ## Generate M3U Playlist
