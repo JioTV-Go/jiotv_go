@@ -87,7 +87,8 @@ try {
         
         Write-Host "JioTV Go has successfully downloaded and added to PATH. Start by running jiotv_go help"
     } else {
-        Write-Host "JioTV Go has successfully downloaded. You can run it from the current folder."
+        Write-Host "Remember this folder is $homeDirectory"
+        Write-Host "JioTV Go has successfully downloaded. You can run it from the current folder. Start by running .\jiotv_go.exe help"
     }
 }
 catch {
