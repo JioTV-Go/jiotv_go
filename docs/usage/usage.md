@@ -206,6 +206,8 @@ jiotv_go autostart -a "--port 8080 --config config.toml"
 
 The `background` command allows you to run the JioTV Go server in the background. It provides subcommands for starting and stopping the server in the background.
 
+> Tip: `bg` is an alias for `background`.
+
 #### USAGE
 
 ```shell
