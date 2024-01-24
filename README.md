@@ -1,32 +1,57 @@
 # JioTV Go 🌟
 
-Introducing JioTV Go: Your gateway to streaming Live TV channels on the web and IPTV! 📺🌐 Say goodbye to the JioTV App, as this project lets you enjoy JioTV's offerings hassle-free. Currently in the development stage, it's designed purely for educational exploration.
+JioTV Go, an exciting project that allows you to stream Live TV channels on the web and IPTV. It's a web wrapper around the JioTV Android app, utilizing the same API to fetch and stream channels.
 
-Ready to dive in? Download the latest binary for your operating system from [here](https://github.com/rabilrbl/jiotv_go/releases/latest), and explore the [API endpoints](#api-endpoints) to start your JioTV Go adventure! 🚀📡🔥
+Ready to dive in? Download the latest binary for your operating system from [here](https://github.com/rabilrbl/jiotv_go/releases/latest), and explore the [documentation](https://jiotv_go.rabil.me/) to start your JioTV Go adventure! 🚀
 
-_Give us 🌟 on GitHub._
+_Give us 🌟 on GitHub if you like this project!_
 
-### Join the community on Telegram:
+## Features 🌟
 
-- [Announcement Channel (`jiotv_go`)](https://telegram.me/jiotv_go)
-- [Support Group (`jiotv_go_chat`)](https://telegram.me/jiotv_go_chat)
+JioTV Go, an exciting project that allows you to stream Live TV channels on the web and IPTV. It's a web wrapper around the JioTV Android app, utilizing the same API to fetch and stream channels.
+
+- 📺 Stream Live TV channels, just like in the JioTV Android app.
+- 🎬 M3U playlist support for IPTV.
+- 🌐 Web interface for watching Live TV.
+- 📅 EPG (Electronic Program Guide) support in compressed GZipped XML or JSON format.
+- 🎥 Quality selection (Low, Medium, High) supported.
+- ⚙️ Configurable port and host.
+- 🔐 Authentication options using Jio ID/Number with password or Jio number with OTP.
+- 📺 Additional Sony channels from SonyLiv for convenience.
+- 👥 Support for multiple clients simultaneously.
+- 🚀 Written in Go, ensuring it's fast, lightweight, and portable.
+- 💻 Command-line interface for server management and self-update.
+- 🔄 Background start and stop feature.
+
+Get Started with JioTV Go by following the [Get Started](https://jiotv_go.rabil.me/get_started) guide.
+
 
 ## Table of Contents
 
+<details open>
+  <summary>Click to expand/collapse</summary>
+  
 - [JioTV Go 🌟](#jiotv-go-)
-    - [Join the community on Telegram:](#join-the-community-on-telegram)
+  - [Features 🌟](#features-)
   - [Table of Contents](#table-of-contents)
   - [Documentation](#documentation)
+  - [Join the community on Telegram:](#join-the-community-on-telegram)
   - [Star History](#star-history)
   - [Contributors](#contributors)
   - [Let's Make JioTV Go Better Together! 🤝](#lets-make-jiotv-go-better-together-)
     - [**Report Bugs**](#report-bugs)
     - [**Ready to Contribute? Join the Journey! 🚀**](#ready-to-contribute-join-the-journey-)
   - [**License: Attribution 4.0 International (CC BY 4.0)**](#license-attribution-40-international-cc-by-40)
+</details>
 
 ## Documentation
 
 The complete documentation for JioTV Go is available at https://jiotv_go.rabil.me/ 📖
+
+## Join the community on Telegram:
+
+- [Announcement Channel (`jiotv_go`)](https://telegram.me/jiotv_go)
+- [Support Group (`jiotv_go_chat`)](https://telegram.me/jiotv_go_chat)
 
 ## Star History
 
