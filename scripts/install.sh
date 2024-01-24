@@ -42,12 +42,6 @@ echo "Step 1: Identified operating system as $OS"
 # Step 2: Identify processor architecture
 ARCH=$(uname -m)
 
-# Android arm is a special case; Don't ask me why? Please open issue if you think this is wrong
-# I don't have an arm device to test this
-if [[ "$OSTYPE" == "linux-androideabi"* ]]; then
-    ARCH="armv7l"
-fi
-
 case $ARCH in
     "x86_64")
         ARCH="amd64"
@@ -58,7 +52,7 @@ case $ARCH in
     "i386" | "i686")
         ARCH="386"
         ;;
-    "armv7l")
+    "armv7"*)
         ARCH="arm"
         ;;
     *)
