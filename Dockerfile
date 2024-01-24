@@ -34,5 +34,9 @@ VOLUME /app/secrets
 # Expose port 5001 to the outside world
 EXPOSE 5001
 
-# Command to run the executable
-CMD ["./jiotv_go", "serve", "--public"]
+# Command to run the executable with arguments
+# The CMD instruction has been replaced with ENTRYPOINT to allow arguments
+ENTRYPOINT ["./jiotv_go"]
+
+# Default arguments
+CMD ["serve", "--public"]
