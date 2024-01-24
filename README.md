@@ -8,8 +8,6 @@ _Give us 🌟 on GitHub if you like this project!_
 
 ## Features 🌟
 
-JioTV Go, an exciting project that allows you to stream Live TV channels on the web and IPTV. It's a web wrapper around the JioTV Android app, utilizing the same API to fetch and stream channels.
-
 - 📺 Stream Live TV channels, just like in the JioTV Android app.
 - 🎬 M3U playlist support for IPTV.
 - 🌐 Web interface for watching Live TV.
