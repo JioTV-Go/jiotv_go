@@ -27,6 +27,8 @@ elif [[ "$OSTYPE" == "linux-musl" ]]; then
     OS="linux"
 elif [[ "$OSTYPE" == "linux-android" ]]; then
     OS="android"
+elif [[ "$OSTYPE" == "linux-androideabi" ]]; then
+    OS="android"
 elif [[ "$OSTYPE" == "darwin"* ]]; then
     OS="darwin"
 else
