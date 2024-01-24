@@ -1,13 +1,13 @@
 name: Build MdBook Documentation for Pages
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'docs/**'
-      # as docs have symbolic links to the scripts folder, we need to include it
-      - 'scripts/**'
+  # push:
+  #   branches:
+  #     - main
+  #   paths:
+  #     - 'docs/**'
+  #     # as docs have symbolic links to the scripts folder, we need to include it
+  #     - 'scripts/**'
   workflow_dispatch:
 
 jobs:
