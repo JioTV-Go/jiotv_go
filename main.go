@@ -101,7 +101,7 @@ func main() {
 						},
 					},
 					{
-						Name:        "Delete",
+						Name:        "delete",
 						Aliases:     []string{"del", "d"},
 						Usage:       "Delete EPG",
 						Description: "The delete command deletes the existing EPG file if it exists. This will disable EPG on the server.",
