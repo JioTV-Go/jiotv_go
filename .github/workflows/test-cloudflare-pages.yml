@@ -1,4 +1,4 @@
-name: Build MdBook Documentation
+name: Build MdBook Documentation for Pages
 
 on:
   push:
