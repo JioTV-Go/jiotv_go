@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - 'docs/**'
+      # as docs have symbolic links to the scripts folder, we need to include it
+      - 'scripts/**'
 
 jobs:
   run:
