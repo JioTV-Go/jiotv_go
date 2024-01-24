@@ -17,6 +17,12 @@ curl -fsSL https://jiotv_go.rabil.me/install.sh | bash
 
 The above command will download the latest version of JioTV Go and install it in your system.
 
+<div class="warning">
+
+See the [Docker Setup](#docker-setup) section for Docker installation instructions.
+
+</div>
+
 #### Windows
 
 Here's a one-liner to download and install the latest version of JioTV Go on Windows.
@@ -27,11 +33,6 @@ Simply copy and paste the following command in your PowerShell terminal and pres
 iwr -useb https://jiotv_go.rabil.me/install.ps1 | iex
 ```
 
-<div class="warning">
-
-See the [Docker Setup](#docker-setup) section for Docker installation instructions.
-
-</div>
 
 ### Pre-Built Binaries
 
