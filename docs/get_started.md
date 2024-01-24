@@ -101,6 +101,16 @@ docker run -p 5001:5001 -v ./.jiotv_go/secrets:/app/secrets ghcr.io/rabilrbl/jio
 
 Open your web browser and visit [http://localhost:5001/](http://localhost:5001/).
 
+### Using CLI Options with Docker
+
+By default, JioTV Go Docker image runs with `serve --public` command. You can override this by passing the command as an argument to the `docker run` command.
+
+For example, to run JioTV Go with `serve --public --port 8080` command, run:
+
+```sh
+docker run -p 8080:8080 -v ./.jiotv_go/secrets:/app/secrets ghcr.io/rabilrbl/jiotv_go serve --public --port 8080
+```
+
 ### Keep JioTV Go Updated
 
 To update to the latest version, run:
