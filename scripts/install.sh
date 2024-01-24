@@ -52,7 +52,7 @@ case $ARCH in
     "i386" | "i686")
         ARCH="386"
         ;;
-    "armv7"*)
+    "arm"*)
         ARCH="arm"
         ;;
     *)
