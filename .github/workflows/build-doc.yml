@@ -5,44 +5,43 @@ on:
     branches:
       - main
     paths:
-      - 'docs/**'
+      - "docs/**"
       # as docs have symbolic links to the scripts folder, we need to include it
-      - 'scripts/**'
+      - "scripts/**"
   workflow_dispatch:
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-        contents: read
-        deployments: write
+      contents: read
+      deployments: write
     environment:
-        name: pages
-        url: https://jiotv-go.pages.dev
+      name: pages
+      url: https://jiotv-go.pages.me
     steps:
-        - name: Checkout
-          uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-        - name: Install mdbook
-          shell: bash
-          run: |
-            tag=$(curl 'https://api.github.com/repos/rust-lang/mdbook/releases/latest' | jq -r '.tag_name')
-            url="https://github.com/rust-lang/mdbook/releases/download/${tag}/mdbook-${tag}-x86_64-unknown-linux-gnu.tar.gz"
-            mkdir mdbook
-            curl -sSL $url | tar -xz --directory=./mdbook
-            echo `pwd`/mdbook >> $GITHUB_PATH
-  
-        - name: Build Book
-          run: |
-            mdbook build docs
+      - name: Install mdbook
+        shell: bash
+        run: |
+          tag=$(curl 'https://api.github.com/repos/rust-lang/mdbook/releases/latest' | jq -r '.tag_name')
+          url="https://github.com/rust-lang/mdbook/releases/download/${tag}/mdbook-${tag}-x86_64-unknown-linux-gnu.tar.gz"
+          mkdir mdbook
+          curl -sSL $url | tar -xz --directory=./mdbook
+          echo `pwd`/mdbook >> $GITHUB_PATH
 
-        - name: Publish to Cloudflare Pages
-          uses: cloudflare/pages-action@v1
-          with:
-            apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-            accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-            projectName: jiotv-go
-            directory: docs/book
-            # Optional: Enable this if you want to have GitHub Deployments triggered
-            gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-          
+      - name: Build Book
+        run: |
+          mdbook build docs
+
+      - name: Publish to Cloudflare Pages
+        uses: cloudflare/pages-action@v1
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          projectName: jiotv-go
+          directory: docs/book
+          # Optional: Enable this if you want to have GitHub Deployments triggered
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}

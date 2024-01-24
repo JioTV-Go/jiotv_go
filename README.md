@@ -2,7 +2,7 @@
 
 JioTV Go, an exciting project that allows you to stream Live TV channels on the web and IPTV. It's a web wrapper around the JioTV Android app, utilizing the same API to fetch and stream channels.
 
-Ready to dive in? Download the latest binary for your operating system from [here](https://github.com/rabilrbl/jiotv_go/releases/latest), and explore the [documentation](https://jiotv-go.pages.dev/) to start your JioTV Go adventure! 🚀
+Ready to dive in? Download the latest binary for your operating system from [here](https://github.com/rabilrbl/jiotv_go/releases/latest), and explore the [documentation](https://jiotv_go.rabil.me/) to start your JioTV Go adventure! 🚀
 
 _Give us 🌟 on GitHub if you like this project!_
 
@@ -21,7 +21,7 @@ _Give us 🌟 on GitHub if you like this project!_
 - 💻 Command-line interface for server management and self-update.
 - 🔄 Background start and stop feature.
 
-Get Started with JioTV Go by following the [Get Started](https://jiotv-go.pages.dev/get_started) guide.
+Get Started with JioTV Go by following the [Get Started](https://jiotv_go.rabil.me/get_started) guide.
 
 ## Table of Contents
 
@@ -43,7 +43,7 @@ Get Started with JioTV Go by following the [Get Started](https://jiotv-go.pages.
 
 ## Documentation
 
-The complete documentation for JioTV Go is available at https://jiotv-go.pages.dev/ 📖
+The complete documentation for JioTV Go is available at https://jiotv_go.rabil.me/ 📖
 
 ## Join the community on Telegram:
 
