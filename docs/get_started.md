@@ -11,7 +11,7 @@ Here's a one-liner to download and install the latest version of JioTV Go on Lin
 Simply copy and paste the following command in your terminal and press `Enter`:
 
 ```bash
-curl -fsSL https://jiotv-go.pages.me/install.sh | bash
+curl -fsSL https://jiotv-go.pages.dev/install.sh | bash
 ```
 
 The above command will download the latest version of JioTV Go and install it in your system.
@@ -36,7 +36,7 @@ Here's a one-liner to download and install the latest version of JioTV Go on Win
 Simply copy and paste the following command in your PowerShell terminal and press `Enter`:
 
 ```powershell
-iwr -useb https://jiotv-go.pages.me/install.ps1 | iex
+iwr -useb https://jiotv-go.pages.dev/install.ps1 | iex
 ```
 
 ### Pre-Built Binaries
