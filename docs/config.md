@@ -32,11 +32,11 @@ Debug mode enables additional logging and debugging features for developers. It 
 
 TS Files are the video files that are streamed by the JioTV API.
 
-By default, the server proxies the TS files from the JioTV API.
+By setting `disable_ts_handler` to `true`, server takes less load.
 
-When TS Handler is disabled, the server directly streams the video from the JioTV API.
+If `disable_ts_handler` is `true`, then TS files will be served directly from Jio API.
 
-If you think, this is expensive, you can enable TS Handler. But it is recommended to disable it.
+Otherwise the request is sent through the server as an intermediary.
 
 ### Logout Feature:
 
