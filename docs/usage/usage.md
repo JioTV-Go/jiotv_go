@@ -202,6 +202,53 @@ jiotv_go autostart -a "--port 8080 --config config.toml"
 
 </div>
 
+## 7. Background Command
+
+The `background` command allows you to run the JioTV Go server in the background. It provides subcommands for starting and stopping the server in the background.
+
+#### USAGE
+
+```shell
+jiotv_go background [command options] [arguments...]
+```
+
+#### DESCRIPTION
+
+The `background` command allows you to run the JioTV Go server in the background. It provides subcommands for starting and stopping the server in the background.
+
+#### COMMANDS
+
+- `start (run)`: Run JioTV Go server in the background
+  ```shell
+  jiotv_go background start [command options] [arguments...]
+  ```
+  - `--args value, -a value`: String value arguments passed to the `serve/run` command while running in the background as mentioned in the [Serve Command](#2-serve-command) section.
+
+  Description: The `start` command starts the JioTV Go server in the background. It runs the `JioTVServer` function in a separate process.
+
+- `stop (s, kill)`: Stop JioTV Go server running in the background
+  ```shell
+  jiotv_go background stop
+  ```
+
+  Description: The `stop` command stops the JioTV Go server running in the background. It will only work if the server is started using the `background start` command.
+
+### Example:
+
+```shell
+jiotv_go background start
+```
+
+Example with arguments *(make sure to enclose the arguments in quotes)*:
+
+```shell
+jiotv_go background start --args "--port 8080 --config config.toml"
+```
+
+### Note:
+
+- Make sure to stop the background server using the `stop` command when it is no longer needed.
+
 ## Support and Issues
 
 For any issues or feature requests, please check the [GitHub repository](https://github.com/rabilrbl/jiotv_go) or create a new issue.

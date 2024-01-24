@@ -162,6 +162,40 @@ func main() {
 					},
 				},
 			},
+			{
+				Name:    "background",
+				Aliases: []string{"bg"},
+				Usage:   "Run JioTV Go server in the background",
+				Subcommands: []*cli.Command{
+					{
+						Name:        "start",
+						Aliases:     []string{"run"},
+						Usage:       "Run JioTV Go server in the background",
+						Description: "The run command starts JioTV Go server in the background. It runs the JioTVServer function in a separate goroutine.",
+						Action: func(c *cli.Context) error {
+							args := c.String("args")
+							return cmd.RunInBackground(args)
+						},
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:    "args",
+								Aliases: []string{"a"},
+								Value:   "",
+								Usage:   "String Value Arguments passed to serve/run command while running in the background",
+							},
+						},
+					},
+					{
+						Name:        "stop",
+						Aliases:     []string{"s", "kill"},
+						Usage:       "Stop JioTV Go server running in the background",
+						Description: "The stop command stops the JioTV Go server running in the background.",
+						Action: func(c *cli.Context) error {
+							return cmd.StopBackground()
+						},
+					},
+				},
+			},
 		},
 		CommandNotFound: func(c *cli.Context, command string) {
 			log.Printf("Command '%s' not found.\n", command)
