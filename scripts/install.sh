@@ -21,25 +21,33 @@ esac
 
 # Step 1: Identify the operating system
 OS=""
-if [[ "$OSTYPE" == "linux-gnu" ]]; then
-    OS="linux"
-elif [[ "$OSTYPE" == "linux-musl" ]]; then
-    OS="linux"
-elif [[ "$OSTYPE" == "linux-android" ]]; then
-    OS="android"
-elif [[ "$OSTYPE" == "linux-androideabi" ]]; then
-    OS="android"
-elif [[ "$OSTYPE" == "darwin"* ]]; then
-    OS="darwin"
-else
-    echo "Unsupported operating system: $OSTYPE"
-    exit 1
-fi
+case "$OSTYPE" in
+    "linux-android"*)
+        OS="android"
+        ;;
+    "linux-"*)
+        OS="linux"
+        ;;
+    "darwin"*)
+        OS="darwin"
+        ;;
+    *)
+        echo "Unsupported operating system: $OSTYPE"
+        exit 1
+        ;;
+esac
 
 echo "Step 1: Identified operating system as $OS"
 
 # Step 2: Identify processor architecture
 ARCH=$(uname -m)
+
+# Android arm is a special case; Don't ask me why? Please open issue if you think this is wrong
+# I don't have an arm device to test this
+if [[ "$OSTYPE" == "linux-androideabi"* ]]; then
+    ARCH="armv7l"
+fi
+
 case $ARCH in
     "x86_64")
         ARCH="amd64"
