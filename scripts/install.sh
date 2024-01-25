@@ -89,7 +89,7 @@ echo "Step 5: Moved the binary to $HOME/.jiotv_go/bin"
 # Step 6: Add $HOME/.jiotv_go to PATH
 case "$SHELL_NAME" in
     "bash")
-        export PATH=$PATH:$HOME/.jiotv_go/bin
+        export PATH="$PATH:$HOME/.jiotv_go/bin"
         echo "export PATH=$PATH:$HOME/.jiotv_go/bin" >> "$HOME/.bashrc"
         ;;
     "zsh")
