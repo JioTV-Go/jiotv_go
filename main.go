@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"time"
@@ -11,6 +12,8 @@ import (
 )
 
 func main() {
+	// Remove Date time from log
+	log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
 	app := &cli.App{
 		Name:      "JioTV Go",
 		Usage:     "Stream JioTV on any device",
@@ -29,8 +32,8 @@ func main() {
 					host := c.String("host")
 					// overwrite host if --public flag is passed
 					if c.Bool("public") {
-						log.Println("INFO: You are exposing your server to outside your local network (public)!")
-						log.Println("INFO: Overwriting host to 0.0.0.0 for public access")
+						fmt.Println("INFO: You are exposing your server to outside your local network (public)!")
+						fmt.Println("INFO: Overwriting host to 0.0.0.0 for public access")
 						host = "0.0.0.0"
 					}
 					port := c.String("port")
