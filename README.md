@@ -1,4 +1,4 @@
-# JioTV Go 🌟
+# JioTV Go 📺
 
 JioTV Go, an exciting project that allows you to stream Live TV channels on the web and IPTV. It's a web wrapper around the JioTV Android app, utilizing the same API to fetch and stream channels.
 
@@ -28,7 +28,7 @@ Get Started with JioTV Go by following the [Get Started](https://jiotv_go.rabil.
 <details open>
   <summary>Click to expand/collapse</summary>
   
-- [JioTV Go 🌟](#jiotv-go-)
+- [JioTV Go 📺](#jiotv-go-)
   - [Features 🌟](#features-)
   - [Table of Contents](#table-of-contents)
   - [Documentation](#documentation)
