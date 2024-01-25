@@ -60,36 +60,37 @@ func StopBackground() error {
 	// get user home directory for storing the PID file
 	homePath, err := os.UserHomeDir()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get user home directory: %w", err)
 	}
 
 	// Read the PID from the file
 	pidBytes, err := os.ReadFile(homePath + PID_FILE_NAME)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to read PID file: %w", err)
 	}
 
 	// Convert PID bytes to string and then parse as an integer
 	pidStr := strings.TrimSpace(string(pidBytes))
 	pid, err := strconv.Atoi(pidStr)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to convert PID to integer: %w", err)
 	}
 
 	process, err := os.FindProcess(pid)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to find JioTV Go process: %w", err)
 	}
 
+	// Send a kill signal to the process
 	err = process.Kill()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to kill JioTV Go process: %w", err)
 	}
 
 	// Remove the PID file after successfully killing the process
 	err = os.Remove(homePath + PID_FILE_NAME)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to remove PID file: %w", err)
 	}
 
 	fmt.Println("JioTV Go server stopped successfully.")
