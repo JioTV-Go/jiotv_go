@@ -20,21 +20,21 @@ func RunInBackground(args string) error {
 	// get user home directory for storing the PID file
 	homePath, err := os.UserHomeDir()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get user home directory: %w", err)
 	}
 
 	// Get the path of the current binary executable
 	binaryExecutablePath, err := os.Executable()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to get executable path: %w", err)
 	}
 
-	cmd_args := strings.Fields(args)
+	cmdArgs := strings.Fields(args)
 	// Run JioTVServer function as a separate process
-	cmd := exec.Command(binaryExecutablePath, append([]string{"serve"}, cmd_args...)...)
+	cmd := exec.Command(binaryExecutablePath, append([]string{"serve"}, cmdArgs...)...)
 	err = cmd.Start()
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to start command: %w", err)
 	}
 
 	// Store the PID in a file
@@ -42,7 +42,7 @@ func RunInBackground(args string) error {
 	// skipcq: GSC-G302
 	err = os.WriteFile(homePath+PID_FILE_NAME, []byte(strconv.Itoa(pid)), 0644)
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to write PID file: %w", err)
 	}
 
 	fmt.Println("JioTV Go server started successfully in background.")
