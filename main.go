@@ -172,7 +172,7 @@ func main() {
 				Subcommands: []*cli.Command{
 					{
 						Name:        "start",
-						Aliases:     []string{"run"},
+						Aliases:     []string{"run", "r"},
 						Usage:       "Run JioTV Go server in the background",
 						Description: "The run command starts JioTV Go server in the background. It runs the JioTVServer function in a separate goroutine.",
 						Action: func(c *cli.Context) error {
@@ -190,7 +190,7 @@ func main() {
 					},
 					{
 						Name:        "stop",
-						Aliases:     []string{"s", "kill"},
+						Aliases:     []string{"k", "kill"},
 						Usage:       "Stop JioTV Go server running in the background",
 						Description: "The stop command stops the JioTV Go server running in the background.",
 						Action: func(c *cli.Context) error {

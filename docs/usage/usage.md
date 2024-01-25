@@ -220,7 +220,7 @@ The `background` command allows you to run the JioTV Go server in the background
 
 #### COMMANDS
 
-- `start (run)`: Run JioTV Go server in the background
+- `start (run, r)`: Run JioTV Go server in the background
   ```shell
   jiotv_go background start [command options] [arguments...]
   ```
@@ -228,7 +228,7 @@ The `background` command allows you to run the JioTV Go server in the background
 
   Description: The `start` command starts the JioTV Go server in the background. It runs the `JioTVServer` function in a separate process.
 
-- `stop (s, kill)`: Stop JioTV Go server running in the background
+- `stop (k, kill)`: Stop JioTV Go server running in the background
   ```shell
   jiotv_go background stop
   ```
