@@ -197,11 +197,6 @@ func main() {
 				},
 			},
 		},
-		CommandNotFound: func(c *cli.Context, command string) {
-			log.Printf("Command '%s' not found.\n", command)
-			// Print help for invalid commands
-			cli.ShowAppHelpAndExit(c, 3)
-		},
 	}
 
 	if err := app.Run(os.Args); err != nil {
