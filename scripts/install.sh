@@ -70,7 +70,7 @@ echo "Step 3: Fetching the latest binary from $BINARY_URL"
 if [[ -f "jiotv_go" ]]; then
     rm jiotv_go
 fi
-curl -SL --progress-bar --retry 5 --retry-delay 2 -o jiotv_go "$BINARY_URL" || { echo "Failed to download binary"; exit 1; }
+curl -SL --progress-bar --retry 2 --retry-delay 2 -o jiotv_go "$BINARY_URL" || { echo "Failed to download binary"; exit 1; }
 
 # Step 4: Give executable permissions
 chmod +x jiotv_go
