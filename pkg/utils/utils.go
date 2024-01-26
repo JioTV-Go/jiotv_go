@@ -329,7 +329,7 @@ func GetPathPrefix() string {
 func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
 	ssoToken, err := store.Get("ssoToken")
 	if err != nil {
-		return nil, fmt.Errorf("ssoToken not found")
+		return nil, err
 	}
 
 	crm, err := store.Get("crm")
