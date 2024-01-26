@@ -82,7 +82,7 @@ jiotv_go serve [command options] [arguments...]
 **Options:**
 
 - `--config value, -c value`: Path to the configuration file.
-  <br>By default, JioTV Go will look for a file named `jiotv_go.(toml|yaml|json)` or `config.(toml|yaml|json)` in the same directory as the binary.
+  <br>By default, JioTV Go will look for a file named `jiotv_go.(toml|yaml|json)` or `config.(toml|yaml|json)` in the same directory as the binary or `$HOME/.jiotv_go/` directory.
 - `--host value, -H value`: Host to listen on (default: "localhost").
 - `--port value, -p value`: Port to listen on (default: "5001").
 - `--public, -P`: Open the server to the public. This will expose your server outside your local network. Equivalent to passing `--host 0.0.0.0` (default: false).
