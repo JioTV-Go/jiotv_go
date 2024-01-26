@@ -26,10 +26,10 @@ type JioTVConfig struct {
 	Title string `yaml:"title" env:"JIOTV_TITLE" json:"title" toml:"title"`
 	// Enable Or Disable URL Encryption. URL Encryption prevents hackers from injecting URLs into the server. Default: true
 	DisableURLEncryption bool `yaml:"disable_url_encryption" env:"JIOTV_DISABLE_URL_ENCRYPTION" json:"disable_url_encryption" toml:"disable_url_encryption"`
-	// Path to the credentials file. Default: credentials.json
-	CredentialsPath string `yaml:"credentials_path" env:"JIOTV_CREDENTIALS_PATH" json:"credentials_path" toml:"credentials_path"`
 	// Proxy URL. Proxy is useful to bypass geo-restrictions and ip-restrictions for JioTV API. Default: ""
 	Proxy string `yaml:"proxy" env:"JIOTV_PROXY" json:"proxy" toml:"proxy"`
+	// PathPrefix is the prefix for all file paths managed by JioTV Go. Default: ".jiotv_go"
+	PathPrefix string `yaml:"path_prefix" env:"JIOTV_PATH_PREFIX" json:"path_prefix" toml:"path_prefix"`
 }
 
 // Cfg is the global config variable

@@ -4,7 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"os"
@@ -29,12 +28,13 @@ var (
 
 // GetLogger creates a new logger instance with custom settings
 func GetLogger() *log.Logger {
+	logFilePath := GetPathPrefix()+"jiotv_go.log"
 	var logger *log.Logger
 	if config.Cfg.Debug {
 		logger = log.New(os.Stdout, "[DEBUG] ", log.Ldate|log.Ltime|log.Lshortfile)
 	} else {
 		// write logs to a file jiotv_go.log
-		file, err := os.OpenFile("jiotv_go.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0640) // skipcq: GSC-G302
+		file, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0640) // skipcq: GSC-G302
 		if err != nil {
 			log.Println(err)
 		}
@@ -42,37 +42,13 @@ func GetLogger() *log.Logger {
 		// rotate log file if it is larger than 10MB
 		// neccessary to prevent filling up disk space with logs
 		logger.SetOutput(&lumberjack.Logger{
-			Filename:   "jiotv_go.log",
+			Filename:   logFilePath,
 			MaxSize:    5, // megabytes
 			MaxBackups: 3,
 			MaxAge:     7, // days
 		})
 	}
 	return logger
-}
-
-// GetCredentialsPath returns the file path to credentials file
-func GetCredentialsPath() string {
-	filename := "jiotv_credentials_v2.json"
-	credentials_path := config.Cfg.CredentialsPath
-	if credentials_path != "" {
-		// if trailing slash is not present, add it
-		if !strings.HasSuffix(credentials_path, "/") {
-			credentials_path += "/"
-		}
-		// if folder path is not found, create the folder in current directory
-		err := os.Mkdir(credentials_path, 0640)
-		if err != nil {
-			// if folder already exists, ignore the error
-			if !os.IsExist(err) {
-				Log.Println(err)
-			}
-		}
-		credentials_path += filename
-	} else {
-		credentials_path = filename
-	}
-	return credentials_path
 }
 
 // LoginSendOTP sends OTP to the given number for login
@@ -343,33 +319,9 @@ func Login(username, password string) (map[string]string, error) {
 	}
 }
 
-// loadCredentialsFromFile loads credentials from file if available
-// Returns JIOTV_CREDENTIALS struct
-func loadCredentialsFromFile(filename string) (*JIOTV_CREDENTIALS, error) {
-	// check if given file exists, if not ask user username and password then call Login()
-	_, err := os.Stat(filename)
-	if os.IsNotExist(err) {
-		Log.Println("Credentials file not found, please login at the website or goto /login?username=xxx&password=xxx")
-	} else {
-		var credentials JIOTV_CREDENTIALS
-		file, err := os.Open(filename)
-		if err != nil {
-			return nil, err
-		}
-		defer file.Close() // skipcq: GO-S2307
-
-		data, err := io.ReadAll(file)
-		if err != nil {
-			return nil, err
-		}
-
-		err = json.Unmarshal(data, &credentials)
-		if err != nil {
-			return nil, err
-		}
-		return &credentials, nil
-	}
-	return nil, err
+// GetPathPrefix alias for store.GetPathPrefix
+func GetPathPrefix() string {
+	return store.GetPathPrefix()
 }
 
 // GetJIOTVCredentials return credentials from environment variables or credentials file
@@ -417,14 +369,6 @@ func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
 
 // WriteJIOTVCredentials writes credentials data to file
 func WriteJIOTVCredentials(credentials *JIOTV_CREDENTIALS) error {
-	// credentialsPath := GetCredentialsPath()
-	// file, err := os.Create(credentialsPath)
-	// if err != nil {
-	// 	return err
-	// }
-	// // Write result as credentials.json
-	// file.WriteString(`{"ssoToken":"` + credentials.SSOToken + `","crm":"` + credentials.CRM + `","uniqueId":"` + credentials.UniqueID + `","accessToken":"` + credentials.AccessToken + `","refreshToken":"` + credentials.RefreshToken + `","lastTokenRefreshTime":"` + strconv.FormatInt(time.Now().Unix(), 10) + `"}`)
-	// return file.Close()
 
 	if err := store.Set("ssoToken", credentials.SSOToken); err != nil {
 		return err

@@ -6,9 +6,11 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/rabilrbl/jiotv_go/v3/pkg/utils"
 )
 
-const PID_FILE_NAME = "/.do_not_delete_jiotv_go.pid"
+var PID_FILE_NAME = utils.GetPathPrefix()+"/.jiotv_go.pid"
 
 // RunInBackground starts the JioTV Go server as a background process by
 // executing the current binary with the provided arguments. It stores the

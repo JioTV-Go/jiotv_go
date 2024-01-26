@@ -21,16 +21,9 @@ func Logout() error {
 
 	log.Println("Deleting existing login file if exists")
 
-	login_path := utils.GetCredentialsPath()
-
-	err := os.Remove(login_path)
+	err := utils.Logout()
 	if err != nil {
-		if os.IsNotExist(err) {
-			log.Println("Login file does not exist. Are you logged in? Please login first.")
-			return nil
-		} else {
-			return err
-		}
+		return err
 	}
 
 	log.Println("We have successfully logged you out. Please login again.")

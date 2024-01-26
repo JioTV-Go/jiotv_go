@@ -12,6 +12,13 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+
+	"github.com/rabilrbl/jiotv_go/v3/internal/config"
+)
+
+const (
+	// PATH_PREFIX is the prefix for all file paths managed by JioTV Go.
+	PATH_PREFIX = ".jiotv_go"
 )
 
 var (
@@ -98,7 +105,7 @@ func getStoreFilePath() string {
 		panic(fmt.Errorf("error getting user home directory: %v", err))
 	}
 
-	return filepath.Join(homeDir, ".jiotv_go", ".store")
+	return filepath.Join(homeDir, GetPathPrefix(), ".store")
 }
 
 // getKeyFilePath returns the full path to the key file.
@@ -108,7 +115,7 @@ func getKeyFilePath() string {
 		panic(fmt.Errorf("error getting user home directory: %v", err))
 	}
 
-	return filepath.Join(homeDir, ".jiotv_go", ".store_pass")
+	return filepath.Join(homeDir, GetPathPrefix(), ".store_pass")
 }
 
 // loadStore loads the key-value store from the file.
@@ -237,4 +244,12 @@ func getKey() ([]byte, error) {
 	}
 
 	return key, nil
+}
+
+// GetPathPrefix returns the path prefix for all files managed by JioTV Go.
+func GetPathPrefix() string {
+	if config.Cfg.PathPrefix == "" {
+		return PATH_PREFIX
+	}
+	return config.Cfg.PathPrefix
 }
