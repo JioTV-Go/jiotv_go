@@ -22,6 +22,13 @@ func main() {
 		Copyright: "© JioTV Go by Mohammed Rabil (https://github.com/rabilrbl/jiotv_go)",
 		Compiled:  time.Now(),
 		Suggest:   true,
+		Before: func(c *cli.Context) error {
+			isUpdateAvailableVersion := cmd.IsUpdateAvailable(c.App.Version, "")
+			if isUpdateAvailableVersion != "" {
+				fmt.Printf("Newer version %s available. Run `jiotv_go update` to update.\n", isUpdateAvailableVersion)
+			}
+			return nil
+		},
 		Commands: []*cli.Command{
 			{
 				Name:        "serve",

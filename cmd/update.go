@@ -233,3 +233,22 @@ func atoiOrZero(s string) int {
 	i, _ := strconv.Atoi(s)
 	return i
 }
+
+// IsUpdateAvailable checks if a newer version of the application is available
+// by calling getLatestRelease() to fetch the latest release
+// information from GitHub.
+func IsUpdateAvailable(currentVersion, customVersion string) string {
+	release, err := getLatestRelease(customVersion)
+	if err != nil {
+		return ""
+	}
+
+	latestVersion := release.TagName
+
+	// Compare versions
+	if customVersion == "" && compareVersions(currentVersion, latestVersion) >= 0 {
+		return ""
+	}
+
+	return latestVersion
+}
