@@ -23,8 +23,8 @@ title: ""
 # If you think it is unnecessary, you can disable it. But it is recommended to enable it.
 disable_url_encryption: false
 
-# Path to the custom credentials file. 
-credentials_path: ""
+# Folder path for all JioTV Go related files. 
+path_prefix: ""
 
 # Proxy URL. Proxy is useful to bypass geo-restrictions and ip-restrictions for JioTV API. Default: ""
 proxy: ""

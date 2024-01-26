@@ -3,10 +3,10 @@ package config
 import (
 	"log"
 	"os"
+	"path/filepath"
 	"reflect"
 
 	"github.com/ilyakaznacheev/cleanenv"
-	"github.com/rabilrbl/jiotv_go/v3/pkg/store"
 )
 
 // JioTVConfig defines the configuration options for the JioTV client.
@@ -72,7 +72,11 @@ func (*JioTVConfig) Get(key string) interface{} {
 //
 // If no file is found, an empty string is returned.
 func commonFileExists() string {
-	pathPrefix := store.GetPathPrefix()
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		log.Println("ERROR: Unable to get user home directory:", err)
+	}
+	pathPrefix := filepath.Join(homeDir, ".jiotv_go")
 	commonFiles := []string{"jiotv_go.yml", "jiotv_go.toml", "jiotv_go.json", "config.json", "config.yml", "config.toml", pathPrefix + "config.json", pathPrefix + "config.yml", pathPrefix + "config.toml"}
 	for _, filename := range commonFiles {
 		if _, err := os.Stat(filename); err == nil {

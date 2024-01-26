@@ -6,6 +6,6 @@
     "drm": false,
     "title": "",
     "disable_url_encryption": false,
-    "credentials_path": "",
+    "path_prefix": "",
     "proxy": ""
 }
