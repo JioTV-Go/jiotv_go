@@ -358,6 +358,7 @@ func RenderTSHandler(c *fiber.Ctx) error {
 // Also to generate M3U playlist
 func ChannelsHandler(c *fiber.Ctx) error {
 	quality := strings.TrimSpace(c.Query("q"))
+	isSplitCategory := strings.TrimSpace(c.Query("c")) == "split"
 	apiResponse := television.Channels()
 	// hostUrl should be request URL like http://localhost:5001
 	hostURL := strings.ToLower(c.Protocol()) + "://" + c.Hostname()
@@ -375,8 +376,14 @@ func ChannelsHandler(c *fiber.Ctx) error {
 				channelURL = fmt.Sprintf("%s/live/%s.m3u8", hostURL, channel.ID)
 			}
 			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
+			var groupTitle string
+			if isSplitCategory {
+				groupTitle = fmt.Sprintf("%s - %s", television.CategoryMap[channel.Category], television.LanguageMap[channel.Language])
+			} else {
+				groupTitle = television.CategoryMap[channel.Category]
+			}
 			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-id=%s tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
-				channel.ID, channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], television.CategoryMap[channel.Category], channel.Name, channelURL)
+				channel.ID, channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], groupTitle, channel.Name, channelURL)
 		}
 
 		// Set the Content-Disposition header for file download
@@ -449,7 +456,8 @@ func FaviconHandler(c *fiber.Ctx) error {
 // For user convenience, redirect to /channels?type=m3u
 func PlaylistHandler(c *fiber.Ctx) error {
 	quality := c.Query("q")
-	return c.Redirect("/channels?type=m3u&q="+quality, fiber.StatusMovedPermanently)
+	isSplitCategory := c.Query("c")
+	return c.Redirect("/channels?type=m3u&q=" + quality + "&c=" + isSplitCategory, fiber.StatusMovedPermanently)
 }
 
 // ImageHandler loads image from JioTV server
