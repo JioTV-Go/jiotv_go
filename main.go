@@ -18,19 +18,10 @@ func main() {
 		Name:      "JioTV Go",
 		Usage:     "Stream JioTV on any device",
 		HelpName:  "jiotv_go",
-		Version:   "v3.3.3",
+		Version:   "v3.2.3",
 		Copyright: "© JioTV Go by Mohammed Rabil (https://github.com/rabilrbl/jiotv_go)",
 		Compiled:  time.Now(),
 		Suggest:   true,
-		Before: func(c *cli.Context) error {
-			if c.Command.Name == "serve" || c.Command.Name == "background" {
-				isUpdateAvailableVersion := cmd.IsUpdateAvailable(c.App.Version, "")
-				if isUpdateAvailableVersion != "" {
-					fmt.Printf("Newer version %s available. Run `jiotv_go update` to update.\n", isUpdateAvailableVersion)
-				}
-			}
-			return nil
-		},
 		Commands: []*cli.Command{
 			{
 				Name:        "serve",
@@ -38,6 +29,7 @@ func main() {
 				Usage:       "Start JioTV Go server",
 				Description: "The serve command starts JioTV Go server, and listens on the host and port. The default host is localhost and port is 5001.",
 				Action: func(c *cli.Context) error {
+					cmd.PrintIfUpdateAvailable(c)
 					host := c.String("host")
 					// overwrite host if --public flag is passed
 					if c.Bool("public") {
@@ -203,6 +195,7 @@ func main() {
 						Usage:       "Stop JioTV Go server running in the background",
 						Description: "The stop command stops the JioTV Go server running in the background.",
 						Action: func(c *cli.Context) error {
+							cmd.PrintIfUpdateAvailable(c)
 							return cmd.StopBackground()
 						},
 					},

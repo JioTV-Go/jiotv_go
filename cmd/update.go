@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/urfave/cli/v2"
 	"github.com/valyala/fasthttp"
 )
 
@@ -251,4 +252,12 @@ func IsUpdateAvailable(currentVersion, customVersion string) string {
 	}
 
 	return latestVersion
+}
+
+// PrintIfUpdateAvailable checks if a newer version of the application is available
+func PrintIfUpdateAvailable(c *cli.Context) {
+	isUpdateAvailableVersion := IsUpdateAvailable(c.App.Version, "")
+	if isUpdateAvailableVersion != "" {
+		fmt.Printf("Newer version %s available. Run `jiotv_go update` to update.\n", isUpdateAvailableVersion)
+	}
 }
