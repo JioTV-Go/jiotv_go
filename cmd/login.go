@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 
+	"github.com/rabilrbl/jiotv_go/v3/pkg/store"
 	"github.com/rabilrbl/jiotv_go/v3/pkg/utils"
 
 	"golang.org/x/term"
@@ -15,13 +16,18 @@ import (
 // Logs messages to provide feedback to the user.
 // Returns any errors encountered.
 func Logout() error {
+	err := store.Init()
+	if err != nil {
+		return err
+	}
+
 	// Initialize the logger object as it is used in epg.GenXMLGz()
 	// Do not remove this line, it will result in nil pointer dereference panic
 	utils.Log = utils.GetLogger()
 
 	log.Println("Deleting existing login file if exists")
 
-	err := utils.Logout()
+	err = utils.Logout()
 	if err != nil {
 		return err
 	}
@@ -36,6 +42,10 @@ func Logout() error {
 // verifies the entered OTP by the user and logs in the user.
 // Returns any error encountered.
 func LoginOTP() error {
+	err := store.Init()
+	if err != nil {
+		return err
+	}
 
 	fmt.Print("Enter your mobile number: +91 ")
 	var mobileNumber string
@@ -77,6 +87,10 @@ func LoginOTP() error {
 // and logs in the user if successful.
 // Returns any error encountered.
 func LoginPassword() error {
+	err := store.Init()
+	if err != nil {
+		return err
+	}
 
 	fmt.Print("Enter your number: +91 ")
 	var mobileNumber string
