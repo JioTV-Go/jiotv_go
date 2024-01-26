@@ -4,6 +4,8 @@
 
 ### Automatic Installation (Recommended)
 
+We have video tutorials for [Windows](https://youtu.be/BnNTYTSvVBc),  and [Android](https://youtu.be/ejiuml11g8o) users. Please watch them if you are unsure about the installation process.
+
 #### Linux/Android/macOS
 
 Here's a one-liner to download and install the latest version of JioTV Go on Linux/Android/macOS.
