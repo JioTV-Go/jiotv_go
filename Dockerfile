@@ -26,7 +26,7 @@ WORKDIR /app
 COPY --from=builder /app/jiotv_go .
 
 # Set environment variables
-ENV JIOTV_PATH_PREFIX=".jiotv_go"
+ENV JIOTV_PATH_PREFIX="/app/.jiotv_go"
 
 # Volume for credentials
 VOLUME /app/.jiotv_go
