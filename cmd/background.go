@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/rabilrbl/jiotv_go/v3/pkg/utils"
 )
@@ -41,6 +42,9 @@ func RunInBackground(args string) error {
 	if err != nil {
 		return fmt.Errorf("failed to write PID file: %w", err)
 	}
+
+	// Wait for 1 second to allow the server to start
+	time.Sleep(1 * time.Second)
 
 	fmt.Println("JioTV Go server started successfully in background.")
 
