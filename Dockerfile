@@ -26,10 +26,10 @@ WORKDIR /app
 COPY --from=builder /app/jiotv_go .
 
 # Set environment variables
-ENV JIOTV_CREDENTIALS_PATH=secrets
+ENV JIOTV_PATH_PREFIX=".jiotv_go"
 
 # Volume for credentials
-VOLUME /app/secrets
+VOLUME /app/.jiotv_go
 
 # Expose port 5001 to the outside world
 EXPOSE 5001

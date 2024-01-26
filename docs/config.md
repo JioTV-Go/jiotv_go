@@ -75,13 +75,13 @@ Enable or disable URL encryption.
 
 URL encryption prevents hackers from injecting URLs into the server. If you think it is unnecessary, you can disable it. But it is recommended to enable it.
 
-### Credentials Path:
+### Path Prefix:
 
 | Purpose | Config Value | Environment Variable | Default |
 | ----- | ------------ | -------------------- | ------- |
-| Path to the credentials file. | `credentials_path` | `JIOTV_CREDENTIALS_PATH` | `""` |
+| Folder path for all JioTV Go related files. | `path_prefix` | `JIOTV_PATH_PREFIX` | `$HOME/.jiotv_go` |
 
-Path for storing the credentials files. If you want to use a custom path, you can specify it here. Default: "".
+All JioTV Go related files are stored in this folder. This includes the IPTV playlist, the EPG, and the credentials file.
 
 ### Proxy:
 
@@ -137,8 +137,8 @@ title = ""
 # If you think it is unnecessary, you can disable it. But it is recommended to enable it.
 disable_url_encryption = false
 
-# Path to the custom credentials file.
-credentials_path = ""
+# Folder Path for all JioTV Go related files. Default: "$HOME/.jiotv_go"
+path_prefix = ""
 
 # Proxy URL. Proxy is useful to bypass geo-restrictions and ip-restrictions for JioTV API. Default: ""
 proxy = ""
@@ -160,7 +160,7 @@ disable_logout: false
 drm: false
 title: ""
 disable_url_encryption: false
-credentials_path: ""
+path_prefix: ""
 proxy: ""
 ```
 
@@ -179,7 +179,7 @@ The file is also available at [configs/jiotv_go-config.json](https://github.com/
     "drm": false,
     "title": "",
     "disable_url_encryption": false,
-    "credentials_path": "",
+    "path_prefix": "",
     "proxy": ""
 }
 ```

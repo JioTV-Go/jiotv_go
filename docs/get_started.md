@@ -115,7 +115,7 @@ By default, JioTV Go Docker image runs with `serve --public` command. You can ov
 For example, to run JioTV Go with `serve --public --port 8080` command, run:
 
 ```sh
-docker run -p 8080:8080 -v ./.jiotv_go/secrets:/app/secrets ghcr.io/rabilrbl/jiotv_go serve --public --port 8080
+docker run -p 8080:8080 -v ./.jiotv_go:/app/.jiotv_go ghcr.io/rabilrbl/jiotv_go serve --public --port 8080
 ```
 
 ### Keep JioTV Go Updated
