@@ -87,6 +87,7 @@ jiotv_go serve [command options] [arguments...]
 - `--port value, -p value`: Port to listen on (default: "5001").
 - `--public, -P`: Open the server to the public. This will expose your server outside your local network. Equivalent to passing `--host 0.0.0.0` (default: false).
 - `--prefork`: Enable prefork. This will enable preforking the server to multiple processes. This is useful for production deployment (default: false).
+- `--skip-update-check`: Skip checking for updates on startup (default: false).
 - `--help, -h`: Show help for the `serve` command.
 
 **Example:**
