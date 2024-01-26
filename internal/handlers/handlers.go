@@ -358,6 +358,8 @@ func RenderTSHandler(c *fiber.Ctx) error {
 // Also to generate M3U playlist
 func ChannelsHandler(c *fiber.Ctx) error {
 	quality := strings.TrimSpace(c.Query("q"))
+	groupByLanguage := strings.ToLower(c.Query("group_lang")) == "true"
+	languages := strings.ToLower(strings.TrimSpace(c.Query("lang")))
 	apiResponse := television.Channels()
 	// hostUrl should be request URL like http://localhost:5001
 	hostURL := strings.ToLower(c.Protocol()) + "://" + c.Hostname()
@@ -368,6 +370,10 @@ func ChannelsHandler(c *fiber.Ctx) error {
 		m3uContent := "#EXTM3U x-tvg-url=\"" + hostURL + "/epg.xml.gz\"\n"
 		logoURL := hostURL + "/jtvimage"
 		for _, channel := range apiResponse.Result {
+			cL := television.LanguageMap[channel.Language]
+			if languages != "" && !strings.Contains(languages, strings.ToLower(cL)) {
+				continue
+			}
 			var channelURL string
 			if quality != "" {
 				channelURL = fmt.Sprintf("%s/live/%s/%s.m3u8", hostURL, quality, channel.ID)
@@ -375,8 +381,12 @@ func ChannelsHandler(c *fiber.Ctx) error {
 				channelURL = fmt.Sprintf("%s/live/%s.m3u8", hostURL, channel.ID)
 			}
 			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
+			channelCategory := television.CategoryMap[channel.Category]
+			if groupByLanguage {
+				channelCategory = cL + " " + channelCategory
+			}
 			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-id=%s tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
-				channel.ID, channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], television.CategoryMap[channel.Category], channel.Name, channelURL)
+				channel.ID, channel.Name, channelLogoURL, television.LanguageMap[channel.Language], channelCategory, channelCategory, channel.Name, channelURL)
 		}
 
 		// Set the Content-Disposition header for file download
@@ -449,7 +459,9 @@ func FaviconHandler(c *fiber.Ctx) error {
 // For user convenience, redirect to /channels?type=m3u
 func PlaylistHandler(c *fiber.Ctx) error {
 	quality := c.Query("q")
-	return c.Redirect("/channels?type=m3u&q="+quality, fiber.StatusMovedPermanently)
+	languages := c.Query("lang")
+	groupByLanguage := c.Query("group_lang")
+	return c.Redirect("/channels?type=m3u&q="+quality+"&lang="+languages+"&group_lang="+groupByLanguage, fiber.StatusMovedPermanently)
 }
 
 // ImageHandler loads image from JioTV server
