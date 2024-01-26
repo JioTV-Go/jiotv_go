@@ -36,16 +36,6 @@ func Init() error {
 	mutex.Lock()
 	defer mutex.Unlock()
 
-	storeFilePath := getStoreFilePath()
-
-	// Check if the folder exists, create it if not
-	storeFolder := filepath.Dir(storeFilePath)
-	if _, err := os.Stat(storeFolder); os.IsNotExist(err) {
-		if err := os.MkdirAll(storeFolder, 0755); err != nil {
-			return fmt.Errorf("error creating .jiotv_go folder: %v", err)
-		}
-	}
-
 	KVS = KVSInst{
 		Data: make(map[string]string),
 	}
@@ -100,22 +90,12 @@ func Delete(key string) error {
 
 // getStoreFilePath returns the full path to the store file.
 func getStoreFilePath() string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		panic(fmt.Errorf("error getting user home directory: %v", err))
-	}
-
-	return filepath.Join(homeDir, GetPathPrefix(), ".store")
+	return filepath.Join(GetPathPrefix(), ".store")
 }
 
 // getKeyFilePath returns the full path to the key file.
 func getKeyFilePath() string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		panic(fmt.Errorf("error getting user home directory: %v", err))
-	}
-
-	return filepath.Join(homeDir, GetPathPrefix(), ".store_pass")
+	return filepath.Join(GetPathPrefix(), ".store_pass")
 }
 
 // loadStore loads the key-value store from the file.
@@ -169,9 +149,12 @@ func loadStore() error {
 
 // saveStore saves the key-value store to the file.
 func saveStore() error {
-	storeFile, err := os.Create(getStoreFilePath())
+	storeFilePath := getStoreFilePath()
+
+	// Open the file with append access, creating it if it doesn't exist
+	storeFile, err := os.OpenFile(storeFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
-		return fmt.Errorf("error creating store file: %v", err)
+		return fmt.Errorf("error opening store file: %v", err)
 	}
 	defer storeFile.Close()
 
@@ -230,7 +213,7 @@ func getKey() ([]byte, error) {
 			}
 
 			// Store the key in the file
-			if err := os.WriteFile(keyFilePath, key, 0600); err != nil {
+			if err := os.WriteFile(keyFilePath, key, 0644); err != nil {
 				return nil, fmt.Errorf("error writing key file: %v", err)
 			}
 		} else {
@@ -248,8 +231,27 @@ func getKey() ([]byte, error) {
 
 // GetPathPrefix returns the path prefix for all files managed by JioTV Go.
 func GetPathPrefix() string {
-	if config.Cfg.PathPrefix == "" {
-		return PATH_PREFIX
+	pathPrefix := config.Cfg.PathPrefix
+	if pathPrefix == "" {
+		// add UserHomeDir to pathPrefix
+		homeDir, err := os.UserHomeDir()
+		if err != nil {
+			panic(fmt.Errorf("GetPathPrefix: error getting user home directory: %v", err))
+		}
+		pathPrefix = filepath.Join(homeDir, PATH_PREFIX)
 	}
-	return config.Cfg.PathPrefix
+
+	// if pathPrefix does not exist, create it
+	if _, err := os.Stat(pathPrefix); os.IsNotExist(err) {
+		if err := os.Mkdir(pathPrefix, 0755); err != nil {
+			panic(fmt.Errorf("GetPathPrefix: error creating pathPrefix: %v", err))
+		}
+	}
+
+	// if pathPrefix does not have a trailing slash, add it
+	if pathPrefix[len(pathPrefix)-1] != '/' {
+		pathPrefix += "/"
+	}
+
+	return pathPrefix
 }

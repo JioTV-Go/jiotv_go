@@ -342,19 +342,22 @@ func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
 		return nil, err
 	}
 
+	// Empty for Password login
 	accessToken, err := store.Get("accessToken")
 	if err != nil {
-		return nil, err
+		return nil, nil
 	}
 
+	// Empty for Password login
 	refreshToken, err := store.Get("refreshToken")
 	if err != nil {
-		return nil, err
+		return nil, nil
 	}
 
+	// Empty for Password login
 	lastTokenRefreshTime, err := store.Get("lastTokenRefreshTime")
 	if err != nil {
-		return nil, err
+		return nil, nil
 	}
 
 	return &JIOTV_CREDENTIALS{
@@ -402,6 +405,7 @@ func CheckLoggedIn() bool {
 	// Check if credentials.json exists
 	_, err := GetJIOTVCredentials()
 	if err != nil {
+		Log.Println(err)
 		return false
 	} else {
 		return true
