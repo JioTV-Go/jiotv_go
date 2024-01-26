@@ -29,7 +29,11 @@ func main() {
 				Usage:       "Start JioTV Go server",
 				Description: "The serve command starts JioTV Go server, and listens on the host and port. The default host is localhost and port is 5001.",
 				Action: func(c *cli.Context) error {
-					cmd.PrintIfUpdateAvailable(c)
+					if c.Bool("skip-update-check") {
+						fmt.Println("INFO: Skipping update check")
+					} else {
+						cmd.PrintIfUpdateAvailable(c)
+					}
 					host := c.String("host")
 					// overwrite host if --public flag is passed
 					if c.Bool("public") {
@@ -69,6 +73,10 @@ func main() {
 					&cli.BoolFlag{
 						Name:  "prefork",
 						Usage: "Enable prefork. This will enable preforking the server to multiple processes. This is useful for production deployment.",
+					},
+					&cli.BoolFlag{
+						Name:  "skip-update-check",
+						Usage: "Skip checking for update on startup",
 					},
 				},
 			},
@@ -177,6 +185,7 @@ func main() {
 						Usage:       "Run JioTV Go server in the background",
 						Description: "The run command starts JioTV Go server in the background. It runs the JioTVServer function in a separate goroutine.",
 						Action: func(c *cli.Context) error {
+							cmd.PrintIfUpdateAvailable(c)
 							args := c.String("args")
 							return cmd.RunInBackground(args)
 						},
@@ -195,7 +204,6 @@ func main() {
 						Usage:       "Stop JioTV Go server running in the background",
 						Description: "The stop command stops the JioTV Go server running in the background.",
 						Action: func(c *cli.Context) error {
-							cmd.PrintIfUpdateAvailable(c)
 							return cmd.StopBackground()
 						},
 					},

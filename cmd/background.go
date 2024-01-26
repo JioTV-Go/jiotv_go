@@ -28,6 +28,7 @@ func RunInBackground(args string) error {
 	}
 
 	cmdArgs := strings.Fields(args)
+	cmdArgs = append(cmdArgs, "--skip-update-check")
 	// Run JioTVServer function as a separate process
 	cmd := exec.Command(binaryExecutablePath, append([]string{"serve"}, cmdArgs...)...)
 	err = cmd.Start()
