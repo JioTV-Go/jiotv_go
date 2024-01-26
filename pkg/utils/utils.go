@@ -15,6 +15,7 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 
 	"github.com/rabilrbl/jiotv_go/v3/internal/config"
+	"github.com/rabilrbl/jiotv_go/v3/pkg/store"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/fasthttpproxy"
 )
@@ -374,37 +375,82 @@ func loadCredentialsFromFile(filename string) (*JIOTV_CREDENTIALS, error) {
 // GetJIOTVCredentials return credentials from environment variables or credentials file
 // Important note: If credentials are provided from environment variables, they will be used instead of credentials file
 func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
-	// Use credentials from environment variables if available
-	jiotv_ssoToken := os.Getenv("JIOTV_SSO_TOKEN")
-	jiotv_crm := os.Getenv("JIOTV_CRM")
-	jiotv_uniqueId := os.Getenv("JIOTV_UNIQUE_ID")
-	if jiotv_ssoToken != "" && jiotv_crm != "" && jiotv_uniqueId != "" {
-		Log.Println("Using credentials from environment variables")
-		return &JIOTV_CREDENTIALS{
-			SSOToken:    jiotv_ssoToken,
-			CRM:         jiotv_crm,
-			UniqueID:    jiotv_uniqueId,
-			AccessToken: "",
-		}, nil
+	ssoToken, err := store.Get("ssoToken")
+	if err != nil {
+		return nil, fmt.Errorf("ssoToken not found")
 	}
-	credentials_path := GetCredentialsPath()
-	credentials, err := loadCredentialsFromFile(credentials_path)
+
+	crm, err := store.Get("crm")
 	if err != nil {
 		return nil, err
 	}
-	return credentials, nil
+
+	uniqueId, err := store.Get("uniqueId")
+	if err != nil {
+		return nil, err
+	}
+
+	accessToken, err := store.Get("accessToken")
+	if err != nil {
+		return nil, err
+	}
+
+	refreshToken, err := store.Get("refreshToken")
+	if err != nil {
+		return nil, err
+	}
+
+	lastTokenRefreshTime, err := store.Get("lastTokenRefreshTime")
+	if err != nil {
+		return nil, err
+	}
+
+	return &JIOTV_CREDENTIALS{
+		SSOToken:             ssoToken,
+		CRM:                  crm,
+		UniqueID:             uniqueId,
+		AccessToken:          accessToken,
+		RefreshToken:         refreshToken,
+		LastTokenRefreshTime: lastTokenRefreshTime,
+	}, nil
 }
 
 // WriteJIOTVCredentials writes credentials data to file
 func WriteJIOTVCredentials(credentials *JIOTV_CREDENTIALS) error {
-	credentialsPath := GetCredentialsPath()
-	file, err := os.Create(credentialsPath)
-	if err != nil {
+	// credentialsPath := GetCredentialsPath()
+	// file, err := os.Create(credentialsPath)
+	// if err != nil {
+	// 	return err
+	// }
+	// // Write result as credentials.json
+	// file.WriteString(`{"ssoToken":"` + credentials.SSOToken + `","crm":"` + credentials.CRM + `","uniqueId":"` + credentials.UniqueID + `","accessToken":"` + credentials.AccessToken + `","refreshToken":"` + credentials.RefreshToken + `","lastTokenRefreshTime":"` + strconv.FormatInt(time.Now().Unix(), 10) + `"}`)
+	// return file.Close()
+
+	if err := store.Set("ssoToken", credentials.SSOToken); err != nil {
 		return err
 	}
-	// Write result as credentials.json
-	file.WriteString(`{"ssoToken":"` + credentials.SSOToken + `","crm":"` + credentials.CRM + `","uniqueId":"` + credentials.UniqueID + `","accessToken":"` + credentials.AccessToken + `","refreshToken":"` + credentials.RefreshToken + `","lastTokenRefreshTime":"` + strconv.FormatInt(time.Now().Unix(), 10) + `"}`)
-	return file.Close()
+
+	if err := store.Set("crm", credentials.CRM); err != nil {
+		return err
+	}
+
+	if err := store.Set("uniqueId", credentials.UniqueID); err != nil {
+		return err
+	}
+
+	if err := store.Set("accessToken", credentials.AccessToken); err != nil {
+		return err
+	}
+
+	if err := store.Set("refreshToken", credentials.RefreshToken); err != nil {
+		return err
+	}
+
+	if err := store.Set("lastTokenRefreshTime", strconv.FormatInt(time.Now().Unix(), 10)); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // CheckLoggedIn function checks if user is logged in
@@ -420,11 +466,34 @@ func CheckLoggedIn() bool {
 
 // Logout function deletes credentials file
 func Logout() error {
-	credentialsPath := GetCredentialsPath()
-	err := os.Remove(credentialsPath)
-	if err != nil {
+	// credentialsPath := GetCredentialsPath()
+	// return os.Remove(credentialsPath)
+
+	// Delete all key-value pairs from the store
+	if err := store.Delete("ssoToken"); err != nil {
 		return err
 	}
+
+	if err := store.Delete("crm"); err != nil {
+		return err
+	}
+
+	if err := store.Delete("uniqueId"); err != nil {
+		return err
+	}
+
+	if err := store.Delete("accessToken"); err != nil {
+		return err
+	}
+
+	if err := store.Delete("refreshToken"); err != nil {
+		return err
+	}
+
+	if err := store.Delete("lastTokenRefreshTime"); err != nil {
+		return err
+	}
+
 	return nil
 }
 

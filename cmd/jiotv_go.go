@@ -6,6 +6,7 @@ import (
 	"github.com/rabilrbl/jiotv_go/v3/internal/config"
 	"github.com/rabilrbl/jiotv_go/v3/internal/handlers"
 	"github.com/rabilrbl/jiotv_go/v3/internal/middleware"
+	"github.com/rabilrbl/jiotv_go/v3/pkg/store"
 	"github.com/rabilrbl/jiotv_go/v3/pkg/epg"
 	"github.com/rabilrbl/jiotv_go/v3/pkg/secureurl"
 	"github.com/rabilrbl/jiotv_go/v3/pkg/utils"
@@ -26,12 +27,18 @@ import (
 // It starts listening on the provided host and port.
 // Returns an error if listening fails.
 func JioTVServer(host, port, configPath string, prefork bool) error {
+	// Initialize the logger object
+	utils.Log = utils.GetLogger()
+
+	// Initialize the store object
+	if err := store.Init(); err != nil {
+		return err
+	}
+
 	// Load the config file
 	if err := config.Cfg.Load(configPath); err != nil {
 		return err
 	}
-	// Initialize the logger object
-	utils.Log = utils.GetLogger()
 
 	// Initialize the secureurl object
 	secureurl.Init()
