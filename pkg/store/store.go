@@ -1,8 +1,14 @@
 package store
 
 import (
+	"bytes"
+	"crypto/aes"
+	"crypto/cipher"
+	"crypto/rand"
 	"encoding/gob"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"sync"
@@ -32,13 +38,6 @@ func Init() error {
 			return fmt.Errorf("error creating .jiotv_go folder: %v", err)
 		}
 	}
-
-	// Create the store file
-	storeFile, err := os.Create(storeFilePath)
-	if err != nil {
-		return fmt.Errorf("error creating store file: %v", err)
-	}
-	defer storeFile.Close()
 
 	KVS = KVSInst{
 		Data: make(map[string]string),
@@ -102,6 +101,16 @@ func getStoreFilePath() string {
 	return filepath.Join(homeDir, ".jiotv_go", ".store")
 }
 
+// getKeyFilePath returns the full path to the key file.
+func getKeyFilePath() string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		panic(fmt.Errorf("error getting user home directory: %v", err))
+	}
+
+	return filepath.Join(homeDir, ".jiotv_go", ".store_pass")
+}
+
 // loadStore loads the key-value store from the file.
 func loadStore() error {
 	storeFile, err := os.Open(getStoreFilePath())
@@ -110,7 +119,40 @@ func loadStore() error {
 	}
 	defer storeFile.Close()
 
-	decoder := gob.NewDecoder(storeFile)
+	// Read the encrypted data
+	encryptedData, err := io.ReadAll(storeFile)
+	if err != nil {
+		return fmt.Errorf("error reading store file: %v", err)
+	}
+
+	// Decrypt the data
+	key, err := getKey()
+	if err != nil {
+		return fmt.Errorf("error getting encryption key: %v", err)
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return fmt.Errorf("error creating cipher block: %v", err)
+	}
+
+	if len(encryptedData) < aes.BlockSize {
+		return errors.New("ciphertext too short")
+	}
+
+	iv := encryptedData[:aes.BlockSize]
+	encryptedData = encryptedData[aes.BlockSize:]
+
+	// Use CBC mode with PKCS7 padding
+	if len(encryptedData)%aes.BlockSize != 0 {
+		return errors.New("ciphertext is not a multiple of the block size")
+	}
+
+	mode := cipher.NewCBCDecrypter(block, iv)
+	mode.CryptBlocks(encryptedData, encryptedData)
+
+	// Unmarshal the decrypted data
+	decoder := gob.NewDecoder(bytes.NewReader(encryptedData))
 	if err := decoder.Decode(&KVS); err != nil {
 		return fmt.Errorf("error decoding store data: %v", err)
 	}
@@ -126,10 +168,73 @@ func saveStore() error {
 	}
 	defer storeFile.Close()
 
-	encoder := gob.NewEncoder(storeFile)
+	// Marshal the data
+	var buf bytes.Buffer
+	encoder := gob.NewEncoder(&buf)
 	if err := encoder.Encode(KVS); err != nil {
 		return fmt.Errorf("error encoding store data: %v", err)
 	}
 
+	// Pad the data using PKCS7
+	padding := aes.BlockSize - buf.Len()%aes.BlockSize
+	padtext := bytes.Repeat([]byte{byte(padding)}, padding)
+	buf.Write(padtext)
+
+	// Encrypt the data
+	key, err := getKey()
+	if err != nil {
+		return fmt.Errorf("error getting encryption key: %v", err)
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return fmt.Errorf("error creating cipher block: %v", err)
+	}
+
+	ciphertext := make([]byte, aes.BlockSize+buf.Len())
+	iv := ciphertext[:aes.BlockSize]
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
+		return fmt.Errorf("error generating IV: %v", err)
+	}
+
+	// Use CBC mode with PKCS7 padding
+	mode := cipher.NewCBCEncrypter(block, iv)
+	mode.CryptBlocks(ciphertext[aes.BlockSize:], buf.Bytes())
+
+	// Write the encrypted data to the file
+	if _, err := storeFile.Write(ciphertext); err != nil {
+		return fmt.Errorf("error writing to store file: %v", err)
+	}
+
 	return nil
+}
+
+// getKey reads the encryption key from the .key file. If the file does not exist,
+// it generates a new key and stores it in the file.
+func getKey() ([]byte, error) {
+	keyFilePath := getKeyFilePath()
+	key, err := os.ReadFile(keyFilePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			// Generate a new key
+			key = make([]byte, 32)
+			if _, err := rand.Read(key); err != nil {
+				return nil, fmt.Errorf("error generating key: %v", err)
+			}
+
+			// Store the key in the file
+			if err := os.WriteFile(keyFilePath, key, 0600); err != nil {
+				return nil, fmt.Errorf("error writing key file: %v", err)
+			}
+		} else {
+			return nil, fmt.Errorf("error reading key file: %v", err)
+		}
+	}
+
+	// Ensure the key is 32 bytes long
+	if len(key) != 32 {
+		return nil, errors.New("invalid key length, must be 32 bytes")
+	}
+
+	return key, nil
 }
