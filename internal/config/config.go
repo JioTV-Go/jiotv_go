@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	"github.com/ilyakaznacheev/cleanenv"
+	"github.com/rabilrbl/jiotv_go/v3/pkg/store"
 )
 
 // JioTVConfig defines the configuration options for the JioTV client.
@@ -71,8 +72,8 @@ func (*JioTVConfig) Get(key string) interface{} {
 //
 // If no file is found, an empty string is returned.
 func commonFileExists() string {
-
-	commonFiles := []string{"jiotv_go.yml", "jiotv_go.toml", "jiotv_go.json", "config.json", "config.yml", "config.toml"}
+	pathPrefix := store.GetPathPrefix()
+	commonFiles := []string{"jiotv_go.yml", "jiotv_go.toml", "jiotv_go.json", "config.json", "config.yml", "config.toml", pathPrefix + "config.json", pathPrefix + "config.yml", pathPrefix + "config.toml"}
 	for _, filename := range commonFiles {
 		if _, err := os.Stat(filename); err == nil {
 			return filename
