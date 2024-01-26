@@ -18,13 +18,29 @@ JioTV Go offers a convenient M3U playlist endpoint to enhance your IPTV experien
     http://localhost:5001/playlist.m3u
     ```
 
-2. If you desire a specific quality, append the `q` query parameter:
+2. If you desire a specific quality, append the `q=` query parameter:
 
     ```
     http://localhost:5001/playlist.m3u?q=high
     ```
 
     Available options for `q` include `low`, `medium`, `high`, or their shorthand forms `l`, `m`, `h`.
+
+3. If you would like split category on M3U playlist, append the `c=split` query parameter:
+
+    ```
+    http://localhost:5001/playlist.m3u?c=split
+    ```
+
+    This will split the playlist into categories like `Movie - Kannada`, `Movie - Malayalam`, `News - English`, etc.
+
+
+For both specific quality and split category, append the `q=` and `c=` query parameters:
+
+```
+http://localhost:5001/playlist.m3u?q=high&c=split
+```
+
 
 ## Electronic Program Guide (EPG)
 
