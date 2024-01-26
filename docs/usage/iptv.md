@@ -26,6 +26,37 @@ JioTV Go offers a convenient M3U playlist endpoint to enhance your IPTV experien
 
     Available options for `q` include `low`, `medium`, `high`, or their shorthand forms `l`, `m`, `h`.
 
+3. If you desire the channels to be grouped by language, append the `group_lang` query parameter:
+
+   ```
+   http://localhost:5001/playlist.m3u?group_lang=true
+   ```
+   The categories will be prefixed by language of the channel. Eg. `Entertainment` -> `English Entertainment`
+
+4. If you desire to filter the channels in a playlist to be of specific languages, append the `lang` query parameter with comma separated languages
+
+   ```
+   http://localhost:5001/playlist.m3u?lang=hindi,english
+   ```
+    Available options for `lang` include
+
+    - Hindi
+    - Marathi
+	 - Punjabi
+	 - Urdu
+	 - Bengali
+	 - English
+	 - Malayalam
+	 - Tamil
+	 - Gujarati
+	 - Odia
+	 - Telugu
+	 - Bhojpuri
+	 - Kannada
+	 - Assamese
+	 - Nepali
+	 - French
+
 ## Electronic Program Guide (EPG)
 
 Take advantage of JioTV Go's Electronic Program Guide to enrich your IPTV setup. Follow these steps:
