@@ -6,6 +6,8 @@ Ready to dive in? Download the latest binary for your operating system from [her
 
 _Give us 🌟 on GitHub if you like this project!_
 
+We have video tutorials for [Windows](https://youtu.be/BnNTYTSvVBc),  and [Android](https://youtu.be/ejiuml11g8o) users. Please watch them if you are unsure about the installation process.
+
 ## Features 🌟
 
 - 📺 Stream Live TV channels, just like in the JioTV Android app.
