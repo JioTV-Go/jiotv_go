@@ -67,11 +67,13 @@ Instantly obtain an M3U playlist for IPTV.
   
 You can append `?q=<level>` to the path where `<level>` should be replaced with `low`, `medium`, `high`, or `l`, `m`, `h` to set the quality of the stream. The default quality is `auto`.
 
+You can also append `&c=split` to the path to have categories based on both language and genre. Example categories: `Hindi - Entertainment`, `English - News`, `Tamil - Sports`, etc.
+
 ### M3U Playlist
 
 - **Path**: `/channels?type=m3u`
 
-The actual path for the M3U playlist. You can append `&q=<level>` to the path as [above](#m3u-playlist-alias).
+The actual path for the M3U playlist. You can append `&q=<level>` to the path as [above](#m3u-playlist-alias). You can also append `&c=split` to the path as [above](#m3u-playlist-alias).
 
 ### M3U8 URL
 
