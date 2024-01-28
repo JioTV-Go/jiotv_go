@@ -23,3 +23,5 @@ You can host JioTV Go on your home server. This is the recommended way to host J
 ## Exposing Your Home Server to the Internet
 
 If you want to expose your home server to the internet, we recommend using [Cloudflare Tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/downloads/). It's free and easy to set up. You can also use [ngrok](https://ngrok.com/) or [serveo](https://serveo.net/) to expose your home server to the internet.
+
+Watch this video to learn how to use Cloudflare Tunnel: [https://youtu.be/yJ41DmpVbeM](https://youtu.be/yJ41DmpVbeM)
