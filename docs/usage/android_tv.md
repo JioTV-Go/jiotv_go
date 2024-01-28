@@ -50,8 +50,18 @@ Other apps that you can use to auto start JioTV Go on Android TV:
 
 If you are having issue with EPG in Android TV, please see if you can resolve it by [`egp` command](usage.md#3-epg-command). If you are still having issue, you can use third-party EPG providers.
 
-Use mitthu786's JioTV EPG as a source in IPTV Settings.
-Link: https://github.com/mitthu786/tvepg
+The current implementation of EPG generation is not optimised for Android TV.
+
+Use a third party EPG as mentioned here
+```
+https://avkb.short.gy/jioepg.xml.gz
+```
+
+The above link is from mitthu786. GitHub Link: https://github.com/mitthu786/tvepg
+
+This will not only be easy on your poor tiny compute machine. It is recommended as you will not get any issues or problems.
+
+EPG generation requires up to thousand http requests in total and 20 http requests per second. So you do the math and plus at last it requires a huge amount of memory and CPU for compression to a 3MB file.
 
 There might be other EPG providers. You can search for them on the internet.
 
