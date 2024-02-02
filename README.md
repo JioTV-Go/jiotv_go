@@ -27,7 +27,7 @@ Get Started with JioTV Go by following the [Get Started](https://jiotv_go.rabil.
 
 ## Table of Contents
 
-<details open>
+<details close>
   <summary>Click to expand/collapse</summary>
   
 - [JioTV Go 📺](#jiotv-go-)
