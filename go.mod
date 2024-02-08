@@ -3,13 +3,13 @@ module github.com/rabilrbl/jiotv_go/v3
 go 1.21
 
 require (
+	github.com/BurntSushi/toml v1.3.2
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/urfave/cli/v2 v2.27.1
-	golang.org/x/term v0.16.0
+	golang.org/x/term v0.17.0
 )
 
 require (
-	github.com/BurntSushi/toml v1.3.2 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/gofiber/template v1.8.2 // indirect
 	github.com/gofiber/utils v1.1.0 // indirect
@@ -37,6 +37,6 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.51.0
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
