@@ -33,7 +33,16 @@ JioTV Go offers a convenient M3U playlist endpoint to enhance your IPTV experien
     ```
 
     This will split the playlist into categories like `Movie - Kannada`, `Movie - Malayalam`, `News - English`, etc.
+	
+4. If you would like to filter only specific languages on M3U playlist, append the `l=Tamil,English,Malayalam` (comma-separated) query parameter:
 
+    ```
+    http://localhost:5001/playlist.m3u?l=Tamil,English,Bengali
+    ```
+	
+	This will filter only the specified languages (Tamil, English and Bengali).
+	
+	Available Languages to filter `Hindi, Marathi, Punjabi, Urdu, Bengali, English, Malayalam, Tamil, Gujarati, Odia, Telugu, Bhojpuri, Kannada, Assamese, Nepali, French, Other`
 
 For both specific quality and split category, append the `q=` and `c=` query parameters:
 
