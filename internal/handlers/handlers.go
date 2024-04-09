@@ -371,7 +371,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 		logoURL := hostURL + "/jtvimage"
 		for _, channel := range apiResponse.Result {
 
-			if languages != "" && !containsString(strings.Split(languages, ","), television.LanguageMap[channel.Language]) {
+			if languages != "" && !utils.ContainsString(television.LanguageMap[channel.Language], strings.Split(languages, ",")) {
 				continue
 			}
 
@@ -403,15 +403,6 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(apiResponse)
-}
-
-func containsString(arr []string, target string) bool {
-	for _, str := range arr {
-		if str == target {
-			return true
-		}
-	}
-	return false
 }
 
 // PlayHandler loads HTML Page with video player iframe embedded with video URL
