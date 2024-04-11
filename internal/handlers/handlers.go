@@ -29,7 +29,8 @@ var (
 )
 
 const (
-	REFRESH_TOKEN_URL = "https://auth.media.jio.com/tokenservice/apis/v1/refreshtoken?langId=6"
+	REFRESH_TOKEN_URL     = "https://auth.media.jio.com/tokenservice/apis/v1/refreshtoken?langId=6"
+	REFRESH_SSO_TOKEN_URL = "https://tv.media.jio.com/apis/v2.0/loginotp/refresh?langId=6"
 )
 
 // Init initializes the necessary operations required for the handlers to work.
