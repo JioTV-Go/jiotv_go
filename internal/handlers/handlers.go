@@ -29,7 +29,8 @@ var (
 )
 
 const (
-	REFRESH_TOKEN_URL = "https://auth.media.jio.com/tokenservice/apis/v1/refreshtoken?langId=6"
+	REFRESH_TOKEN_URL     = "https://auth.media.jio.com/tokenservice/apis/v1/refreshtoken?langId=6"
+	REFRESH_SSO_TOKEN_URL = "https://tv.media.jio.com/apis/v2.0/loginotp/refresh?langId=6"
 )
 
 // Init initializes the necessary operations required for the handlers to work.
@@ -457,7 +458,7 @@ func FaviconHandler(c *fiber.Ctx) error {
 func PlaylistHandler(c *fiber.Ctx) error {
 	quality := c.Query("q")
 	isSplitCategory := c.Query("c")
-	return c.Redirect("/channels?type=m3u&q=" + quality + "&c=" + isSplitCategory, fiber.StatusMovedPermanently)
+	return c.Redirect("/channels?type=m3u&q="+quality+"&c="+isSplitCategory, fiber.StatusMovedPermanently)
 }
 
 // ImageHandler loads image from JioTV server

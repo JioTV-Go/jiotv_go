@@ -192,6 +192,71 @@ func LoginRefreshAccessToken() error {
 	}
 }
 
+// LoginRefreshSSOToken Function is used to refresh SSOToken
+func LoginRefreshSSOToken() error {
+	utils.Log.Println("Refreshing SsoToken...")
+	tokenData, err := utils.GetJIOTVCredentials()
+	if err != nil {
+		return err
+	}
+
+	// Prepare the request
+	req := fasthttp.AcquireRequest()
+	req.SetRequestURI(REFRESH_SSO_TOKEN_URL)
+	req.Header.SetMethod("GET")
+	req.Header.Set("devicetype", "phone")
+	req.Header.Set("versionCode", "315")
+	req.Header.Set("os", "android")
+	req.Header.Set("Host", "tv.media.jio.com")
+	req.Header.Set("Accept-Encoding", "gzip")
+	req.Header.Set("User-Agent", "okhttp/4.2.2")
+	req.Header.Set("ssoToken", tokenData.SSOToken)
+	req.Header.Set("uniqueid", tokenData.UniqueID)
+	req.Header.Set("deviceid", "6fcadeb7b4b10d77")
+
+	// Send the request
+	resp := fasthttp.AcquireResponse()
+	client := utils.GetRequestClient()
+	if err := client.Do(req, resp); err != nil {
+		utils.Log.Fatalln(err)
+		return err
+	}
+
+	// Check the response
+	if resp.StatusCode() != fasthttp.StatusOK {
+		utils.Log.Fatalln("Request failed with status code:", resp.StatusCode())
+		return fmt.Errorf("Request failed with status code: %d", resp.StatusCode())
+	}
+
+	// Parse the response body
+	respBody, err := resp.BodyGunzip()
+	if err != nil {
+		utils.Log.Fatalln(err)
+		return err
+	}
+	var response RefreshSSOTokenResponse
+	if err := json.Unmarshal(respBody, &response); err != nil {
+		utils.Log.Fatalln(err)
+		return err
+	}
+
+	// Update tokenData
+	if response.SSOToken != "" {
+		tokenData.SSOToken = response.SSOToken
+		tokenData.LastTokenRefreshTime = strconv.FormatInt(time.Now().Unix(), 10)
+		err := utils.WriteJIOTVCredentials(tokenData)
+		if err != nil {
+			utils.Log.Fatalln(err)
+			return err
+		}
+		TV = television.New(tokenData)
+		go RefreshTokenIfExpired(tokenData)
+		return nil
+	} else {
+		return fmt.Errorf("SSOToken not found in response")
+	}
+}
+
 // RefreshTokenIfExpired Function is used to handle AccessToken refresh
 func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) {
 	utils.Log.Println("Checking if AccessToken is expired...")
@@ -204,6 +269,7 @@ func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) {
 
 	if thresholdTime.Before(time.Now()) {
 		LoginRefreshAccessToken()
+		LoginRefreshSSOToken()
 	} else {
 		utils.Log.Println("Refreshing AccessToken after", time.Until(thresholdTime).Truncate(time.Second))
 		go utils.ScheduleFunctionCall(func() { RefreshTokenIfExpired(credentials) }, thresholdTime)

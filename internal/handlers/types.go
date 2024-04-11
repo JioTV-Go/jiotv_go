@@ -27,3 +27,9 @@ type RefreshTokenResponse struct {
 	// Access token for JioTV API
 	AccessToken string `json:"authToken"`
 }
+
+// RefreshSSOTokenResponse represents Response body for refresh token request
+type RefreshSSOTokenResponse struct {
+	// Access token for JioTV API
+	SSOToken string `json:"ssoToken"`
+}
