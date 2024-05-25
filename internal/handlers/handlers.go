@@ -134,11 +134,9 @@ func LiveHandler(c *fiber.Ctx) error {
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": err,
-			})
-		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err,
+		})
 	}
 	if id[:2] == "sl" {
 		return sonyLivRedirect(c, liveResult)
