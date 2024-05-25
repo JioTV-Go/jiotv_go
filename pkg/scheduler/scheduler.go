@@ -1,10 +1,10 @@
 package scheduler
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/madflojo/tasks"
+	"github.com/rabilrbl/jiotv_go/v3/pkg/utils"
 )
 
 var (
@@ -28,14 +28,14 @@ func Add(interval time.Time, task func() error) {
 		Interval: time.Until(interval),
 		TaskFunc: task,
 		ErrFunc: func(err error) {
-			fmt.Printf("Task failed: %v\n", err)
+			utils.Log.Printf("Task failed: %v\n", err)
 		},
 		StartAfter: interval, // Convert interval to time.Time value
 	})
 	if err != nil {
-		fmt.Printf("Failed to add task: %v\n", err)
+		utils.Log.Printf("Failed to add task: %v\n", err)
 		return
 	}
-	fmt.Printf("Task added with ID: %v\n", id)
+	utils.Log.Printf("Task added with ID: %v\n", id)
 }
 

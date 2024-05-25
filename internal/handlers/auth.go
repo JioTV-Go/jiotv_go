@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/rabilrbl/jiotv_go/v3/pkg/scheduler"
 	"github.com/rabilrbl/jiotv_go/v3/pkg/television"
 	"github.com/rabilrbl/jiotv_go/v3/pkg/utils"
 	"github.com/valyala/fasthttp"
@@ -272,9 +273,9 @@ func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
 		LoginRefreshAccessToken()
 	} else {
 		utils.Log.Println("Refreshing AccessToken after", time.Until(thresholdTime).Truncate(time.Second))
-		go utils.ScheduleFunctionCall(func() error {
+		go scheduler.Add(thresholdTime, func() error {
 			return RefreshTokenIfExpired(credentials)
-		}, thresholdTime)
+		})
 	}
 	return nil
 }
@@ -294,9 +295,9 @@ func RefreshSSOTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
 		LoginRefreshSSOToken()
 	} else {
 		utils.Log.Println("Refreshing SSOToken after", time.Until(thresholdTime).Truncate(time.Second))
-		go utils.ScheduleFunctionCall(func() error {
+		go scheduler.Add(thresholdTime, func() error {
 			return RefreshSSOTokenIfExpired(credentials)
-		}, thresholdTime)
+		})
 	}
 	return nil
 }
