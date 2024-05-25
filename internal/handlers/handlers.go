@@ -275,7 +275,7 @@ func RenderHandler(c *fiber.Ctx) error {
 		utils.Log.Println("Error rendering M3U8 file")
 		utils.Log.Println(string(renderResult))
 	}
-
+	c.Response().Header.Set("Cache-Control", "public, must-revalidate, max-age=5")
 	return c.Status(statusCode).Send(renderResult)
 }
 
@@ -298,7 +298,6 @@ func SLHandler(c *fiber.Ctx) error {
 
 	c.Response().Header.Del(fiber.HeaderServer)
 	c.Response().Header.Add("Access-Control-Allow-Origin", "*")
-
 	return nil
 }
 
@@ -396,6 +395,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 		// Set the Content-Disposition header for file download
 		c.Set("Content-Disposition", "attachment; filename=jiotv_playlist.m3u")
 		c.Set("Content-Type", "application/vnd.apple.mpegurl") // Set the video M3U MIME type
+		c.Response().Header.Set("Cache-Control", "public, max-age=3600")
 		return c.SendString(m3uContent)
 	}
 
@@ -418,6 +418,7 @@ func PlayHandler(c *fiber.Ctx) error {
 	} else {
 		player_url = "/player/" + id + "?q=" + quality
 	}
+	c.Response().Header.Set("Cache-Control", "public, max-age=3600")
 	return c.Render("views/play", fiber.Map{
 		"Title":      Title,
 		"player_url": player_url,
@@ -434,6 +435,7 @@ func PlayerHandler(c *fiber.Ctx) error {
 	} else {
 		play_url = "/live/" + id + ".m3u8"
 	}
+	c.Response().Header.Set("Cache-Control", "public, max-age=3600")
 	return c.Render("views/flow_player", fiber.Map{
 		"play_url": play_url,
 	})
@@ -449,6 +451,7 @@ func ClapprHandler(c *fiber.Ctx) error {
 	} else {
 		play_url = "/live/" + id + ".m3u8"
 	}
+	c.Response().Header.Set("Cache-Control", "public, max-age=3600")
 	return c.Render("views/clappr", fiber.Map{
 		"play_url": play_url,
 	})
