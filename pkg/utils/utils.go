@@ -366,12 +366,12 @@ func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
 	}
 
 	return &JIOTV_CREDENTIALS{
-		SSOToken:             ssoToken,
-		CRM:                  crm,
-		UniqueID:             uniqueId,
-		AccessToken:          accessToken,
-		RefreshToken:         refreshToken,
-		LastTokenRefreshTime: lastTokenRefreshTime,
+		SSOToken:                ssoToken,
+		CRM:                     crm,
+		UniqueID:                uniqueId,
+		AccessToken:             accessToken,
+		RefreshToken:            refreshToken,
+		LastTokenRefreshTime:    lastTokenRefreshTime,
 		LastSSOTokenRefreshTime: lastSSOTokenRefreshTime,
 	}, nil
 }
@@ -399,12 +399,24 @@ func WriteJIOTVCredentials(credentials *JIOTV_CREDENTIALS) error {
 		return err
 	}
 
-	if err := store.Set("lastTokenRefreshTime", strconv.FormatInt(time.Now().Unix(), 10)); err != nil {
-		return err
+	if credentials.LastTokenRefreshTime != "" {
+		if err := store.Set("lastTokenRefreshTime", credentials.LastTokenRefreshTime); err != nil {
+			return err
+		}
+	} else {
+		if err := store.Set("lastTokenRefreshTime", strconv.FormatInt(time.Now().Unix(), 10)); err != nil {
+			return err
+		}
 	}
 
-	if err := store.Set("lastSSOTokenRefreshTime", strconv.FormatInt(time.Now().Unix(), 10)); err != nil {
-		return err
+	if credentials.LastSSOTokenRefreshTime != "" {
+		if err := store.Set("lastSSOTokenRefreshTime", credentials.LastSSOTokenRefreshTime); err != nil {
+			return err
+		}
+	} else {
+		if err := store.Set("lastSSOTokenRefreshTime", strconv.FormatInt(time.Now().Unix(), 10)); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -449,6 +461,10 @@ func Logout() error {
 	}
 
 	if err := store.Delete("lastTokenRefreshTime"); err != nil {
+		return err
+	}
+
+	if err := store.Delete("lastSSOTokenRefreshTime"); err != nil {
 		return err
 	}
 
