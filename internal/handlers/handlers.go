@@ -55,6 +55,10 @@ func Init() {
 			// Check validity of credentials
 			go RefreshTokenIfExpired(credentials)
 		}
+		// If SsoToken is present, check for its validity and schedule a refresh if required
+		if credentials.SSOToken != "" {
+			go RefreshSSOTokenIfExpired(credentials)
+		}
 		// Initialize TV object with credentials
 		TV = television.New(credentials)
 	}
@@ -134,11 +138,9 @@ func LiveHandler(c *fiber.Ctx) error {
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": err,
-			})
-		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err,
+		})
 	}
 	if id[:2] == "sl" {
 		return sonyLivRedirect(c, liveResult)
@@ -162,15 +164,13 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
 	liveResult, err := TV.Live(id)
-	Bitrates := liveResult.Bitrates
 	if err != nil {
 		utils.Log.Println(err)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": err,
-			})
-		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err,
+		})
 	}
+	Bitrates := liveResult.Bitrates
 	if id[:2] == "sl" {
 		return sonyLivRedirect(c, liveResult)
 	}
@@ -275,7 +275,7 @@ func RenderHandler(c *fiber.Ctx) error {
 		utils.Log.Println("Error rendering M3U8 file")
 		utils.Log.Println(string(renderResult))
 	}
-
+	c.Response().Header.Set("Cache-Control", "public, must-revalidate, max-age=3")
 	return c.Status(statusCode).Send(renderResult)
 }
 
@@ -298,7 +298,6 @@ func SLHandler(c *fiber.Ctx) error {
 
 	c.Response().Header.Del(fiber.HeaderServer)
 	c.Response().Header.Add("Access-Control-Allow-Origin", "*")
-
 	return nil
 }
 
@@ -396,6 +395,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 		// Set the Content-Disposition header for file download
 		c.Set("Content-Disposition", "attachment; filename=jiotv_playlist.m3u")
 		c.Set("Content-Type", "application/vnd.apple.mpegurl") // Set the video M3U MIME type
+		c.Response().Header.Set("Cache-Control", "public, max-age=3600")
 		return c.SendString(m3uContent)
 	}
 
@@ -418,6 +418,7 @@ func PlayHandler(c *fiber.Ctx) error {
 	} else {
 		player_url = "/player/" + id + "?q=" + quality
 	}
+	c.Response().Header.Set("Cache-Control", "public, max-age=3600")
 	return c.Render("views/play", fiber.Map{
 		"Title":      Title,
 		"player_url": player_url,
@@ -434,6 +435,7 @@ func PlayerHandler(c *fiber.Ctx) error {
 	} else {
 		play_url = "/live/" + id + ".m3u8"
 	}
+	c.Response().Header.Set("Cache-Control", "public, max-age=3600")
 	return c.Render("views/flow_player", fiber.Map{
 		"play_url": play_url,
 	})
@@ -449,6 +451,7 @@ func ClapprHandler(c *fiber.Ctx) error {
 	} else {
 		play_url = "/live/" + id + ".m3u8"
 	}
+	c.Response().Header.Set("Cache-Control", "public, max-age=3600")
 	return c.Render("views/clappr", fiber.Map{
 		"play_url": play_url,
 	})

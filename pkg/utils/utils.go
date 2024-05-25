@@ -28,7 +28,7 @@ var (
 
 // GetLogger creates a new logger instance with custom settings
 func GetLogger() *log.Logger {
-	logFilePath := GetPathPrefix()+"jiotv_go.log"
+	logFilePath := GetPathPrefix() + "jiotv_go.log"
 	var logger *log.Logger
 	if config.Cfg.Debug {
 		logger = log.New(os.Stdout, "[DEBUG] ", log.Ldate|log.Ltime|log.Lshortfile)
@@ -360,13 +360,19 @@ func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
 		return nil, nil
 	}
 
+	lastSSOTokenRefreshTime, err := store.Get("lastSSOTokenRefreshTime")
+	if err != nil {
+		return nil, nil
+	}
+
 	return &JIOTV_CREDENTIALS{
-		SSOToken:             ssoToken,
-		CRM:                  crm,
-		UniqueID:             uniqueId,
-		AccessToken:          accessToken,
-		RefreshToken:         refreshToken,
-		LastTokenRefreshTime: lastTokenRefreshTime,
+		SSOToken:                ssoToken,
+		CRM:                     crm,
+		UniqueID:                uniqueId,
+		AccessToken:             accessToken,
+		RefreshToken:            refreshToken,
+		LastTokenRefreshTime:    lastTokenRefreshTime,
+		LastSSOTokenRefreshTime: lastSSOTokenRefreshTime,
 	}, nil
 }
 
@@ -393,8 +399,24 @@ func WriteJIOTVCredentials(credentials *JIOTV_CREDENTIALS) error {
 		return err
 	}
 
-	if err := store.Set("lastTokenRefreshTime", strconv.FormatInt(time.Now().Unix(), 10)); err != nil {
-		return err
+	if credentials.LastTokenRefreshTime != "" {
+		if err := store.Set("lastTokenRefreshTime", credentials.LastTokenRefreshTime); err != nil {
+			return err
+		}
+	} else {
+		if err := store.Set("lastTokenRefreshTime", strconv.FormatInt(time.Now().Unix(), 10)); err != nil {
+			return err
+		}
+	}
+
+	if credentials.LastSSOTokenRefreshTime != "" {
+		if err := store.Set("lastSSOTokenRefreshTime", credentials.LastSSOTokenRefreshTime); err != nil {
+			return err
+		}
+	} else {
+		if err := store.Set("lastSSOTokenRefreshTime", strconv.FormatInt(time.Now().Unix(), 10)); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -442,16 +464,11 @@ func Logout() error {
 		return err
 	}
 
-	return nil
-}
-
-// ScheduleFunctionCall schedules a function call at a given time
-func ScheduleFunctionCall(fn func(), executeTime time.Time) {
-	now := time.Now()
-	if executeTime.After(now) {
-		time.Sleep(executeTime.Sub(now))
+	if err := store.Delete("lastSSOTokenRefreshTime"); err != nil {
+		return err
 	}
-	fn()
+
+	return nil
 }
 
 // GetRequestClient create a HTTP client with proxy if given

@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/rabilrbl/jiotv_go/v3/pkg/scheduler"
 	"github.com/rabilrbl/jiotv_go/v3/pkg/utils"
 	"github.com/schollz/progressbar/v3"
 	"github.com/valyala/fasthttp"
@@ -23,6 +24,8 @@ const (
 	CHANNEL_URL = "https://jiotv.data.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?os=android&devicetype=phone&usertype=tvYR7NSNn7rymo3F"
 	// URL for fetching EPG data for individual channels from JioTV API
 	EPG_URL = "https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get/?offset=%d&channel_id=%d"
+	// EPG_TASK_ID is the ID of the EPG generation task
+	EPG_TASK_ID = "jiotv_epg"
 )
 
 // Init initializes EPG generation and schedules it for the next day.
@@ -48,11 +51,13 @@ func Init() {
 		flag = true
 	}
 
-	genepg := func() {
+	genepg := func() error {
 		fmt.Println("\tGenerating new EPG file... Please wait.")
-		if err := GenXMLGz(epgFile); err != nil {
+		err := GenXMLGz(epgFile); 
+		if err != nil {
 			utils.Log.Fatal(err)
 		}
+		return err
 	}
 
 	if flag {
@@ -72,7 +77,7 @@ func Init() {
 	time_now := time.Now()
 	schedule_time := time.Date(time_now.Year(), time_now.Month(), time_now.Day()+1, random_hour, random_min, 0, 0, time.UTC)
 	utils.Log.Println("Scheduled EPG generation on", schedule_time.Local())
-	go utils.ScheduleFunctionCall(genepg, schedule_time)
+	go scheduler.Add(EPG_TASK_ID, time.Until(schedule_time), genepg)
 }
 
 // NewProgramme creates a new Programme with the given parameters.
