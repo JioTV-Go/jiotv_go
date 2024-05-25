@@ -3,7 +3,7 @@ module github.com/rabilrbl/jiotv_go/v3
 go 1.21
 
 require (
-	github.com/BurntSushi/toml v1.3.2
+	github.com/BurntSushi/toml v1.4.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/urfave/cli/v2 v2.27.2
 	golang.org/x/term v0.20.0
