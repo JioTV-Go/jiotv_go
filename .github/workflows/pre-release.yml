@@ -16,6 +16,7 @@ on:
       - "scripts/**"
       - "**.sh"
       - "docs/**"
+  workflow_dispatch:
 
 concurrency:
   group: ${{ github.ref }}-pre-release
