@@ -275,7 +275,7 @@ func RenderHandler(c *fiber.Ctx) error {
 		utils.Log.Println("Error rendering M3U8 file")
 		utils.Log.Println(string(renderResult))
 	}
-	c.Response().Header.Set("Cache-Control", "public, must-revalidate, max-age=5")
+	c.Response().Header.Set("Cache-Control", "public, must-revalidate, max-age=3")
 	return c.Status(statusCode).Send(renderResult)
 }
 
