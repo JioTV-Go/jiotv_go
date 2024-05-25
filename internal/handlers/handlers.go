@@ -160,15 +160,13 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
 	liveResult, err := TV.Live(id)
-	Bitrates := liveResult.Bitrates
 	if err != nil {
 		utils.Log.Println(err)
-		if err != nil {
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": err,
-			})
-		}
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err,
+		})
 	}
+	Bitrates := liveResult.Bitrates
 	if id[:2] == "sl" {
 		return sonyLivRedirect(c, liveResult)
 	}
