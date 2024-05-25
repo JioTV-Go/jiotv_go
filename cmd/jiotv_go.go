@@ -6,9 +6,10 @@ import (
 	"github.com/rabilrbl/jiotv_go/v3/internal/config"
 	"github.com/rabilrbl/jiotv_go/v3/internal/handlers"
 	"github.com/rabilrbl/jiotv_go/v3/internal/middleware"
-	"github.com/rabilrbl/jiotv_go/v3/pkg/store"
 	"github.com/rabilrbl/jiotv_go/v3/pkg/epg"
+	"github.com/rabilrbl/jiotv_go/v3/pkg/scheduler"
 	"github.com/rabilrbl/jiotv_go/v3/pkg/secureurl"
+	"github.com/rabilrbl/jiotv_go/v3/pkg/store"
 	"github.com/rabilrbl/jiotv_go/v3/pkg/utils"
 	"github.com/rabilrbl/jiotv_go/v3/web"
 
@@ -48,6 +49,10 @@ func JioTVServer(host, port, configPath string, prefork bool) error {
 	if config.Cfg.EPG || utils.FileExists("epg.xml.gz") {
 		go epg.Init()
 	}
+
+	// Start Scheduler
+	scheduler.Init()
+	defer scheduler.Stop()
 
 	engine := html.NewFileSystem(http.FS(web.GetViewFiles()), ".html")
 	if config.Cfg.Debug {

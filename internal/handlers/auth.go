@@ -243,14 +243,14 @@ func LoginRefreshSSOToken() error {
 	// Update tokenData
 	if response.SSOToken != "" {
 		tokenData.SSOToken = response.SSOToken
-		tokenData.LastTokenRefreshTime = strconv.FormatInt(time.Now().Unix(), 10)
+		tokenData.LastSSOTokenRefreshTime = strconv.FormatInt(time.Now().Unix(), 10)
 		err := utils.WriteJIOTVCredentials(tokenData)
 		if err != nil {
 			utils.Log.Fatalln(err)
 			return err
 		}
 		TV = television.New(tokenData)
-		go RefreshTokenIfExpired(tokenData)
+		go RefreshSSOTokenIfExpired(tokenData)
 		return nil
 	} else {
 		return fmt.Errorf("SSOToken not found in response")
@@ -258,20 +258,45 @@ func LoginRefreshSSOToken() error {
 }
 
 // RefreshTokenIfExpired Function is used to handle AccessToken refresh
-func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) {
+func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
 	utils.Log.Println("Checking if AccessToken is expired...")
 	lastTokenRefreshTime, err := strconv.ParseInt(credentials.LastTokenRefreshTime, 10, 64)
 	if err != nil {
 		utils.Log.Fatal(err)
+		return err
 	}
 	lastTokenRefreshTimeUnix := time.Unix(lastTokenRefreshTime, 0)
 	thresholdTime := lastTokenRefreshTimeUnix.Add(1*time.Hour + 50*time.Minute)
 
 	if thresholdTime.Before(time.Now()) {
 		LoginRefreshAccessToken()
-		LoginRefreshSSOToken()
 	} else {
 		utils.Log.Println("Refreshing AccessToken after", time.Until(thresholdTime).Truncate(time.Second))
-		go utils.ScheduleFunctionCall(func() { RefreshTokenIfExpired(credentials) }, thresholdTime)
+		go utils.ScheduleFunctionCall(func() error {
+			return RefreshTokenIfExpired(credentials)
+		}, thresholdTime)
 	}
+	return nil
+}
+
+// RefreshSSOTokenIfExpired Function is used to handle SSOToken refresh
+func RefreshSSOTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
+	utils.Log.Println("Checking if SSOToken is expired...")
+	lastTokenRefreshTime, err := strconv.ParseInt(credentials.LastSSOTokenRefreshTime, 10, 64)
+	if err != nil {
+		utils.Log.Fatal(err)
+		return err
+	}
+	lastTokenRefreshTimeUnix := time.Unix(lastTokenRefreshTime, 0)
+	thresholdTime := lastTokenRefreshTimeUnix.Add(24 * time.Hour)
+
+	if thresholdTime.Before(time.Now()) {
+		LoginRefreshSSOToken()
+	} else {
+		utils.Log.Println("Refreshing SSOToken after", time.Until(thresholdTime).Truncate(time.Second))
+		go utils.ScheduleFunctionCall(func() error {
+			return RefreshSSOTokenIfExpired(credentials)
+		}, thresholdTime)
+	}
+	return nil
 }

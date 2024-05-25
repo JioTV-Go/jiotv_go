@@ -55,6 +55,10 @@ func Init() {
 			// Check validity of credentials
 			go RefreshTokenIfExpired(credentials)
 		}
+		// If SsoToken is present, check for its validity and schedule a refresh if required
+		if credentials.SSOToken != "" {
+			go RefreshSSOTokenIfExpired(credentials)
+		}
 		// Initialize TV object with credentials
 		TV = television.New(credentials)
 	}

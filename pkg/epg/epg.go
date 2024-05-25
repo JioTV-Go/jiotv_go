@@ -48,11 +48,13 @@ func Init() {
 		flag = true
 	}
 
-	genepg := func() {
+	genepg := func() error {
 		fmt.Println("\tGenerating new EPG file... Please wait.")
-		if err := GenXMLGz(epgFile); err != nil {
+		err := GenXMLGz(epgFile); 
+		if err != nil {
 			utils.Log.Fatal(err)
 		}
+		return err
 	}
 
 	if flag {

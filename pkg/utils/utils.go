@@ -14,6 +14,7 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 
 	"github.com/rabilrbl/jiotv_go/v3/internal/config"
+	"github.com/rabilrbl/jiotv_go/v3/pkg/scheduler"
 	"github.com/rabilrbl/jiotv_go/v3/pkg/store"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/fasthttpproxy"
@@ -28,7 +29,7 @@ var (
 
 // GetLogger creates a new logger instance with custom settings
 func GetLogger() *log.Logger {
-	logFilePath := GetPathPrefix()+"jiotv_go.log"
+	logFilePath := GetPathPrefix() + "jiotv_go.log"
 	var logger *log.Logger
 	if config.Cfg.Debug {
 		logger = log.New(os.Stdout, "[DEBUG] ", log.Ldate|log.Ltime|log.Lshortfile)
@@ -360,6 +361,11 @@ func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
 		return nil, nil
 	}
 
+	lastSSOTokenRefreshTime, err := store.Get("lastSSOTokenRefreshTime")
+	if err != nil {
+		return nil, nil
+	}
+
 	return &JIOTV_CREDENTIALS{
 		SSOToken:             ssoToken,
 		CRM:                  crm,
@@ -367,6 +373,7 @@ func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
 		AccessToken:          accessToken,
 		RefreshToken:         refreshToken,
 		LastTokenRefreshTime: lastTokenRefreshTime,
+		LastSSOTokenRefreshTime: lastSSOTokenRefreshTime,
 	}, nil
 }
 
@@ -394,6 +401,10 @@ func WriteJIOTVCredentials(credentials *JIOTV_CREDENTIALS) error {
 	}
 
 	if err := store.Set("lastTokenRefreshTime", strconv.FormatInt(time.Now().Unix(), 10)); err != nil {
+		return err
+	}
+
+	if err := store.Set("lastSSOTokenRefreshTime", strconv.FormatInt(time.Now().Unix(), 10)); err != nil {
 		return err
 	}
 
@@ -446,12 +457,8 @@ func Logout() error {
 }
 
 // ScheduleFunctionCall schedules a function call at a given time
-func ScheduleFunctionCall(fn func(), executeTime time.Time) {
-	now := time.Now()
-	if executeTime.After(now) {
-		time.Sleep(executeTime.Sub(now))
-	}
-	fn()
+func ScheduleFunctionCall(fn func() error, executeTime time.Time) {
+	scheduler.Add(executeTime, fn)
 }
 
 // GetRequestClient create a HTTP client with proxy if given
