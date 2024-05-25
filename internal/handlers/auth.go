@@ -273,7 +273,7 @@ func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
 		LoginRefreshAccessToken()
 	} else {
 		utils.Log.Println("Refreshing AccessToken after", time.Until(thresholdTime).Truncate(time.Second))
-		go scheduler.Add(thresholdTime, func() error {
+		go scheduler.Add("jiotv_refresh_token", thresholdTime, func() error {
 			return RefreshTokenIfExpired(credentials)
 		})
 	}
@@ -295,7 +295,7 @@ func RefreshSSOTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
 		LoginRefreshSSOToken()
 	} else {
 		utils.Log.Println("Refreshing SSOToken after", time.Until(thresholdTime).Truncate(time.Second))
-		go scheduler.Add(thresholdTime, func() error {
+		go scheduler.Add("jiotv_refresh_sso_token", thresholdTime, func() error {
 			return RefreshSSOTokenIfExpired(credentials)
 		})
 	}

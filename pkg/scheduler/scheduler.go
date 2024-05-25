@@ -22,9 +22,9 @@ func Stop() {
 	Scheduler.Stop()
 }
 
-func Add(interval time.Time, task func() error) {
+func Add(id string, interval time.Time, task func() error) {
 	// Add a task
-	id, err := Scheduler.Add(&tasks.Task{
+	err := Scheduler.AddWithID(id, &tasks.Task{
 		Interval: time.Until(interval),
 		TaskFunc: task,
 		ErrFunc: func(err error) {

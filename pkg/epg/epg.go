@@ -75,7 +75,7 @@ func Init() {
 	time_now := time.Now()
 	schedule_time := time.Date(time_now.Year(), time_now.Month(), time_now.Day()+1, random_hour, random_min, 0, 0, time.UTC)
 	utils.Log.Println("Scheduled EPG generation on", schedule_time.Local())
-	go scheduler.Add(schedule_time, genepg)
+	go scheduler.Add("jiotv_epg", schedule_time, genepg)
 }
 
 // NewProgramme creates a new Programme with the given parameters.
