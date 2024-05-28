@@ -37,7 +37,7 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/schollz/progressbar/v3 v3.14.3
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
-	github.com/valyala/fasthttp v1.53.0
+	github.com/valyala/fasthttp v1.54.0
 	github.com/valyala/tcplisten v1.0.0 // indirect
 	golang.org/x/sys v0.20.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
