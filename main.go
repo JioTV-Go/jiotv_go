@@ -18,7 +18,7 @@ func main() {
 		Name:      "JioTV Go",
 		Usage:     "Stream JioTV on any device",
 		HelpName:  "jiotv_go",
-		Version:  "v3.5.1",
+		Version:  "v3.5.2",
 		Copyright: "© JioTV Go by Mohammed Rabil (https://github.com/rabilrbl/jiotv_go)",
 		Compiled:  time.Now(),
 		Suggest:   true,
