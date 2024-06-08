@@ -137,8 +137,8 @@ func genXML() ([]byte, error) {
 			}
 
 			for _, programme := range epgResponse.EPG {
-				startTime := formatTime(time.Unix(programme.StartEpoch, 0))
-				endTime := formatTime(time.Unix(programme.EndEpoch, 0))
+				startTime := formatTime(time.UnixMilli(programme.StartEpoch))
+				endTime := formatTime(time.UnixMilli(programme.EndEpoch))
 				programmes = append(programmes, NewProgramme(channel.ID, startTime, endTime, programme.Title, programme.Description, programme.Poster))
 			}
 		}
