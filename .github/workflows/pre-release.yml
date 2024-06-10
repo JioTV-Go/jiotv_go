@@ -3,7 +3,7 @@ name: Pre-Release on Push
 on:
   push:
     branches:
-      - "dev"
+      - "develop"
     paths-ignore:
       - "README.md"
       - "LICENSE"
