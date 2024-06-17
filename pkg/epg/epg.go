@@ -7,7 +7,6 @@ import (
 	"encoding/xml"
 	"fmt"
 	"math/big"
-	"strconv"
 
 	"os"
 	"sync"
@@ -53,7 +52,7 @@ func Init() {
 
 	genepg := func() error {
 		fmt.Println("\tGenerating new EPG file... Please wait.")
-		err := GenXMLGz(epgFile); 
+		err := GenXMLGz(epgFile)
 		if err != nil {
 			utils.Log.Fatal(err)
 		}
@@ -138,18 +137,8 @@ func genXML() ([]byte, error) {
 			}
 
 			for _, programme := range epgResponse.EPG {
-				start, err := strconv.ParseInt(programme.StartEpoch.String(), 10, 64)
-				if err != nil {
-					utils.Log.Printf("Error parsing start epoch for channel %d, offset %d: %v", channel.ID, offset, err)
-					continue
-				}
-				end, err := strconv.ParseInt(programme.EndEpoch.String(), 10, 64)
-				if err != nil {
-					utils.Log.Printf("Error parsing end epoch for channel %d, offset %d: %v", channel.ID, offset, err)
-					continue
-				}
-				startTime := formatTime(time.Unix(start, 0))
-				endTime := formatTime(time.Unix(end, 0))
+				startTime := formatTime(time.UnixMilli(programme.StartEpoch))
+				endTime := formatTime(time.UnixMilli(programme.EndEpoch))
 				programmes = append(programmes, NewProgramme(channel.ID, startTime, endTime, programme.Title, programme.Description, programme.Poster))
 			}
 		}
