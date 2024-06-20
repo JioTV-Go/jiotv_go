@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"fmt"
-	"net/url"
 	"os"
 	"regexp"
 	"strconv"
