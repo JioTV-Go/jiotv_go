@@ -279,28 +279,6 @@ func RenderHandler(c *fiber.Ctx) error {
 	return c.Status(statusCode).Send(renderResult)
 }
 
-// SLHandler proxies requests to SonyLiv CDN
-func SLHandler(c *fiber.Ctx) error {
-	// Request path with query params
-	url := "https://lin-gd-001-cf.slivcdn.com" + c.Path() + "?" + string(c.Request().URI().QueryString())
-	if url[len(url)-1:] == "?" {
-		url = url[:len(url)-1]
-	}
-	// Delete all browser headers
-	c.Request().Header.Del("Accept")
-	c.Request().Header.Del("Accept-Encoding")
-	c.Request().Header.Del("Accept-Language")
-	c.Request().Header.Del("Origin")
-	c.Request().Header.Del("Referer")
-	if err := proxy.Do(c, url, TV.Client); err != nil {
-		return err
-	}
-
-	c.Response().Header.Del(fiber.HeaderServer)
-	c.Response().Header.Add("Access-Control-Allow-Origin", "*")
-	return nil
-}
-
 // RenderKeyHandler requests m3u8 key from JioTV server
 func RenderKeyHandler(c *fiber.Ctx) error {
 	channel_id := c.Query("channel_key_id")
