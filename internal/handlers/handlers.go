@@ -500,14 +500,5 @@ func DASHTimeHandler(c *fiber.Ctx) error {
 // sonylivRedirect redirects to sonyliv channels
 func sonyLivRedirect(c *fiber.Ctx, liveResult *television.LiveURLOutput) error {
 	ch_url := liveResult.Bitrates.Auto
-	// remove origin from url
-	cho_url, err := url.Parse(ch_url)
-	if err != nil {
-		utils.Log.Println(err)
-		return err
-	}
-
-	// remove origin from url
-	return c.Redirect(cho_url.Path+"?"+cho_url.RawQuery, fiber.StatusFound)
-
+	return c.Redirect(ch_url, fiber.StatusFound)
 }
