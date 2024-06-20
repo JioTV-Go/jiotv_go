@@ -282,7 +282,7 @@ func RenderHandler(c *fiber.Ctx) error {
 // SLHandler proxies requests to SonyLiv CDN
 func SLHandler(c *fiber.Ctx) error {
 	// Request path with query params
-	url := "https://lin-gd-001-cf.slivcdn.com" + c.Path() + "?" + string(c.Request().URI().QueryString())
+	url := "https://sony247channels.akamaized.net" + c.Path() + "?" + string(c.Request().URI().QueryString())
 	if url[len(url)-1:] == "?" {
 		url = url[:len(url)-1]
 	}
