@@ -126,19 +126,19 @@ var LanguageMap = map[int]string{
 }
 
 var SONY_CHANNELS = map[string]string{
-	"sonyhd":         "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L2RCZHdPaUdhUXZ5MFRBMXpPc2pWNncvbWFzdGVyLm0zdTg=",
-	"sonysabhd":      "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L0NyVGl2a0RFU1dxd3ZVajN6RkVZRUEvbWFzdGVyLm0zdTg=",
-	"sonypal":        "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L2RoUHJHUndEUnZ1TVF0bWx6cHB6UVEvbWFzdGVyLm0zdTg=",
-	"sonypixhd":      "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L3g3clhXZDJFUloydHZ5UVdQbU8xSEEvbWFzdGVyLm0zdTg=",
-	"sonymaxhd":      "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L1VjakhOSm1DUTFXUmxHS2xabTczUUEvbWFzdGVyLm0zdTg=",
-	"sonymax2":       "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L01kUTVaeS1QU3JhT2NjWHU4amZsQ2cvbWFzdGVyLm0zdTg=",
-	"sonywah":        "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L2dYNXJDQmY2UTctRDVBV1ktc292elEvbWFzdGVyLm0zdTg=",
-	"sonyten1hd":     "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L3dHNzVuNVU4UnJPS2lGemFXT2JYYkEvbWFzdGVyLm0zdTg=",
-	"sonyten2hd":     "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L1Y5aC1peU94UmlHcDQxcHBRU2NEU1EvbWFzdGVyLm0zdTg=",
-	"sonyten3hd":     "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L2x0c0NHN1RCU0NTRG15cTByUXR2U0EvbWFzdGVyLm0zdTg=",
-	"sonyten4hd":     "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L3NtWXliSV9KVG9XYUh6d294U0U5cUEvbWFzdGVyLm0zdTg=",
-	"sonyten5hd":     "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L1NsZV9UUjhyUUl1WkhXenNoRVhZalEvbWFzdGVyLm0zdTg=",
-	"sonybbcearthhd": "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50LzZiVldZSUtHUzBDSWEtY09wWlpKUFEvbWFzdGVyLm0zdTg=",
+	"sonyhd":         "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L0hnYUItdTZyU3BHeDNtbzRYdTNzTHcvbWFzdGVyLm0zdTg=",
+	"sonysabhd":      "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L1VJNFFGSl91Ums2YUx4SWNBRHFhX0EvbWFzdGVyLm0zdTg=",
+	"sonypal":        "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L3JQekYyOHFPUmJLWmtoY2lfMDRmZFEvbWFzdGVyLm0zdTg=",
+	"sonypixhd":      "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50LzhGUjVRLVdmUldDa2JNcV9HeFo3N3cvbWFzdGVyLm0zdTg=",
+	"sonymaxhd":      "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L1F5cXo0MGJTUXJpcVN1QUM3UjhfRncvbWFzdGVyLm0zdTg=",
+	"sonymax2":       "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50LzRKY3UxOTVRVHBDTkJYR25wdzJJNmcvbWFzdGVyLm0zdTg=",
+	"sonywah":        "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L0hfWnZYV3FIUkdLcEhjZERFNVJjREEvbWFzdGVyLm0zdTg=",
+	"sonyten1hd":     "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L3llWVA4NlRIUTR5bDdVUzhaeDVldWcvbWFzdGVyLm0zdTg=",
+	"sonyten2hd":     "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L1N5dThGNDEtUjF5X0ptUTd4MG9OeFEvbWFzdGVyLm0zdTg=",
+	"sonyten3hd":     "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L25tUUZ1SFVSVFlHUUJOZFVHLTJRZHcvbWFzdGVyLm0zdTg=",
+	"sonyten4hd":     "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L3g0THhXVWNWU0lpRGFxMVZDTTdEU0EvbWFzdGVyLm0zdTg=",
+	"sonyten5hd":     "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L0REN2ZBLUhnU1VhTHlacDlBalJZeFEvbWFzdGVyLm0zdTg=",
+	"sonybbcearthhd": "aHR0cHM6Ly9kYWkuZ29vZ2xlLmNvbS9saW5lYXIvaGxzL2V2ZW50L1Y3M292YmdBU1AteEd2UVFPdWt3VFEvbWFzdGVyLm0zdTg=",
 }
 
 var SONY_JIO_MAP = map[string]string{
