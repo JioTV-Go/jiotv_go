@@ -70,7 +70,7 @@ The complete documentation for JioTV Go is available at https://jiotv_go.rabil.m
 
 ### **Report Bugs**
 
-Found a pesky bug? No worries! Please help us improve JioTV Go by creating an issue [here](issues/new/choose). Be sure to include detailed steps to reproduce the bug, describe the expected behavior, and, if possible, attach screenshots. Your feedback is invaluable!
+Found a pesky bug? No worries! Please help us improve JioTV Go by creating an issue [here](https://github.com/rabilrbl/jiotv_go/issues/new/choose). Be sure to include detailed steps to reproduce the bug, describe the expected behavior, and, if possible, attach screenshots. Your feedback is invaluable!
 
 ### **Ready to Contribute? Join the Journey! 🚀**
 
