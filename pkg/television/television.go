@@ -212,7 +212,8 @@ func Channels() ChannelsResponse {
 		utils.Log.Panic(err)
 	}
 
-	apiResponse.Result = append(apiResponse.Result, SONY_CHANNELS_API...)
+	// disable sony channels temporarily
+	// apiResponse.Result = append(apiResponse.Result, SONY_CHANNELS_API...)
 
 	return apiResponse
 }
