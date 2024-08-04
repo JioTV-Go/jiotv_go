@@ -358,7 +358,7 @@ func RenderTSHandler(c *fiber.Ctx) error {
 // Also to generate M3U playlist
 func ChannelsHandler(c *fiber.Ctx) error {
 	quality := strings.TrimSpace(c.Query("q"))
-	isSplitCategory := strings.TrimSpace(c.Query("c")) == "split"
+	splitCategory := strings.TrimSpace(c.Query("c"))
 	languages := strings.TrimSpace(c.Query("l"))
 	apiResponse := television.Channels()
 	// hostUrl should be request URL like http://localhost:5001
@@ -383,8 +383,10 @@ func ChannelsHandler(c *fiber.Ctx) error {
 			}
 			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
 			var groupTitle string
-			if isSplitCategory {
+			if splitCategory == "split" {
 				groupTitle = fmt.Sprintf("%s - %s", television.CategoryMap[channel.Category], television.LanguageMap[channel.Language])
+			} else if splitCategory == "language" {
+				groupTitle = television.LanguageMap[channel.Language]
 			} else {
 				groupTitle = television.CategoryMap[channel.Category]
 			}
@@ -466,9 +468,9 @@ func FaviconHandler(c *fiber.Ctx) error {
 // For user convenience, redirect to /channels?type=m3u
 func PlaylistHandler(c *fiber.Ctx) error {
 	quality := c.Query("q")
-	isSplitCategory := c.Query("c")
+	splitCategory := c.Query("c")
 	languages := c.Query("l")
-	return c.Redirect("/channels?type=m3u&q="+quality+"&c="+isSplitCategory+"&l="+languages, fiber.StatusMovedPermanently)
+	return c.Redirect("/channels?type=m3u&q="+quality+"&c="+splitCategory+"&l="+languages, fiber.StatusMovedPermanently)
 }
 
 // ImageHandler loads image from JioTV server
