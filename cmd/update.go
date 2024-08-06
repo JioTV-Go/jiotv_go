@@ -151,7 +151,7 @@ type Release struct {
 // The saved binary file is made executable.
 func downloadBinary(url, outputPath string) error {
 	initialBufferSize := 8192
-	maxBufferSize := 16384
+	maxBufferSize := 32768
 
 	// Iterate through buffer sizes, starting from initialBufferSize and doubling each time
 	for bufferSize := initialBufferSize; bufferSize <= maxBufferSize; bufferSize *= 2 {
