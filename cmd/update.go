@@ -153,28 +153,33 @@ func downloadBinary(url, outputPath string) error {
 	initialBufferSize := 8192
 	maxBufferSize := 16384
 
+	// Iterate through buffer sizes, starting from initialBufferSize and doubling each time
 	for bufferSize := initialBufferSize; bufferSize <= maxBufferSize; bufferSize *= 2 {
 		client := &fasthttp.Client{
-			ReadBufferSize: bufferSize,
+			ReadBufferSize: bufferSize, // Set the read buffer size for the client
 		}
 
+		// Perform an HTTP GET request
 		statusCode, body, err := client.Get(nil, url)
 		if err != nil {
+			// Check if the error is due to a small read buffer and if we can increase the buffer size
 			if strings.Contains(err.Error(), "small read buffer") && bufferSize < maxBufferSize {
 				fmt.Println("Increasing buffer size and retrying...")
 				continue // Retry with a larger buffer size
 			}
-			return err
+			return err // Return the error if it's not related to buffer size or max buffer size is reached
 		}
 
 		if statusCode != fasthttp.StatusOK {
 			return fmt.Errorf("failed to download binary. Status code: %d", statusCode)
 		}
 
+		// Write the downloaded binary to the specified output path with executable permissions
 		// skipcq: GSC-G302 - We want executable permissions on the binary
 		return os.WriteFile(outputPath, body, 0744)
 	}
 
+	// Return an error if the binary could not be downloaded after increasing the buffer size
 	return fmt.Errorf("failed to download binary after increasing buffer size")
 }
 
