@@ -150,17 +150,32 @@ type Release struct {
 // It returns an error if the request fails or the status code is not 200 OK.
 // The saved binary file is made executable.
 func downloadBinary(url, outputPath string) error {
-	statusCode, body, err := fasthttp.Get(nil, url)
-	if err != nil {
-		return err
+	initialBufferSize := 8192
+	maxBufferSize := 16384
+
+	for bufferSize := initialBufferSize; bufferSize <= maxBufferSize; bufferSize *= 2 {
+		client := &fasthttp.Client{
+			ReadBufferSize: bufferSize,
+		}
+
+		statusCode, body, err := client.Get(nil, url)
+		if err != nil {
+			if strings.Contains(err.Error(), "small read buffer") && bufferSize < maxBufferSize {
+				fmt.Println("Increasing buffer size and retrying...")
+				continue // Retry with a larger buffer size
+			}
+			return err
+		}
+
+		if statusCode != fasthttp.StatusOK {
+			return fmt.Errorf("failed to download binary. Status code: %d", statusCode)
+		}
+
+		// skipcq: GSC-G302 - We want executable permissions on the binary
+		return os.WriteFile(outputPath, body, 0744)
 	}
 
-	if statusCode != fasthttp.StatusOK {
-		return fmt.Errorf("failed to download binary. Status code: %d", statusCode)
-	}
-
-	// skipcq: GSC-G302 - We want executable permissions on the binary
-	return os.WriteFile(outputPath, body, 0744)
+	return fmt.Errorf("failed to download binary after increasing buffer size")
 }
 
 // replaceBinary replaces the current executable binary with a new binary.
