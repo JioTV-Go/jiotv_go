@@ -1,93 +1,51 @@
 {{define "channel_list"}}
 <div class="overflow-x-auto">
-  <div
-    id="portexe-search-root"
-    class="w-full px-2 grid grid-cols-1 gap-2 sm:grid-cols-5 items-center justify-between bg-base-100"
-  >
-    <input
-      id="portexe-search-input"
-      type="text"
-      placeholder="Search channels here"
-      class="input input-bordered input-primary input-md w-full rounded-xl col-span-3 sm:col-span-1"
-    />
-    <select
-      id="portexe-quality-select"
-      class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl"
-      onchange="onQualityChange(this)"
-    >
+  <div id="portexe-search-root"
+    class="w-full px-2 grid grid-cols-1 gap-2 sm:grid-cols-5 items-center justify-between bg-base-100">
+    <input id="portexe-search-input" type="text" placeholder="Search channels here"
+      class="input input-bordered input-primary input-md w-full rounded-xl col-span-3 sm:col-span-1 focus:outline-none active:outline-none" />
+    <select id="portexe-quality-select"
+      class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl focus:outline-none active:outline-none"
+      onchange="onQualityChange(this)">
       {{ range $key, $value := .Qualities }}
       <option value="{{$key}}">{{$value}}</option>
       {{ end }}
     </select>
-    <select
-      id="portexe-category-select"
-      class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl"
-    >
+    <select id="portexe-category-select"
+      class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl focus:outline-none active:outline-none">
       {{ range $key, $value := .Categories }}
       <option value="{{$key}}">{{$value}}</option>
       {{ end }}
     </select>
-    <select
-      id="portexe-language-select"
-      class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl"
-    >
+    <select id="portexe-language-select"
+      class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl focus:outline-none active:outline-none">
       {{ range $key, $value := .Languages }}
       <option value="{{$key}}">{{$value}}</option>
       {{ end }}
     </select>
-    <button
-      id="portexe-search-button"
-      class="btn btn-primary btn-sm sm:btn-md w-full sm:w-auto rounded-xl col-span-3 sm:col-span-1"
-    >
+    <button id="portexe-search-button"
+      class="btn btn-primary btn-sm sm:btn-md w-full sm:w-auto rounded-xl col-span-3 sm:col-span-1">
       Apply
     </button>
   </div>
   <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
     {{range $channel := .Channels}}
-    <a
-      href="/play/{{$channel.ID}}"
-      class="card border border-primary shadow-lg hover:shadow-xl hover:bg-base-300 transition-all duration-200 ease-in-out scale-100 hover:scale-105"
-    >
+    <a href="/play/{{$channel.ID}}"
+      class="card shadow-lg hover:shadow-xl transition-all duration-200 ease-in-out scale-100 hover:scale-105">
       <div class="flex flex-col items-center p-2 sm:p-4">
-        <img
-          src="/jtvimage/{{$channel.LogoURL}}"
-          loading="lazy"
-          alt="{{$channel.Name}}"
-          class="h-14 w-14 sm:h-16 sm:w-16 md:h-18 md:w-18 lg:h-20 lg:w-20 rounded-full bg-gray-200"
-        />
-        <span class="text-lg font-bold mt-2">{{$channel.Name}}</span>
-        <div class="absolute top-2 right-2">
-          {{ if $channel.IsHD }}
-          <div class="badge badge-primary">
-             HD
-          </div>
-          {{ else }}
-          <div class="badge badge-outline badge-primary">
-            SD
-          </div>
-          {{ end }}
-        </div>
+        <img src="/jtvimage/{{$channel.LogoURL}}" loading="lazy" alt="{{$channel.Name}}"
+          class="h-14 w-14 sm:h-16 sm:w-16 md:h-18 md:w-18 lg:h-20 lg:w-20 rounded-full bg-gray-200 object-cover" />
+        <span class="text-lg font-bold mt-2 overflow-hidden truncate">{{$channel.Name}}</span>
       </div>
     </a>
     {{end}}
   </div>
-  <button
-    class="btn btn-primary fixed bottom-4 right-4 px-4 rounded-full shadow-lg focus:outline-none flex flex-row gap-2"
-    onclick="scrollToTop()"
-  >
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke-width="1.5"
-      stroke="currentColor"
-      class="w-6 h-6"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-      />
+  <button class="btn btn-primary fixed bottom-4 right-4 px-4 rounded-full shadow-lg focus:outline-none active:outline-none flex flex-row gap-2"
+    onclick="scrollToTop()">
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+      class="w-6 h-6">
+      <path stroke-linecap="round" stroke-linejoin="round"
+        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
     </svg>
     <span class="hidden sm:block">Search</span>
   </button>
