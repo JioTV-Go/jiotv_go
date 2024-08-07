@@ -50,7 +50,7 @@ function updateEPG(epgData) {
     const keywords = shows[0].keywords;
     keywords.forEach((keyword) => {
         const keywordElement = document.createElement('div');
-        keywordElement.className = 'badge badge-outline';
+        keywordElement.className = 'badge badge-outline p-4';
         keywordElement.innerText = keyword;
         keywordsElement.appendChild(keywordElement);
     });

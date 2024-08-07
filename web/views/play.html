@@ -1,64 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ .Title }}</title>
-    {{ template "styling" . }}
-  </head>
 
-  <body>
-    {{ template "navbar" . }}
-    <div class="p-1 sm:p-2 md:p-4 md:mx-8 lg:p-8 lg:mx-52">
-      <div
-        id="player"
-        class="relative overflow-hidden w-full pt-[56.25%] rounded-xl"
-      >
-        <iframe
-          class="absolute top-0 left-0 bottom-0 right-0 w-full h-full"
-          src="{{ .player_url }}"
-          width="100%"
-          height="100%"
-          webkitAllowFullScreen
-          mozallowfullscreen
-          allowfullscreen
-          allow="autoplay"
-        ></iframe>
-      </div>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{{ .Title }}</title>
+  {{ template "styling" . }}
+</head>
+
+<body>
+  {{ template "navbar" . }}
+  <div class="p-1 sm:p-2 md:p-4 md:mx-8 lg:p-8 lg:mx-52 p-4">
+    <div id="player" class="relative overflow-hidden w-full pt-[56.25%] rounded-xl">
+      <iframe class="absolute top-0 left-0 bottom-0 right-0 w-full h-full" src="{{ .player_url }}" width="100%"
+        height="100%" webkitAllowFullScreen mozallowfullscreen allowfullscreen allow="autoplay"></iframe>
     </div>
-    <div id="epg_parent" class="p-1 sm:p-2 md:p-4 md:mx-8 lg:p-8 lg:mx-52">
-      <h2 class="mt-4 sm:mt-0 mb-2 text-lg sm:text-xl font-bold text-center sm:text-left">Now Playing</h2>
-      <div id="epg" class="w-full">
-        <div class="card w-full sm:w-96 bg-base-200 shadow-xl">
-          <figure><img id="episodePoster" alt="Episode Poster" /></figure>
-          <div class="card-body">
-            <h2 id="showname" class="card-title">
-            </h2>
-            <div class="flex flex-row gap-2 items-center justify-between">
-              <div class="badge badge-error badge-outline">Live</div>
-              <div>
-                <span>Ends in </span>
-                <span id="countdown_hour" class="countdown">
-                  <span id="e_hour" style="--value:0;"></span>h
-                </span>
-                <span id="countdown_minute" class="countdown">
-                  <span id="e_minute" style="--value:0;"></span>m
-                </span>
-                <span id="countdown_second" class="countdown">
-                  <span id="e_second" style="--value:0;"></span>s
-                </span>
-              </div>
+  </div>
+  <div id="epg_parent" class="p-1 sm:p-2 md:p-4 md:mx-8 lg:p-8 lg:mx-52">
+    <h2 class="mt-4 sm:mt-0 mb-2 text-lg sm:text-xl font-bold text-center sm:text-left px-4">Now Playing</h2>
+    <div id="epg" class="w-full p-4">
+      <div class="card w-full bg-base-200">
+        <figure><img id="episodePoster" alt="Episode Poster" /></figure>
+        <div class="card-body">
+          <h2 id="showname" class="card-title">
+          </h2>
+          <div class="flex flex-row gap-2 items-center justify-between mt-4">
+            <div class="badge badge-error badge-outline p-4">Live</div>
+            <div>
+              <span>Ends in </span>
+              <span id="countdown_hour" class="countdown">
+                <span id="e_hour" style="--value:0;"></span>h
+              </span>
+              <span id="countdown_minute" class="countdown">
+                <span id="e_minute" style="--value:0;"></span>m
+              </span>
+              <span id="countdown_second" class="countdown">
+                <span id="e_second" style="--value:0;"></span>s
+              </span>
             </div>
-            <p id="description"></p>
-            <div id="keywords" class="card-actions justify-end">
-              <div class="hidden badge badge-outline"></div>
-            </div>
+          </div>
+          <p id="description"></p>
+          <div id="keywords" class="card-actions mt-4">
           </div>
         </div>
       </div>
     </div>
-    <script src="/static/common.js"></script>
-    <script src="/static/epg.js"></script>
-    {{ template "footer" . }}
-  </body>
+  </div>
+  <script src="/static/common.js"></script>
+  <script src="/static/epg.js"></script>
+  {{ template "footer" . }}
+</body>
+
 </html>

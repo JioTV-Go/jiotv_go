@@ -3,7 +3,7 @@
   <div id="portexe-search-root"
     class="w-full p-2 grid grid-cols-1 gap-2 sm:grid-cols-5 items-center justify-between bg-base-100">
     <input id="portexe-search-input" type="text" placeholder="Search channels here"
-      class="input input-bordered input-primary input-md w-full rounded-xl col-span-3 sm:col-span-1 focus:outline-none active:outline-none" />
+      class="input input-primary input-md w-full rounded-xl col-span-3 sm:col-span-1 focus:outline-none active:outline-none" />
     <select id="portexe-quality-select"
       class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl focus:outline-none active:outline-none"
       onchange="onQualityChange(this)">
@@ -31,11 +31,11 @@
   <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
     {{range $channel := .Channels}}
     <a href="/play/{{$channel.ID}}"
-      class="card shadow-lg hover:shadow-xl transition-all duration-200 ease-in-out scale-100 hover:scale-105 focus:outline-none active:outline-none">
+      class="shadow-lg hover:shadow-lg transition-all duration-200 ease-in-out scale-100 hover:scale-110 focus:outline-none active:outline-none">
       <div class="flex flex-col items-center p-2 sm:p-4">
         <img src="/jtvimage/{{$channel.LogoURL}}" loading="lazy" alt="{{$channel.Name}}"
-          class="h-14 w-14 sm:h-16 sm:w-16 md:h-18 md:w-18 lg:h-20 lg:w-20 rounded-full bg-gray-200 object-cover" />
-        <span class="text-lg font-bold mt-2 overflow-hidden truncate">{{$channel.Name}}</span>
+          class="p-4 object-cover" />
+        <span class="text-md text-sm md:text-base font-600 mt-4 overflow-hidden truncate">{{$channel.Name}}</span>
       </div>
     </a>
     {{end}}
