@@ -1,0 +1,46 @@
+{
+  "name": "JioTV Go",
+  "short_name": "JioTV",
+  "description": "A Open Source JioTV Client",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/static/images/logo/32.png",
+      "sizes": "16x16 32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/images/logo/64.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/images/logo/72.png",
+      "sizes": "72x72",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/images/logo/128.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/images/logo/256.png",
+      "sizes": "256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/images/logo/512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/images/logo/1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    }
+  ]
+}

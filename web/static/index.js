@@ -1,3 +1,35 @@
+// Service worker
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/static/service-worker.js')
+      .then((registration) => {
+        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+
+        // Listen for updates to the service worker.
+        registration.onupdatefound = () => {
+          const installingWorker = registration.installing;
+          installingWorker.onstatechange = () => {
+            if (installingWorker.state === 'installed') {
+              if (navigator.serviceWorker.controller) {
+                // New update available
+                console.log('New content is available; please refresh.');
+              } else {
+                // Content cached for offline use.
+                console.log('Content is cached for offline use.');
+              }
+            }
+          };
+        };
+      })
+      .catch((error) => {
+        console.log('ServiceWorker registration failed: ', error);
+      });
+  });
+}
+
+// Service worker finished
+
 const search = (searchTerm) => {
   const channels = document.querySelectorAll('.card');
   const urlParams = new URLSearchParams(window.location.search);
