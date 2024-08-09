@@ -44,7 +44,8 @@ func main() {
 					port := c.String("port")
 					prefork := c.Bool("prefork")
 					configPath := c.String("config")
-					return cmd.JioTVServer(host, port, configPath, prefork)
+					webosMode := c.Bool("webos")
+					return cmd.JioTVServer(host, port, configPath, prefork, webosMode)
 				},
 				Flags: []cli.Flag{
 					&cli.StringFlag{
@@ -77,6 +78,11 @@ func main() {
 					&cli.BoolFlag{
 						Name:  "skip-update-check",
 						Usage: "Skip checking for update on startup",
+					},
+					&cli.BoolFlag{
+						Name:  "webos",
+						Value: false,
+						Usage: "Disables some feature to make it work on WebOS devices",
 					},
 				},
 			},

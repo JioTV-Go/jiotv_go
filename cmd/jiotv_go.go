@@ -27,7 +27,7 @@ import (
 // It then configures the Fiber app with middleware and routes.
 // It starts listening on the provided host and port.
 // Returns an error if listening fails.
-func JioTVServer(host, port, configPath string, prefork bool) error {
+func JioTVServer(host, port, configPath string, prefork bool, webosMode bool) error {
 	// Load the config file
 	if err := config.Cfg.Load(configPath); err != nil {
 		return err
@@ -88,11 +88,18 @@ func JioTVServer(host, port, configPath string, prefork bool) error {
 		Browse:     false,
 	}))
 
-	// Helmet middleware to set security headers
-	app.Use(helmet.New())
-
-	// ETag middleware to set ETag header for caching
-	app.Use(etag.New())
+	if !webosMode {
+		// Helmet middleware to set security headers
+		app.Use(helmet.New())
+		// ETag middleware to set ETag header for caching
+		app.Use(etag.New())
+	} else {
+		// add webos mode value to fiber config or context so it will be available in hanlders
+		app.Use(func(c *fiber.Ctx) error {
+			c.Locals("webosMode", webosMode)
+			return c.Next()
+		})
+	}
 
 	// Handle all /bpk-tv/* routes
 	app.Use("/bpk-tv/", handlers.BpkProxyHandler)
