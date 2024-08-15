@@ -18,7 +18,7 @@ func main() {
 		Name:      "JioTV Go",
 		Usage:     "Stream JioTV on any device",
 		HelpName:  "jiotv_go",
-		Version:  "v3.8.0",
+		Version:   "v3.8.0",
 		Copyright: "© JioTV Go by Mohammed Rabil (https://github.com/rabilrbl/jiotv_go)",
 		Compiled:  time.Now(),
 		Suggest:   true,
@@ -44,8 +44,7 @@ func main() {
 					port := c.String("port")
 					prefork := c.Bool("prefork")
 					configPath := c.String("config")
-					webosMode := c.Bool("webos")
-					return cmd.JioTVServer(host, port, configPath, prefork, webosMode)
+					return cmd.JioTVServer(host, port, configPath, prefork)
 				},
 				Flags: []cli.Flag{
 					&cli.StringFlag{
@@ -78,11 +77,6 @@ func main() {
 					&cli.BoolFlag{
 						Name:  "skip-update-check",
 						Usage: "Skip checking for update on startup",
-					},
-					&cli.BoolFlag{
-						Name:  "webos",
-						Value: false,
-						Usage: "Disables some feature to make it work on WebOS devices",
 					},
 				},
 			},
