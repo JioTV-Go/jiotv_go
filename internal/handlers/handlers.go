@@ -398,8 +398,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 		// Set the Content-Disposition header for file download
 		c.Set("Content-Disposition", "attachment; filename=jiotv_playlist.m3u")
 		c.Set("Content-Type", "application/vnd.apple.mpegurl") // Set the video M3U MIME type
-		c.SendStream(strings.NewReader(m3uContent))
-		return nil
+		return c.SendStream(strings.NewReader(m3uContent))
 
 	}
 
