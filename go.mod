@@ -5,8 +5,8 @@ go 1.22
 require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
-	github.com/urfave/cli/v2 v2.27.3
-	golang.org/x/term v0.22.0
+	github.com/urfave/cli/v2 v2.27.4
+	golang.org/x/term v0.23.0
 )
 
 require (
@@ -39,6 +39,6 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.55.0
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/sys v0.22.0 // indirect
+	golang.org/x/sys v0.23.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
