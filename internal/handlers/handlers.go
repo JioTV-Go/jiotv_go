@@ -357,6 +357,7 @@ func RenderTSHandler(c *fiber.Ctx) error {
 // ChannelsHandler fetch all channels from JioTV API
 // Also to generate M3U playlist
 func ChannelsHandler(c *fiber.Ctx) error {
+
 	quality := strings.TrimSpace(c.Query("q"))
 	splitCategory := strings.TrimSpace(c.Query("c"))
 	languages := strings.TrimSpace(c.Query("l"))
@@ -397,8 +398,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 		// Set the Content-Disposition header for file download
 		c.Set("Content-Disposition", "attachment; filename=jiotv_playlist.m3u")
 		c.Set("Content-Type", "application/vnd.apple.mpegurl") // Set the video M3U MIME type
-		c.Response().Header.Set("Cache-Control", "public, max-age=3600")
-		return c.SendString(m3uContent)
+		return c.SendStream(strings.NewReader(m3uContent))
 	}
 
 	for i, channel := range apiResponse.Result {
