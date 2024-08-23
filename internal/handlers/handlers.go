@@ -399,7 +399,6 @@ func ChannelsHandler(c *fiber.Ctx) error {
 		c.Set("Content-Disposition", "attachment; filename=jiotv_playlist.m3u")
 		c.Set("Content-Type", "application/vnd.apple.mpegurl") // Set the video M3U MIME type
 		return c.SendStream(strings.NewReader(m3uContent))
-
 	}
 
 	for i, channel := range apiResponse.Result {
