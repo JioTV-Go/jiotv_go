@@ -39,4 +39,4 @@ EXPOSE 5001
 ENTRYPOINT ["./jiotv_go"]
 
 # Default arguments
-CMD ["serve", "--public"]
+CMD ["serve", "--public", "--skip-update-check"]
