@@ -21,10 +21,10 @@ import (
 
 var (
 	TV               *television.Television
-	DisableTSHandler = config.Cfg.DisableTSHandler
-	isLogoutDisabled = config.Cfg.DisableLogout
+	DisableTSHandler bool
+	isLogoutDisabled bool
 	Title            string
-	EnableDRM        = config.Cfg.DRM
+	EnableDRM        bool
 	SONY_LIST        = []string{"154", "155", "162", "289", "291", "471", "474", "476", "483", "514", "524", "525", "697", "872", "873", "874", "891", "892", "1146", "1393", "1772", "1773", "1774", "1775"}
 )
 
@@ -40,6 +40,9 @@ func Init() {
 	} else {
 		Title = "JioTV Go"
 	}
+	DisableTSHandler = config.Cfg.DisableTSHandler
+	isLogoutDisabled = config.Cfg.DisableLogout
+	EnableDRM = config.Cfg.DRM
 	if DisableTSHandler {
 		utils.Log.Println("TS Handler disabled!. All TS video requests will be served directly from JioTV servers.")
 	}

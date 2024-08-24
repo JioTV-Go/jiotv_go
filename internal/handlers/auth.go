@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	REFRESH_TOKEN_TASK_ID = "jiotv_refresh_token"
+	REFRESH_TOKEN_TASK_ID    = "jiotv_refresh_token"
 	REFRESH_SSOTOKEN_TASK_ID = "jiotv_refresh_sso_token"
 )
 
