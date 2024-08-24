@@ -14,9 +14,7 @@ import (
 	"github.com/rabilrbl/jiotv_go/v3/web"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/etag"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
-	"github.com/gofiber/fiber/v2/middleware/helmet"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/fiber/v2/middleware/recover"
 	"github.com/gofiber/template/html/v2"
@@ -32,10 +30,9 @@ func JioTVServer(host, port, configPath string, prefork bool) error {
 	if err := config.Cfg.Load(configPath); err != nil {
 		return err
 	}
-	
+
 	// Initialize the logger object
 	utils.Log = utils.GetLogger()
-
 
 	// Initialize the store object
 	if err := store.Init(); err != nil {
@@ -87,12 +84,6 @@ func JioTVServer(host, port, configPath string, prefork bool) error {
 		PathPrefix: "static",
 		Browse:     false,
 	}))
-
-	// Helmet middleware to set security headers
-	app.Use(helmet.New())
-
-	// ETag middleware to set ETag header for caching
-	app.Use(etag.New())
 
 	// Handle all /bpk-tv/* routes
 	app.Use("/bpk-tv/", handlers.BpkProxyHandler)

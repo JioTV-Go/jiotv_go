@@ -17,11 +17,6 @@ const (
 	CHANNELS_API_URL = "https://jiotvapi.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?langId=6&os=android&devicetype=phone&usertype=JIO&version=315&langId=6"
 )
 
-var (
-	// DisableTSHandler is used to serve .ts files directly from JioTV Servers
-	DisableTSHandler = config.Cfg.DisableTSHandler
-)
-
 // New function creates a new Television instance with the provided credentials
 func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 	// Check if credentials are provided
@@ -252,7 +247,7 @@ func ReplaceM3U8(baseUrl, match []byte, params, channel_id string) []byte {
 }
 
 func ReplaceTS(baseUrl, match []byte, params string) []byte {
-	if DisableTSHandler {
+	if config.Cfg.DisableTSHandler {
 		return []byte(string(baseUrl) + string(match) + "?" + params)
 	}
 	coded_url, err := secureurl.EncryptURL(string(baseUrl) + string(match) + "?" + params)
@@ -264,7 +259,7 @@ func ReplaceTS(baseUrl, match []byte, params string) []byte {
 }
 
 func ReplaceAAC(baseUrl, match []byte, params string) []byte {
-	if DisableTSHandler {
+	if config.Cfg.DisableTSHandler {
 		return []byte(string(baseUrl) + string(match) + "?" + params)
 	}
 	coded_url, err := secureurl.EncryptURL(string(baseUrl) + string(match) + "?" + params)
