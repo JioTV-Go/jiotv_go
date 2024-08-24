@@ -148,6 +148,14 @@ func LiveHandler(c *fiber.Ctx) error {
 	if id[:2] == "sl" {
 		return sonyLivRedirect(c, liveResult)
 	}
+	// Check if liveResult.Bitrates.Auto is empty
+	if liveResult.Bitrates.Auto == "" {
+		error_message := "No stream found for channel id: " + id + "Status: " + liveResult.Message
+		utils.Log.Println(error_message)
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"message": error_message,
+		})
+	}
 	// quote url as it will be passed as a query parameter
 	// It is required to quote the url as it may contain special characters like ? and &
 	coded_url, err := secureurl.EncryptURL(liveResult.Bitrates.Auto)
