@@ -152,6 +152,7 @@ func LiveHandler(c *fiber.Ctx) error {
 	if liveResult.Bitrates.Auto == "" {
 		error_message := "No stream found for channel id: " + id + "Status: " + liveResult.Message
 		utils.Log.Println(error_message)
+		utils.Log.Println(liveResult)
 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
 			"message": error_message,
 		})
