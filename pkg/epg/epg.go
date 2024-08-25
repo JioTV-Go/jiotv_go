@@ -228,6 +228,10 @@ func GenXMLGz(filename string) error {
 	if err != nil {
 		return err
 	}
+	// Add XML header
+	xmlHeader := `<?xml version="1.0" encoding="UTF-8"?>
+	<!DOCTYPE tv SYSTEM "http://www.w3.org/2006/05/tv">`
+	xml = append([]byte(xmlHeader), xml...)
 	// write to file
 	f, err := os.Create(filename)
 	if err != nil {
