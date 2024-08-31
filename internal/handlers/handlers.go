@@ -31,6 +31,8 @@ var (
 const (
 	REFRESH_TOKEN_URL     = "https://auth.media.jio.com/tokenservice/apis/v1/refreshtoken?langId=6"
 	REFRESH_SSO_TOKEN_URL = "https://tv.media.jio.com/apis/v2.0/loginotp/refresh?langId=6"
+	PLAYER_USER_AGENT     = "plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7"
+	REQUEST_USER_AGENT    = "okhttp/4.2.2"
 )
 
 // Init initializes the necessary operations required for the handlers to work.
@@ -304,6 +306,7 @@ func SLHandler(c *fiber.Ctx) error {
 	c.Request().Header.Del("Accept-Language")
 	c.Request().Header.Del("Origin")
 	c.Request().Header.Del("Referer")
+	c.Request().Header.Set("User-Agent", PLAYER_USER_AGENT)
 	if err := proxy.Do(c, url, TV.Client); err != nil {
 		return err
 	}
@@ -341,7 +344,7 @@ func RenderKeyHandler(c *fiber.Ctx) error {
 	c.Request().Header.Set("srno", "230203144000")
 	c.Request().Header.Set("ssotoken", TV.SsoToken)
 	c.Request().Header.Set("channelId", channel_id)
-
+	c.Request().Header.Set("User-Agent", PLAYER_USER_AGENT)
 	if err := proxy.Do(c, decoded_url, TV.Client); err != nil {
 		return err
 	}
@@ -358,7 +361,7 @@ func RenderTSHandler(c *fiber.Ctx) error {
 		utils.Log.Panicln(err)
 		return err
 	}
-
+	c.Request().Header.Set("User-Agent", PLAYER_USER_AGENT)
 	if err := proxy.Do(c, decoded_url, TV.Client); err != nil {
 		return err
 	}
@@ -488,6 +491,7 @@ func PlaylistHandler(c *fiber.Ctx) error {
 // ImageHandler loads image from JioTV server
 func ImageHandler(c *fiber.Ctx) error {
 	url := "https://jiotv.catchup.cdn.jio.com/dare_images/images/" + c.Params("file")
+	c.Request().Header.Set("User-Agent", REQUEST_USER_AGENT)
 	if err := proxy.Do(c, url, TV.Client); err != nil {
 		return err
 	}
