@@ -376,6 +376,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	quality := strings.TrimSpace(c.Query("q"))
 	splitCategory := strings.TrimSpace(c.Query("c"))
 	languages := strings.TrimSpace(c.Query("l"))
+	skipGenres := strings.TrimSpace(c.Query("sg"))
 	apiResponse := television.Channels()
 	// hostUrl should be request URL like http://localhost:5001
 	hostURL := strings.ToLower(c.Protocol()) + "://" + c.Hostname()
@@ -388,6 +389,10 @@ func ChannelsHandler(c *fiber.Ctx) error {
 		for _, channel := range apiResponse.Result {
 
 			if languages != "" && !utils.ContainsString(television.LanguageMap[channel.Language], strings.Split(languages, ",")) {
+				continue
+			}
+
+			if skipGenres != "" && utils.ContainsString(television.CategoryMap[channel.Category], strings.Split(skipGenres, ",")) {
 				continue
 			}
 
@@ -406,8 +411,8 @@ func ChannelsHandler(c *fiber.Ctx) error {
 			} else {
 				groupTitle = television.CategoryMap[channel.Category]
 			}
-			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-id=%s tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
-				channel.ID, channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], groupTitle, channel.Name, channelURL)
+			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-id=%s tvg-chno=%s tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
+				channel.ID, channel.ID, channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], groupTitle, channel.Name, channelURL)
 		}
 
 		// Set the Content-Disposition header for file download
@@ -485,7 +490,8 @@ func PlaylistHandler(c *fiber.Ctx) error {
 	quality := c.Query("q")
 	splitCategory := c.Query("c")
 	languages := c.Query("l")
-	return c.Redirect("/channels?type=m3u&q="+quality+"&c="+splitCategory+"&l="+languages, fiber.StatusMovedPermanently)
+	skipGenres := c.Query("sg")
+	return c.Redirect("/channels?type=m3u&q="+quality+"&c="+splitCategory+"&l="+languages+"&sg="+skipGenres, fiber.StatusMovedPermanently)
 }
 
 // ImageHandler loads image from JioTV server
