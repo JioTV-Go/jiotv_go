@@ -376,6 +376,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	quality := strings.TrimSpace(c.Query("q"))
 	splitCategory := strings.TrimSpace(c.Query("c"))
 	languages := strings.TrimSpace(c.Query("l"))
+	skipGenres := strings.TrimSpace(c.Query("sg"))
 	apiResponse := television.Channels()
 	// hostUrl should be request URL like http://localhost:5001
 	hostURL := strings.ToLower(c.Protocol()) + "://" + c.Hostname()
@@ -388,6 +389,10 @@ func ChannelsHandler(c *fiber.Ctx) error {
 		for _, channel := range apiResponse.Result {
 
 			if languages != "" && !utils.ContainsString(television.LanguageMap[channel.Language], strings.Split(languages, ",")) {
+				continue
+			}
+
+			if skipGenres != "" && utils.ContainsString(television.CategoryMap[channel.Category], strings.Split(skipGenres, ",")) {
 				continue
 			}
 
@@ -485,7 +490,8 @@ func PlaylistHandler(c *fiber.Ctx) error {
 	quality := c.Query("q")
 	splitCategory := c.Query("c")
 	languages := c.Query("l")
-	return c.Redirect("/channels?type=m3u&q="+quality+"&c="+splitCategory+"&l="+languages, fiber.StatusMovedPermanently)
+	skipGenres := c.Query("sg")
+	return c.Redirect("/channels?type=m3u&q="+quality+"&c="+splitCategory+"&l="+languages+"&sg="+skipGenres, fiber.StatusMovedPermanently)
 }
 
 // ImageHandler loads image from JioTV server

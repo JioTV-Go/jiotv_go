@@ -56,6 +56,13 @@ JioTV Go offers a convenient M3U playlist endpoint to enhance your IPTV experien
 
    Please note that either `c=split` or `c=language` can be used at a time.
 
+6. If you would like to skip one or more genre from playlist, you can use  `sg=Educational,Lifestyle`
+   ```
+   http://localhost:5001/playlist.m3u?sg=Educational,Lifestyle
+   ```
+
+   This will skip all channels from provided list of genres.
+
 For both specific quality and split category, append the `q=` and `c=` query parameters:
 
 ```

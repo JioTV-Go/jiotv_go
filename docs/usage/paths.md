@@ -69,6 +69,9 @@ You can append `?q=<level>` to the path where `<level>` should be replaced with 
 
 You can also append `&c=split` to the path to have categories based on both language and genre. Example categories: `Hindi - Entertainment`, `English - News`, `Tamil - Sports`, etc.
 
+You can also append `&sg=<genre_list>` to the path in order to skip specific genres. Here replace `<genre_list>` with comma(,) seperated list of genres.
+Valid genres: `Entertainment`, `Movies`, `Kids`, `Sports`, `Lifestyle`, `Infotainment`, `News`, `Music`, `Devotional`, `Business`, `Educational`, `Shopping`, `JioDarshan`
+
 ### M3U Playlist
 
 - **Path**: `/channels?type=m3u`
