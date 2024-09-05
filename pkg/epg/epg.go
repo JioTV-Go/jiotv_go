@@ -123,7 +123,7 @@ func genXML() ([]byte, error) {
 
 		resp := fasthttp.AcquireResponse()
 
-		for offset := -1; offset < 2; offset++ {
+		for offset := 0; offset < 2; offset++ {
 			reqUrl := fmt.Sprintf(EPG_URL, offset, channel.ID)
 			req.SetRequestURI(reqUrl)
 
