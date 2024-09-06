@@ -23,6 +23,8 @@ const (
 	CHANNEL_URL = "https://jiotv.data.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?os=android&devicetype=phone&usertype=tvYR7NSNn7rymo3F"
 	// URL for fetching EPG data for individual channels from JioTV API
 	EPG_URL = "https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get/?offset=%d&channel_id=%d"
+	// EPG_POSTER_URL 
+	EPG_POSTER_URL = "https://jiotv.catchup.cdn.jio.com/dare_images/shows"
 	// EPG_TASK_ID is the ID of the EPG generation task
 	EPG_TASK_ID = "jiotv_epg"
 )
@@ -81,7 +83,7 @@ func Init() {
 
 // NewProgramme creates a new Programme with the given parameters.
 func NewProgramme(channelID int, start, stop, title, desc, category, iconSrc string) Programme {
-	iconURL := fmt.Sprintf("/jtvposter/%s", iconSrc)
+	iconURL := fmt.Sprintf("%s/%s", EPG_POSTER_URL, iconSrc)
 	return Programme{
 		Channel: fmt.Sprint(channelID),
 		Start:   start,
@@ -121,7 +123,7 @@ func genXML() ([]byte, error) {
 
 		resp := fasthttp.AcquireResponse()
 
-		for offset := -1; offset < 2; offset++ {
+		for offset := 0; offset < 2; offset++ {
 			reqUrl := fmt.Sprintf(EPG_URL, offset, channel.ID)
 			req.SetRequestURI(reqUrl)
 
