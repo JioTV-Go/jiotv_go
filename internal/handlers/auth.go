@@ -131,7 +131,7 @@ func LoginRefreshAccessToken() error {
 	// Prepare the request body
 	requestBody := map[string]string{
 		"appName":      "RJIL_JioTV",
-		"deviceId":     "6fcadeb7b4b10d77",
+		"deviceId":     utils.GetDeviceID(),
 		"refreshToken": tokenData.RefreshToken,
 	}
 
@@ -218,7 +218,7 @@ func LoginRefreshSSOToken() error {
 	req.Header.Set("User-Agent", "okhttp/4.2.2")
 	req.Header.Set("ssoToken", tokenData.SSOToken)
 	req.Header.Set("uniqueid", tokenData.UniqueID)
-	req.Header.Set("deviceid", "6fcadeb7b4b10d77")
+	req.Header.Set("deviceid",utils.GetDeviceID())
 
 	// Send the request
 	resp := fasthttp.AcquireResponse()
