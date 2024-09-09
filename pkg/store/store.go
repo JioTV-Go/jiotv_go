@@ -29,6 +29,7 @@ var KVS *TomlStore
 // Init initializes the TOML file, creates if not exist, otherwise reads and decodes to struct.
 func Init() error {
 	KVS = &TomlStore{}
+	// store_vX.toml, where X is changed whenever new version requires re-login
 	filename := filepath.Join(GetPathPrefix(), "store_v3.toml")
 
 	KVS.mu.Lock()
