@@ -35,7 +35,7 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 		"channel_id":   "",
 		"crmid":        credentials.CRM,
 		"userId":       credentials.CRM,
-		"deviceId":     "e4286d7b481d69b8",
+		"deviceId":     utils.GetDeviceID(),
 		"devicetype":   "phone",
 		"isott":        "false",
 		"languageId":   "6",

@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"crypto/rand"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -324,6 +326,28 @@ func GetPathPrefix() string {
 	return store.GetPathPrefix()
 }
 
+// GetDeviceID returns the device ID
+func GetDeviceID() string {
+	deviceID, err := store.Get("deviceId")
+	if err != nil {
+		Log.Println(err)
+		err = GenerateRandomString()
+		if err != nil {
+			Log.Println(err)
+			return ""
+		}
+		deviceID, err = store.Get("deviceId")
+		if deviceID == "" {
+			Log.Println("Device ID is empty")
+			return ""
+		} else if err != nil {
+			Log.Println(err)
+			return ""
+		}
+	}
+	return deviceID
+}
+
 // GetJIOTVCredentials return credentials from environment variables or credentials file
 // Important note: If credentials are provided from environment variables, they will be used instead of credentials file
 func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
@@ -532,4 +556,16 @@ func ContainsString(item string, slice []string) bool {
 		}
 	}
 	return false
+}
+
+// GenerateRandomString generates a random 16-character hexadecimal string.
+func GenerateRandomString() error {
+	bytes := make([]byte, 8) // 8 bytes will result in a 16-character hex string
+	if _, err := rand.Read(bytes); err != nil {
+		return err
+	}
+	if _, err := store.Get("deviceId"); err != nil {
+		store.Set("deviceId", hex.EncodeToString(bytes))
+	}
+	return nil
 }

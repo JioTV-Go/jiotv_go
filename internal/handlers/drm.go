@@ -132,7 +132,7 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 	c.Request().Header.Set("devicetype", "phone")
 	c.Request().Header.Set("Accept-Encoding", "gzip, deflate")
 	c.Request().Header.Set("osVersion", "13")
-	c.Request().Header.Set("deviceId", "b6985e8cf2401d35")
+	c.Request().Header.Set("deviceId", utils.GetDeviceID())
 	c.Request().Header.Set("Content-Type", "application/octet-stream")
 
 	// Delete User-Agent header from the request
