@@ -48,9 +48,8 @@ func Init() {
 	if DisableTSHandler {
 		utils.Log.Println("TS Handler disabled!. All TS video requests will be served directly from JioTV servers.")
 	}
-	err := utils.GenerateRandomString(); if err != nil {
-		utils.Log.Println("Error generating random string", err)
-	}
+	// Generate a new device ID if not present
+	utils.GetDeviceID()
 	// Get credentials from file
 	credentials, err := utils.GetJIOTVCredentials()
 	// Initialize TV object with nil credentials
