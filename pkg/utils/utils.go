@@ -125,7 +125,7 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 				Platform: LoginPayloadDeviceInfoInfoPlatform{
 					Name: "SM-G930F",
 				},
-				AndroidID: "6fcadeb7b4b10d77",
+				AndroidID: GetDeviceID(),
 			},
 		},
 	}
@@ -249,7 +249,7 @@ func Login(username, password string) (map[string]string, error) {
 					Name:    "vbox86p",
 					Version: "8.0.0",
 				},
-				AndroidID: "6fcadeb7b4b10d77",
+				AndroidID: GetDeviceID(),
 			},
 		},
 	}

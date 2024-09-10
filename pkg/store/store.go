@@ -30,7 +30,7 @@ var KVS *TomlStore
 func Init() error {
 	KVS = &TomlStore{}
 	// store_vX.toml, where X is changed whenever new version requires re-login
-	filename := filepath.Join(GetPathPrefix(), "store_v3.toml")
+	filename := filepath.Join(GetPathPrefix(), "store_v4.toml")
 
 	KVS.mu.Lock()
 	defer KVS.mu.Unlock()
