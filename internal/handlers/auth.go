@@ -153,7 +153,7 @@ func LoginRefreshAccessToken() error {
 	req.Header.Set("Accept-Encoding", "gzip")
 	req.Header.Set("User-Agent", "okhttp/4.2.2")
 	req.Header.Set("accessToken", tokenData.AccessToken)
-	req.Header.Set("deviceId", utils.GetDeviceID())
+	req.Header.Set("deviceid", utils.GetDeviceID())
 	req.SetBody(requestBodyJSON)
 
 	// Send the request
