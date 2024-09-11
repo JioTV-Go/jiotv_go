@@ -12,7 +12,11 @@ import (
 )
 
 var PID_FILE_NAME = ".jiotv_go.pid"
-var PID_FILE_PATH = utils.GetPathPrefix() + PID_FILE_NAME
+var PID_FILE_PATH string
+
+func readPIDPath() {
+	PID_FILE_PATH = utils.GetPathPrefix() + PID_FILE_NAME
+}
 
 // RunInBackground starts the JioTV Go server as a background process by
 // executing the current binary with the provided arguments. It stores the
@@ -20,6 +24,7 @@ var PID_FILE_PATH = utils.GetPathPrefix() + PID_FILE_NAME
 // Returns any errors encountered while starting the process.
 func RunInBackground(args string) error {
 	fmt.Println("Starting JioTV Go server in background...")
+	readPIDPath()
 
 	// Get the path of the current binary executable
 	binaryExecutablePath, err := os.Executable()
@@ -52,12 +57,12 @@ func RunInBackground(args string) error {
 	return nil
 }
 
-
 // StopBackground stops the background JioTV Go server process that was previously
 // started with RunInBackground. It reads the PID from the PID file, sends a kill
 // signal to that process, and deletes the PID file. Returns any errors encountered.
 func StopBackground() error {
 	fmt.Println("Stopping JioTV Go server running in background...")
+	readPIDPath()
 
 	// Read the PID from the file
 	pidBytes, err := os.ReadFile(PID_FILE_PATH)
