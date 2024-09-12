@@ -226,6 +226,8 @@ The `background` command allows you to run the JioTV Go server in the background
   jiotv_go background start [command options] [arguments...]
   ```
   - `--args value, -a value`: String value arguments passed to the `serve/run` command while running in the background as mentioned in the [Serve Command](#2-serve-command) section.
+  - `--config value, -c value`: Path to the configuration file. Reads the custom `path_prefix` to store the background process PID file at the specified location. Also passes the same configuration file to the `serve/run` command unless explicitly specified in `--args`.
+    <br>By default, JioTV Go will look for a file named `jiotv_go.(toml|yaml|json)` or `config.(toml|yaml|json)` in the same directory as the binary or `$HOME/.jiotv_go/` directory.
 
   Description: The `start` command starts the JioTV Go server in the background. It runs the `JioTVServer` function in a separate process.
 
@@ -233,6 +235,8 @@ The `background` command allows you to run the JioTV Go server in the background
   ```shell
   jiotv_go background stop
   ```
+  - `--config value, -c value`: Path to the configuration file. Reads the custom `path_prefix` to access the background process PID file at the location.
+    <br>By default, JioTV Go will look for a file named `jiotv_go.(toml|yaml|json)` or `config.(toml|yaml|json)` in the same directory as the binary or `$HOME/.jiotv_go/` directory.
 
   Description: The `stop` command stops the JioTV Go server running in the background. It will only work if the server is started using the `background start` command.
 
@@ -245,7 +249,7 @@ jiotv_go background start
 Example with arguments *(make sure to enclose the arguments in quotes)*:
 
 ```shell
-jiotv_go background start --args "--port 8080 --config config.toml"
+jiotv_go background start --config config.toml --args "--port 8080"
 ```
 
 ### Note:

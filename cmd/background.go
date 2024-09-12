@@ -8,18 +8,28 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rabilrbl/jiotv_go/v3/internal/config"
 	"github.com/rabilrbl/jiotv_go/v3/pkg/utils"
 )
 
 var PID_FILE_NAME = ".jiotv_go.pid"
-var PID_FILE_PATH = utils.GetPathPrefix() + PID_FILE_NAME
+var PID_FILE_PATH string
+
+func readPIDPath() {
+	PID_FILE_PATH = utils.GetPathPrefix() + PID_FILE_NAME
+}
 
 // RunInBackground starts the JioTV Go server as a background process by
 // executing the current binary with the provided arguments. It stores the
 // process ID in a file in the user's home directory so it can be stopped later.
 // Returns any errors encountered while starting the process.
-func RunInBackground(args string) error {
+func RunInBackground(args string, configPath string) error {
+	if err := config.Cfg.Load(configPath); err != nil {
+		return err
+	}
+
 	fmt.Println("Starting JioTV Go server in background...")
+	readPIDPath()
 
 	// Get the path of the current binary executable
 	binaryExecutablePath, err := os.Executable()
@@ -29,6 +39,12 @@ func RunInBackground(args string) error {
 
 	cmdArgs := strings.Fields(args)
 	cmdArgs = append(cmdArgs, "--skip-update-check")
+
+	// Add current config path to args if not already explicitly provided
+	if !strings.Contains(args, "--config") {
+		cmdArgs = append(cmdArgs, "--config", configPath)
+	}
+
 	// Run JioTVServer function as a separate process
 	cmd := exec.Command(binaryExecutablePath, append([]string{"serve"}, cmdArgs...)...)
 	err = cmd.Start()
@@ -52,12 +68,16 @@ func RunInBackground(args string) error {
 	return nil
 }
 
-
 // StopBackground stops the background JioTV Go server process that was previously
 // started with RunInBackground. It reads the PID from the PID file, sends a kill
 // signal to that process, and deletes the PID file. Returns any errors encountered.
-func StopBackground() error {
+func StopBackground(configPath string) error {
+	if err := config.Cfg.Load(configPath); err != nil {
+		return err
+	}
+
 	fmt.Println("Stopping JioTV Go server running in background...")
+	readPIDPath()
 
 	// Read the PID from the file
 	pidBytes, err := os.ReadFile(PID_FILE_PATH)
