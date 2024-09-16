@@ -187,7 +187,8 @@ func main() {
 						Action: func(c *cli.Context) error {
 							cmd.PrintIfUpdateAvailable(c)
 							args := c.String("args")
-							return cmd.RunInBackground(args)
+							configPath := c.String("config")
+							return cmd.RunInBackground(args, configPath)
 						},
 						Flags: []cli.Flag{
 							&cli.StringFlag{
@@ -195,6 +196,12 @@ func main() {
 								Aliases: []string{"a"},
 								Value:   "",
 								Usage:   "String Value Arguments passed to serve/run command while running in the background",
+							},
+							&cli.StringFlag{
+								Name:    "config",
+								Aliases: []string{"c"},
+								Value:   "",
+								Usage:   "Path to config file",
 							},
 						},
 					},
@@ -204,7 +211,16 @@ func main() {
 						Usage:       "Stop JioTV Go server running in the background",
 						Description: "The stop command stops the JioTV Go server running in the background.",
 						Action: func(c *cli.Context) error {
-							return cmd.StopBackground()
+							configPath := c.String("config")
+							return cmd.StopBackground(configPath)
+						},
+						Flags: []cli.Flag{
+							&cli.StringFlag{
+								Name:    "config",
+								Aliases: []string{"c"},
+								Value:   "",
+								Usage:   "Path to config file",
+							},
 						},
 					},
 				},

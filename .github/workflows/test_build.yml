@@ -40,7 +40,7 @@ jobs:
           GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o ./bin/jiotv_go-${{ matrix.goos }}-${{ matrix.goarch }} -ldflags "-s -w" .
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: jiotv_go-${{ matrix.goos }}-${{ matrix.goarch }}
           path: ./bin/
