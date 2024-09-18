@@ -86,7 +86,7 @@ jobs:
           echo "New version: $new_version"
           # Update the version in VERSION file
           echo $new_version > VERSION
-          git add main.go && git commit -m "Bump version to $new_version" && git push origin HEAD:main
+          git add VERSION && git commit -m "Bump version to $new_version" && git push origin HEAD:main
           # Mirrors tags
           git tag -fa v$major -m "Mirror tag $new_version"
           git tag -fa v$major.$minor -m "Mirror tag $new_version"
