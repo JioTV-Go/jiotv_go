@@ -1,9 +1,11 @@
 package cmd
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/rabilrbl/jiotv_go/v3/internal/config"
+	"github.com/rabilrbl/jiotv_go/v3/internal/constants"
 	"github.com/rabilrbl/jiotv_go/v3/internal/handlers"
 	"github.com/rabilrbl/jiotv_go/v3/internal/middleware"
 	"github.com/rabilrbl/jiotv_go/v3/pkg/epg"
@@ -64,7 +66,7 @@ func JioTVServer(host, port, configPath string, prefork bool) error {
 		StrictRouting:     false,
 		EnablePrintRoutes: false,
 		ServerHeader:      "JioTV Go",
-		AppName:           "JioTV Go",
+		AppName:           fmt.Sprintf("JioTV Go %s", constants.Version),
 	})
 
 	app.Use(recover.New(recover.Config{
