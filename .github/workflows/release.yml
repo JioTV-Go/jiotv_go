@@ -84,7 +84,8 @@ jobs:
           # Calculate the new version number.
           new_version="v${major}.${minor}.${patch}"
           echo "New version: $new_version"
-          sed -i "s/Version:[[:space:]]*\"[^\"]*\"/Version:  \"$new_version\"/" main.go
+          # Update the version in VERSION file
+          echo $new_version > VERSION
           git add main.go && git commit -m "Bump version to $new_version" && git push origin HEAD:main
           # Mirrors tags
           git tag -fa v$major -m "Mirror tag $new_version"
