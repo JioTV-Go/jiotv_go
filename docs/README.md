@@ -11,7 +11,6 @@ JioTV Go, an exciting project that allows you to stream Live TV channels on the 
 - 🎥 Quality selection (Low, Medium, High) supported.
 - ⚙️ Configurable port and host.
 - 🔐 Authentication options using Jio ID/Number with password or Jio number with OTP.
-- 📺 Additional Sony channels from SonyLiv for convenience.
 - 👥 Support for multiple clients simultaneously.
 - 🚀 Written in Go, ensuring it's fast, lightweight, and portable.
 - 💻 Command-line interface for server management and self-update.
