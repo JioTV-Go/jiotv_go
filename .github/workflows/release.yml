@@ -1,0 +1,61 @@
+name: Build JF-JioTV for mips32r2
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+
+      - name: Get CA certificates
+        continue-on-error: true
+        run: curl -o assets/cacert/cacert.pem https://curl.se/ca/cacert.pem
+
+      - name: Download mips32r2 toolchain
+        run: wget -O toolchain.tar https://github.com/JFC-Group/JF-Buildroot/releases/download/2015.08.1/mipsel-buildroot-linux-uclibc-toolchain-2015.08.1.tar
+
+      - name: Extract mips32r2 toolchain
+        run: tar -xf toolchain.tar
+
+      - name: Build
+        run: LD_LIBRARY_PATH=$(pwd)/mipsel-buildroot-linux-uclibc-toolchain-2015.08.1/usr/lib CC=$(pwd)/mipsel-buildroot-linux-uclibc-toolchain-2015.08.1/usr/bin/mipsel-buildroot-linux-uclibc-gcc GOARCH=mipsle GOOS=linux go build -o jiotv_go-jiofiber-mips32r2 .
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: jiotv_go-jiofiber-mips32r2
+          path: jiotv_go-jiofiber-mips32r2
+
+  publish:
+    name: Publish a release
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    steps:
+      - name: Get all distributables
+        uses: actions/download-artifact@v4
+        with:
+          name: jiotv_go-jiofiber-mips32r2
+          path: .
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          make_latest: "true"
+          files: jiotv_go-jiofiber-mips32r2
