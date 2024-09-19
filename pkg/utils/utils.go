@@ -2,6 +2,9 @@ package utils
 
 import (
 	"crypto/rand"
+	"crypto/tls"
+	"crypto/x509"
+	_ "embed"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -15,6 +18,7 @@ import (
 
 	"gopkg.in/natefinch/lumberjack.v2"
 
+	"github.com/rabilrbl/jiotv_go/v3/assets"
 	"github.com/rabilrbl/jiotv_go/v3/internal/config"
 	"github.com/rabilrbl/jiotv_go/v3/pkg/store"
 	"github.com/valyala/fasthttp"
@@ -495,12 +499,29 @@ func Logout() error {
 	return nil
 }
 
+func loadCertsForJioFiber() (*x509.CertPool, error) {
+	// Create a new CertPool
+	caCertPool := x509.NewCertPool()
+	// Append the embedded CA certificate
+	if !caCertPool.AppendCertsFromPEM(assets.CaCerts) {
+		return nil, fmt.Errorf("failed to append cert to pool")
+	}
+	return caCertPool, nil
+}
+
 // GetRequestClient create a HTTP client with proxy if given
 // Otherwise create a HTTP client without proxy
 // Returns a fasthttp.Client
 func GetRequestClient() *fasthttp.Client {
 	// The function shall return a fasthttp.client with proxy if given
 	proxy := config.Cfg.Proxy
+
+	// Load CA certs if running on JioFiber
+	var caCertPool, err = loadCertsForJioFiber()
+	if err != nil {
+		Log.Println(err)
+		return nil
+	}
 
 	if proxy != "" {
 		Log.Println("Using proxy: " + proxy)
@@ -521,6 +542,10 @@ func GetRequestClient() *fasthttp.Client {
 		Dial: fasthttp.DialFunc(func(addr string) (netConn net.Conn, err error) {
 			return fasthttp.DialTimeout(addr, 5*time.Second)
 		}),
+		// JF has no root CA - hence we specify the custom cert pool
+		TLSConfig: &tls.Config{
+			RootCAs: caCertPool,
+		},
 	}
 }
 
