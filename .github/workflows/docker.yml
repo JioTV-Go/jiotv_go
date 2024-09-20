@@ -45,6 +45,7 @@ jobs:
           # list of Docker images to use as base name for tags
           images: |
             ghcr.io/${{ github.repository_owner }}/${{ github.event.repository.name }}
+            ghcr.io/rabilrbl/${{ github.event.repository.name }}
           # generate Docker tags based on the following events/attributes
           tags: |
             type=schedule
