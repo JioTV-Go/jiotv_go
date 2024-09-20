@@ -26,11 +26,11 @@ Please review our [Code of Conduct](CODE_OF_CONDUCT.md) to understand the standa
 
 ### Reporting Bugs
 
-If you encounter a bug while using our project, please open an issue on our [issue tracker](https://github.com/rabilrbl/jiotv_go/issues/) with a detailed description of the problem, steps to reproduce, and your system information.
+If you encounter a bug while using our project, please open an issue on our [issue tracker](https://github.com/jiotv-go/jiotv_go/issues/) with a detailed description of the problem, steps to reproduce, and your system information.
 
 ### Suggesting Enhancements
 
-If you have an idea for an enhancement or a new feature, feel free to open an issue on our [issue tracker](https://github.com/rabilrbl/jiotv_go/issues/). Be sure to provide a clear description of your proposal and why it would be valuable.
+If you have an idea for an enhancement or a new feature, feel free to open an issue on our [issue tracker](https://github.com/jiotv-go/jiotv_go/issues/). Be sure to provide a clear description of your proposal and why it would be valuable.
 
 ### Code Contribution
 

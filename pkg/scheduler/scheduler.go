@@ -3,8 +3,8 @@ package scheduler
 import (
 	"time"
 
+	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 	"github.com/madflojo/tasks"
-	"github.com/rabilrbl/jiotv_go/v3/pkg/utils"
 )
 
 var (
@@ -39,4 +39,3 @@ func Add(id string, interval time.Duration, task func() error) {
 	}
 	utils.Log.Printf("Task added with ID: %v\n", id)
 }
-

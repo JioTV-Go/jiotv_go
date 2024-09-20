@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/rabilrbl/jiotv_go/v3/pkg/scheduler"
-	"github.com/rabilrbl/jiotv_go/v3/pkg/utils"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/scheduler"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 	"github.com/schollz/progressbar/v3"
 	"github.com/valyala/fasthttp"
 )
@@ -23,7 +23,7 @@ const (
 	CHANNEL_URL = "https://jiotv.data.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?os=android&devicetype=phone&usertype=tvYR7NSNn7rymo3F"
 	// URL for fetching EPG data for individual channels from JioTV API
 	EPG_URL = "https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get/?offset=%d&channel_id=%d"
-	// EPG_POSTER_URL 
+	// EPG_POSTER_URL
 	EPG_POSTER_URL = "https://jiotv.catchup.cdn.jio.com/dare_images/shows"
 	// EPG_TASK_ID is the ID of the EPG generation task
 	EPG_TASK_ID = "jiotv_epg"

@@ -49,18 +49,18 @@ You can also download the pre-built binaries for your platform from the [release
 
 | OS Name        | Architecture (AKA) | Binary Name                                                                                                            |
 | -------------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------- |
-| Android        | arm64 (aarch64)    | [jiotv_go-android-arm64](https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-android-arm64)         |
-| Android        | amd64 (x86_64)     | [jiotv_go-android-amd64](https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-android-amd64)         |
-| Android        | arm                | [jiotv_go-android-arm](https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-android-arm)             |
-| Linux          | arm64 (aarch64)    | [jiotv_go-linux-arm64](https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-linux-arm64)             |
-| Linux          | amd64 (x86_64)     | [jiotv_go-linux-amd64](https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-linux-amd64)             |
-| Linux          | arm                | [jiotv_go-linux-arm](https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-linux-arm)                 |
-| Linux          | 386 (x86, i686)    | [jiotv_go-linux-386](https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-linux-386)                 |
-| Windows        | 386 (x86, i686)    | [jiotv_go-windows-386.exe](https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-windows-386.exe)     |
-| Windows        | amd64 (x86_64)     | [jiotv_go-windows-amd64.exe](https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-windows-amd64.exe) |
-| Windows        | arm64 (aarch64)    | [jiotv_go-windows-arm64.exe](https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-windows-arm64.exe) |
-| Darwin (macOS) | amd64 (x86_64)     | [jiotv_go-darwin-amd64](https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-darwin-amd64)           |
-| Darwin (macOS) | arm64 (aarch64)    | [jiotv_go-darwin-arm64](https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-darwin-arm64)           |
+| Android        | arm64 (aarch64)    | [jiotv_go-android-arm64](https://github.com/jiotv-go/jiotv_go/releases/latest/download/jiotv_go-android-arm64)         |
+| Android        | amd64 (x86_64)     | [jiotv_go-android-amd64](https://github.com/jiotv-go/jiotv_go/releases/latest/download/jiotv_go-android-amd64)         |
+| Android        | arm                | [jiotv_go-android-arm](https://github.com/jiotv-go/jiotv_go/releases/latest/download/jiotv_go-android-arm)             |
+| Linux          | arm64 (aarch64)    | [jiotv_go-linux-arm64](https://github.com/jiotv-go/jiotv_go/releases/latest/download/jiotv_go-linux-arm64)             |
+| Linux          | amd64 (x86_64)     | [jiotv_go-linux-amd64](https://github.com/jiotv-go/jiotv_go/releases/latest/download/jiotv_go-linux-amd64)             |
+| Linux          | arm                | [jiotv_go-linux-arm](https://github.com/jiotv-go/jiotv_go/releases/latest/download/jiotv_go-linux-arm)                 |
+| Linux          | 386 (x86, i686)    | [jiotv_go-linux-386](https://github.com/jiotv-go/jiotv_go/releases/latest/download/jiotv_go-linux-386)                 |
+| Windows        | 386 (x86, i686)    | [jiotv_go-windows-386.exe](https://github.com/jiotv-go/jiotv_go/releases/latest/download/jiotv_go-windows-386.exe)     |
+| Windows        | amd64 (x86_64)     | [jiotv_go-windows-amd64.exe](https://github.com/jiotv-go/jiotv_go/releases/latest/download/jiotv_go-windows-amd64.exe) |
+| Windows        | arm64 (aarch64)    | [jiotv_go-windows-arm64.exe](https://github.com/jiotv-go/jiotv_go/releases/latest/download/jiotv_go-windows-arm64.exe) |
+| Darwin (macOS) | amd64 (x86_64)     | [jiotv_go-darwin-amd64](https://github.com/jiotv-go/jiotv_go/releases/latest/download/jiotv_go-darwin-amd64)           |
+| Darwin (macOS) | arm64 (aarch64)    | [jiotv_go-darwin-arm64](https://github.com/jiotv-go/jiotv_go/releases/latest/download/jiotv_go-darwin-arm64)           |
 
 #### Identifying your OS and Architecture
 
@@ -105,7 +105,7 @@ Make sure you have [Docker](https://docs.docker.com/get-docker/) installed on yo
 Run the command:
 
 ```sh
-docker run -p 5001:5001 -v ./.jiotv_go/secrets:/app/secrets ghcr.io/rabilrbl/jiotv_go
+docker run -p 5001:5001 -v ./.jiotv_go/secrets:/app/secrets ghcr.io/jiotv-go/jiotv_go
 ```
 
 Open your web browser and visit [http://localhost:5001/](http://localhost:5001/).
@@ -117,7 +117,7 @@ By default, JioTV Go Docker image runs with `serve --public` command. You can ov
 For example, to run JioTV Go with `serve --public --port 8080` command, run:
 
 ```sh
-docker run -p 8080:8080 -v ./.jiotv_go:/app/.jiotv_go ghcr.io/rabilrbl/jiotv_go serve --public --port 8080
+docker run -p 8080:8080 -v ./.jiotv_go:/app/.jiotv_go ghcr.io/jiotv-go/jiotv_go serve --public --port 8080
 ```
 
 ### Keep JioTV Go Updated
@@ -125,7 +125,7 @@ docker run -p 8080:8080 -v ./.jiotv_go:/app/.jiotv_go ghcr.io/rabilrbl/jiotv_go 
 To update to the latest version, run:
 
 ```sh
-docker pull ghcr.io/rabilrbl/jiotv_go:latest
+docker pull ghcr.io/jiotv-go/jiotv_go:latest
 ```
 
 ---

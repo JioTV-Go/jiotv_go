@@ -7,9 +7,9 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/rabilrbl/jiotv_go/v3/pkg/scheduler"
-	"github.com/rabilrbl/jiotv_go/v3/pkg/television"
-	"github.com/rabilrbl/jiotv_go/v3/pkg/utils"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/scheduler"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/television"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 	"github.com/valyala/fasthttp"
 )
 

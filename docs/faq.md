@@ -64,7 +64,7 @@ Read the [Update command section](./usage/usage.md#2-update-command) in the [Usa
 Simply pull the latest image from Docker Hub:
 
 ```sh
-docker pull ghcr.io/rabilrbl/jiotv_go:latest
+docker pull ghcr.io/jiotv-go/jiotv_go:latest
 ```
 
 ## How do I update JioTV Go if I have installed it using Termux?
