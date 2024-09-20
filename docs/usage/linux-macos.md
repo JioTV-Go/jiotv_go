@@ -118,4 +118,4 @@ sudo systemctl start jiotv_go
 sudo systemctl status jiotv_go
 ```
 
-Enjoy your JioTV Go streaming experience on Linux and macOS! If you encounter any issues or have questions, refer to the [Support and Issues](#support-and-issues) section in the user guide or visit the [GitHub repository](https://github.com/rabilrbl/jiotv_go).
+Enjoy your JioTV Go streaming experience on Linux and macOS! If you encounter any issues or have questions, refer to the [Support and Issues](#support-and-issues) section in the user guide or visit the [GitHub repository](https://github.com/jiotv-go/jiotv_go).

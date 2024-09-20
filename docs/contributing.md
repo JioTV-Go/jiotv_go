@@ -7,7 +7,7 @@ JioTV Go is an open-source project that welcomes contributions from the communit
 If you come across any issues or bugs while using JioTV Go, please let us know. Reporting bugs is an essential part of improving the project. Here's how to report a bug:
 
 1. **Go to the Issue Tracker**:
-   - Visit the [Issue Tracker](https://github.com/rabilrbl/jiotv_go/issues) for JioTV Go on GitHub.
+   - Visit the [Issue Tracker](https://github.com/jiotv-go/jiotv_go/issues) for JioTV Go on GitHub.
 
 2. **Create a New Issue**:
    - Click the "New Issue" button.

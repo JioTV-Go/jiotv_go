@@ -7,8 +7,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/rabilrbl/jiotv_go/v3/cmd"
-	"github.com/rabilrbl/jiotv_go/v3/internal/constants"
+	"github.com/jiotv-go/jiotv_go/v3/cmd"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants"
 
 	"github.com/urfave/cli/v2"
 )
@@ -27,7 +27,7 @@ func main() {
 		Usage:     "Stream JioTV on any device",
 		HelpName:  "jiotv_go",
 		Version:   version,
-		Copyright: "© JioTV Go (https://github.com/rabilrbl/jiotv_go)",
+		Copyright: "© JioTV Go (https://github.com/jiotv-go/jiotv_go)",
 		Compiled:  time.Now(),
 		Suggest:   true,
 		Commands: []*cli.Command{

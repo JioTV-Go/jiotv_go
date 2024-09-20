@@ -8,7 +8,7 @@ body:
       value: |
         # JioTV Go Feature request
 
-        Important to note that your issue may have already been reported before. Please check for existing issues [here](https://github.com/rabilrbl/jiotv_go/labels/enhancement).
+        Important to note that your issue may have already been reported before. Please check for existing issues [here](https://github.com/jiotv-go/jiotv_go/labels/enhancement).
   - type: textarea
     attributes:
       label: Feature description

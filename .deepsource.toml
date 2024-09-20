@@ -16,4 +16,4 @@ name = "shell"
 name = "go"
 
   [analyzers.meta]
-  import_root = "github.com/rabilrbl/jiotv_go"
+  import_root = "github.com/jiotv-go/jiotv_go"

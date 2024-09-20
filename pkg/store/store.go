@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/BurntSushi/toml"
-	"github.com/rabilrbl/jiotv_go/v3/internal/config"
+	"github.com/jiotv-go/jiotv_go/v3/internal/config"
 )
 
 // Config represents the structure of the TOML file.
