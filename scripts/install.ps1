@@ -3,7 +3,7 @@ try {
     # $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 
     # # URL of the PowerShell script
-    # $scriptUrl = "https://raw.githubusercontent.com/rabilrbl/jiotv_go/main/scripts/install.ps1"
+    # $scriptUrl = "https://raw.githubusercontent.com/jiotv-go/jiotv_go/main/scripts/install.ps1"
 
     # # Download the script content
     # $scriptContent = Invoke-WebRequest -Uri $scriptUrl -UseBasicParsing | Select-Object -ExpandProperty Content
@@ -74,7 +74,7 @@ try {
     }
 
     # Fetch the latest binary
-    $binaryUrl = "https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-windows-$arch.exe"
+    $binaryUrl = "https://github.com/jiotv-go/jiotv_go/releases/latest/download/jiotv_go-windows-$arch.exe"
     Write-Host "Fetching the latest binary from $binaryUrl"
     Invoke-WebRequest -Uri $binaryUrl -OutFile jiotv_go.exe -UseBasicParsing
 

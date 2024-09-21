@@ -1,17 +1,19 @@
 package cmd
 
 import (
+	"fmt"
 	"net/http"
 
-	"github.com/rabilrbl/jiotv_go/v3/internal/config"
-	"github.com/rabilrbl/jiotv_go/v3/internal/handlers"
-	"github.com/rabilrbl/jiotv_go/v3/internal/middleware"
-	"github.com/rabilrbl/jiotv_go/v3/pkg/epg"
-	"github.com/rabilrbl/jiotv_go/v3/pkg/scheduler"
-	"github.com/rabilrbl/jiotv_go/v3/pkg/secureurl"
-	"github.com/rabilrbl/jiotv_go/v3/pkg/store"
-	"github.com/rabilrbl/jiotv_go/v3/pkg/utils"
-	"github.com/rabilrbl/jiotv_go/v3/web"
+	"github.com/jiotv-go/jiotv_go/v3/internal/config"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants"
+	"github.com/jiotv-go/jiotv_go/v3/internal/handlers"
+	"github.com/jiotv-go/jiotv_go/v3/internal/middleware"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/epg"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/scheduler"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/store"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
+	"github.com/jiotv-go/jiotv_go/v3/web"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/filesystem"
@@ -64,7 +66,7 @@ func JioTVServer(host, port, configPath string, prefork bool) error {
 		StrictRouting:     false,
 		EnablePrintRoutes: false,
 		ServerHeader:      "JioTV Go",
-		AppName:           "JioTV Go",
+		AppName:           fmt.Sprintf("JioTV Go %s", constants.Version),
 	})
 
 	app.Use(recover.New(recover.Config{

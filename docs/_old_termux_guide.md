@@ -28,13 +28,13 @@ Now look for the architecture in the [table](./get_started.md#the-following-tabl
 Then download the binary for your architecture, replace `{arch}` with your architecture:
 
 ```bash
-wget "https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-linux-{arch}"
+wget "https://github.com/jiotv-go/jiotv_go/releases/latest/download/jiotv_go-linux-{arch}"
 ```
 
 For example, if your architecture from `uname -m` is `aarch64`, then you will download the binary for `arm64` architecture:
 
 ```bash
-wget "https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-linux-arm64"
+wget "https://github.com/jiotv-go/jiotv_go/releases/latest/download/jiotv_go-linux-arm64"
 ```
 
 Make the binary executable

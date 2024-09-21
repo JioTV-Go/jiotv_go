@@ -48,7 +48,7 @@ Now look for the architecture in the [table](./get_started.md#the-following-tabl
 4. Paste the link in the following command and run it:
 
 ```bash
-curl -LO jiotv_go --progress-bar "https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-android-{arch}"
+curl -LO jiotv_go --progress-bar "https://github.com/jiotv-go/jiotv_go/releases/latest/download/jiotv_go-android-{arch}"
 ```
 
 If you are using above URL, replace `{arch}` with your architecture.
@@ -123,7 +123,7 @@ Now look for the linux binaries with architecture in the [table](../get_started.
 3. Paste the link in the following command and run it:
 
 ```bash
-curl -LO jiotv_go --progress-bar "https://github.com/rabilrbl/jiotv_go/releases/latest/download/jiotv_go-linux-{arch}"
+curl -LO jiotv_go --progress-bar "https://github.com/jiotv-go/jiotv_go/releases/latest/download/jiotv_go-linux-{arch}"
 ```
 
 If you are using above URL, replace `{arch}` with your architecture.

@@ -1,25 +1,33 @@
 package main
 
 import (
+	_ "embed"
 	"fmt"
 	"log"
 	"os"
 	"time"
 
-	"github.com/rabilrbl/jiotv_go/v3/cmd"
+	"github.com/jiotv-go/jiotv_go/v3/cmd"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants"
 
 	"github.com/urfave/cli/v2"
 )
 
+//go:embed VERSION
+var version string
+
 func main() {
+	// Set JioTV Go version
+	constants.Version = version
+
 	// Remove Date time from log
 	log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
 	app := &cli.App{
 		Name:      "JioTV Go",
 		Usage:     "Stream JioTV on any device",
 		HelpName:  "jiotv_go",
-		Version:  "v3.9.5",
-		Copyright: "© JioTV Go by Mohammed Rabil (https://github.com/rabilrbl/jiotv_go)",
+		Version:   version,
+		Copyright: "© JioTV Go (https://github.com/jiotv-go/jiotv_go)",
 		Compiled:  time.Now(),
 		Suggest:   true,
 		Commands: []*cli.Command{

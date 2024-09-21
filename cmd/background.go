@@ -8,8 +8,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/rabilrbl/jiotv_go/v3/internal/config"
-	"github.com/rabilrbl/jiotv_go/v3/pkg/utils"
+	"github.com/jiotv-go/jiotv_go/v3/internal/config"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 )
 
 var PID_FILE_NAME = ".jiotv_go.pid"
