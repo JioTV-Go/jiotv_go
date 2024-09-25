@@ -150,7 +150,6 @@ func LoginRefreshAccessToken() error {
 	req.Header.Set("os", "android")
 	req.Header.Set("Content-Type", "application/json; charset=utf-8")
 	req.Header.Set("Host", "auth.media.jio.com")
-	req.Header.Set("Accept-Encoding", "gzip")
 	req.Header.Set("User-Agent", "okhttp/4.2.2")
 	req.Header.Set("accessToken", tokenData.AccessToken)
 	req.SetBody(requestBodyJSON)
@@ -170,11 +169,8 @@ func LoginRefreshAccessToken() error {
 	}
 
 	// Parse the response body
-	respBody, err := resp.BodyGunzip()
-	if err != nil {
-		utils.Log.Fatalln(err)
-		return err
-	}
+	respBody := resp.Body()
+
 	var response RefreshTokenResponse
 	if err := json.Unmarshal(respBody, &response); err != nil {
 		utils.Log.Fatalln(err)
@@ -214,7 +210,6 @@ func LoginRefreshSSOToken() error {
 	req.Header.Set("versionCode", "315")
 	req.Header.Set("os", "android")
 	req.Header.Set("Host", "tv.media.jio.com")
-	req.Header.Set("Accept-Encoding", "gzip")
 	req.Header.Set("User-Agent", "okhttp/4.2.2")
 	req.Header.Set("ssoToken", tokenData.SSOToken)
 	req.Header.Set("uniqueid", tokenData.UniqueID)
@@ -235,11 +230,8 @@ func LoginRefreshSSOToken() error {
 	}
 
 	// Parse the response body
-	respBody, err := resp.BodyGunzip()
-	if err != nil {
-		utils.Log.Fatalln(err)
-		return err
-	}
+	respBody := resp.Body()
+
 	var response RefreshSSOTokenResponse
 	if err := json.Unmarshal(respBody, &response); err != nil {
 		utils.Log.Fatalln(err)

@@ -174,7 +174,6 @@ func Channels() ChannelsResponse {
 
 	req.Header.SetMethod("GET")
 	req.Header.Add("User-Agent", "okhttp/4.2.2")
-	req.Header.Add("Accept-Encoding", "gzip, deflate, br")
 	req.Header.Add("Accept", "application/json")
 	req.Header.Add("devicetype", "phone")
 	req.Header.Add("os", "android")
@@ -197,10 +196,7 @@ func Channels() ChannelsResponse {
 		utils.Log.Panicf("Request failed with status code: %d", resp.StatusCode())
 	}
 
-	resp_body, err := resp.BodyGunzip()
-	if err != nil {
-		utils.Log.Panic(err)
-	}
+	resp_body := resp.Body()
 
 	// Parse the JSON response
 	if err := json.Unmarshal(resp_body, &apiResponse); err != nil {
