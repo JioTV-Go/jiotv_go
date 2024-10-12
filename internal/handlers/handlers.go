@@ -149,9 +149,11 @@ func LiveHandler(c *fiber.Ctx) error {
 			"message": err,
 		})
 	}
-	if id[:2] == "sl" {
-		return sonyLivRedirect(c, liveResult)
-	}
+	// remove sl channels checks
+	// if id[:2] == "sl" {
+	// 	return sonyLivRedirect(c, liveResult)
+	// }
+	
 	// Check if liveResult.Bitrates.Auto is empty
 	if liveResult.Bitrates.Auto == "" {
 		error_message := "No stream found for channel id: " + id + "Status: " + liveResult.Message
