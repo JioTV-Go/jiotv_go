@@ -3,6 +3,8 @@ package handlers
 import (
 	"bytes"
 	"fmt"
+	"net/url"
+	"regexp"
 	"strings"
 	"time"
 
@@ -14,22 +16,17 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/proxy"
 )
 
-// LiveMpdHandler handles live stream routes /mpd/:channelID
-func LiveMpdHandler(c *fiber.Ctx) error {
-	// Get channel ID from URL
-	channelID := c.Params("channelID")
-	quality := c.Query("q")
+// getDrmMpd returns required properties for rendering DRM MPD
+func getDrmMpd(channelID, quality string) (*DrmMpdOutput, error) {
 	// Get live stream URL from JioTV API
 	liveResult, err := TV.Live(channelID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	enc_key, err := secureurl.EncryptURL(liveResult.Mpd.Key)
 	if err != nil {
 		utils.Log.Panicln(err)
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"message": err,
-		})
+		return nil, err
 	}
 
 	var tv_url string
@@ -44,18 +41,57 @@ func LiveMpdHandler(c *fiber.Ctx) error {
 		tv_url = liveResult.Mpd.Bitrates.Auto
 	}
 
-	channel, err := secureurl.EncryptURL(tv_url)
+	channel_enc_url, err := secureurl.EncryptURL(tv_url)
 	if err != nil {
 		utils.Log.Panicln(err)
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+		return nil, err
+	}
+
+	parsedTvUrl, err := url.Parse(tv_url)
+	if err != nil {
+		utils.Log.Panicln(err)
+		return nil, err
+	}
+	tv_url_split := strings.Split(parsedTvUrl.Path, "/")
+	tv_url_path, err := secureurl.EncryptURL(strings.Join(tv_url_split[:len(tv_url_split)-1], "/") + "/")
+	if err != nil {
+		utils.Log.Panicln(err)
+		return nil, err
+	}
+
+	tv_url_host, err := secureurl.EncryptURL(parsedTvUrl.Host)
+	if err != nil {
+		utils.Log.Panicln(err)
+		return nil, err
+	}
+
+	return &DrmMpdOutput{
+		PlayUrl:     "/render.mpd?auth=" + channel_enc_url,
+		LicenseUrl:  "/drm?auth=" + enc_key + "&channel_id=" + channelID + "&channel=" + channel_enc_url,
+		Tv_url_host: tv_url_host,
+		Tv_url_path: tv_url_path,
+	}, nil
+}
+
+// LiveMpdHandler handles live stream routes /mpd/:channelID
+func LiveMpdHandler(c *fiber.Ctx) error {
+	// Get channel ID from URL
+	channelID := c.Params("channelID")
+	quality := c.Query("q")
+
+	drmMpdOutput, err := getDrmMpd(channelID, quality)
+	if err != nil {
+		utils.Log.Panicln(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"message": err,
 		})
 	}
 
-	tv_url = strings.Replace(tv_url, "https://jiotvmblive.cdn.jio.com", "", 1)
 	return c.Render("views/flow_player_drm", fiber.Map{
-		"play_url":    tv_url,
-		"license_url": "/drm?auth=" + enc_key + "&channel_id=" + channelID + "&channel=" + channel,
+		"play_url":     drmMpdOutput.PlayUrl,
+		"license_url":  drmMpdOutput.LicenseUrl,
+		"channel_host": drmMpdOutput.Tv_url_host,
+		"channel_path": drmMpdOutput.Tv_url_path,
 	})
 }
 
@@ -119,8 +155,7 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 	c.Request().Header.Set("os", "android")
 	c.Request().Header.Set("appName", "RJIL_JioTV")
 	c.Request().Header.Set("subscriberId", TV.Crm)
-	c.Request().Header.Set("Host", "tv.media.jio.com")
-	c.Request().Header.Set("User-Agent", "plaYtv/7.1.3 (Linux;Android 13) ExoPlayerLib/2.11.7")
+	c.Request().Header.Set("User-Agent", PLAYER_USER_AGENT)
 	c.Request().Header.Set("ssotoken", TV.SsoToken)
 	c.Request().Header.Set("x-platform", "android")
 	c.Request().Header.Set("srno", generateDateTime())
@@ -135,12 +170,9 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 	c.Request().Header.Set("deviceId", utils.GetDeviceID())
 	c.Request().Header.Set("Content-Type", "application/octet-stream")
 
-	// Delete User-Agent header from the request
+	// Remove headers
 	c.Request().Header.Del("Accept")
 	c.Request().Header.Del("Origin")
-
-	// Print ALL request headers
-	utils.Log.Println("Request headers:", c.Request().Header.String())
 
 	if err := proxy.Do(c, decoded_url, TV.Client); err != nil {
 		return err
@@ -150,18 +182,42 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 	return nil
 }
 
-// BpkProxyHandler handles BPK proxy routes /bpk/:channelID
-func BpkProxyHandler(c *fiber.Ctx) error {
-	c.Request().Header.Set("Host", "jiotvmblive.cdn.jio.com")
+// MpdHandler handles BPK proxy routes /bpk/:channelID
+func MpdHandler(c *fiber.Ctx) error {
+	proxyUrl := c.Query("auth")
+	if proxyUrl == "" {
+		c.Status(fiber.StatusBadRequest)
+		return fmt.Errorf("auth query param is required")
+	}
+
+	decryptedUrl, err := secureurl.DecryptURL(proxyUrl)
+	if err != nil {
+		utils.Log.Panicln(err)
+		return err
+	}
+	parsedUrl, err := url.Parse(decryptedUrl)
+	if err != nil {
+		utils.Log.Panicln(err)
+		return err
+	}
+
+	proxyHost := parsedUrl.Host
+
+	// proxyQuery := parsedUrl.RawQuery
+
+	c.Request().Header.Set("Host", proxyHost)
 	c.Request().Header.Set("User-Agent", "plaYtv/7.1.3 (Linux;Android 13) ExoPlayerLib/2.11.7")
 
 	// Request path with query params
-	url := "https://jiotvmblive.cdn.jio.com" + c.Path() + "?" + string(c.Request().URI().QueryString())
-	if url[len(url)-1:] == "?" {
-		url = url[:len(url)-1]
-	}
+	requestUrl := decryptedUrl
+	// if requestUrl[len(requestUrl)-1:] == "?" {
+	// 	requestUrl = requestUrl[:len(requestUrl)-1]
+	// }
 
-	if err := proxy.Do(c, url, TV.Client); err != nil {
+	c.Request().Header.Set("User-Agent", PLAYER_USER_AGENT)
+	// remove Accept-Encoding header
+	c.Request().Header.Del("Accept-Encoding")
+	if err := proxy.Do(c, requestUrl, TV.Client); err != nil {
 		return err
 	}
 	c.Response().Header.Del(fiber.HeaderServer)
@@ -171,13 +227,67 @@ func BpkProxyHandler(c *fiber.Ctx) error {
 		cookies := c.Response().Header.Peek("Set-Cookie")
 		c.Response().Header.Del("Set-Cookie")
 
-		cookies = bytes.Replace(cookies, []byte("Domain=jiotvmblive.cdn.jio.com;"), []byte(""), 1)
+		cookies = bytes.Replace(cookies, []byte("Domain="+proxyHost+";"), []byte(""), 1)
 		// Modify path in cookies
-		cookies = bytes.Replace(cookies, []byte("path=/"), []byte("path=/bpk-tv/"), 1)
+		cookies = bytes.Replace(cookies, []byte("path=/"), []byte("path=/render.dash"), 1)
 
 		// Modify Set-Cookie header
 		c.Response().Header.SetBytesV("Set-Cookie", cookies)
 	}
+	resBody := c.Response().Body()
+	basePathPattern := `<BaseURL>(.*)<\/BaseURL>`
+	re := regexp.MustCompile(basePathPattern)
+	// check for match
+	if re.Match(resBody) {
+		resBody = re.ReplaceAllFunc(resBody, func(match []byte) []byte {
+			return []byte("<BaseURL>/render.dash/dash/</BaseURL>")
+		})
+	} else {
+		pattern := `<Period(.*)>`
+		re = regexp.MustCompile(pattern)
+		resBody = re.ReplaceAllFunc(resBody, func(match []byte) []byte {
+			return []byte(fmt.Sprintf("%s\n<BaseURL>/render.dash/</BaseURL>", match))
+		})
+	}
+
+	c.Response().SetBody(resBody)
+
+	return nil
+}
+
+// DashHandler
+func DashHandler(c *fiber.Ctx) error {
+	proxyHost := c.Query("host")
+	proxyPath := c.Query("path")
+
+	if proxyHost == "" || proxyPath == "" {
+		c.Status(fiber.StatusBadRequest)
+		return fmt.Errorf("host and path query params are required")
+	}
+
+	// decode the URL
+	proxyHost, err := secureurl.DecryptURL(proxyHost)
+	if err != nil {
+		utils.Log.Panicln(err)
+		return err
+	}
+	proxyPath, err = secureurl.DecryptURL(proxyPath)
+	if err != nil {
+		utils.Log.Panicln(err)
+		return err
+	}
+
+	// remove render.dash from c.Request().URI().RequestURI()
+	requestUri := bytes.Replace(c.Request().URI().RequestURI(), []byte("/render.dash"), []byte(""), 1)
+
+	proxyUrl := fmt.Sprintf("https://%s%s/%s", proxyHost, proxyPath, requestUri)
+
+	c.Request().Header.Set("User-Agent", PLAYER_USER_AGENT)
+
+	if err := proxy.Do(c, proxyUrl, TV.Client); err != nil {
+		return err
+	}
+	c.Response().Header.Del(fiber.HeaderServer)
 
 	return nil
 }

@@ -149,9 +149,11 @@ func LiveHandler(c *fiber.Ctx) error {
 			"message": err,
 		})
 	}
-	if id[:2] == "sl" {
-		return sonyLivRedirect(c, liveResult)
-	}
+	// remove sl channels checks
+	// if id[:2] == "sl" {
+	// 	return sonyLivRedirect(c, liveResult)
+	// }
+
 	// Check if liveResult.Bitrates.Auto is empty
 	if liveResult.Bitrates.Auto == "" {
 		error_message := "No stream found for channel id: " + id + "Status: " + liveResult.Message
@@ -187,9 +189,9 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 		})
 	}
 	Bitrates := liveResult.Bitrates
-	if id[:2] == "sl" {
-		return sonyLivRedirect(c, liveResult)
-	}
+	// if id[:2] == "sl" {
+	// 	return sonyLivRedirect(c, liveResult)
+	// }
 	// Channels with following IDs output audio only m3u8 when quality level is enforced
 	if id == "1349" || id == "1322" {
 		quality = "auto"
@@ -461,22 +463,6 @@ func PlayerHandler(c *fiber.Ctx) error {
 	}
 	c.Response().Header.Set("Cache-Control", "public, max-age=3600")
 	return c.Render("views/flow_player", fiber.Map{
-		"play_url": play_url,
-	})
-}
-
-// ClapprHandler is previous (old) Web Player to stream live TV
-func ClapprHandler(c *fiber.Ctx) error {
-	id := c.Params("id")
-	quality := c.Query("q")
-	var play_url string
-	if quality != "" {
-		play_url = "/live/" + quality + "/" + id + ".m3u8"
-	} else {
-		play_url = "/live/" + id + ".m3u8"
-	}
-	c.Response().Header.Set("Cache-Control", "public, max-age=3600")
-	return c.Render("views/clappr", fiber.Map{
 		"play_url": play_url,
 	})
 }

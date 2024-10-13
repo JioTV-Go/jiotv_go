@@ -87,6 +87,9 @@ jiotv_go serve [command options] [arguments...]
 - `--port value, -p value`: Port to listen on (default: "5001").
 - `--public, -P`: Open the server to the public. This will expose your server outside your local network. Equivalent to passing `--host 0.0.0.0` (default: false).
 - `--prefork`: Enable prefork. This will enable preforking the server to multiple processes. This is useful for production deployment (default: false).
+- `--tls`: Enable TLS. This will enable HTTPS. You need to provide the certificate and key file (default: false).
+- `--tls-cert value, --cert value`: Path to the TLS certificate file. Generate a self-signed certificate using `openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout key.pem -out cert.pem`. cert.pem is the TLS certificate file and key.pem is the TLS key file.
+- `--tls-key value, --cert-key value`: Path to the TLS key file. 
 - `--skip-update-check`: Skip checking for updates on startup (default: false).
 - `--help, -h`: Show help for the `serve` command.
 
@@ -101,6 +104,17 @@ jiotv_go serve --port 8080 --public
 <div class="warning">
 Use of the <code>--public</code> flag is not recommended. It exposes your server outside your local network. Use it only if it is necessary for you in some cases where you want to access JioTV Go server in your phone to TV or other devices.
 </div>
+
+TLS on port 5002 with a self-signed certificate with `--public` flag for public access.
+
+```shell
+jiotv_go serve --public --port 5002 --tls --tls-cert cert.pem --tls-key key.pem
+```
+
+If you run the server with TLS using above command, you can access the server at `https://localhost:5002/`.
+
+You can also choose standard https port 443 for TLS. Then you can access the server at `https://localhost/`.
+
 
 ## 3. Update Command
 
