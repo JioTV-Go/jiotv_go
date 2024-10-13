@@ -93,6 +93,17 @@
           console.log("The video has now been loaded!");
         } catch (e) {
           console.error("Error loading video", e);
+          switch(e.code){
+            case 1001:
+              alert("The channel is not available.");
+              break;
+            case 6001:
+              alert("Widevine DRM content can't be played in http (except localhost). Please enable https in server.");
+              break;
+            default:
+              alert("An error occurred. Please try again later. Shaka Error code: " + e.code);
+          }
+        }
         }
 
         // Rotate to landscape on fullscreen enter
