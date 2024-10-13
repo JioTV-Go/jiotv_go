@@ -87,9 +87,6 @@ func JioTVServer(host, port, configPath string, prefork bool) error {
 		Browse:     false,
 	}))
 
-	// Handle all /bpk-tv/* routes
-	app.Use("/bpk-tv/", handlers.BpkProxyHandler)
-
 	// Handle all /out/* routes
 	app.Use("/out/", handlers.SLHandler)
 
@@ -119,6 +116,9 @@ func JioTVServer(host, port, configPath string, prefork bool) error {
 	app.Get("/mpd/:channelID", handlers.LiveMpdHandler)
 	app.Post("/drm", handlers.DRMKeyHandler)
 	app.Get("/dashtime", handlers.DASHTimeHandler)
+
+	app.Get("/render.mpd", handlers.MpdHandler)
+	app.Use("/render.dash", handlers.DashHandler)
 
 	return app.Listen(host + ":" + port)
 }

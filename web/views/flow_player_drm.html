@@ -12,63 +12,105 @@
         overflow-y: hidden;
       }
     </style>
-    <link rel="stylesheet" href="/static/flowplayer.css" />
-    <script src="/static/flowplayer.min.js"></script>
-    <script src="/static/dash.min.js"></script>
-    <script src="/static/qsel.min.js"></script>
-    <script src="/static/asel.min.js"></script>
-    <script src="/static/keyboard.min.js"></script>
-    <script src="/static/drm.min.js"></script>
+    <script src="/static/shaka-player.ui.js"></script>
+    <!-- Shaka Player UI compiled library default CSS: -->
+    <link rel="stylesheet" href="/static/shaka-player-controls.css" />
   </head>
 
   <body>
-    <div id="jiotv_go_player"></div>
+    <div
+      data-shaka-player-container
+    >
+      <!-- The data-shaka-player tag will make the UI library use this video element.
+            If no video is provided, the UI will automatically make one inside the container div. -->
+      <video
+        autoplay
+        data-shaka-player
+        id="jiotv_go_player"
+        style="width: 100%; height: 100%"
+      ></video>
+    </div>
     <script>
-      var player = flowplayer("#jiotv_go_player", {
-        src: [
-          {
-            src: "{{ .play_url }}",
-            type: "application/dash+xml",
-            drm: {
-              [flowplayer.drm.WIDEVINE]: {
-                [flowplayer.drm.LICENSE_SERVER]: "{{ .license_url }}",
+      document.addEventListener("shaka-ui-loaded", async () => {
+        const video = document.getElementById("jiotv_go_player");
+        const ui = video["ui"];
+        const config = {
+          seekBarColors: {
+            base: "rgba(234, 67, 53, 0.5)",
+            buffered: "rgba(234, 67, 53, 0.7)",
+            played: "rgb(234, 67, 53)",
+          },
+          volumeBarColors: {
+            base: "rgba(234, 67, 53, 0.5)",
+            level: "rgb(234, 67, 53)",
+          },
+        };
+        ui.configure(config);
+
+        const controls = ui.getControls();
+        const player = controls.getPlayer();
+
+        player.configure({
+          drm: {
+            servers: {
+              "com.widevine.alpha": "{{ .license_url }}",
+            },
+            advanced: {
+              "com.widevine.alpha": {
+                videoRobustness: "SW_SECURE_CRYPTO",
+                audioRobustness: "SW_SECURE_CRYPTO",
               },
             },
           },
-        ],
-        auto_orient: true,
-        live: true,
-        seekable: false,
-        autplay: false,
-        qsel: {},
-        asel: {},
-        ui: flowplayer.ui.USE_THIN_CONTROLBAR,
-      });
-      player.on(flowplayer.events.FULLSCREEN_ENTER, (e) => {
-        // rotate to landscape on mobile devices
-        if (screen.orientation) {
-          screen.orientation.lock("landscape").catch((e) => {
-            if (e.name === "NotSupportedError") {
-              // ignore
-            } else {
-              console.error(e);
+          streaming: {
+            retryParameters: {
+              maxAttempts: 3,
+            },
+            // startAtSegmentBoundary: true,
+          },
+        });
+
+        const RequestType = shaka.net.NetworkingEngine.RequestType;
+
+        player
+          .getNetworkingEngine()
+          .registerRequestFilter(function (type, request, context) {
+            // Only add headers to license requests:
+            if (type == shaka.net.NetworkingEngine.RequestType.SEGMENT) {
+              // if request url contains /render.dash then
+              if (request.uris[0].includes("/render.dash")) {
+                const newUrl = new URL(request.uris[0]);
+                // add query params host and path
+                newUrl.searchParams.append("host", "{{ .channel_host }}");
+                newUrl.searchParams.append("path", "{{ .channel_path }}");
+                request.uris = [newUrl.toString()];
+              }
             }
           });
+
+        try {
+          await player.load("{{ .play_url }}");
+          console.log("The video has now been loaded!");
+        } catch (e) {
+          console.error("Error loading video", e);
         }
-      });
-      player.on(flowplayer.events.FULLSCREEN_EXIT, (e) => {
-        // release orientation lock on mobile devices
-        if (screen.orientation) {
-          screen.orientation.unlock();
-        }
-      });
-      // if src is empty, then redirect to HLS Stream
-      player.on(flowplayer.events.PLAY, (e) => {
-        if (!player.src) {
-        window.location.replace(
-          window.location.href.replace("/mpd/", "/player/")
-        );
-      }
+
+        // Rotate to landscape on fullscreen enter
+        video.addEventListener("fullscreenchange", () => {
+          if (document.fullscreenElement) {
+            if (screen.orientation) {
+              screen.orientation.lock("landscape").catch((e) => {
+                if (e.name !== "NotSupportedError") {
+                  console.error(e);
+                }
+              });
+            }
+          } else {
+            if (screen.orientation) {
+              screen.orientation.unlock();
+            }
+          }
+        });
       });
     </script>
   </body>
