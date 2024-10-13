@@ -72,15 +72,15 @@
           .getNetworkingEngine()
           .registerRequestFilter(function (type, request, context) {
             // Only add headers to license requests:
-            if (type == shaka.net.NetworkingEngine.RequestType.SEGMENT) {
-              // if request url contains /render.dash then
-              if (request.uris[0].includes("/render.dash")) {
-                const newUrl = new URL(request.uris[0]);
-                // add query params host and path
-                newUrl.searchParams.append("host", "{{ .channel_host }}");
-                newUrl.searchParams.append("path", "{{ .channel_path }}");
-                request.uris = [newUrl.toString()];
-              }
+            if (
+              type == shaka.net.NetworkingEngine.RequestType.SEGMENT &&
+              request.uris[0].includes("/render.dash")
+            ) {
+              const newUrl = new URL(request.uris[0]);
+              // add query params host and path
+              newUrl.searchParams.append("host", "{{ .channel_host }}");
+              newUrl.searchParams.append("path", "{{ .channel_path }}");
+              request.uris = [newUrl.toString()];
             }
           });
 
