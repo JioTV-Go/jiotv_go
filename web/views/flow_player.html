@@ -12,45 +12,78 @@
         overflow-y: hidden;
       }
     </style>
-    <link rel="stylesheet" href="/static/flowplayer.css" />
-    <script src="/static/flowplayer.min.js"></script>
-    <script src="/static/hls.min.js"></script>
-    <script src="/static/qsel.min.js"></script>
-    <script src="/static/asel.min.js"></script>
-    <script src="/static/keyboard.min.js"></script>
+    <script src="/static/shaka-player.ui.js"></script>
+    <!-- Shaka Player UI compiled library default CSS: -->
+    <link rel="stylesheet" href="/static/shaka-player-controls.css" />
   </head>
 
   <body>
-    <div id="jiotv_go_player"></div>
+    <div data-shaka-player-container>
+      <!-- The data-shaka-player tag will make the UI library use this video element.
+            If no video is provided, the UI will automatically make one inside the container div. -->
+      <video
+        autoplay
+        data-shaka-player
+        id="jiotv_go_player"
+        style="width: 100%; height: 100%"
+      ></video>
+    </div>
     <script>
-      var player = flowplayer("#jiotv_go_player", {
-        src: "{{ .play_url }}",
-        auto_orient: true,
-        live: true,
-        seekable: true,
-        retry: true,
-        autplay: false,
-        qsel: {},
-        asel: {},
-        ui: flowplayer.ui.USE_THIN_CONTROLBAR,
-      });
-      player.on(flowplayer.events.FULLSCREEN_ENTER, (e) => {
-        // rotate to landscape on mobile devices
-        if (screen.orientation) {
-          screen.orientation.lock("landscape").catch((e) => {
-            if (e.name === "NotSupportedError") {
-              // ignore
-            } else {
-              console.error(e);
+      document.addEventListener("shaka-ui-loaded", async () => {
+        const video = document.getElementById("jiotv_go_player");
+        const ui = video["ui"];
+        const config = {
+          seekBarColors: {
+            base: "rgba(234, 67, 53, 0.5)",
+            buffered: "rgba(234, 67, 53, 0.7)",
+            played: "rgb(234, 67, 53)",
+          },
+          volumeBarColors: {
+            base: "rgba(234, 67, 53, 0.5)",
+            level: "rgb(234, 67, 53)",
+          },
+        };
+        ui.configure(config);
+
+        const controls = ui.getControls();
+        const player = controls.getPlayer();
+
+        player.configure({
+          streaming: {
+            retryParameters: {
+              maxAttempts: 3,
+            },
+            // startAtSegmentBoundary: true,
+          },
+        });
+
+        try {
+          await player.load("{{ .play_url }}");
+          console.log("The video has now been loaded!");
+        } catch (e) {
+          console.error("Error loading video", e);
+          if (e.code === 1001) {
+            // display channel is not available message
+            alert("Channel is not available. If this is a new channel, try with DRM enabled.");
+          }
+        }
+
+        // Rotate to landscape on fullscreen enter
+        video.addEventListener("fullscreenchange", () => {
+          if (document.fullscreenElement) {
+            if (screen.orientation) {
+              screen.orientation.lock("landscape").catch((e) => {
+                if (e.name !== "NotSupportedError") {
+                  console.error(e);
+                }
+              });
             }
-          });
-        }
-      });
-      player.on(flowplayer.events.FULLSCREEN_EXIT, (e) => {
-        // release orientation lock on mobile devices
-        if (screen.orientation) {
-          screen.orientation.unlock();
-        }
+          } else {
+            if (screen.orientation) {
+              screen.orientation.unlock();
+            }
+          }
+        });
       });
     </script>
   </body>
