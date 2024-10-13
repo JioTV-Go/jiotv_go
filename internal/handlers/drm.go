@@ -155,8 +155,7 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 	c.Request().Header.Set("os", "android")
 	c.Request().Header.Set("appName", "RJIL_JioTV")
 	c.Request().Header.Set("subscriberId", TV.Crm)
-	c.Request().Header.Set("Host", "tv.media.jio.com")
-	c.Request().Header.Set("User-Agent", "plaYtv/7.1.3 (Linux;Android 13) ExoPlayerLib/2.11.7")
+	c.Request().Header.Set("User-Agent", PLAYER_USER_AGENT)
 	c.Request().Header.Set("ssotoken", TV.SsoToken)
 	c.Request().Header.Set("x-platform", "android")
 	c.Request().Header.Set("srno", generateDateTime())
@@ -171,7 +170,7 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 	c.Request().Header.Set("deviceId", utils.GetDeviceID())
 	c.Request().Header.Set("Content-Type", "application/octet-stream")
 
-	// Delete User-Agent header from the request
+	// Remove headers
 	c.Request().Header.Del("Accept")
 	c.Request().Header.Del("Origin")
 
