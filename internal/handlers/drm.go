@@ -160,9 +160,6 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 	c.Request().Header.Del("Accept")
 	c.Request().Header.Del("Origin")
 
-	// Print ALL request headers
-	utils.Log.Println("Request headers:", c.Request().Header.String())
-
 	if err := proxy.Do(c, decoded_url, TV.Client); err != nil {
 		return err
 	}
