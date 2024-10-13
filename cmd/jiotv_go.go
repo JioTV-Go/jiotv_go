@@ -22,14 +22,24 @@ import (
 	"github.com/gofiber/template/html/v2"
 )
 
+type JioTVServerConfig struct {
+	Host        string
+	Port        string
+	ConfigPath  string
+	Prefork     bool
+	TLS         bool
+	TLSCertPath string
+	TLSKeyPath  string
+}
+
 // JioTVServer starts the JioTV server.
 // It loads the config, initializes logging, secure URLs, and EPG.
 // It then configures the Fiber app with middleware and routes.
 // It starts listening on the provided host and port.
 // Returns an error if listening fails.
-func JioTVServer(host, port, configPath string, prefork bool) error {
+func JioTVServer(jiotvServerConfig JioTVServerConfig) error {
 	// Load the config file
-	if err := config.Cfg.Load(configPath); err != nil {
+	if err := config.Cfg.Load(jiotvServerConfig.ConfigPath); err != nil {
 		return err
 	}
 
@@ -60,7 +70,7 @@ func JioTVServer(host, port, configPath string, prefork bool) error {
 
 	app := fiber.New(fiber.Config{
 		Views:             engine,
-		Prefork:           prefork,
+		Prefork:           jiotvServerConfig.Prefork,
 		StreamRequestBody: true,
 		CaseSensitive:     false,
 		StrictRouting:     false,
@@ -120,5 +130,12 @@ func JioTVServer(host, port, configPath string, prefork bool) error {
 	app.Get("/render.mpd", handlers.MpdHandler)
 	app.Use("/render.dash", handlers.DashHandler)
 
-	return app.Listen(host + ":" + port)
+	if jiotvServerConfig.TLS {
+		if jiotvServerConfig.TLSCertPath == "" || jiotvServerConfig.TLSKeyPath == "" {
+			return fmt.Errorf("TLS cert and key paths are required for HTTPS. Please provide them using --tls-cert and --tls-key flags")
+		}
+		return app.ListenTLS(fmt.Sprintf("%s:%s", jiotvServerConfig.Host, jiotvServerConfig.Port), jiotvServerConfig.TLSCertPath, jiotvServerConfig.TLSKeyPath)
+	} else {
+		return app.Listen(fmt.Sprintf("%s:%s", jiotvServerConfig.Host, jiotvServerConfig.Port))
+	}
 }

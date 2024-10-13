@@ -52,7 +52,18 @@ func main() {
 					port := c.String("port")
 					prefork := c.Bool("prefork")
 					configPath := c.String("config")
-					return cmd.JioTVServer(host, port, configPath, prefork)
+					tls := c.Bool("tls")
+					tlsCertPath := c.String("tls-cert")
+					tlsKeyPath := c.String("tls-key")
+					return cmd.JioTVServer(cmd.JioTVServerConfig{
+						Host:        host,
+						Port:        port,
+						ConfigPath:  configPath,
+						Prefork:     prefork,
+						TLS:         tls,
+						TLSCertPath: tlsCertPath,
+						TLSKeyPath:  tlsKeyPath,
+					})
 				},
 				Flags: []cli.Flag{
 					&cli.StringFlag{
@@ -81,6 +92,23 @@ func main() {
 					&cli.BoolFlag{
 						Name:  "prefork",
 						Usage: "Enable prefork. This will enable preforking the server to multiple processes. This is useful for production deployment.",
+					},
+					&cli.BoolFlag{
+						Name:  "tls",
+						Aliases: []string{"https"},
+						Usage: "Enable TLS. This will enable HTTPS for the server.",
+					},
+					&cli.StringFlag{
+						Name:  "tls-cert",
+						Aliases: []string{"cert"},
+						Value: "",
+						Usage: "Path to TLS certificate file",
+					},
+					&cli.StringFlag{
+						Name:  "tls-key",
+						Aliases: []string{"cert-key"},
+						Value: "",
+						Usage: "Path to TLS key file",
 					},
 					&cli.BoolFlag{
 						Name:  "skip-update-check",
