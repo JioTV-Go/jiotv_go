@@ -16,22 +16,17 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/proxy"
 )
 
-// LiveMpdHandler handles live stream routes /mpd/:channelID
-func LiveMpdHandler(c *fiber.Ctx) error {
-	// Get channel ID from URL
-	channelID := c.Params("channelID")
-	quality := c.Query("q")
+// getDrmMpd returns required properties for rendering DRM MPD
+func getDrmMpd(channelID, quality string) (*DrmMpdOutput, error) {
 	// Get live stream URL from JioTV API
 	liveResult, err := TV.Live(channelID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	enc_key, err := secureurl.EncryptURL(liveResult.Mpd.Key)
 	if err != nil {
 		utils.Log.Panicln(err)
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"message": err,
-		})
+		return nil, err
 	}
 
 	var tv_url string
@@ -49,34 +44,54 @@ func LiveMpdHandler(c *fiber.Ctx) error {
 	channel_enc_url, err := secureurl.EncryptURL(tv_url)
 	if err != nil {
 		utils.Log.Panicln(err)
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"message": err,
-		})
+		return nil, err
 	}
 
 	parsedTvUrl, err := url.Parse(tv_url)
 	if err != nil {
 		utils.Log.Panicln(err)
-		return err
+		return nil, err
 	}
 	tv_url_split := strings.Split(parsedTvUrl.Path, "/")
 	tv_url_path, err := secureurl.EncryptURL(strings.Join(tv_url_split[:len(tv_url_split)-1], "/") + "/")
 	if err != nil {
 		utils.Log.Panicln(err)
-		return err
+		return nil, err
 	}
 
 	tv_url_host, err := secureurl.EncryptURL(parsedTvUrl.Host)
 	if err != nil {
 		utils.Log.Panicln(err)
-		return err
+		return nil, err
+	}
+
+	return &DrmMpdOutput{
+		PlayUrl:     "/render.mpd?auth=" + channel_enc_url,
+		LicenseUrl:  "/drm?auth=" + enc_key + "&channel_id=" + channelID + "&channel=" + channel_enc_url,
+		Tv_url_host: tv_url_host,
+		Tv_url_path: tv_url_path,
+	}, nil
+}
+
+// LiveMpdHandler handles live stream routes /mpd/:channelID
+func LiveMpdHandler(c *fiber.Ctx) error {
+	// Get channel ID from URL
+	channelID := c.Params("channelID")
+	quality := c.Query("q")
+
+	drmMpdOutput, err := getDrmMpd(channelID, quality)
+	if err != nil {
+		utils.Log.Panicln(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err,
+		})
 	}
 
 	return c.Render("views/flow_player_drm", fiber.Map{
-		"play_url":     "/render.mpd?auth=" + channel_enc_url,
-		"license_url":  "/drm?auth=" + enc_key + "&channel_id=" + channelID + "&channel=" + channel_enc_url,
-		"channel_host": tv_url_host,
-		"channel_path": tv_url_path,
+		"play_url":     drmMpdOutput.PlayUrl,
+		"license_url":  drmMpdOutput.LicenseUrl,
+		"channel_host": drmMpdOutput.Tv_url_host,
+		"channel_path": drmMpdOutput.Tv_url_path,
 	})
 }
 
