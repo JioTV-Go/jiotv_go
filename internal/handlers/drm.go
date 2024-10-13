@@ -261,12 +261,14 @@ func DashHandler(c *fiber.Ctx) error {
 	if err != nil {
 		utils.Log.Panicln(err)
 		return err
-	}	
+	}
 
 	// remove render.dash from c.Request().URI().RequestURI()
 	requestUri := bytes.Replace(c.Request().URI().RequestURI(), []byte("/render.dash"), []byte(""), 1)
 
 	proxyUrl := fmt.Sprintf("https://%s%s/%s", proxyHost, proxyPath, requestUri)
+
+	c.Request().Header.Set("User-Agent", PLAYER_USER_AGENT)
 
 	if err := proxy.Do(c, proxyUrl, TV.Client); err != nil {
 		return err
