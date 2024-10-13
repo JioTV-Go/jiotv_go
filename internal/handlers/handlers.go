@@ -467,22 +467,6 @@ func PlayerHandler(c *fiber.Ctx) error {
 	})
 }
 
-// ClapprHandler is previous (old) Web Player to stream live TV
-func ClapprHandler(c *fiber.Ctx) error {
-	id := c.Params("id")
-	quality := c.Query("q")
-	var play_url string
-	if quality != "" {
-		play_url = "/live/" + quality + "/" + id + ".m3u8"
-	} else {
-		play_url = "/live/" + id + ".m3u8"
-	}
-	c.Response().Header.Set("Cache-Control", "public, max-age=3600")
-	return c.Render("views/clappr", fiber.Map{
-		"play_url": play_url,
-	})
-}
-
 // FaviconHandler Responds for favicon.ico request
 func FaviconHandler(c *fiber.Ctx) error {
 	return c.Redirect("/static/favicon.ico", fiber.StatusMovedPermanently)
