@@ -50,7 +50,6 @@ func main() {
 						host = "0.0.0.0"
 					}
 					port := c.String("port")
-					prefork := c.Bool("prefork")
 					configPath := c.String("config")
 					tls := c.Bool("tls")
 					tlsCertPath := c.String("tls-cert")
@@ -59,7 +58,6 @@ func main() {
 						Host:        host,
 						Port:        port,
 						ConfigPath:  configPath,
-						Prefork:     prefork,
 						TLS:         tls,
 						TLSCertPath: tlsCertPath,
 						TLSKeyPath:  tlsKeyPath,
@@ -90,25 +88,21 @@ func main() {
 						Usage:   "Open server to public. This will expose your server outside your local network. Equivalent to passing --host 0.0.0.0",
 					},
 					&cli.BoolFlag{
-						Name:  "prefork",
-						Usage: "Enable prefork. This will enable preforking the server to multiple processes. This is useful for production deployment.",
-					},
-					&cli.BoolFlag{
-						Name:  "tls",
+						Name:    "tls",
 						Aliases: []string{"https"},
-						Usage: "Enable TLS. This will enable HTTPS for the server.",
+						Usage:   "Enable TLS. This will enable HTTPS for the server.",
 					},
 					&cli.StringFlag{
-						Name:  "tls-cert",
+						Name:    "tls-cert",
 						Aliases: []string{"cert"},
-						Value: "",
-						Usage: "Path to TLS certificate file",
+						Value:   "",
+						Usage:   "Path to TLS certificate file",
 					},
 					&cli.StringFlag{
-						Name:  "tls-key",
+						Name:    "tls-key",
 						Aliases: []string{"cert-key"},
-						Value: "",
-						Usage: "Path to TLS key file",
+						Value:   "",
+						Usage:   "Path to TLS key file",
 					},
 					&cli.BoolFlag{
 						Name:  "skip-update-check",
@@ -267,5 +261,4 @@ func main() {
 	if err := app.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
-
 }

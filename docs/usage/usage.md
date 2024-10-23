@@ -14,7 +14,6 @@ jiotv_go command [command options]
 
 You can always use the `help` command or `-h` / `--help` flag to get help about a command.
 
-
 ## 1. Login Command
 
 The `login` command helps you to login to JioTV Go. Alternatively, you can also login using the web interface at `http://localhost:5001/`.
@@ -70,7 +69,6 @@ jiotv_go login reset
 
 The `reset` command helps you to reset your credentials. This will delete the existing credentials. You have to login again to use JioTV Go.
 
-
 ## 2. Serve Command
 
 The `serve` command starts the JioTV Go server.
@@ -86,10 +84,9 @@ jiotv_go serve [command options] [arguments...]
 - `--host value, -H value`: Host to listen on (default: "localhost").
 - `--port value, -p value`: Port to listen on (default: "5001").
 - `--public, -P`: Open the server to the public. This will expose your server outside your local network. Equivalent to passing `--host 0.0.0.0` (default: false).
-- `--prefork`: Enable prefork. This will enable preforking the server to multiple processes. This is useful for production deployment (default: false).
 - `--tls`: Enable TLS. This will enable HTTPS. You need to provide the certificate and key file (default: false).
 - `--tls-cert value, --cert value`: Path to the TLS certificate file. Generate a self-signed certificate using `openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout key.pem -out cert.pem`. cert.pem is the TLS certificate file and key.pem is the TLS key file.
-- `--tls-key value, --cert-key value`: Path to the TLS key file. 
+- `--tls-key value, --cert-key value`: Path to the TLS key file.
 - `--skip-update-check`: Skip checking for updates on startup (default: false).
 - `--help, -h`: Show help for the `serve` command.
 
@@ -114,7 +111,6 @@ jiotv_go serve --public --port 5002 --tls --tls-cert cert.pem --tls-key key.pem
 If you run the server with TLS using above command, you can access the server at `https://localhost:5002/`.
 
 You can also choose standard https port 443 for TLS. Then you can access the server at `https://localhost/`.
-
 
 ## 3. Update Command
 
@@ -173,7 +169,6 @@ jiotv_go epg Delete [command options] [arguments...]
 #### DESCRIPTION
 
 The `delete` command deletes the existing EPG file if it exists. This will disable EPG on the server.
-
 
 ## 5. Help Command
 
@@ -236,9 +231,11 @@ The `background` command allows you to run the JioTV Go server in the background
 #### COMMANDS
 
 - `start (run, r)`: Run JioTV Go server in the background
+
   ```shell
   jiotv_go background start [command options] [arguments...]
   ```
+
   - `--args value, -a value`: String value arguments passed to the `serve/run` command while running in the background as mentioned in the [Serve Command](#2-serve-command) section.
   - `--config value, -c value`: Path to the configuration file. Reads the custom `path_prefix` to store the background process PID file at the specified location. Also passes the same configuration file to the `serve/run` command unless explicitly specified in `--args`.
     <br>By default, JioTV Go will look for a file named `jiotv_go.(toml|yaml|json)` or `config.(toml|yaml|json)` in the same directory as the binary or `$HOME/.jiotv_go/` directory.
@@ -246,9 +243,11 @@ The `background` command allows you to run the JioTV Go server in the background
   Description: The `start` command starts the JioTV Go server in the background. It runs the `JioTVServer` function in a separate process.
 
 - `stop (k, kill)`: Stop JioTV Go server running in the background
+
   ```shell
   jiotv_go background stop
   ```
+
   - `--config value, -c value`: Path to the configuration file. Reads the custom `path_prefix` to access the background process PID file at the location.
     <br>By default, JioTV Go will look for a file named `jiotv_go.(toml|yaml|json)` or `config.(toml|yaml|json)` in the same directory as the binary or `$HOME/.jiotv_go/` directory.
 
@@ -260,7 +259,7 @@ The `background` command allows you to run the JioTV Go server in the background
 jiotv_go background start
 ```
 
-Example with arguments *(make sure to enclose the arguments in quotes)*:
+Example with arguments _(make sure to enclose the arguments in quotes)_:
 
 ```shell
 jiotv_go background start --config config.toml --args "--port 8080"
