@@ -26,7 +26,6 @@ type JioTVServerConfig struct {
 	Host        string
 	Port        string
 	ConfigPath  string
-	Prefork     bool
 	TLS         bool
 	TLSCertPath string
 	TLSKeyPath  string
@@ -70,7 +69,6 @@ func JioTVServer(jiotvServerConfig JioTVServerConfig) error {
 
 	app := fiber.New(fiber.Config{
 		Views:             engine,
-		Prefork:           jiotvServerConfig.Prefork,
 		StreamRequestBody: true,
 		CaseSensitive:     false,
 		StrictRouting:     false,
