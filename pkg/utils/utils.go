@@ -507,18 +507,18 @@ func GetRequestClient() *fasthttp.Client {
 		if strings.HasPrefix(proxy, "socks5://") {
 			// socks5 proxy
 			return &fasthttp.Client{
-				Dial: fasthttpproxy.FasthttpSocksDialer(proxy),
+				Dial: fasthttpproxy.FasthttpSocksDialerDualStack(proxy),
 			}
 		} else {
 			// http proxy
 			return &fasthttp.Client{
-				Dial: fasthttpproxy.FasthttpHTTPDialerTimeout(proxy, 10*time.Second),
+				Dial: fasthttpproxy.FasthttpHTTPDialerDualStackTimeout(proxy, 10*time.Second),
 			}
 		}
 	}
 	return &fasthttp.Client{
 		Dial: fasthttp.DialFunc(func(addr string) (netConn net.Conn, err error) {
-			return fasthttp.DialTimeout(addr, 5*time.Second)
+			return fasthttp.DialDualStackTimeout(addr, 5*time.Second)
 		}),
 	}
 }
