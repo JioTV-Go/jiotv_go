@@ -21,12 +21,10 @@ import (
 	"github.com/valyala/fasthttp/fasthttpproxy"
 )
 
-var (
-	// Log is a global logger
-	// initialized in main.go
-	// used to log debug messages and errors
-	Log *log.Logger
-)
+// Log is a global logger
+// initialized in main.go
+// used to log debug messages and errors
+var Log *log.Logger
 
 // GetLogger creates a new logger instance with custom settings
 func GetLogger() *log.Logger {
