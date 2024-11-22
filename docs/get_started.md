@@ -43,7 +43,7 @@ iwr -useb https://jiotv_go.rabil.me/install.ps1 | iex
 
 ### Pre-Built Binaries
 
-You can also download the pre-built binaries for your platform from the [releases](https://github.com/rabilrbl/jiotv-go/releases) page or click on `Binary Name` links in the table below.
+You can also download the pre-built binaries for your platform from the [releases](https://github.com/JioTV-Go/jiotv-go/releases) page or click on `Binary Name` links in the table below.
 
 #### The following table lists the binaries available for download:
 
