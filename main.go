@@ -46,8 +46,8 @@ func main() {
 					// overwrite host if --public flag is passed
 					if c.Bool("public") {
 						fmt.Println("INFO: You are exposing your server to outside your local network (public)!")
-						fmt.Println("INFO: Overwriting host to 0.0.0.0 for public access")
-						host = "0.0.0.0"
+						fmt.Println("INFO: Overwriting host to [::] for public access")
+						host = "[::]"
 					}
 					port := c.String("port")
 					configPath := c.String("config")
@@ -85,7 +85,7 @@ func main() {
 					&cli.BoolFlag{
 						Name:    "public",
 						Aliases: []string{"P"},
-						Usage:   "Open server to public. This will expose your server outside your local network. Equivalent to passing --host 0.0.0.0",
+						Usage:   "Open server to public. This will expose your server outside your local network. Equivalent to passing --host [::]",
 					},
 					&cli.BoolFlag{
 						Name:    "tls",

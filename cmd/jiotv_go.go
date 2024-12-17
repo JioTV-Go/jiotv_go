@@ -69,6 +69,7 @@ func JioTVServer(jiotvServerConfig JioTVServerConfig) error {
 
 	app := fiber.New(fiber.Config{
 		Views:             engine,
+		Network:           fiber.NetworkTCP,
 		StreamRequestBody: true,
 		CaseSensitive:     false,
 		StrictRouting:     false,
