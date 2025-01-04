@@ -4,7 +4,7 @@
 
 ### Automatic Installation (Recommended)
 
-We have video tutorials for [Windows](https://youtu.be/BnNTYTSvVBc),  and [Android](https://youtu.be/ejiuml11g8o) users. Please watch them if you are unsure about the installation process.
+We have video tutorials for [Windows](https://youtu.be/BnNTYTSvVBc), and [Android](https://youtu.be/ejiuml11g8o) users. Please watch them if you are unsure about the installation process.
 
 #### Linux/Android/macOS
 
@@ -102,13 +102,41 @@ Make sure you have [Docker](https://docs.docker.com/get-docker/) installed on yo
 
 ### Run JioTV Go with Docker
 
-Run the command:
+For single command setup, run:
 
 ```sh
-docker run -p 5001:5001 -v ./.jiotv_go/secrets:/app/secrets ghcr.io/jiotv-go/jiotv_go
+docker run -p 5001:5001 -e TZ=Asia/Kolkata -e JIOTV_DRM=true -v jiotv_go:/app/secrets ghcr.io/jiotv-go/jiotv_go
+```
+
+If you prefer docker-compose, create a `docker-compose.yml` file with the following content:
+
+```yml
+services:
+  jiotv_go:
+    image: ghcr.io/jiotv-go/jiotv_go
+    ports:
+      - "5001:5001"
+    volumes:
+      - jiotv_go:/app/secrets
+    environment:
+      - TZ=Asia/Kolkata
+      # below is optional, but we strongly recommend setting it to true. Read https://t.me/jiotv_go/128 for more information.
+      - JIOTV_DRM=true
+      # Read https://jiotv_go.rabil.me/config.html to know all configuration options.
+
+volumes:
+  jiotv_go:
+```
+
+Then, run:
+
+```sh
+docker-compose up -d
 ```
 
 Open your web browser and visit [http://localhost:5001/](http://localhost:5001/).
+
+If you're impatient for new features, to get unstable build, use the `ghcr.io/jiotv-go/jiotv_go:develop` image.
 
 ### Using CLI Options with Docker
 
@@ -117,7 +145,7 @@ By default, JioTV Go Docker image runs with `serve --public` command. You can ov
 For example, to run JioTV Go with `serve --public --port 8080` command, run:
 
 ```sh
-docker run -p 8080:8080 -v ./.jiotv_go:/app/.jiotv_go ghcr.io/jiotv-go/jiotv_go serve --public --port 8080
+docker run -p 8080:8080 -v jiotv_go:/app/secrets ghcr.io/jiotv-go/jiotv_go serve --public --port 8080
 ```
 
 ### Keep JioTV Go Updated
