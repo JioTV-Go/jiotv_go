@@ -94,7 +94,7 @@ func Update(currentVersion, customVersion string) error {
 // getLatestRelease fetches the latest release information from the GitHub API for the given owner and repo.
 // It returns a Release struct containing the release details like tag name, assets etc.
 func getLatestRelease(customVersion string) (*Release, error) {
-	owner := "rabilrbl"
+	owner := "JioTV-Go"
 	repo := "jiotv_go"
 
 	var url string

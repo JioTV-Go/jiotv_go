@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/valyala/fasthttp"
 
@@ -110,6 +111,10 @@ func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
 
 	// Perform the HTTP POST request
 	if err := tv.Client.Do(req, resp); err != nil {
+		if strings.Contains(err.Error(), "server closed connection before returning the first response byte") {
+			utils.Log.Println("Retrying the request...")
+			return tv.Live(channelID)
+		}
 		utils.Log.Panic(err)
 		return nil, err
 	}

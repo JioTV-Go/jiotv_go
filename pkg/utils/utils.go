@@ -21,12 +21,10 @@ import (
 	"github.com/valyala/fasthttp/fasthttpproxy"
 )
 
-var (
-	// Log is a global logger
-	// initialized in main.go
-	// used to log debug messages and errors
-	Log *log.Logger
-)
+// Log is a global logger
+// initialized in main.go
+// used to log debug messages and errors
+var Log *log.Logger
 
 // GetLogger creates a new logger instance with custom settings
 func GetLogger() *log.Logger {
@@ -42,7 +40,7 @@ func GetLogger() *log.Logger {
 		}
 		logger = log.New(file, "[DEBUG] ", log.Ldate|log.Ltime|log.Lshortfile)
 		// rotate log file if it is larger than 10MB
-		// neccessary to prevent filling up disk space with logs
+		// necessary to prevent filling up disk space with logs
 		logger.SetOutput(&lumberjack.Logger{
 			Filename:   logFilePath,
 			MaxSize:    5, // megabytes
@@ -402,7 +400,6 @@ func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
 
 // WriteJIOTVCredentials writes credentials data to file
 func WriteJIOTVCredentials(credentials *JIOTV_CREDENTIALS) error {
-
 	if err := store.Set("ssoToken", credentials.SSOToken); err != nil {
 		return err
 	}
@@ -508,18 +505,18 @@ func GetRequestClient() *fasthttp.Client {
 		if strings.HasPrefix(proxy, "socks5://") {
 			// socks5 proxy
 			return &fasthttp.Client{
-				Dial: fasthttpproxy.FasthttpSocksDialer(proxy),
+				Dial: fasthttpproxy.FasthttpSocksDialerDualStack(proxy),
 			}
 		} else {
 			// http proxy
 			return &fasthttp.Client{
-				Dial: fasthttpproxy.FasthttpHTTPDialerTimeout(proxy, 10*time.Second),
+				Dial: fasthttpproxy.FasthttpHTTPDialerDualStackTimeout(proxy, 10*time.Second),
 			}
 		}
 	}
 	return &fasthttp.Client{
 		Dial: fasthttp.DialFunc(func(addr string) (netConn net.Conn, err error) {
-			return fasthttp.DialTimeout(addr, 5*time.Second)
+			return fasthttp.DialDualStackTimeout(addr, 5*time.Second)
 		}),
 	}
 }

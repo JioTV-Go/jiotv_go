@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"fmt"
-	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -47,6 +46,9 @@ func Init() {
 	EnableDRM = config.Cfg.DRM
 	if DisableTSHandler {
 		utils.Log.Println("TS Handler disabled!. All TS video requests will be served directly from JioTV servers.")
+	}
+	if !EnableDRM {
+		fmt.Println("If you're not using IPTV Client. We strongly recommend enabling DRM for accessing channels without any issues! Either enable by setting environment variable JIOTV_DRM=true or by setting DRM: true in config. For more info Read https://telegram.me/jiotv_go/128")
 	}
 	// Generate a new device ID if not present
 	utils.GetDeviceID()
@@ -149,9 +151,7 @@ func LiveHandler(c *fiber.Ctx) error {
 			"message": err,
 		})
 	}
-	if id[:2] == "sl" {
-		return sonyLivRedirect(c, liveResult)
-	}
+
 	// Check if liveResult.Bitrates.Auto is empty
 	if liveResult.Bitrates.Auto == "" {
 		error_message := "No stream found for channel id: " + id + "Status: " + liveResult.Message
@@ -187,9 +187,9 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 		})
 	}
 	Bitrates := liveResult.Bitrates
-	if id[:2] == "sl" {
-		return sonyLivRedirect(c, liveResult)
-	}
+	// if id[:2] == "sl" {
+	// 	return sonyLivRedirect(c, liveResult)
+	// }
 	// Channels with following IDs output audio only m3u8 when quality level is enforced
 	if id == "1349" || id == "1322" {
 		quality = "auto"
@@ -437,8 +437,28 @@ func PlayHandler(c *fiber.Ctx) error {
 	quality := c.Query("q")
 
 	var player_url string
-	if !utils.ContainsString(id, SONY_LIST) && EnableDRM {
-		player_url = "/mpd/" + id + "?q=" + quality
+	if EnableDRM {
+		// Some sonyLiv channels are DRM protected and others are not
+		// Inorder to check, we need to make additional request to JioTV API
+		// Quick dirty fix, otherise we need to refactor entire LiveTV Handler approach
+		if utils.ContainsString(id, SONY_LIST) {
+			liveResult, err := TV.Live(id)
+			if err != nil {
+				utils.Log.Println(err)
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"message": err,
+				})
+			}
+			// if drm is available, use DRM player
+			if liveResult.IsDRM {
+				player_url = "/mpd/" + id + "?q=" + quality
+			} else {
+				// if not, use HLS player
+				player_url = "/player/" + id + "?q=" + quality
+			}
+		} else {
+			player_url = "/mpd/" + id + "?q=" + quality
+		}
 	} else {
 		player_url = "/player/" + id + "?q=" + quality
 	}
@@ -461,22 +481,6 @@ func PlayerHandler(c *fiber.Ctx) error {
 	}
 	c.Response().Header.Set("Cache-Control", "public, max-age=3600")
 	return c.Render("views/flow_player", fiber.Map{
-		"play_url": play_url,
-	})
-}
-
-// ClapprHandler is previous (old) Web Player to stream live TV
-func ClapprHandler(c *fiber.Ctx) error {
-	id := c.Params("id")
-	quality := c.Query("q")
-	var play_url string
-	if quality != "" {
-		play_url = "/live/" + quality + "/" + id + ".m3u8"
-	} else {
-		play_url = "/live/" + id + ".m3u8"
-	}
-	c.Response().Header.Set("Cache-Control", "public, max-age=3600")
-	return c.Render("views/clappr", fiber.Map{
 		"play_url": play_url,
 	})
 }
@@ -521,19 +525,4 @@ func EPGHandler(c *fiber.Ctx) error {
 
 func DASHTimeHandler(c *fiber.Ctx) error {
 	return c.SendString(time.Now().UTC().Format("2006-01-02T15:04:05.000Z"))
-}
-
-// sonylivRedirect redirects to sonyliv channels
-func sonyLivRedirect(c *fiber.Ctx, liveResult *television.LiveURLOutput) error {
-	ch_url := liveResult.Bitrates.Auto
-	// remove origin from url
-	cho_url, err := url.Parse(ch_url)
-	if err != nil {
-		utils.Log.Println(err)
-		return err
-	}
-
-	// remove origin from url
-	return c.Redirect(cho_url.Path+"?"+cho_url.RawQuery, fiber.StatusFound)
-
 }

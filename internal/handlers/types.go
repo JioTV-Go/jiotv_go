@@ -33,3 +33,10 @@ type RefreshSSOTokenResponse struct {
 	// Access token for JioTV API
 	SSOToken string `json:"ssoToken"`
 }
+
+type DrmMpdOutput struct {
+	LicenseUrl  string
+	PlayUrl     string
+	Tv_url_host string
+	Tv_url_path string
+}
