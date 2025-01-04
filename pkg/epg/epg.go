@@ -31,7 +31,7 @@ const (
 
 // Init initializes EPG generation and schedules it for the next day.
 func Init() {
-	epgFile := "epg.xml.gz"
+	epgFile := utils.GetPathPrefix() + "epg.xml.gz"
 	var lastModTime time.Time
 	flag := false
 	utils.Log.Println("Checking EPG file")
