@@ -9,5 +9,9 @@ services:
       - 5001:5001
     volumes:
       - ./:/app
+      - jiotv_go:/apps/secrets
     env_file:
       - ./.env
+
+volumes:
+  jiotv_go:
