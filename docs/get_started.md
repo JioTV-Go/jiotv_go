@@ -105,7 +105,7 @@ Make sure you have [Docker](https://docs.docker.com/get-docker/) installed on yo
 For single command setup, run:
 
 ```sh
-docker run -p 5001:5001 -e TZ=Asia/Kolkata -e JIOTV_DRM=true -v jiotv_go:/app/secrets ghcr.io/jiotv-go/jiotv_go
+docker run -p 5001:5001 -e TZ=Asia/Kolkata -e JIOTV_DRM=true -e JIOTV_PATH_PREFIX=/app/.jiotv_go -v jiotv_go:/app/.jiotv_go ghcr.io/jiotv-go/jiotv_go
 ```
 
 If you prefer docker-compose, create a `docker-compose.yml` file with the following content:
@@ -117,8 +117,9 @@ services:
     ports:
       - "5001:5001"
     volumes:
-      - jiotv_go:/app/secrets
+      - jiotv_go:/app/.jiotv_go
     environment:
+      - JIOTV_PATH_PREFIX=/app/.jiotv_go
       - TZ=Asia/Kolkata
       # below is optional, but we strongly recommend setting it to true. Read https://t.me/jiotv_go/128 for more information.
       - JIOTV_DRM=true

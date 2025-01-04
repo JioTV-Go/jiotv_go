@@ -1,7 +1,8 @@
 FROM golang:1.23-alpine
 
 ENV GO111MODULE=on \
-    JIOTV_DEBUG=true
+    JIOTV_DEBUG=true \
+    JIOTV_PATH_PREFIX="/app/.jiotv_go"
 
 WORKDIR /app
 

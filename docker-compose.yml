@@ -1,17 +1,14 @@
-version: '3'
-
 services:
   app:
     build:
       context: .
       dockerfile: ./dev.Dockerfile
+    environment:
+      - JIOTV_DEBUG=true
+      - JIOTV_PATH_PREFIX=/app/.jiotv_go
     ports:
       - 5001:5001
     volumes:
       - ./:/app
-      - jiotv_go:/apps/secrets
     env_file:
       - ./.env
-
-volumes:
-  jiotv_go:
