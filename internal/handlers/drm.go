@@ -243,7 +243,7 @@ func MpdHandler(c *fiber.Ctx) error {
 			return []byte("<BaseURL>/render.dash/dash/</BaseURL>")
 		})
 	} else {
-		pattern := `<Period(.*)>`
+		pattern := `<Period(\s+[^>]*?)?\s*\/?>`
 		re = regexp.MustCompile(pattern)
 		resBody = re.ReplaceAllFunc(resBody, func(match []byte) []byte {
 			return []byte(fmt.Sprintf("%s\n<BaseURL>/render.dash/</BaseURL>", match))

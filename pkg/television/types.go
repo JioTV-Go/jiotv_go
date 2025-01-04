@@ -83,6 +83,7 @@ type LiveURLOutput struct {
 	StartTime   float64  `json:"startTime"`
 	VodStitch   bool     `json:"vodStitch"`
 	Mpd         MPD      `json:"mpd"`
+	IsDRM       bool     `json:"isDRM"`
 }
 
 // CategoryMap represents Categories for channels

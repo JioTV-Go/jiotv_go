@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"fmt"
-	"net/url"
 	"os"
 	"regexp"
 	"strconv"
@@ -149,10 +148,6 @@ func LiveHandler(c *fiber.Ctx) error {
 			"message": err,
 		})
 	}
-	// remove sl channels checks
-	// if id[:2] == "sl" {
-	// 	return sonyLivRedirect(c, liveResult)
-	// }
 
 	// Check if liveResult.Bitrates.Auto is empty
 	if liveResult.Bitrates.Auto == "" {
@@ -439,8 +434,28 @@ func PlayHandler(c *fiber.Ctx) error {
 	quality := c.Query("q")
 
 	var player_url string
-	if !utils.ContainsString(id, SONY_LIST) && EnableDRM {
-		player_url = "/mpd/" + id + "?q=" + quality
+	if EnableDRM {
+		// Some sonyLiv channels are DRM protected and others are not
+		// Inorder to check, we need to make additional request to JioTV API
+		// Quick dirty fix, otherise we need to refactor entire LiveTV Handler approach
+		if utils.ContainsString(id, SONY_LIST) {
+			liveResult, err := TV.Live(id)
+			if err != nil {
+				utils.Log.Println(err)
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"message": err,
+				})
+			}
+			// if drm is available, use DRM player
+			if liveResult.IsDRM {
+				player_url = "/mpd/" + id + "?q=" + quality
+			} else {
+				// if not, use HLS player
+				player_url = "/player/" + id + "?q=" + quality
+			}
+		} else {
+			player_url = "/mpd/" + id + "?q=" + quality
+		}
 	} else {
 		player_url = "/player/" + id + "?q=" + quality
 	}
@@ -507,19 +522,4 @@ func EPGHandler(c *fiber.Ctx) error {
 
 func DASHTimeHandler(c *fiber.Ctx) error {
 	return c.SendString(time.Now().UTC().Format("2006-01-02T15:04:05.000Z"))
-}
-
-// sonylivRedirect redirects to sonyliv channels
-func sonyLivRedirect(c *fiber.Ctx, liveResult *television.LiveURLOutput) error {
-	ch_url := liveResult.Bitrates.Auto
-	// remove origin from url
-	cho_url, err := url.Parse(ch_url)
-	if err != nil {
-		utils.Log.Println(err)
-		return err
-	}
-
-	// remove origin from url
-	return c.Redirect(cho_url.Path+"?"+cho_url.RawQuery, fiber.StatusFound)
-
 }
