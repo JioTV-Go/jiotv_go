@@ -513,9 +513,10 @@ func ImageHandler(c *fiber.Ctx) error {
 
 // EPGHandler handles EPG requests
 func EPGHandler(c *fiber.Ctx) error {
+	 epgFilePath := utils.GetPathPrefix() + "epg.xml.gz";
 	// if epg.xml.gz exists, return it
-	if _, err := os.Stat("epg.xml.gz"); err == nil {
-		return c.SendFile("epg.xml.gz", true)
+	if _, err := os.Stat(epgFilePath); err == nil {
+		return c.SendFile(epgFilePath, true)
 	} else {
 		err_message := "EPG not found. Please restart the server after setting the environment variable JIOTV_EPG to true."
 		fmt.Println(err_message)
