@@ -24,7 +24,8 @@ drm = false
 epg = false
 disable_url_encryption = false
 ```
-
+Jio TV Go will be accessible at following URL:
+http://localhost:5002
 # Run the JioTV Go
 Execute following commands to run Jio TV Go in docker after doing initial setup,
 open terminal and change directory to your Jio TV Go docker Folder,
