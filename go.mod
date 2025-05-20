@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v1.4.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/urfave/cli/v2 v2.27.5
-	golang.org/x/term v0.30.0
+	golang.org/x/term v0.32.0
 )
 
 require (
@@ -39,6 +39,6 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasthttp v1.58.0
 	github.com/valyala/tcplisten v1.0.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.2.1
 )
