@@ -29,7 +29,31 @@ func main() {
 		Copyright: "© JioTV Go (https://github.com/jiotv-go/jiotv_go)",
 		Compiled:  time.Now(),
 		Suggest:   true,
+		Flags: []cli.Flag{
+			&cli.StringFlag{
+				Name:    "config",
+				Aliases: []string{"c"},
+				Value:   "",
+				Usage:   "Path to config file",
+			},
+			&cli.BoolFlag{
+				Name:    "skip-update-check",
+				Aliases: []string{"skip-update"},
+				Usage:   "Skip checking for update on startup",
+			},
+		},
 		Before: func(c *cli.Context) error {
+			configPath := c.String("config")
+			// Load the config file first
+			if err := cmd.LoadConfig(configPath); err != nil {
+				// Use standard log here as utils.Log might not be initialized if config loading fails
+				log.Fatalf("Failed to load config: %v", err)
+			}
+			if c.Bool("skip-update-check") {
+				log.Println("INFO: Skipping update check")
+			} else {
+				cmd.PrintIfUpdateAvailable(c)
+			}
 			// Initialize the logger object before any command is executed
 			cmd.InitializeLogger()
 
@@ -50,17 +74,6 @@ func main() {
 				Usage:       "Start JioTV Go server",
 				Description: "The serve command starts JioTV Go server, and listens on the host and port. The default host is localhost and port is 5001.",
 				Action: func(c *cli.Context) error {
-					configPath := c.String("config")
-					// Load the config file first
-					if err := cmd.LoadConfig(configPath); err != nil {
-						// Use standard log here as utils.Log might not be initialized if config loading fails
-						log.Fatalf("Failed to load config: %v", err)
-					}
-					if c.Bool("skip-update-check") {
-						cmd.Logger().Println("INFO: Skipping update check")
-					} else {
-						cmd.PrintIfUpdateAvailable(c)
-					}
 					host := c.String("host")
 					// overwrite host if --public flag is passed
 					if c.Bool("public") {
@@ -76,19 +89,12 @@ func main() {
 					return cmd.JioTVServer(cmd.JioTVServerConfig{
 						Host:        host,
 						Port:        port,
-						ConfigPath:  configPath,
 						TLS:         tls,
 						TLSCertPath: tlsCertPath,
 						TLSKeyPath:  tlsKeyPath,
 					})
 				},
 				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:    "config",
-						Aliases: []string{"c"},
-						Value:   "",
-						Usage:   "Path to config file",
-					},
 					&cli.StringFlag{
 						Name:    "host",
 						Aliases: []string{"H"},
@@ -122,10 +128,6 @@ func main() {
 						Aliases: []string{"cert-key"},
 						Value:   "",
 						Usage:   "Path to TLS key file",
-					},
-					&cli.BoolFlag{
-						Name:  "skip-update-check",
-						Usage: "Skip checking for update on startup",
 					},
 				},
 			},

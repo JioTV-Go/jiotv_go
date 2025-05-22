@@ -41,7 +41,6 @@ func Logger() *log.Logger { // Corrected to *log.Logger
 type JioTVServerConfig struct {
 	Host        string
 	Port        string
-	ConfigPath  string // Kept for informational purposes, but not used for loading here
 	TLS         bool
 	TLSCertPath string
 	TLSKeyPath  string
