@@ -43,12 +43,13 @@
     </button>
   </div>
   <div id="favorite-channels-section" class="p-4" style="display: none;">
-    <h2 class="text-2xl font-bold mb-3">Favorite Channels</h2>
-    <div id="favorite-channels-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+    <h2 class="text-2xl font-bold mb-4">Favourites</h2>
+    <div id="favorite-channels-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 mt-4">
       <!-- Favorite channels will be moved here by JavaScript -->
     </div>
+    <h2 class="text-2xl font-bold mt-4">All</h2>
   </div>
-  <div id="original-channels-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
+  <div id="original-channels-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 px-4 pb-4 pt-2">
     {{range $channel := .Channels}}
     <a
       href="/play/{{$channel.ID}}"
@@ -64,7 +65,7 @@
           class="h-14 w-14 sm:h-16 sm:w-16 md:h-18 md:w-18 lg:h-20 lg:w-20 rounded-full bg-gray-200"
         />
         <span class="text-lg font-bold mt-2">{{$channel.Name}}</span>
-        <button id="favorite-btn-{{$channel.ID}}" class="favorite-btn absolute top-2 right-2 btn btn-ghost btn-circle z-10 invisible group-hover:visible group-focus:visible" onclick="event.preventDefault(); toggleFavorite('{{$channel.ID}}');">
+        <button id="favorite-btn-{{$channel.ID}}" class="favorite-btn absolute top-2 right-2 btn btn-ghost btn-circle z-10 invisible" onclick="event.preventDefault(); toggleFavorite('{{$channel.ID}}');">
           <svg id="star-icon-{{$channel.ID}}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.324h5.388a.563.563 0 01.328.958l-3.898 2.584a.563.563 0 00-.182.557l1.285 4.688a.562.562 0 01-.84.622l-4.384-2.943a.563.563 0 00-.664 0l-4.383 2.943a.562.562 0 01-.84-.622l1.285-4.688a.563.563 0 00-.182-.557l-3.898-2.584a.563.563 0 01.328-.958h5.388a.563.563 0 00.475-.324l2.125-5.111z" />
           </svg>
@@ -72,17 +73,6 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
-        <div class="absolute top-2 left-2">
-          {{ if $channel.IsHD }}
-          <div class="badge badge-primary">
-             HD
-          </div>
-          {{ else }}
-          <div class="badge badge-outline badge-primary">
-            SD
-          </div>
-          {{ end }}
-        </div>
       </div>
     </a>
     {{end}}
