@@ -164,7 +164,7 @@ func downloadBinary(url, outputPath string) error {
 		if err != nil {
 			// Check if the error is due to a small read buffer and if we can increase the buffer size
 			if strings.Contains(err.Error(), "small read buffer") && bufferSize < maxBufferSize {
-				fmt.Println("Increasing buffer size and retrying...")
+			fmt.Println("Increasing buffer size and retrying download...")
 				continue // Retry with a larger buffer size
 			}
 			return err // Return the error if it's not related to buffer size or max buffer size is reached

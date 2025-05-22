@@ -3,7 +3,6 @@ package config
 import (
 	"log"
 	"os"
-	"path/filepath"
 	"reflect"
 
 	"github.com/ilyakaznacheev/cleanenv"
@@ -31,6 +30,10 @@ type JioTVConfig struct {
 	Proxy string `yaml:"proxy" env:"JIOTV_PROXY" json:"proxy" toml:"proxy"`
 	// PathPrefix is the prefix for all file paths managed by JioTV Go. Default: "$HOME/.jiotv_go"
 	PathPrefix string `yaml:"path_prefix" env:"JIOTV_PATH_PREFIX" json:"path_prefix" toml:"path_prefix"`
+	// LogPath is the directory for log files. Default: ""
+	LogPath string `yaml:"log_path" env:"JIOTV_LOG_PATH" json:"log_path" toml:"log_path"`
+	// LogToStdout controls logging to stdout/stderr. Default: true
+	LogToStdout bool `yaml:"log_to_stdout" env:"JIOTV_LOG_TO_STDOUT" json:"log_to_stdout" toml:"log_to_stdout"`
 }
 
 // Cfg is the global config variable
@@ -67,18 +70,14 @@ func (*JioTVConfig) Get(key string) interface{} {
 // commonFileExists checks for the existence of common config
 // file names and returns the first one found. It searches
 // for config files in the following formats:
-//   - jiotv_go.{yml,toml,json}
-//   - config.{json,yml,toml}
+//   - jiotv_go.{yml,toml,json,yaml}
+//   - config.{json,yml,toml,yaml}
 //
 // If no file is found, an empty string is returned.
 func commonFileExists() string {
-	homeDir, err := os.UserHomeDir()
-	if err != nil {
-		log.Println("ERROR: Unable to get user home directory:", err)
-	}
-	pathPrefix := filepath.Join(homeDir, ".jiotv_go")
-	commonFiles := []string{"jiotv_go.yml", "jiotv_go.toml", "jiotv_go.json", "config.json", "config.yml", "config.toml", pathPrefix + "config.json", pathPrefix + "config.yml", pathPrefix + "config.toml"}
+	commonFiles := []string{"jiotv_go.yml", "jiotv_go.yaml", "jiotv_go.toml", "jiotv_go.json", "config.json", "config.yml", "config.toml", "config.yaml"}
 	for _, filename := range commonFiles {
+		// check above common files in current directory
 		if _, err := os.Stat(filename); err == nil {
 			return filename
 		}
