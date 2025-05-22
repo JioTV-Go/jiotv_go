@@ -114,12 +114,7 @@ If a custom path is provided, the application will attempt to create the directo
 | Enable or disable logging to standard output. | `log_to_stdout` | `JIOTV_LOG_TO_STDOUT` | `true` |
 
 This option controls whether log messages are also output to the standard output (the console).
-Set to `true` to see logs in your terminal, or `false` to suppress console logging (unless file logging also fails).
-Note: The default behavior of the application is to log to stdout if no specific file logging is configured or if file logging fails. The `log_to_stdout: true` setting explicitly enables it alongside any file logging. The provided default in example configurations might be `false` for cleaner terminal output when file logging is active. Please check your `GetLogger` implementation for the effective default if not explicitly set. *(Self-correction: The prompt states default is `false` for the config option itself, but `GetLogger` has its own fallbacks. For this documentation, we'll state the config option's intended default when *set by the user* or its behavior if unset. The subtask states default is `false` for `log_to_stdout` config value. Let's assume the example configs will show `false`, and the code default if not set is `true` as per `GetLogger` behavior. The user-facing config default should be what they'd typically set for "no stdout", which is `false`)*.
-
-Let's stick to the subtask's specified default for the config option:
-Set to `true` to see logs in your terminal. Set to `false` to only log to a file (if `log_path` is configured or default file logging is active). Default value for this option when specified in a config file is `false`.
-
+Set to `true` to see logs in your terminal, or `false` to suppress console logging. The default value is `false` when specified in a configuration file.
 ## Example Configurations
 
 Below are example configuration file for JioTV Go. All fields are optional, and the values shown are the default settings:
