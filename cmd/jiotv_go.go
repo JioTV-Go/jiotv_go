@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log" // Added import for *log.Logger type
 	"net/http"
 
 	"github.com/jiotv-go/jiotv_go/v3/internal/config"
