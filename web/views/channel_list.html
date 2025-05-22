@@ -49,7 +49,7 @@
     </div>
     <h2 class="text-2xl font-bold mt-4">All</h2>
   </div>
-  <div id="original-channels-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 px-4 pb-4 pt-2">
+  <div id="original-channels-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4">
     {{range $channel := .Channels}}
     <a
       href="/play/{{$channel.ID}}"
@@ -65,7 +65,7 @@
           class="h-14 w-14 sm:h-16 sm:w-16 md:h-18 md:w-18 lg:h-20 lg:w-20 rounded-full bg-gray-200"
         />
         <span class="text-lg font-bold mt-2">{{$channel.Name}}</span>
-        <button id="favorite-btn-{{$channel.ID}}" class="favorite-btn absolute top-2 right-2 btn btn-ghost btn-circle z-10 invisible rounded-full" onclick="event.preventDefault(); toggleFavorite('{{$channel.ID}}');">
+        <button id="favorite-btn-{{$channel.ID}}" class="favorite-btn absolute btn-ghost p-0 sm:p-2 top-2 right-2 z-10 invisible rounded-full" onclick="event.preventDefault(); toggleFavorite('{{$channel.ID}}');">
           <svg  id="star-icon-{{$channel.ID}}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
           </svg>
