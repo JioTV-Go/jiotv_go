@@ -43,7 +43,7 @@
     </button>
   </div>
   <div id="favorite-channels-section" class="p-4" style="display: none;">
-    <h2 class="text-2xl font-bold mb-4">Favorite Channels</h2>
+    <h2 class="text-2xl font-bold mb-3">Favorite Channels</h2>
     <div id="favorite-channels-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
       <!-- Favorite channels will be moved here by JavaScript -->
     </div>
@@ -68,7 +68,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.324h5.388a.563.563 0 01.328.958l-3.898 2.584a.563.563 0 00-.182.557l1.285 4.688a.562.562 0 01-.84.622l-4.384-2.943a.563.563 0 00-.664 0l-4.383 2.943a.562.562 0 01-.84-.622l1.285-4.688a.563.563 0 00-.182-.557l-3.898-2.584a.563.563 0 01.328-.958h5.388a.563.563 0 00.475-.324l2.125-5.111z" />
           </svg>
         </button>
-        <div class="absolute top-2 right-2"> <!-- This div for HD/SD badge might now be overlapped by the favorite button or needs adjustment if both are to be visible -->
+        <div class="absolute top-2 left-2"> <!-- Moved HD/SD badge to top-left -->
           {{ if $channel.IsHD }}
           <div class="badge badge-primary">
              HD
