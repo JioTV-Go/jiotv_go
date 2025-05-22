@@ -32,5 +32,5 @@ proxy = ""
 # LogPath is the directory for log files. Default: ""
 log_path = ""
 
-# LogToStdout controls logging to stdout/stderr. Default: true
+# LogToStdout controls logging to stdout/stderr. Default: false
 log_to_stdout = false
