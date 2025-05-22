@@ -60,16 +60,13 @@ func GetLogger() *log.Logger {
 		outputWriters = append(outputWriters, os.Stdout)
 	}
 
-	// If logFilePath is not empty (meaning file logging is enabled, either via LogPath or the default)
-	if logFilePath != "" { // This condition will always be true based on Step 1
-		fileLogger := &lumberjack.Logger{
-			Filename:   logFilePath,
-			MaxSize:    5, // megabytes
-			MaxBackups: 3,
-			MaxAge:     7, // days
-		}
-		outputWriters = append(outputWriters, fileLogger)
+	fileLogger := &lumberjack.Logger{
+		Filename:   logFilePath,
+		MaxSize:    5, // megabytes
+		MaxBackups: 3,
+		MaxAge:     7, // days
 	}
+	outputWriters = append(outputWriters, fileLogger)
 
 	// Step 3: Create Logger
 	if len(outputWriters) == 0 {
