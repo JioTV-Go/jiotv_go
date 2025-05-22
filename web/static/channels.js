@@ -133,17 +133,27 @@ function displayFavoriteChannels() {
 function toggleFavorite(channelId) {
   const favoriteIds = getFavoriteChannels();
   const button = document.getElementById(`favorite-btn-${channelId}`);
+  const starIcon = document.getElementById(`star-icon-${channelId}`);
+  const xIcon = document.getElementById(`x-icon-${channelId}`);
   const index = favoriteIds.indexOf(channelId);
 
-  if (index > -1) {
+  if (index > -1) { // Channel was a favorite, removing it
     favoriteIds.splice(index, 1);
     if (button) {
-      button.classList.remove("favorited");
+      button.classList.remove("favorited"); // Existing class toggle
+      if (starIcon && xIcon) {
+        starIcon.classList.remove('hidden');
+        xIcon.classList.add('hidden');
+      }
     }
-  } else {
+  } else { // Channel was not a favorite, adding it
     favoriteIds.push(channelId);
     if (button) {
-      button.classList.add("favorited");
+      button.classList.add("favorited"); // Existing class toggle
+      if (starIcon && xIcon) {
+        starIcon.classList.add('hidden');
+        xIcon.classList.remove('hidden');
+      }
     }
   }
   saveFavoriteChannels(favoriteIds);
@@ -156,10 +166,19 @@ function updateFavoriteButtonStates() {
 
   favoriteButtons.forEach(button => {
     const channelId = button.id.replace("favorite-btn-", "");
-    if (favoriteIds.includes(channelId)) {
-      button.classList.add("favorited");
-    } else {
-      button.classList.remove("favorited");
+    const starIcon = document.getElementById(`star-icon-${channelId}`);
+    const xIcon = document.getElementById(`x-icon-${channelId}`);
+
+    if (starIcon && xIcon) { // Ensure icons exist
+      if (favoriteIds.includes(channelId)) {
+        button.classList.add("favorited"); // Existing class toggle
+        starIcon.classList.add('hidden');
+        xIcon.classList.remove('hidden');
+      } else {
+        button.classList.remove("favorited"); // Existing class toggle
+        starIcon.classList.remove('hidden');
+        xIcon.classList.add('hidden');
+      }
     }
   });
 }
