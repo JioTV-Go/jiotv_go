@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/jiotv-go/jiotv_go/v3/pkg/utils" // Added for utils.Log
 	"github.com/urfave/cli/v2"
 	"github.com/valyala/fasthttp"
 )
@@ -28,6 +29,8 @@ import (
 // Finally, it prints a message that the update was successful
 // and the app should be restarted.
 func Update(currentVersion, customVersion string) error {
+	utils.Log = utils.GetLogger() // Initialize logger
+
 	fmt.Println("Updating JioTV Go...")
 
 	// Determine the architecture and operating system
@@ -164,7 +167,7 @@ func downloadBinary(url, outputPath string) error {
 		if err != nil {
 			// Check if the error is due to a small read buffer and if we can increase the buffer size
 			if strings.Contains(err.Error(), "small read buffer") && bufferSize < maxBufferSize {
-				fmt.Println("Increasing buffer size and retrying...")
+			utils.Log.Println("Increasing buffer size and retrying download...")
 				continue // Retry with a larger buffer size
 			}
 			return err // Return the error if it's not related to buffer size or max buffer size is reached

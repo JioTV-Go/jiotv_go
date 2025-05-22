@@ -22,28 +22,40 @@ import (
 	"github.com/gofiber/template/html/v2"
 )
 
+// LoadConfig loads the application configuration from the given path.
+func LoadConfig(configPath string) error {
+	return config.Cfg.Load(configPath)
+}
+
+// InitializeLogger initializes the global logger.
+// This should be called after LoadConfig.
+func InitializeLogger() {
+	utils.Log = utils.GetLogger()
+}
+
+// Logger returns the initialized global logger.
+// Ensure InitializeLogger has been called before using this.
+func Logger() *log.Logger { // Corrected to *log.Logger
+	return utils.Log
+}
+
 type JioTVServerConfig struct {
 	Host        string
 	Port        string
-	ConfigPath  string
+	ConfigPath  string // Kept for informational purposes, but not used for loading here
 	TLS         bool
 	TLSCertPath string
 	TLSKeyPath  string
 }
 
 // JioTVServer starts the JioTV server.
-// It loads the config, initializes logging, secure URLs, and EPG.
+// Assumes config and logger are already initialized.
+// It initializes secure URLs, EPG, store, and handlers.
 // It then configures the Fiber app with middleware and routes.
 // It starts listening on the provided host and port.
 // Returns an error if listening fails.
 func JioTVServer(jiotvServerConfig JioTVServerConfig) error {
-	// Load the config file
-	if err := config.Cfg.Load(jiotvServerConfig.ConfigPath); err != nil {
-		return err
-	}
-
-	// Initialize the logger object
-	utils.Log = utils.GetLogger()
+	// Config and Logger are assumed to be initialized by the caller (e.g., main.go)
 
 	// Initialize the store object
 	if err := store.Init(); err != nil {

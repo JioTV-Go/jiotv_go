@@ -28,3 +28,9 @@ path_prefix: ""
 
 # Proxy URL. Proxy is useful to bypass geo-restrictions and ip-restrictions for JioTV API. Default: ""
 proxy: ""
+
+# LogPath is the directory for log files. Default: ""
+log_path: ""
+
+# LogToStdout controls logging to stdout/stderr. Default: true
+log_to_stdout: false

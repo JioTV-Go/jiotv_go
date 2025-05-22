@@ -20,8 +20,6 @@ func main() {
 	// Set JioTV Go version
 	constants.Version = version
 
-	// Remove Date time from log
-	log.SetFlags(log.Flags() &^ (log.Ldate | log.Ltime))
 	app := &cli.App{
 		Name:      "JioTV Go",
 		Usage:     "Stream JioTV on any device",
@@ -37,27 +35,37 @@ func main() {
 				Usage:       "Start JioTV Go server",
 				Description: "The serve command starts JioTV Go server, and listens on the host and port. The default host is localhost and port is 5001.",
 				Action: func(c *cli.Context) error {
+					configPath := c.String("config")
+					// Load the config file first
+					if err := cmd.LoadConfig(configPath); err != nil {
+						// Use standard log here as utils.Log might not be initialized if config loading fails
+						log.Fatalf("Failed to load config: %v", err) 
+					}
+
+					// Initialize the logger object after config is loaded
+					cmd.InitializeLogger()
+
 					if c.Bool("skip-update-check") {
-						fmt.Println("INFO: Skipping update check")
+						cmd.Logger().Println("INFO: Skipping update check")
 					} else {
 						cmd.PrintIfUpdateAvailable(c)
 					}
 					host := c.String("host")
 					// overwrite host if --public flag is passed
 					if c.Bool("public") {
-						fmt.Println("INFO: You are exposing your server to outside your local network (public)!")
-						fmt.Println("INFO: Overwriting host to [::] for public access")
+						cmd.Logger().Println("INFO: You are exposing your server to outside your local network (public)!")
+						cmd.Logger().Println("INFO: Overwriting host to [::] for public access")
 						host = "[::]"
 					}
 					port := c.String("port")
-					configPath := c.String("config")
 					tls := c.Bool("tls")
 					tlsCertPath := c.String("tls-cert")
 					tlsKeyPath := c.String("tls-key")
+					// Pass configPath for consistency, though JioTVServer won't load it again
 					return cmd.JioTVServer(cmd.JioTVServerConfig{
 						Host:        host,
 						Port:        port,
-						ConfigPath:  configPath,
+						ConfigPath:  configPath, 
 						TLS:         tls,
 						TLSCertPath: tlsCertPath,
 						TLSKeyPath:  tlsKeyPath,

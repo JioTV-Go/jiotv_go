@@ -31,6 +31,10 @@ type JioTVConfig struct {
 	Proxy string `yaml:"proxy" env:"JIOTV_PROXY" json:"proxy" toml:"proxy"`
 	// PathPrefix is the prefix for all file paths managed by JioTV Go. Default: "$HOME/.jiotv_go"
 	PathPrefix string `yaml:"path_prefix" env:"JIOTV_PATH_PREFIX" json:"path_prefix" toml:"path_prefix"`
+	// LogPath is the directory for log files. Default: ""
+	LogPath string `yaml:"log_path" env:"JIOTV_LOG_PATH" json:"log_path" toml:"log_path"`
+	// LogToStdout controls logging to stdout/stderr. Default: true
+	LogToStdout bool `yaml:"log_to_stdout" env:"JIOTV_LOG_TO_STDOUT" json:"log_to_stdout" toml:"log_to_stdout"`
 }
 
 // Cfg is the global config variable

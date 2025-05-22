@@ -6,9 +6,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io" // Ensure io is imported
 	"log"
 	"net"
 	"os"
+	"path/filepath" // Ensure path/filepath is imported
 	"strconv"
 	"strings"
 	"time"
@@ -28,27 +30,68 @@ var Log *log.Logger
 
 // GetLogger creates a new logger instance with custom settings
 func GetLogger() *log.Logger {
-	logFilePath := GetPathPrefix() + "jiotv_go.log"
-	var logger *log.Logger
-	if config.Cfg.Debug {
-		logger = log.New(os.Stdout, "[DEBUG] ", log.Ldate|log.Ltime|log.Lshortfile)
-	} else {
-		// write logs to a file jiotv_go.log
-		file, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0640) // skipcq: GSC-G302
-		if err != nil {
-			log.Println(err)
+	// Step 1: Determine Log File Path
+	logFilePath := "" // Initialize logFilePath
+	if config.Cfg.LogPath != "" {
+		logFilePath = filepath.Join(config.Cfg.LogPath, "jiotv_go.log")
+		// Ensure the directory config.Cfg.LogPath exists.
+		if _, err := os.Stat(config.Cfg.LogPath); os.IsNotExist(err) {
+			if err := os.MkdirAll(config.Cfg.LogPath, 0755); err != nil {
+				// Log error if directory creation fails. Lumberjack will handle actual file I/O errors.
+				log.Printf("Error creating custom log directory %s: %v. File logging by lumberjack might fail.", config.Cfg.LogPath, err)
+			}
 		}
-		logger = log.New(file, "[DEBUG] ", log.Ldate|log.Ltime|log.Lshortfile)
-		// rotate log file if it is larger than 10MB
-		// necessary to prevent filling up disk space with logs
-		logger.SetOutput(&lumberjack.Logger{
+	} else {
+		// If LogPath is empty, use the default path.
+		logFilePath = filepath.Join(GetPathPrefix(), "jiotv_go.log")
+		// Ensure the default log directory exists.
+		defaultLogDir := filepath.Dir(logFilePath) // Get directory from path
+		if _, err := os.Stat(defaultLogDir); os.IsNotExist(err) {
+			if err := os.MkdirAll(defaultLogDir, 0755); err != nil {
+				// Log error if default directory creation fails. Lumberjack will handle actual file I/O errors.
+				log.Printf("Error creating default log directory %s: %v. File logging by lumberjack might fail.", defaultLogDir, err)
+			}
+		}
+	}
+
+	// Step 2: Initialize Writers
+	outputWriters := []io.Writer{}
+	if config.Cfg.LogToStdout {
+		outputWriters = append(outputWriters, os.Stdout)
+	}
+
+	// If logFilePath is not empty (meaning file logging is enabled, either via LogPath or the default)
+	if logFilePath != "" { // This condition will always be true based on Step 1
+		fileLogger := &lumberjack.Logger{
 			Filename:   logFilePath,
 			MaxSize:    5, // megabytes
 			MaxBackups: 3,
 			MaxAge:     7, // days
-		})
+		}
+		outputWriters = append(outputWriters, fileLogger)
 	}
-	return logger
+
+	// Step 3: Create Logger
+	if len(outputWriters) == 0 {
+		// This case means LogToStdout was false and file logging was somehow skipped (e.g. logFilePath became empty).
+		// Default to os.Stdout with a warning.
+		log.Println("Warning: No logging output explicitly configured (e.g., LogToStdout is false and file path is invalid or empty). Defaulting to Stdout.")
+		outputWriters = append(outputWriters, os.Stdout)
+	}
+
+	multiWriter := io.MultiWriter(outputWriters...)
+	logger := log.New(multiWriter, "", 0) // Initial prefix and flags are set to zero values.
+
+	// Step 4: Set Logger Flags and Prefix
+	if config.Cfg.Debug {
+		logger.SetPrefix("[DEBUG] ")
+		logger.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	} else {
+		logger.SetPrefix("[INFO] ")
+		logger.SetFlags(log.Ldate | log.Ltime)
+	}
+
+	return logger // Step 5: Return the configured logger
 }
 
 // LoginSendOTP sends OTP to the given number for login

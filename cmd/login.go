@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/jiotv-go/jiotv_go/v3/pkg/store"
@@ -25,14 +24,14 @@ func Logout() error {
 	// Do not remove this line, it will result in nil pointer dereference panic
 	utils.Log = utils.GetLogger()
 
-	log.Println("Deleting existing login file if exists")
+	utils.Log.Println("Deleting existing login file if exists")
 
 	err = utils.Logout()
 	if err != nil {
 		return err
 	}
 
-	log.Println("We have successfully logged you out. Please login again.")
+	utils.Log.Println("We have successfully logged you out. Please login again.")
 
 	return nil
 }
@@ -53,7 +52,7 @@ func LoginOTP() error {
 	fmt.Scanln(&mobileNumber)
 	mobileNumber = "+91" + mobileNumber
 
-	log.Println("Sending OTP to your mobile number")
+	utils.Log.Println("Sending OTP to your mobile number")
 
 	result, err := utils.LoginSendOTP(mobileNumber)
 	if err != nil {
@@ -61,7 +60,7 @@ func LoginOTP() error {
 	}
 
 	if result {
-		log.Println("OTP sent to your mobile number")
+		utils.Log.Println("OTP sent to your mobile number")
 
 		fmt.Print("Enter OTP: ")
 		var otp string
@@ -73,9 +72,9 @@ func LoginOTP() error {
 		}
 
 		if resultOTP["status"] == "success" {
-			log.Println("Login successful")
+			utils.Log.Println("Login successful")
 		} else {
-			log.Println("Login failed")
+			utils.Log.Println("Login failed")
 		}
 	}
 
@@ -109,9 +108,9 @@ func LoginPassword() error {
 	}
 
 	if result["status"] == "success" {
-		log.Println("Login successful")
+		utils.Log.Println("Login successful")
 	} else {
-		log.Println("Login failed")
+		utils.Log.Println("Login failed")
 	}
 
 	return nil

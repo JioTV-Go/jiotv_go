@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"log"
 	"os"
 
 	"github.com/jiotv-go/jiotv_go/v3/pkg/epg"
@@ -15,7 +14,7 @@ func GenEPG() error {
 	// Do not remove this line, it will result in nil pointer dereference panic
 	utils.Log = utils.GetLogger()
 
-	log.Println("Deleting existing EPG file if exists")
+	utils.Log.Println("Deleting existing EPG file if exists")
 
 	err := os.Remove("epg.xml.gz")
 	if err != nil {
@@ -25,7 +24,7 @@ func GenEPG() error {
 		}
 	}
 
-	log.Println("Generating new EPG file")
+	utils.Log.Println("Generating new EPG file")
 
 	err = epg.GenXMLGz("epg.xml.gz")
 	return err
@@ -35,18 +34,20 @@ func GenEPG() error {
 // It logs status messages about deleting or not finding the file.
 // Returns any errors encountered except os.ErrNotExist.
 func DeleteEPG() error {
-	log.Println("Deleting existing EPG file if exists")
+	utils.Log = utils.GetLogger() // Initialize logger
+
+	utils.Log.Println("Deleting existing EPG file if exists")
 
 	err := os.Remove("epg.xml.gz")
 
 	if err != nil {
-		if err == os.ErrNotExist {
-			log.Println("EPG file does not exist")
+		if err == os.ErrNotExist || os.IsNotExist(err) { // Added os.IsNotExist for robustness
+			utils.Log.Println("EPG file does not exist")
 		} else {
 			return err
 		}
 	} else {
-		log.Println("EPG file deleted")
+		utils.Log.Println("EPG file deleted")
 	}
 
 	return nil

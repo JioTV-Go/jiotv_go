@@ -48,7 +48,7 @@ func Init() {
 		utils.Log.Println("TS Handler disabled!. All TS video requests will be served directly from JioTV servers.")
 	}
 	if !EnableDRM {
-		fmt.Println("If you're not using IPTV Client. We strongly recommend enabling DRM for accessing channels without any issues! Either enable by setting environment variable JIOTV_DRM=true or by setting DRM: true in config. For more info Read https://telegram.me/jiotv_go/128")
+		utils.Log.Println("If you're not using IPTV Client. We strongly recommend enabling DRM for accessing channels without any issues! Either enable by setting environment variable JIOTV_DRM=true or by setting DRM: true in config. For more info Read https://telegram.me/jiotv_go/128")
 	}
 	// Generate a new device ID if not present
 	utils.GetDeviceID()
@@ -519,7 +519,7 @@ func EPGHandler(c *fiber.Ctx) error {
 		return c.SendFile(epgFilePath, true)
 	} else {
 		err_message := "EPG not found. Please restart the server after setting the environment variable JIOTV_EPG to true."
-		fmt.Println(err_message)
+		utils.Log.Println(err_message) // Changed from fmt.Println
 		return c.Status(fiber.StatusNotFound).SendString(err_message)
 	}
 }
