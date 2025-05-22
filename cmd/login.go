@@ -42,6 +42,7 @@ func Logout() error {
 // verifies the entered OTP by the user and logs in the user.
 // Returns any error encountered.
 func LoginOTP() error {
+	utils.Log = utils.GetLogger()
 	err := store.Init()
 	if err != nil {
 		return err
@@ -87,6 +88,7 @@ func LoginOTP() error {
 // and logs in the user if successful.
 // Returns any error encountered.
 func LoginPassword() error {
+	utils.Log = utils.GetLogger()
 	err := store.Init()
 	if err != nil {
 		return err
