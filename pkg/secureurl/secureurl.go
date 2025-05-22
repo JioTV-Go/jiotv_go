@@ -28,7 +28,7 @@ func generateKey() []byte {
 	return key
 }
 
-func EncryptURL(inputURL string) (string, error) {
+var EncryptURL = func(inputURL string) (string, error) {
 	if disableUrlEncryption {
 		return url.QueryEscape(inputURL), nil
 	}
@@ -51,7 +51,7 @@ func EncryptURL(inputURL string) (string, error) {
 	return encryptedURL, nil
 }
 
-func DecryptURL(encryptedURL string) (string, error) {
+var DecryptURL = func(encryptedURL string) (string, error) {
 	if disableUrlEncryption {
 		decoded_url, err := url.QueryUnescape(encryptedURL)
 		return decoded_url, err

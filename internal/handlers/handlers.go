@@ -21,7 +21,7 @@ import (
 var (
 	TV               *television.Television
 	DisableTSHandler bool
-	isLogoutDisabled bool
+	IsLogoutDisabled bool // Changed from isLogoutDisabled to be exportable for testing
 	Title            string
 	EnableDRM        bool
 	SONY_LIST        = []string{"154", "155", "162", "289", "291", "471", "474", "476", "483", "514", "524", "525", "697", "872", "873", "874", "891", "892", "1146", "1393", "1772", "1773", "1774", "1775"}
@@ -35,14 +35,14 @@ const (
 )
 
 // Init initializes the necessary operations required for the handlers to work.
-func Init() {
+var Init = func() {
 	if config.Cfg.Title != "" {
 		Title = config.Cfg.Title
 	} else {
 		Title = "JioTV Go"
 	}
 	DisableTSHandler = config.Cfg.DisableTSHandler
-	isLogoutDisabled = config.Cfg.DisableLogout
+	IsLogoutDisabled = config.Cfg.DisableLogout // Changed from isLogoutDisabled
 	EnableDRM = config.Cfg.DRM
 	if DisableTSHandler {
 		utils.Log.Println("TS Handler disabled!. All TS video requests will be served directly from JioTV servers.")
@@ -360,8 +360,8 @@ func RenderTSHandler(c *fiber.Ctx) error {
 	// decode url
 	decoded_url, err := secureurl.DecryptURL(auth)
 	if err != nil {
-		utils.Log.Panicln(err)
-		return err
+		// utils.Log.Panicln(err) // Original behavior
+		return fmt.Errorf("failed to decrypt URL in RenderTSHandler: %w", err) // Changed to return error
 	}
 	c.Request().Header.Set("User-Agent", PLAYER_USER_AGENT)
 	if err := proxy.Do(c, decoded_url, TV.Client); err != nil {
@@ -525,5 +525,5 @@ func EPGHandler(c *fiber.Ctx) error {
 }
 
 func DASHTimeHandler(c *fiber.Ctx) error {
-	return c.SendString(time.Now().UTC().Format("2006-01-02T15:04:05.000Z"))
+	return c.SendString(utils.TimeNow().UTC().Format("2006-01-02T15:04:05.000Z")) // Changed to utils.TimeNow()
 }

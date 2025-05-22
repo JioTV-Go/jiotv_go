@@ -19,7 +19,7 @@ const (
 )
 
 // New function creates a new Television instance with the provided credentials
-func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
+var New = func(credentials *utils.JIOTV_CREDENTIALS) *Television {
 	// Check if credentials are provided
 	if credentials == nil {
 		// If credentials are not provided, set them to empty strings
@@ -166,8 +166,8 @@ func (tv *Television) Render(url string) ([]byte, int) {
 	return buf, resp.StatusCode()
 }
 
-// Channels fetch channels from JioTV API
-func Channels() ChannelsResponse {
+// ChannelsFunc fetch channels from JioTV API
+var ChannelsFunc = func() ChannelsResponse {
 
 	// Create a fasthttp.Client
 	client := utils.GetRequestClient()
@@ -214,8 +214,8 @@ func Channels() ChannelsResponse {
 	return apiResponse
 }
 
-// FilterChannels Function is used to filter channels by language and category
-func FilterChannels(channels []Channel, language, category int) []Channel {
+// FilterChannelsFunc Function is used to filter channels by language and category
+var FilterChannelsFunc = func(channels []Channel, language, category int) []Channel {
 	var filteredChannels []Channel
 	for _, channel := range channels {
 		// if both language and category is set, then use and operator
@@ -238,7 +238,7 @@ func FilterChannels(channels []Channel, language, category int) []Channel {
 	return filteredChannels
 }
 
-func ReplaceM3U8(baseUrl, match []byte, params, channel_id string) []byte {
+var ReplaceM3U8Func = func(baseUrl, match []byte, params, channel_id string) []byte {
 	coded_url, err := secureurl.EncryptURL(string(baseUrl) + string(match) + "?" + params)
 	if err != nil {
 		utils.Log.Println(err)
@@ -247,7 +247,7 @@ func ReplaceM3U8(baseUrl, match []byte, params, channel_id string) []byte {
 	return []byte("/render.m3u8?auth=" + coded_url + "&channel_key_id=" + channel_id)
 }
 
-func ReplaceTS(baseUrl, match []byte, params string) []byte {
+var ReplaceTSFunc = func(baseUrl, match []byte, params string) []byte {
 	if config.Cfg.DisableTSHandler {
 		return []byte(string(baseUrl) + string(match) + "?" + params)
 	}
@@ -259,7 +259,7 @@ func ReplaceTS(baseUrl, match []byte, params string) []byte {
 	return []byte("/render.ts?auth=" + coded_url)
 }
 
-func ReplaceAAC(baseUrl, match []byte, params string) []byte {
+var ReplaceAACFunc = func(baseUrl, match []byte, params string) []byte {
 	if config.Cfg.DisableTSHandler {
 		return []byte(string(baseUrl) + string(match) + "?" + params)
 	}
@@ -271,7 +271,7 @@ func ReplaceAAC(baseUrl, match []byte, params string) []byte {
 	return []byte("/render.ts?auth=" + coded_url)
 }
 
-func ReplaceKey(match []byte, params, channel_id string) []byte {
+var ReplaceKeyFunc = func(match []byte, params, channel_id string) []byte {
 	coded_url, err := secureurl.EncryptURL(string(match) + "?" + params)
 	if err != nil {
 		utils.Log.Println(err)
@@ -280,7 +280,7 @@ func ReplaceKey(match []byte, params, channel_id string) []byte {
 	return []byte("/render.key?auth=" + coded_url + "&channel_key_id=" + channel_id)
 }
 
-func getSLChannel(channelID string) (*LiveURLOutput, error) {
+var getSLChannelFunc = func(channelID string) (*LiveURLOutput, error) {
 	// Check if the channel is available in the SONY_CHANNELS map
 	if val, ok := SONY_JIO_MAP[channelID]; ok {
 		// If the channel is available in the SONY_CHANNELS map, then return the link

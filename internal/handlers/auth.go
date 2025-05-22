@@ -180,7 +180,7 @@ func LoginRefreshAccessToken() error {
 	// Update tokenData
 	if response.AccessToken != "" {
 		tokenData.AccessToken = response.AccessToken
-		tokenData.LastTokenRefreshTime = strconv.FormatInt(time.Now().Unix(), 10)
+		tokenData.LastTokenRefreshTime = strconv.FormatInt(utils.TimeNow().Unix(), 10)
 		err := utils.WriteJIOTVCredentials(tokenData)
 		if err != nil {
 			utils.Log.Fatalln(err)
@@ -241,7 +241,7 @@ func LoginRefreshSSOToken() error {
 	// Update tokenData
 	if response.SSOToken != "" {
 		tokenData.SSOToken = response.SSOToken
-		tokenData.LastSSOTokenRefreshTime = strconv.FormatInt(time.Now().Unix(), 10)
+		tokenData.LastSSOTokenRefreshTime = strconv.FormatInt(utils.TimeNow().Unix(), 10)
 		err := utils.WriteJIOTVCredentials(tokenData)
 		if err != nil {
 			utils.Log.Fatalln(err)
@@ -256,7 +256,7 @@ func LoginRefreshSSOToken() error {
 }
 
 // RefreshTokenIfExpired Function is used to handle AccessToken refresh
-func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
+var RefreshTokenIfExpired = func(credentials *utils.JIOTV_CREDENTIALS) error {
 	utils.Log.Println("Checking if AccessToken is expired...")
 	lastTokenRefreshTime, err := strconv.ParseInt(credentials.LastTokenRefreshTime, 10, 64)
 	if err != nil {
@@ -266,7 +266,7 @@ func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
 	lastTokenRefreshTimeUnix := time.Unix(lastTokenRefreshTime, 0)
 	thresholdTime := lastTokenRefreshTimeUnix.Add(1*time.Hour + 50*time.Minute)
 
-	if thresholdTime.Before(time.Now()) {
+	if thresholdTime.Before(utils.TimeNow()) {
 		LoginRefreshAccessToken()
 	} else {
 		utils.Log.Println("Refreshing AccessToken after", time.Until(thresholdTime).Truncate(time.Second))
@@ -278,7 +278,7 @@ func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
 }
 
 // RefreshSSOTokenIfExpired Function is used to handle SSOToken refresh
-func RefreshSSOTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
+var RefreshSSOTokenIfExpired = func(credentials *utils.JIOTV_CREDENTIALS) error {
 	utils.Log.Println("Checking if SSOToken is expired...")
 	lastTokenRefreshTime, err := strconv.ParseInt(credentials.LastSSOTokenRefreshTime, 10, 64)
 	if err != nil {
@@ -288,7 +288,7 @@ func RefreshSSOTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
 	lastTokenRefreshTimeUnix := time.Unix(lastTokenRefreshTime, 0)
 	thresholdTime := lastTokenRefreshTimeUnix.Add(24 * time.Hour)
 
-	if thresholdTime.Before(time.Now()) {
+	if thresholdTime.Before(utils.TimeNow()) {
 		LoginRefreshSSOToken()
 	} else {
 		utils.Log.Println("Refreshing SSOToken after", time.Until(thresholdTime).Truncate(time.Second))

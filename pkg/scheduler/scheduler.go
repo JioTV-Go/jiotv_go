@@ -22,7 +22,7 @@ func Stop() {
 	Scheduler.Stop()
 }
 
-func Add(id string, interval time.Duration, task func() error) {
+var Add = func(id string, interval time.Duration, task func() error) {
 	// delete any existing task with the same ID
 	Scheduler.Del(id)
 	// Add a task

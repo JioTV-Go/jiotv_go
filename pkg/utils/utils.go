@@ -28,6 +28,9 @@ import (
 // used to log debug messages and errors
 var Log *log.Logger
 
+// TimeNow provides the current time. It can be patched for testing.
+var TimeNow = time.Now
+
 // GetLogger creates a new logger instance with custom settings
 func GetLogger() *log.Logger {
 	// Step 1: Determine Log File Path
@@ -92,7 +95,7 @@ func GetLogger() *log.Logger {
 }
 
 // LoginSendOTP sends OTP to the given number for login
-func LoginSendOTP(number string) (bool, error) {
+var LoginSendOTP = func(number string) (bool, error) {
 	postData := map[string]string{
 		"number": number,
 	}
@@ -148,7 +151,7 @@ func LoginSendOTP(number string) (bool, error) {
 }
 
 // LoginVerifyOTP verifies OTP for login
-func LoginVerifyOTP(number, otp string) (map[string]string, error) {
+var LoginVerifyOTP = func(number, otp string) (map[string]string, error) {
 	// convert number string to base64
 	encoded_number := base64.StdEncoding.EncodeToString([]byte(number))
 
@@ -249,7 +252,7 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 }
 
 // Login is used to login with username and password
-func Login(username, password string) (map[string]string, error) {
+var Login = func(username, password string) (map[string]string, error) {
 	postData := map[string]string{
 		"username": username,
 		"password": password,
@@ -365,7 +368,7 @@ func GetPathPrefix() string {
 }
 
 // GetDeviceID returns the device ID
-func GetDeviceID() string {
+var GetDeviceID = func() string {
 	deviceID, err := store.Get("deviceId")
 	if err != nil {
 		Log.Println(err)
@@ -388,7 +391,7 @@ func GetDeviceID() string {
 
 // GetJIOTVCredentials return credentials from environment variables or credentials file
 // Important note: If credentials are provided from environment variables, they will be used instead of credentials file
-func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
+var GetJIOTVCredentials = func() (*JIOTV_CREDENTIALS, error) {
 	ssoToken, err := store.Get("ssoToken")
 	if err != nil {
 		return nil, err
@@ -439,7 +442,7 @@ func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
 }
 
 // WriteJIOTVCredentials writes credentials data to file
-func WriteJIOTVCredentials(credentials *JIOTV_CREDENTIALS) error {
+var WriteJIOTVCredentials = func(credentials *JIOTV_CREDENTIALS) error {
 	if err := store.Set("ssoToken", credentials.SSOToken); err != nil {
 		return err
 	}
@@ -465,7 +468,7 @@ func WriteJIOTVCredentials(credentials *JIOTV_CREDENTIALS) error {
 			return err
 		}
 	} else {
-		if err := store.Set("lastTokenRefreshTime", strconv.FormatInt(time.Now().Unix(), 10)); err != nil {
+		if err := store.Set("lastTokenRefreshTime", strconv.FormatInt(TimeNow().Unix(), 10)); err != nil {
 			return err
 		}
 	}
@@ -475,7 +478,7 @@ func WriteJIOTVCredentials(credentials *JIOTV_CREDENTIALS) error {
 			return err
 		}
 	} else {
-		if err := store.Set("lastSSOTokenRefreshTime", strconv.FormatInt(time.Now().Unix(), 10)); err != nil {
+		if err := store.Set("lastSSOTokenRefreshTime", strconv.FormatInt(TimeNow().Unix(), 10)); err != nil {
 			return err
 		}
 	}
@@ -496,7 +499,7 @@ func CheckLoggedIn() bool {
 }
 
 // Logout function deletes credentials file
-func Logout() error {
+var Logout = func() error {
 	// Perform server-side logout first
 	if err := PerformServerLogout(); err != nil {
 		// Log the error but continue with local logout
@@ -536,7 +539,7 @@ func Logout() error {
 }
 
 // PerformServerLogout attempts to log out the user from the JioTV servers.
-func PerformServerLogout() error {
+var PerformServerLogout = func() error {
 	Log.Println("Attempting server-side logout...")
 
 	creds, err := GetJIOTVCredentials()
@@ -625,7 +628,7 @@ func PerformServerLogout() error {
 // GetRequestClient create a HTTP client with proxy if given
 // Otherwise create a HTTP client without proxy
 // Returns a fasthttp.Client
-func GetRequestClient() *fasthttp.Client {
+var GetRequestClient = func() *fasthttp.Client {
 	// The function shall return a fasthttp.client with proxy if given
 	proxy := config.Cfg.Proxy
 
@@ -652,7 +655,7 @@ func GetRequestClient() *fasthttp.Client {
 }
 
 // FileExists function check if given file exists
-func FileExists(filename string) bool {
+var FileExists = func(filename string) bool {
 	// check if given file exists
 	_, err := os.Stat(filename)
 	if os.IsNotExist(err) {
@@ -664,14 +667,14 @@ func FileExists(filename string) bool {
 
 // GenerateCurrentTime generates current time in YYYYMMDDTHHMMSS format
 func GenerateCurrentTime() string {
-	currentTime := time.Now().UTC().Format("20060102T150405")
+	currentTime := TimeNow().UTC().Format("20060102T150405")
 	return currentTime
 }
 
 // GenerateDate generates date in YYYYMMDD format
 func GenerateDate() string {
 	// 20231205
-	currentTime := time.Now().UTC().Format("20060102")
+	currentTime := TimeNow().UTC().Format("20060102")
 	return currentTime
 }
 

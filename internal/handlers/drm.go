@@ -16,8 +16,8 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/proxy"
 )
 
-// getDrmMpd returns required properties for rendering DRM MPD
-func getDrmMpd(channelID, quality string) (*DrmMpdOutput, error) {
+// internalGetDrmMpd is the actual implementation, made assignable for testing.
+var internalGetDrmMpd = func(channelID, quality string) (*DrmMpdOutput, error) {
 	// Get live stream URL from JioTV API
 	liveResult, err := TV.Live(channelID)
 	if err != nil {
@@ -25,8 +25,7 @@ func getDrmMpd(channelID, quality string) (*DrmMpdOutput, error) {
 	}
 	enc_key, err := secureurl.EncryptURL(liveResult.Mpd.Key)
 	if err != nil {
-		utils.Log.Panicln(err)
-		return nil, err
+		return nil, fmt.Errorf("failed to encrypt Mpd.Key: %w", err)
 	}
 
 	var tv_url string
@@ -43,26 +42,22 @@ func getDrmMpd(channelID, quality string) (*DrmMpdOutput, error) {
 
 	channel_enc_url, err := secureurl.EncryptURL(tv_url)
 	if err != nil {
-		utils.Log.Panicln(err)
-		return nil, err
+		return nil, fmt.Errorf("failed to encrypt tv_url: %w", err)
 	}
 
 	parsedTvUrl, err := url.Parse(tv_url)
 	if err != nil {
-		utils.Log.Panicln(err)
-		return nil, err
+		return nil, fmt.Errorf("failed to parse tv_url: %w", err)
 	}
 	tv_url_split := strings.Split(parsedTvUrl.Path, "/")
 	tv_url_path, err := secureurl.EncryptURL(strings.Join(tv_url_split[:len(tv_url_split)-1], "/") + "/")
 	if err != nil {
-		utils.Log.Panicln(err)
-		return nil, err
+		return nil, fmt.Errorf("failed to encrypt tv_url_path: %w", err)
 	}
 
 	tv_url_host, err := secureurl.EncryptURL(parsedTvUrl.Host)
 	if err != nil {
-		utils.Log.Panicln(err)
-		return nil, err
+		return nil, fmt.Errorf("failed to encrypt tv_url_host: %w", err)
 	}
 
 	return &DrmMpdOutput{
@@ -79,11 +74,11 @@ func LiveMpdHandler(c *fiber.Ctx) error {
 	channelID := c.Params("channelID")
 	quality := c.Query("q")
 
-	drmMpdOutput, err := getDrmMpd(channelID, quality)
+	drmMpdOutput, err := internalGetDrmMpd(channelID, quality)
 	if err != nil {
-		utils.Log.Panicln(err)
+		utils.Log.Println("Error in getDrmMpd:", err) // Keep logging for context
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err,
+			"message": "Failed to get DRM MPD details: " + err.Error(),
 		})
 	}
 
@@ -96,7 +91,7 @@ func LiveMpdHandler(c *fiber.Ctx) error {
 }
 
 func generateDateTime() string {
-	currentTime := time.Now()
+	currentTime := utils.TimeNow() // Changed to use utils.TimeNow
 	formattedDateTime := fmt.Sprintf("%02d%02d%02d%02d%02d%03d",
 		currentTime.Year()%100, currentTime.Month(), currentTime.Day(),
 		currentTime.Hour(), currentTime.Minute(),
@@ -113,9 +108,9 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 
 	decoded_channel, err := secureurl.DecryptURL(channel)
 	if err != nil {
-		utils.Log.Panicln(err)
+		utils.Log.Println("Error decrypting channel URL in DRMKeyHandler:", err)
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"message": err,
+			"message": "Failed to decrypt channel URL: " + err.Error(),
 		})
 	}
 
@@ -132,7 +127,12 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 
 	// Perform the HTTP GET request
 	if err := client.Do(req, resp); err != nil {
-		utils.Log.Panic(err)
+		// This is a network call, proxy.Do below will also handle errors.
+		// If client.Do itself fails, it's a significant issue.
+		utils.Log.Println("Error in client.Do for HEAD request in DRMKeyHandler:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to perform HEAD request: " + err.Error(),
+		})
 	}
 
 	// Get the cookies from the response
@@ -143,9 +143,9 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 
 	decoded_url, err := secureurl.DecryptURL(auth)
 	if err != nil {
-		utils.Log.Panicln(err)
+		utils.Log.Println("Error decrypting auth URL in DRMKeyHandler:", err)
 		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"message": err,
+			"message": "Failed to decrypt auth URL: " + err.Error(),
 		})
 	}
 
@@ -192,13 +192,17 @@ func MpdHandler(c *fiber.Ctx) error {
 
 	decryptedUrl, err := secureurl.DecryptURL(proxyUrl)
 	if err != nil {
-		utils.Log.Panicln(err)
-		return err
+		utils.Log.Println("Error decrypting proxy URL in MpdHandler:", err)
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"message": "Failed to decrypt proxy URL: " + err.Error(),
+		})
 	}
 	parsedUrl, err := url.Parse(decryptedUrl)
 	if err != nil {
-		utils.Log.Panicln(err)
-		return err
+		utils.Log.Println("Error parsing decrypted URL in MpdHandler:", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": "Failed to parse decrypted URL: " + err.Error(),
+		})
 	}
 
 	proxyHost := parsedUrl.Host
@@ -268,13 +272,17 @@ func DashHandler(c *fiber.Ctx) error {
 	// decode the URL
 	proxyHost, err := secureurl.DecryptURL(proxyHost)
 	if err != nil {
-		utils.Log.Panicln(err)
-		return err
+		utils.Log.Println("Error decrypting proxyHost in DashHandler:", err)
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"message": "Failed to decrypt proxy host: " + err.Error(),
+		})
 	}
 	proxyPath, err = secureurl.DecryptURL(proxyPath)
 	if err != nil {
-		utils.Log.Panicln(err)
-		return err
+		utils.Log.Println("Error decrypting proxyPath in DashHandler:", err)
+		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+			"message": "Failed to decrypt proxy path: " + err.Error(),
+		})
 	}
 
 	// remove render.dash from c.Request().URI().RequestURI()
