@@ -14,7 +14,7 @@ disable_ts_handler: false
 disable_logout: false
 
 # Enable Or Disable DRM. As DRM is not supported by most of the players, it is disabled by default. Default: false
-drm: false
+drm: true
 
 # Title of the webpage. Default: JioTV Go
 title: ""
@@ -28,3 +28,9 @@ path_prefix: ""
 
 # Proxy URL. Proxy is useful to bypass geo-restrictions and ip-restrictions for JioTV API. Default: ""
 proxy: ""
+
+# LogPath is the directory for log files. Default: ""
+log_path: ""
+
+# LogToStdout controls logging to stdout/stderr. Default: false
+log_to_stdout: false
