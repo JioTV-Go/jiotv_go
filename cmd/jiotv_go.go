@@ -11,8 +11,6 @@ import (
 	"github.com/jiotv-go/jiotv_go/v3/internal/middleware"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/epg"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/scheduler"
-	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
-	"github.com/jiotv-go/jiotv_go/v3/pkg/store"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 	"github.com/jiotv-go/jiotv_go/v3/web"
 
@@ -56,15 +54,7 @@ type JioTVServerConfig struct {
 // It starts listening on the provided host and port.
 // Returns an error if listening fails.
 func JioTVServer(jiotvServerConfig JioTVServerConfig) error {
-	// Config and Logger are assumed to be initialized by the caller (e.g., main.go)
-
-	// Initialize the store object
-	if err := store.Init(); err != nil {
-		return err
-	}
-
-	// Initialize the secureurl object
-	secureurl.Init()
+	// Config, Logger and Store are assumed to be initialized in main.go
 
 	// if config EPG is true or file epg.xml.gz exists
 	if config.Cfg.EPG || utils.FileExists("epg.xml.gz") {

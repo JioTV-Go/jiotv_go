@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jiotv-go/jiotv_go/v3/pkg/store"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 
 	"golang.org/x/term"
@@ -15,23 +14,14 @@ import (
 // Logs messages to provide feedback to the user.
 // Returns any errors encountered.
 func Logout() error {
-	err := store.Init()
+	fmt.Println("Deleting existing login file if exists")
+
+	err := utils.Logout()
 	if err != nil {
 		return err
 	}
 
-	// Initialize the logger object as it is used in epg.GenXMLGz()
-	// Do not remove this line, it will result in nil pointer dereference panic
-	utils.Log = utils.GetLogger()
-
-	utils.Log.Println("Deleting existing login file if exists")
-
-	err = utils.Logout()
-	if err != nil {
-		return err
-	}
-
-	utils.Log.Println("We have successfully logged you out. Please login again.")
+	fmt.Println("We have successfully logged you out. Please login again.")
 
 	return nil
 }
@@ -41,18 +31,12 @@ func Logout() error {
 // verifies the entered OTP by the user and logs in the user.
 // Returns any error encountered.
 func LoginOTP() error {
-	utils.Log = utils.GetLogger()
-	err := store.Init()
-	if err != nil {
-		return err
-	}
-
 	fmt.Print("Enter your mobile number: +91 ")
 	var mobileNumber string
 	fmt.Scanln(&mobileNumber)
 	mobileNumber = "+91" + mobileNumber
 
-	utils.Log.Println("Sending OTP to your mobile number")
+	fmt.Println("Sending OTP to your mobile number")
 
 	result, err := utils.LoginSendOTP(mobileNumber)
 	if err != nil {
@@ -60,7 +44,7 @@ func LoginOTP() error {
 	}
 
 	if result {
-		utils.Log.Println("OTP sent to your mobile number")
+		fmt.Println("OTP sent to your mobile number")
 
 		fmt.Print("Enter OTP: ")
 		var otp string
@@ -72,9 +56,9 @@ func LoginOTP() error {
 		}
 
 		if resultOTP["status"] == "success" {
-			utils.Log.Println("Login successful")
+			fmt.Println("Login successful")
 		} else {
-			utils.Log.Println("Login failed")
+			fmt.Println("Login failed")
 		}
 	}
 
@@ -87,12 +71,6 @@ func LoginOTP() error {
 // and logs in the user if successful.
 // Returns any error encountered.
 func LoginPassword() error {
-	utils.Log = utils.GetLogger()
-	err := store.Init()
-	if err != nil {
-		return err
-	}
-
 	fmt.Print("Enter your number: +91 ")
 	var mobileNumber string
 	fmt.Scanln(&mobileNumber)
@@ -108,9 +86,9 @@ func LoginPassword() error {
 	}
 
 	if result["status"] == "success" {
-		utils.Log.Println("Login successful")
+		fmt.Println("Login successful")
 	} else {
-		utils.Log.Println("Login failed")
+		fmt.Println("Login failed")
 	}
 
 	return nil

@@ -8,6 +8,8 @@ import (
 
 	"github.com/jiotv-go/jiotv_go/v3/cmd"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/store"
 
 	"github.com/urfave/cli/v2"
 )
@@ -27,6 +29,20 @@ func main() {
 		Copyright: "© JioTV Go (https://github.com/jiotv-go/jiotv_go)",
 		Compiled:  time.Now(),
 		Suggest:   true,
+		Before: func(c *cli.Context) error {
+			// Initialize the logger object before any command is executed
+			cmd.InitializeLogger()
+
+			// Initialize the store object
+			if err := store.Init(); err != nil {
+				return err
+			}
+
+			// Initialize the secureurl object
+			secureurl.Init()
+
+			return nil
+		},
 		Commands: []*cli.Command{
 			{
 				Name:        "serve",
@@ -38,12 +54,8 @@ func main() {
 					// Load the config file first
 					if err := cmd.LoadConfig(configPath); err != nil {
 						// Use standard log here as utils.Log might not be initialized if config loading fails
-						log.Fatalf("Failed to load config: %v", err) 
+						log.Fatalf("Failed to load config: %v", err)
 					}
-
-					// Initialize the logger object after config is loaded
-					cmd.InitializeLogger()
-
 					if c.Bool("skip-update-check") {
 						cmd.Logger().Println("INFO: Skipping update check")
 					} else {
@@ -64,7 +76,7 @@ func main() {
 					return cmd.JioTVServer(cmd.JioTVServerConfig{
 						Host:        host,
 						Port:        port,
-						ConfigPath:  configPath, 
+						ConfigPath:  configPath,
 						TLS:         tls,
 						TLSCertPath: tlsCertPath,
 						TLSKeyPath:  tlsKeyPath,
