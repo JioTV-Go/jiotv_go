@@ -47,6 +47,7 @@
     <a
       href="/play/{{$channel.ID}}"
       class="card border border-primary shadow-lg hover:shadow-xl hover:bg-base-300 transition-all duration-200 ease-in-out scale-100 hover:scale-105"
+      data-channel-id="{{$channel.ID}}"
     >
       <div class="flex flex-col items-center p-2 sm:p-4">
         <img
@@ -56,15 +57,16 @@
           class="h-14 w-14 sm:h-16 sm:w-16 md:h-18 md:w-18 lg:h-20 lg:w-20 rounded-full bg-gray-200"
         />
         <span class="text-lg font-bold mt-2">{{$channel.Name}}</span>
-        <div class="absolute top-2 right-2">
+    <div class="absolute top-2 right-2 flex items-center gap-1">
+        <button class="favorite-btn p-1 rounded-full hover:bg-gray-300" data-channel-id="{{$channel.ID}}" title="Toggle Favorite">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 text-yellow-400">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 011.04 0l2.125 5.111a.563.563 0 00.475.324l5.363.776c.504.072.705.662.337.988l-3.882 3.785a.563.563 0 00-.162.53l.916 5.34c.086.502-.437.886-.874.648l-4.799-2.523a.563.563 0 00-.526 0l-4.799 2.523c-.437.238-.96-.146-.874-.648l.916-5.34a.563.563 0 00-.162-.53L2.088 10.697c-.368-.326-.167-.916.337-.988l5.363-.776a.563.563 0 00.475-.324L11.48 3.5z" />
+            </svg>
+        </button>
           {{ if $channel.IsHD }}
-          <div class="badge badge-primary">
-             HD
-          </div>
+      <div class="badge badge-primary">HD</div>
           {{ else }}
-          <div class="badge badge-outline badge-primary">
-            SD
-          </div>
+      <div class="badge badge-outline badge-primary">SD</div>
           {{ end }}
         </div>
       </div>

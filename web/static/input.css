@@ -1,3 +1,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer utilities {
+  .channel-focused {
+    @apply ring-2 ring-blue-500 ring-offset-2 ring-offset-base-100;
+    /* This uses Tailwind's ring utilities for a nice outline effect */
+    /* Ensure it stands out from the default card style */
+  }
+}
