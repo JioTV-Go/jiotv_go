@@ -457,8 +457,11 @@ func CheckLoggedIn() bool {
 
 // Logout function deletes credentials file
 func Logout() error {
-	// credentialsPath := GetCredentialsPath()
-	// return os.Remove(credentialsPath)
+	// Perform server-side logout first
+	if err := PerformServerLogout(); err != nil {
+		// Log the error but continue with local logout
+		Log.Printf("PerformServerLogout failed: %v", err)
+	}
 
 	// Delete all key-value pairs from the store
 	if err := store.Delete("ssoToken"); err != nil {
@@ -490,6 +493,93 @@ func Logout() error {
 	}
 
 	return nil
+}
+
+// PerformServerLogout attempts to log out the user from the JioTV servers.
+func PerformServerLogout() error {
+	Log.Println("Attempting server-side logout...")
+
+	creds, err := GetJIOTVCredentials()
+	if err != nil {
+		Log.Printf("Error getting credentials for server logout: %v", err)
+		// Depending on the error, we might still proceed if critical info like refreshToken is available
+		// For now, we'll attempt to proceed if creds is not nil, or return if it is.
+		if creds == nil {
+			return fmt.Errorf("failed to get credentials: %w", err)
+		}
+	}
+
+	deviceID := GetDeviceID()
+	if deviceID == "" {
+		Log.Println("Device ID is empty, cannot perform server logout.")
+		return fmt.Errorf("deviceId is empty")
+	}
+
+	// refreshToken is crucial for logout
+	if creds.RefreshToken == "" {
+		Log.Println("RefreshToken is missing, cannot perform server logout.")
+		return fmt.Errorf("refreshToken is missing")
+	}
+
+	// Construct the request body
+	requestBodyMap := map[string]string{
+		"appName":      "RJIL_JioTV",
+		"deviceId":     deviceID,
+		"refreshToken": creds.RefreshToken,
+	}
+
+	requestBodyJSON, err := json.Marshal(requestBodyMap)
+	if err != nil {
+		Log.Printf("Error marshalling server logout request body: %v", err)
+		return fmt.Errorf("failed to marshal request body: %w", err)
+	}
+
+	// Construct the request
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+
+	req.SetRequestURI("https://auth.media.jio.com/tokenservice/apis/v1/logout?langId=6")
+	req.Header.SetMethod("POST")
+	req.Header.SetUserAgent("okhttp/4.9.3")
+	req.Header.Set("Accept-Encoding", "gzip")
+	if creds.AccessToken != "" {
+		req.Header.Set("accesstoken", creds.AccessToken)
+	} else {
+		Log.Println("AccessToken is missing, proceeding without it for server logout.")
+	}
+	req.Header.Set("devicetype", "phone")
+	req.Header.Set("versioncode", "371") // As per new requirement
+	req.Header.Set("os", "android")
+	if creds.UniqueID != "" {
+		req.Header.Set("uniqueid", creds.UniqueID)
+	} else {
+		Log.Println("UniqueID is missing, proceeding without it for server logout.")
+	}
+	req.Header.Set("content-type", "application/json; charset=utf-8")
+	req.SetBody(requestBodyJSON)
+
+	// Get the HTTP client
+	client := GetRequestClient()
+
+	// Perform the HTTP POST request
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	if err := client.Do(req, resp); err != nil {
+		Log.Printf("Error performing server logout request: %v", err)
+		return fmt.Errorf("http request failed: %w", err)
+	}
+
+	// Log the response status code
+	Log.Printf("Server logout API response status code: %d", resp.StatusCode())
+
+	if resp.StatusCode() >= 200 && resp.StatusCode() < 300 {
+		Log.Println("Server-side logout successful.")
+		return nil
+	}
+
+	Log.Printf("Server-side logout failed with status code: %d, body: %s", resp.StatusCode(), string(resp.Body()))
+	return fmt.Errorf("server logout API request failed with status code: %d", resp.StatusCode())
 }
 
 // GetRequestClient create a HTTP client with proxy if given
