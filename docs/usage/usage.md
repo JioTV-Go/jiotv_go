@@ -7,8 +7,14 @@ JioTV Go is a command-line application. It can be used to start the server, upda
 The `jiotv_go` CLI has the following structure:
 
 ```shell
-jiotv_go command [command options]
+jiotv_go [global options] command [command options]
 ```
+
+## Global Options
+
+- `--config value, -c value`: Path to the configuration file.
+  <br>By default, JioTV Go will look for a file named `jiotv_go.(toml|yaml|json)` or `config.(toml|yaml|json)` in the same directory as the binary or `$HOME/.jiotv_go/` directory.
+- `--skip-update-check`: Skip checking for updates on startup (default: false).
 
 ## Commands
 
@@ -79,15 +85,12 @@ jiotv_go serve [command options] [arguments...]
 
 **Options:**
 
-- `--config value, -c value`: Path to the configuration file.
-  <br>By default, JioTV Go will look for a file named `jiotv_go.(toml|yaml|json)` or `config.(toml|yaml|json)` in the same directory as the binary or `$HOME/.jiotv_go/` directory.
 - `--host value, -H value`: Host to listen on (default: "localhost").
 - `--port value, -p value`: Port to listen on (default: "5001").
 - `--public, -P`: Open the server to the public. This will expose your server outside your local network. Equivalent to passing `--host 0.0.0.0` (default: false).
 - `--tls`: Enable TLS. This will enable HTTPS. You need to provide the certificate and key file (default: false).
 - `--tls-cert value, --cert value`: Path to the TLS certificate file. Generate a self-signed certificate using `openssl req -new -newkey rsa:2048 -days 365 -nodes -x509 -keyout key.pem -out cert.pem`. cert.pem is the TLS certificate file and key.pem is the TLS key file.
 - `--tls-key value, --cert-key value`: Path to the TLS key file.
-- `--skip-update-check`: Skip checking for updates on startup (default: false).
 - `--help, -h`: Show help for the `serve` command.
 
 **Example:**
