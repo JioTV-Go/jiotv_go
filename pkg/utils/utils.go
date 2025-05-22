@@ -501,7 +501,7 @@ func PerformServerLogout() error {
 
 	creds, err := GetJIOTVCredentials()
 	if err != nil {
-		Log.Printf("Error getting credentials for server logout: %v", err)
+		Log.Printf("Error getting credentials for server logout: %v\n", err)
 		// Depending on the error, we might still proceed if critical info like refreshToken is available
 		// For now, we'll attempt to proceed if creds is not nil, or return if it is.
 		if creds == nil {
@@ -566,7 +566,7 @@ func PerformServerLogout() error {
 	defer fasthttp.ReleaseResponse(resp)
 
 	if err := client.Do(req, resp); err != nil {
-		Log.Printf("Error performing server logout request: %v", err)
+		Log.Printf("Error performing server logout request: %v\n", err)
 		return fmt.Errorf("http request failed: %w", err)
 	}
 
@@ -578,7 +578,7 @@ func PerformServerLogout() error {
 		return nil
 	}
 
-	Log.Printf("Server-side logout failed with status code: %d, body: %s", resp.StatusCode(), string(resp.Body()))
+	Log.Printf("Server-side logout failed with status code: %d, body: %s\n", resp.StatusCode(), string(resp.Body()))
 	return fmt.Errorf("server logout API request failed with status code: %d", resp.StatusCode())
 }
 
