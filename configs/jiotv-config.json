@@ -3,7 +3,7 @@
     "debug": false,
     "disable_ts_handler": false,
     "disable_logout": false,
-    "drm": false,
+    "drm": true,
     "title": "",
     "disable_url_encryption": false,
     "path_prefix": "",
