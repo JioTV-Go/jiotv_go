@@ -111,7 +111,7 @@ If a custom path is provided, the application will attempt to create the directo
 
 | Purpose | Config Value | Environment Variable | Default |
 | ----- | ------------ | -------------------- | ------- |
-| Enable or disable logging to standard output. | `log_to_stdout` | `JIOTV_LOG_TO_STDOUT` | `true` |
+| Enable or disable logging to standard output. | `log_to_stdout` | `JIOTV_LOG_TO_STDOUT` | `false` |
 
 This option controls whether log messages are also output to the standard output (the console).
 Set to `true` to see logs in your terminal, or `false` to suppress console logging. The default value is `false` when specified in a configuration file.
