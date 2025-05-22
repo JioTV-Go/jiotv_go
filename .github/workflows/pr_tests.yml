@@ -1,4 +1,7 @@
-name: Test build for PR
+name: Tests
+
+permissions:
+  contents: read
 
 on:
   pull_request:
@@ -31,9 +34,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
-          go-version-file: ./go.mod
+          go-version-file: "go.mod"
 
       - name: Build binary for ${{ matrix.goos }}/${{ matrix.goarch }}
         run: |
@@ -44,3 +47,24 @@ jobs:
         with:
           name: jiotv_go-${{ matrix.goos }}-${{ matrix.goarch }}
           path: ./bin/
+
+  tests:
+    name: Run Go Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version-file: "go.mod"
+
+    - name: Install Dependencies
+      run: go mod tidy
+
+    - name: Run Tests
+      run: go test -v ./...
