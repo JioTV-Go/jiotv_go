@@ -6,6 +6,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"log" // Added for logger initialization
+	"github.com/jiotv-go/jiotv_go/v3/pkg/utils" // Added for utils.Log
 )
 
 // Helper function to create a temporary file with given content.
@@ -28,6 +30,12 @@ func createTempFile(t *testing.T, content string) string {
 }
 
 func TestLoadCustomChannels(t *testing.T) {
+	if utils.Log == nil {
+		// Provide a default logger for testing purposes if utils.Log is not initialized
+		// This prevents panics in functions like LoadCustomChannels that use utils.Log
+		utils.Log = log.New(os.Stdout, "test: ", log.LstdFlags)
+	}
+
 	// Test Case 1: Valid JSON file
 	t.Run("ValidJSONFile", func(t *testing.T) {
 		validJSONContent := `{
