@@ -34,6 +34,8 @@ type JioTVConfig struct {
 	LogPath string `yaml:"log_path" env:"JIOTV_LOG_PATH" json:"log_path" toml:"log_path"`
 	// LogToStdout controls logging to stdout/stderr. Default: true
 	LogToStdout bool `yaml:"log_to_stdout" env:"JIOTV_LOG_TO_STDOUT" json:"log_to_stdout" toml:"log_to_stdout"`
+	// CustomChannelsPath is the path to the custom channels JSON file. Default: ""
+	CustomChannelsPath string `yaml:"custom_channels_path" env:"JIOTV_CUSTOM_CHANNELS_PATH" json:"custom_channels_path" toml:"custom_channels_path"`
 }
 
 // Cfg is the global config variable

@@ -115,6 +115,55 @@ If a custom path is provided, the application will attempt to create the directo
 
 This option controls whether log messages are also output to the standard output (the console).
 Set to `true` to see logs in your terminal, or `false` to suppress console logging. The default value is `false` when specified in a configuration file.
+
+### Custom Channels Path:
+
+| Purpose | Config Value | Environment Variable | Default |
+| ----- | ------------ | -------------------- | ------- |
+| Path to the custom channels JSON file. | `custom_channels_path` | `JIOTV_CUSTOM_CHANNELS_PATH` | `""` (empty string) |
+
+This option allows users to define their own custom channels by providing a path to a JSON file. If a valid path is provided, JioTV Go will load these channels alongside the default API channels. If the path is empty or the file is invalid, only API channels will be loaded.
+
+#### Custom Channels JSON File Format
+
+The JSON file specified by `custom_channels_path` should contain a single object with a key named `"channels"`. The value of this key should be an array of custom channel objects. Each object in the array represents a custom channel and can have the following fields:
+
+*   `ID` (string, required): A unique identifier for your custom channel (e.g., `"custom_mycoolchannel"`). It's recommended to prefix with `"custom_"` to avoid potential clashes with API channel IDs.
+*   `Name` (string, required): The display name for your channel (e.g., `"My Cool Channel"`).
+*   `LogoURL` (string, required): The URL to the channel's logo. This can be an absolute URL (e.g., `"http://example.com/logo.png"`) or a relative path if you plan to serve it locally (though absolute URLs are generally more straightforward for external logos). If relative, it's relative to where your IPTV client might interpret it, or if used in the JioTV Go web UI, it might need specific handling (e.g., placing it in a publicly accessible folder).
+*   `Category` (string, required): The category of the channel (e.g., `"Movies"`, `"Sports"`). This should match one of the category names known to JioTV Go. You can usually find the list of available categories in the application's UI or by referring to the `CategoryMap` in the source code (`pkg/television/types.go`). If the category is not recognized, it will default to "All Categories".
+*   `Language` (string, required): The language of the channel (e.g., `"English"`, `"Hindi"`). Similar to `Category`, this should match a language name known to JioTV Go (see `LanguageMap` in `pkg/television/types.go`). If the language is not recognized, it will default to "Other".
+*   `URL` (string, required): The direct M3U8 or other stream URL for the channel (e.g., `"http://example.com/stream.m3u8"`).
+*   `IsHD` (boolean, optional): Set to `true` if the channel is in High Definition. Defaults to `false` if omitted.
+*   `EPGID` (string, optional): An identifier for mapping this channel to an Electronic Program Guide (EPG) source. This is for advanced use and may require further configuration depending on your EPG setup. Defaults to `""` (empty string) if omitted.
+
+**Example `custom_channels.json` file:**
+
+```json
+{
+  "channels": [
+    {
+      "ID": "custom_1",
+      "Name": "My Custom HD Channel",
+      "LogoURL": "http://example.com/logo.png",
+      "Category": "Movies",
+      "Language": "English",
+      "URL": "http://example.com/stream.m3u8",
+      "IsHD": true,
+      "EPGID": "mychannel.epg"
+    },
+    {
+      "ID": "custom_2",
+      "Name": "Another Channel (SD)",
+      "LogoURL": "http://example.com/another_logo.png",
+      "Category": "News",
+      "Language": "Hindi",
+      "URL": "http://example.com/another_stream.m3u8"
+    }
+  ]
+}
+```
+
 ## Example Configurations
 
 Below are example configuration file for JioTV Go. All fields are optional, and the values shown are the default settings:
@@ -166,6 +215,9 @@ log_path = ""
 
 # LogToStdout controls logging to stdout/stderr. Default: false (when set in config)
 log_to_stdout = false
+
+# Path to custom channels JSON file. Default: ""
+custom_channels_path = ""
 ```
 
 This example demonstrates how to customize the configuration parameters using TOML syntax. Feel free to modify the values based on your preferences and requirements.
@@ -188,6 +240,7 @@ path_prefix: ""
 proxy: ""
 log_path: ""
 log_to_stdout: false
+custom_channels_path: ""
 ```
 
 ### Example JSON Configuration
@@ -208,6 +261,7 @@ The file is also available at [configs/jiotv_go-config.json](https://github.com/
     "path_prefix": "",
     "proxy": "",
     "log_path": "",
-    "log_to_stdout": false
+    "log_to_stdout": false,
+    "custom_channels_path": ""
 }
 ```

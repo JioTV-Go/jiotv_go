@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"os"
+	"net/url"
 	"regexp"
 	"strconv"
 	"strings"
@@ -50,6 +51,12 @@ func Init() {
 	if !EnableDRM {
 		utils.Log.Println("If you're not using IPTV Client. We strongly recommend enabling DRM for accessing channels without any issues! Either enable by setting environment variable JIOTV_DRM=true or by setting DRM: true in config. For more info Read https://telegram.me/jiotv_go/128")
 	}
+	// Log custom channels path
+	if config.Cfg.CustomChannelsPath != "" {
+		utils.Log.Println("Custom channels file path:", config.Cfg.CustomChannelsPath)
+	} else {
+		utils.Log.Println("No custom channels file path provided.")
+	}
 	// Generate a new device ID if not present
 	utils.GetDeviceID()
 	// Get credentials from file
@@ -87,7 +94,7 @@ func ErrorMessageHandler(c *fiber.Ctx, err error) error {
 // IndexHandler handles the index page for `/` route
 func IndexHandler(c *fiber.Ctx) error {
 	// Get all channels
-	channels := television.Channels()
+	channels := television.Channels(config.Cfg.CustomChannelsPath)
 
 	// Get language and category from query params
 	language := c.Query("language")
@@ -123,7 +130,30 @@ func IndexHandler(c *fiber.Ctx) error {
 		return c.Render("views/index", indexContext)
 	}
 	// If language and category are not provided, return all channels
-	indexContext["Channels"] = channels.Result
+	// Prepare URLs for the template
+	processedChannels := make([]television.Channel, len(channels.Result))
+	copy(processedChannels, channels.Result) // Avoid modifying the original slice directly if it's used elsewhere
+
+	for i, ch := range processedChannels {
+		// Prepare LogoURL
+		if !strings.HasPrefix(ch.LogoURL, "http://") && !strings.HasPrefix(ch.LogoURL, "https://") {
+			processedChannels[i].LogoURL = "/jtvimage/" + ch.LogoURL
+		}
+
+		// Prepare Play URL (repurposing ch.URL for template's play link)
+		// The original ch.URL for custom channels is its direct stream URL.
+		// The original ch.URL for API channels was previously set to /live/:id in ChannelsHandler,
+		// but that's for M3U. For the dashboard, we always want to go via a player route.
+
+		if strings.HasPrefix(ch.ID, "custom_") && ch.URL != "" {
+			// This channel.URL is the direct stream URL from custom channel loading
+			processedChannels[i].URL = "/player_direct?url=" + url.QueryEscape(ch.URL)
+		} else {
+			// API Channel or custom channel without a direct URL (should not happen for custom)
+			processedChannels[i].URL = "/play/" + ch.ID
+		}
+	}
+	indexContext["Channels"] = processedChannels
 	return c.Render("views/index", indexContext)
 }
 
@@ -379,7 +409,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	splitCategory := strings.TrimSpace(c.Query("c"))
 	languages := strings.TrimSpace(c.Query("l"))
 	skipGenres := strings.TrimSpace(c.Query("sg"))
-	apiResponse := television.Channels()
+	apiResponse := television.Channels(config.Cfg.CustomChannelsPath)
 	// hostUrl should be request URL like http://localhost:5001
 	hostURL := strings.ToLower(c.Protocol()) + "://" + c.Hostname()
 
@@ -399,12 +429,21 @@ func ChannelsHandler(c *fiber.Ctx) error {
 			}
 
 			var channelURL string
-			if quality != "" {
-				channelURL = fmt.Sprintf("%s/live/%s/%s.m3u8", hostURL, quality, channel.ID)
-			} else {
-				channelURL = fmt.Sprintf("%s/live/%s.m3u8", hostURL, channel.ID)
+			if channel.URL != "" { // Check if it's a custom channel with a direct URL
+				channelURL = channel.URL
+			} else { // Existing logic for API-based channels
+				if quality != "" {
+					channelURL = fmt.Sprintf("%s/live/%s/%s.m3u8", hostURL, quality, channel.ID)
+				} else {
+					channelURL = fmt.Sprintf("%s/live/%s.m3u8", hostURL, channel.ID)
+				}
 			}
-			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
+
+			channelLogoURL := channel.LogoURL // Assume it might be absolute
+			if !strings.HasPrefix(channel.LogoURL, "http://") && !strings.HasPrefix(channel.LogoURL, "https://") {
+				channelLogoURL = fmt.Sprintf("%s/%s", logoURL, channel.LogoURL) // Prepend host path if relative
+			}
+
 			var groupTitle string
 			if splitCategory == "split" {
 				groupTitle = fmt.Sprintf("%s - %s", television.CategoryMap[channel.Category], television.LanguageMap[channel.Language])
@@ -469,16 +508,31 @@ func PlayHandler(c *fiber.Ctx) error {
 	})
 }
 
-// PlayerHandler loads Web Player to stream live TV
+// PlayerHandler loads Web Player to stream live TV.
+// It can either take a channel ID (for API channels) or a direct URL (for custom channels).
 func PlayerHandler(c *fiber.Ctx) error {
-	id := c.Params("id")
-	quality := c.Query("q")
+	directURLParam := c.Query("url")
 	var play_url string
-	if quality != "" {
-		play_url = "/live/" + quality + "/" + id + ".m3u8"
+
+	if directURLParam != "" {
+		// Handling /player_direct?url=...
+		decodedURL, err := url.QueryUnescape(directURLParam)
+		if err != nil {
+			utils.Log.Println("Error decoding direct URL for player:", err)
+			return c.Status(fiber.StatusBadRequest).SendString("Invalid URL parameter")
+		}
+		play_url = decodedURL
 	} else {
-		play_url = "/live/" + id + ".m3u8"
+		// Handling /player/:id
+		id := c.Params("id")
+		quality := c.Query("q")
+		if quality != "" {
+			play_url = "/live/" + quality + "/" + id + ".m3u8"
+		} else {
+			play_url = "/live/" + id + ".m3u8"
+		}
 	}
+
 	c.Response().Header.Set("Cache-Control", "public, max-age=3600")
 	return c.Render("views/flow_player", fiber.Map{
 		"play_url": play_url,

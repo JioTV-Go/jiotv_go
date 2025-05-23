@@ -86,6 +86,48 @@ type LiveURLOutput struct {
 	IsDRM       bool     `json:"isDRM"`
 }
 
+// CustomChannel represents a user-defined channel.
+type CustomChannel struct {
+	ID       string `json:"ID"`
+	Name     string `json:"Name"`
+	LogoURL  string `json:"LogoURL"`
+	Category string `json:"Category"`
+	Language string `json:"Language"`
+	URL      string `json:"URL"`
+	IsHD     bool   `json:"IsHD,omitempty"`
+	EPGID    string `json:"EPGID,omitempty"`
+}
+
+// CustomChannelsConfig is used to parse the custom channels configuration file.
+// The JSON format should be an object with a single key "channels", which is an array of custom channel objects.
+// Each custom channel object should have keys corresponding to the fields in the CustomChannel struct.
+// Example:
+// {
+//   "channels": [
+//     {
+//       "ID": "custom_1",
+//       "Name": "My Custom HD Channel",
+//       "LogoURL": "http://example.com/logo.png",
+//       "Category": "Movies",
+//       "Language": "English",
+//       "URL": "http://example.com/stream.m3u8",
+//       "IsHD": true,
+//       "EPGID": "mychannel.epg"
+//     },
+//     {
+//       "ID": "custom_2",
+//       "Name": "Another Channel (SD)",
+//       "LogoURL": "http://example.com/another_logo.png",
+//       "Category": "News",
+//       "Language": "Hindi",
+//       "URL": "http://example.com/another_stream.m3u8"
+//     }
+//   ]
+// }
+type CustomChannelsConfig struct {
+	Channels []CustomChannel `json:"channels"`
+}
+
 // CategoryMap represents Categories for channels
 var CategoryMap = map[int]string{
 	0:  "All Categories",

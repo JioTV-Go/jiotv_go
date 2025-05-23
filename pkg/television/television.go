@@ -166,8 +166,8 @@ func (tv *Television) Render(url string) ([]byte, int) {
 	return buf, resp.StatusCode()
 }
 
-// Channels fetch channels from JioTV API
-func Channels() ChannelsResponse {
+// Channels fetch channels from JioTV API and appends custom channels if a valid path is provided.
+func Channels(customChannelsPath string) ChannelsResponse {
 
 	// Create a fasthttp.Client
 	client := utils.GetRequestClient()
@@ -210,6 +210,25 @@ func Channels() ChannelsResponse {
 
 	// disable sony channels temporarily
 	// apiResponse.Result = append(apiResponse.Result, SONY_CHANNELS_API...)
+
+	// Load custom channels
+	if customChannelsPath != "" {
+		customChannels, err := LoadCustomChannels(customChannelsPath)
+		if err != nil {
+			utils.Log.Println("Error loading custom channels:", err)
+		} else if customChannels != nil {
+			for i := range customChannels {
+				customChannels[i].ID = "custom_" + customChannels[i].ID
+				// Ensure custom channel URLs are also directly usable if they are full URLs
+				// If they are just IDs, they might need formatting similar to API channels,
+				// but the current CustomChannel struct implies URL is the direct stream URL.
+			}
+			apiResponse.Result = append(apiResponse.Result, customChannels...)
+			utils.Log.Printf("Successfully loaded %d custom channels.", len(customChannels))
+		}
+	} else {
+		utils.Log.Println("No custom channels path provided, skipping loading of custom channels.")
+	}
 
 	return apiResponse
 }
