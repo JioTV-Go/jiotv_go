@@ -89,7 +89,7 @@ func TestChannels(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := Channels(); !reflect.DeepEqual(got, tt.want) {
+			if got := Channels(""); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Channels() = %v, want %v", got, tt.want)
 			}
 		})

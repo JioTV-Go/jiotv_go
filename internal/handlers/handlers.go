@@ -132,9 +132,6 @@ func IndexHandler(c *fiber.Ctx) error {
 	// If language and category are not provided, return all channels
 	// Prepare URLs for the template
 	processedChannels := make([]television.Channel, len(channels.Result))
-	// If language and category are not provided, return all channels
-	// Prepare URLs for the template
-	processedChannels := make([]television.Channel, len(channels.Result))
 	// We need to check the original channel.URL from channels.Result for logo processing,
 	// and use original channel data for preparing play URLs.
 	for i := range channels.Result {
