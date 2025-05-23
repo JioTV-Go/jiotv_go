@@ -30,7 +30,7 @@ func LoadCustomChannels(customChannelsPath string) ([]Channel, error) {
 
 	if len(data) == 0 {
 		// File is empty, treat as no custom channels
-		utils.Log.Warnf("Custom channels file '%s' is empty.", customChannelsPath)
+		utils.Log.Printf("Custom channels file '%s' is empty.", customChannelsPath)
 		return nil, nil
 	}
 	
@@ -62,7 +62,7 @@ func LoadCustomChannels(customChannelsPath string) ([]Channel, error) {
 		if categoryID != -1 {
 			ch.Category = categoryID
 		} else {
-			utils.Log.Warnf("Custom channel '%s': Category '%s' not found in CategoryMap. Defaulting to 'All Categories' (ID 0).", customCh.Name, customCh.Category)
+			utils.Log.Printf("Custom channel '%s': Category '%s' not found in CategoryMap. Defaulting to 'All Categories' (ID 0).", customCh.Name, customCh.Category)
 			ch.Category = 0 // Default to "All Categories"
 		}
 
@@ -77,7 +77,7 @@ func LoadCustomChannels(customChannelsPath string) ([]Channel, error) {
 		if languageID != -1 {
 			ch.Language = languageID
 		} else {
-			utils.Log.Warnf("Custom channel '%s': Language '%s' not found in LanguageMap. Defaulting to 'Other' (ID 18).", customCh.Name, customCh.Language)
+			utils.Log.Printf("Custom channel '%s': Language '%s' not found in LanguageMap. Defaulting to 'Other' (ID 18).", customCh.Name, customCh.Language)
 			ch.Language = 18 // Default to "Other"
 		}
 
