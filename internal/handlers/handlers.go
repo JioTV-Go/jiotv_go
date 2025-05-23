@@ -138,27 +138,31 @@ func IndexHandler(c *fiber.Ctx) error {
 		originalChannel := channels.Result[i] // Get the original channel from the source
 		processedChannel := originalChannel    // Copy struct
 
+		processedChannel := originalChannel    // Copy struct
+
 		// Prepare LogoURL
-		// If it's an API channel (original URL is empty) and its logo is relative, prefix it.
-		// Custom channel LogoURLs (original URL is not empty) are used as-is.
-		if originalChannel.URL == "" { // This is an API channel
-			if !strings.HasPrefix(originalChannel.LogoURL, "http://") && !strings.HasPrefix(originalChannel.LogoURL, "https://") {
+		// API channel IDs are numeric (or non-prefixed strings from Sony),
+		// while custom channel IDs are prefixed with custom_
+		if !strings.HasPrefix(originalChannel.ID, "custom_") { // This is an API channel
+			if !(strings.HasPrefix(originalChannel.LogoURL, "http://") || strings.HasPrefix(originalChannel.LogoURL, "https://")) {
 				processedChannel.LogoURL = "/jtvimage/" + originalChannel.LogoURL
 			}
-			// If already absolute, it's used as is (originalChannel.LogoURL which is already in processedChannel.LogoURL)
+			// If API channel logo is already absolute, it's used as-is (originalChannel.LogoURL which is already in processedChannel.LogoURL)
 		}
-		// For custom channels (else case: originalChannel.URL != ""), processedChannel.LogoURL (which is originalChannel.LogoURL) is used as-is.
+		// Else (custom_ channel), processedChannel.LogoURL (which is originalChannel.LogoURL) is used as-is (assumed absolute).
 
 		// Prepare Play URL (repurposing processedChannel.URL for template's play link)
 		// The original ch.URL for custom channels is its direct stream URL.
 		// The original ch.URL for API channels was previously set to /live/:id in ChannelsHandler,
 		// but that's for M3U. For the dashboard, we always want to go via a player route.
 
-		if originalChannel.URL != "" { // This is a Custom channel with a direct stream URL
+		if strings.HasPrefix(originalChannel.ID, "custom_") { // This is a custom channel
+			// originalChannel.URL here is the direct stream URL from the custom channels JSON
 			processedChannel.URL = "/player_direct?url=" + url.QueryEscape(originalChannel.URL)
-		} else { // API Channel
+		} else { // This is an API channel
 			processedChannel.URL = "/play/" + originalChannel.ID
 		}
+		processedChannels[i] = processedChannel
 	}
 	indexContext["Channels"] = processedChannels
 	return c.Render("views/index", indexContext)
