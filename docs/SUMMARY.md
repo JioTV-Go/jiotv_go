@@ -11,6 +11,7 @@
   - [IPTV Guide](./usage/iptv.md)
   - [URL Paths](./usage/paths.md)
 - [Config](./config.md)
+- [DRM Details](./drm.md)
 - [Cloud Hosting](./cloud_hosting.md)
 - [Development](./development.md)
 - [Contributing](./contributing.md)
