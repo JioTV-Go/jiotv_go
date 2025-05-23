@@ -132,25 +132,35 @@ func IndexHandler(c *fiber.Ctx) error {
 	// If language and category are not provided, return all channels
 	// Prepare URLs for the template
 	processedChannels := make([]television.Channel, len(channels.Result))
-	copy(processedChannels, channels.Result) // Avoid modifying the original slice directly if it's used elsewhere
+	// If language and category are not provided, return all channels
+	// Prepare URLs for the template
+	processedChannels := make([]television.Channel, len(channels.Result))
+	// We need to check the original channel.URL from channels.Result for logo processing,
+	// and use original channel data for preparing play URLs.
+	for i := range channels.Result {
+		originalChannel := channels.Result[i] // Get the original channel from the source
+		processedChannel := originalChannel    // Copy struct
 
-	for i, ch := range processedChannels {
 		// Prepare LogoURL
-		if !strings.HasPrefix(ch.LogoURL, "http://") && !strings.HasPrefix(ch.LogoURL, "https://") {
-			processedChannels[i].LogoURL = "/jtvimage/" + ch.LogoURL
+		// If it's an API channel (original URL is empty) and its logo is relative, prefix it.
+		// Custom channel LogoURLs (original URL is not empty) are used as-is.
+		if originalChannel.URL == "" { // This is an API channel
+			if !strings.HasPrefix(originalChannel.LogoURL, "http://") && !strings.HasPrefix(originalChannel.LogoURL, "https://") {
+				processedChannel.LogoURL = "/jtvimage/" + originalChannel.LogoURL
+			}
+			// If already absolute, it's used as is (originalChannel.LogoURL which is already in processedChannel.LogoURL)
 		}
+		// For custom channels (else case: originalChannel.URL != ""), processedChannel.LogoURL (which is originalChannel.LogoURL) is used as-is.
 
-		// Prepare Play URL (repurposing ch.URL for template's play link)
+		// Prepare Play URL (repurposing processedChannel.URL for template's play link)
 		// The original ch.URL for custom channels is its direct stream URL.
 		// The original ch.URL for API channels was previously set to /live/:id in ChannelsHandler,
 		// but that's for M3U. For the dashboard, we always want to go via a player route.
 
-		if strings.HasPrefix(ch.ID, "custom_") && ch.URL != "" {
-			// This channel.URL is the direct stream URL from custom channel loading
-			processedChannels[i].URL = "/player_direct?url=" + url.QueryEscape(ch.URL)
-		} else {
-			// API Channel or custom channel without a direct URL (should not happen for custom)
-			processedChannels[i].URL = "/play/" + ch.ID
+		if originalChannel.URL != "" { // This is a Custom channel with a direct stream URL
+			processedChannel.URL = "/player_direct?url=" + url.QueryEscape(originalChannel.URL)
+		} else { // API Channel
+			processedChannel.URL = "/play/" + originalChannel.ID
 		}
 	}
 	indexContext["Channels"] = processedChannels
@@ -439,9 +449,18 @@ func ChannelsHandler(c *fiber.Ctx) error {
 				}
 			}
 
-			channelLogoURL := channel.LogoURL // Assume it might be absolute
-			if !strings.HasPrefix(channel.LogoURL, "http://") && !strings.HasPrefix(channel.LogoURL, "https://") {
-				channelLogoURL = fmt.Sprintf("%s/%s", logoURL, channel.LogoURL) // Prepend host path if relative
+			var channelLogoURL string
+			// channel.URL is populated for custom channels with their direct stream URL.
+			// API channels (JioTV) do not have channel.URL populated from the initial API fetch.
+			if channel.URL != "" { // This indicates a custom channel
+				channelLogoURL = channel.LogoURL // Use directly, assuming it's always absolute as per user feedback
+			} else { // This is an API channel
+				if strings.HasPrefix(channel.LogoURL, "http://") || strings.HasPrefix(channel.LogoURL, "https://") {
+					channelLogoURL = channel.LogoURL // Already absolute
+				} else {
+					// logoURL is hostURL + "/jtvimage"
+					channelLogoURL = fmt.Sprintf("%s/%s", logoURL, channel.LogoURL) // Prepend host path if relative
+				}
 			}
 
 			var groupTitle string

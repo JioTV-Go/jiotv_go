@@ -38,7 +38,6 @@ func TestLoadCustomChannels(t *testing.T) {
 					"Category": "Entertainment",
 					"Language": "English",
 					"URL": "http://stream.url/tc1.m3u8",
-					"IsHD": true,
 					"EPGID": "tc1.epg"
 				},
 				{
@@ -77,9 +76,7 @@ func TestLoadCustomChannels(t *testing.T) {
 			if ch1.URL != "http://stream.url/tc1.m3u8" {
 				t.Errorf("Ch1 URL: expected 'http://stream.url/tc1.m3u8', got '%s'", ch1.URL)
 			}
-			if !ch1.IsHD {
-				t.Errorf("Ch1 IsHD: expected true, got false")
-			}
+			// IsHD removed from CustomChannel, Channel.IsHD will be false (zero-value)
 			// Category "Entertainment" -> 5
 			if ch1.Category != 5 {
 				t.Errorf("Ch1 Category: expected 5 (Entertainment), got %d", ch1.Category)
@@ -106,9 +103,7 @@ func TestLoadCustomChannels(t *testing.T) {
 			if ch2.URL != "http://stream.url/tc2.m3u8" {
 				t.Errorf("Ch2 URL: expected 'http://stream.url/tc2.m3u8', got '%s'", ch2.URL)
 			}
-			if ch2.IsHD { // Default is false
-				t.Errorf("Ch2 IsHD: expected false, got true")
-			}
+			// IsHD removed from CustomChannel, Channel.IsHD will be false (zero-value)
 			// Category "News" -> 12
 			if ch2.Category != 12 {
 				t.Errorf("Ch2 Category: expected 12 (News), got %d", ch2.Category)

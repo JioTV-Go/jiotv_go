@@ -47,7 +47,7 @@ func LoadCustomChannels(customChannelsPath string) ([]Channel, error) {
 			Name:     customCh.Name,
 			LogoURL:  customCh.LogoURL,
 			URL:      customCh.URL, // Mapping custom URL to Channel.URL
-			IsHD:     customCh.IsHD,
+			// IsHD is removed from CustomChannel, so Channel.IsHD will be its zero-value (false)
 			// TODO: Handle EPGID for custom channels (customCh.EPGID)
 		}
 

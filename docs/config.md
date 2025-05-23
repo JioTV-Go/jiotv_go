@@ -134,7 +134,6 @@ The JSON file specified by `custom_channels_path` should contain a single object
 *   `Category` (string, required): The category of the channel (e.g., `"Movies"`, `"Sports"`). This should match one of the category names known to JioTV Go. You can usually find the list of available categories in the application's UI or by referring to the `CategoryMap` in the source code (`pkg/television/types.go`). If the category is not recognized, it will default to "All Categories".
 *   `Language` (string, required): The language of the channel (e.g., `"English"`, `"Hindi"`). Similar to `Category`, this should match a language name known to JioTV Go (see `LanguageMap` in `pkg/television/types.go`). If the language is not recognized, it will default to "Other".
 *   `URL` (string, required): The direct M3U8 or other stream URL for the channel (e.g., `"http://example.com/stream.m3u8"`).
-*   `IsHD` (boolean, optional): Set to `true` if the channel is in High Definition. Defaults to `false` if omitted.
 *   `EPGID` (string, optional): An identifier for mapping this channel to an Electronic Program Guide (EPG) source. This is for advanced use and may require further configuration depending on your EPG setup. Defaults to `""` (empty string) if omitted.
 
 **Example `custom_channels.json` file:**
@@ -149,7 +148,6 @@ The JSON file specified by `custom_channels_path` should contain a single object
       "Category": "Movies",
       "Language": "English",
       "URL": "http://example.com/stream.m3u8",
-      "IsHD": true,
       "EPGID": "mychannel.epg"
     },
     {

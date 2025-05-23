@@ -94,7 +94,6 @@ type CustomChannel struct {
 	Category string `json:"Category"`
 	Language string `json:"Language"`
 	URL      string `json:"URL"`
-	IsHD     bool   `json:"IsHD,omitempty"`
 	EPGID    string `json:"EPGID,omitempty"`
 }
 
@@ -111,7 +110,6 @@ type CustomChannel struct {
 //       "Category": "Movies",
 //       "Language": "English",
 //       "URL": "http://example.com/stream.m3u8",
-//       "IsHD": true,
 //       "EPGID": "mychannel.epg"
 //     },
 //     {
