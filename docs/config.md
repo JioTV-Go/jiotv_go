@@ -56,6 +56,7 @@ DRM is a method of restricting access to copyrighted. The latest version of JioT
 For future compatibility, I have added this feature.
 
 Currently, the DRM is only supported by the web interface. It is not supported by the IPTV playlist.
+For more detailed information about the DRM feature, including setup and limitations, please see [DRM Documentation](./drm.md).
 
 ### Title:
 
