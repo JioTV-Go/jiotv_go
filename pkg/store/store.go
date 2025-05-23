@@ -26,17 +26,34 @@ type TomlStore struct {
 // KVS represents global key-value store.
 var KVS *TomlStore
 
+// osStat is a variable for os.Stat, allowing it to be mocked for testing.
+var osStat = os.Stat
+// osUserHomeDir is a variable for os.UserHomeDir, allowing it to be mocked for testing.
+var osUserHomeDir = os.UserHomeDir
+// osMkdir is a variable for os.Mkdir, allowing it to be mocked for testing.
+var osMkdir = os.Mkdir
+// osCreate is a variable for os.Create, allowing it to be mocked for testing.
+var osCreate = os.Create
+
+// tomlDecodeFile is a variable for toml.DecodeFile, for potential mocking (though direct file mocking is preferred).
+var tomlDecodeFile = toml.DecodeFile
+// tomlEncode is a helper variable for toml.NewEncoder().Encode(), for potential mocking.
+var tomlEncode = func(w io.Writer, v interface{}) error {
+	return toml.NewEncoder(w).Encode(v)
+}
+
+
 // Init initializes the TOML file, creates if not exist, otherwise reads and decodes to struct.
 func Init() error {
 	KVS = &TomlStore{}
 	// store_vX.toml, where X is changed whenever new version requires re-login
-	filename := filepath.Join(GetPathPrefix(), "store_v4.toml")
+	filename := filepath.Join(getPathPrefix(), "store_v4.toml")
 
 	KVS.mu.Lock()
 	defer KVS.mu.Unlock()
 
 	KVS.filename = filename
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
+	if _, err := osStat(filename); os.IsNotExist(err) {
 		// Create a new file with an empty configuration.
 		KVS.config = Config{
 			Data: make(map[string]string),
@@ -45,7 +62,7 @@ func Init() error {
 	}
 
 	// Read and decode existing configuration from the file.
-	_, err := toml.DecodeFile(filename, &KVS.config)
+	_, err := tomlDecodeFile(filename, &KVS.config)
 	return err
 }
 
@@ -81,14 +98,13 @@ func Delete(key string) error {
 
 // saveConfig saves the current configuration to the TOML file.
 func saveConfig() error {
-	file, err := os.Create(KVS.filename)
+	file, err := osCreate(KVS.filename)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
 
-	encoder := toml.NewEncoder(file)
-	return encoder.Encode(KVS.config)
+	return tomlEncode(file, KVS.config)
 }
 
 // Errors
@@ -101,12 +117,13 @@ const (
 	PATH_PREFIX = ".jiotv_go"
 )
 
-// GetPathPrefix returns the path prefix for all files managed by JioTV Go.
-func GetPathPrefix() string {
+// getPathPrefix returns the path prefix for all files managed by JioTV Go.
+// Made into a variable for easier mocking in tests.
+var getPathPrefix = func() string {
 	pathPrefix := config.Cfg.PathPrefix
 	if pathPrefix == "" {
 		// add UserHomeDir to pathPrefix
-		homeDir, err := os.UserHomeDir()
+		homeDir, err := osUserHomeDir()
 		if err != nil {
 			panic(fmt.Errorf("GetPathPrefix: error getting user home directory: %v", err))
 		}
@@ -114,16 +131,25 @@ func GetPathPrefix() string {
 	}
 
 	// if pathPrefix does not exist, create it
-	if _, err := os.Stat(pathPrefix); os.IsNotExist(err) {
-		if err := os.Mkdir(pathPrefix, 0755); err != nil {
+	if _, err := osStat(pathPrefix); os.IsNotExist(err) {
+		if err := osMkdir(pathPrefix, 0755); err != nil {
 			panic(fmt.Errorf("GetPathPrefix: error creating pathPrefix: %v", err))
 		}
 	}
 
 	// if pathPrefix does not have a trailing slash, add it
-	if pathPrefix[len(pathPrefix)-1] != '/' {
-		pathPrefix += "/"
+	// Use filepath.Separator for OS-agnostic path handling.
+	// However, the original code explicitly adds '/', so we keep that for now.
+	if pathPrefix[len(pathPrefix)-1] != '/' && pathPrefix[len(pathPrefix)-1] != filepath.Separator {
+		pathPrefix += string(filepath.Separator) 
 	}
 
+
 	return pathPrefix
+}
+
+// GetPathPrefix is the exported version that uses the internal variable getPathPrefix.
+// This allows users of the package to use it as before, while tests can mock the internal one.
+func GetPathPrefix() string {
+	return getPathPrefix()
 }

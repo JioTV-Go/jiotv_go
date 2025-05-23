@@ -22,7 +22,7 @@ func Stop() {
 	Scheduler.Stop()
 }
 
-func Add(id string, interval time.Duration, task func() error) {
+func Add(id string, interval time.Duration, task func() error) error {
 	// delete any existing task with the same ID
 	Scheduler.Del(id)
 	// Add a task
@@ -35,7 +35,8 @@ func Add(id string, interval time.Duration, task func() error) {
 	})
 	if err != nil {
 		utils.Log.Printf("Failed to add task: %v\n", err)
-		return
+		return err
 	}
 	utils.Log.Printf("Task added with ID: %v\n", id)
+	return nil
 }

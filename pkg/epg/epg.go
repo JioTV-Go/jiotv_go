@@ -29,13 +29,16 @@ const (
 	EPG_TASK_ID = "jiotv_epg"
 )
 
+// For testing purposes, allow os.Stat to be mocked.
+var osStat = os.Stat
+
 // Init initializes EPG generation and schedules it for the next day.
 func Init() {
 	epgFile := utils.GetPathPrefix() + "epg.xml.gz"
 	var lastModTime time.Time
 	flag := false
 	utils.Log.Println("Checking EPG file")
-	if stat, err := os.Stat(epgFile); err == nil {
+	if stat, err := osStat(epgFile); err == nil {
 		// If file was modified today, don't generate new EPG
 		// Else generate new EPG
 		lastModTime = stat.ModTime()
@@ -107,7 +110,7 @@ func NewProgramme(channelID int, start, stop, title, desc, category, iconSrc str
 }
 
 // genXML generates XML EPG from JioTV API and returns it as a byte slice.
-func genXML() ([]byte, error) {
+var genXML = func() ([]byte, error) {
 	// Create a reusable fasthttp client with common headers
 	client := utils.GetRequestClient()
 
@@ -224,16 +227,17 @@ func formatTime(t time.Time) string {
 }
 
 // GenXMLGz generates XML EPG from JioTV API and writes it to a compressed gzip file.
-func GenXMLGz(filename string) error {
+// It's a variable to allow mocking in tests.
+var GenXMLGz = func(filename string) error {
 	utils.Log.Println("Generating XML")
-	xml, err := genXML()
+	xmlData, err := genXML() // Changed variable name from xml to xmlData
 	if err != nil {
 		return err
 	}
 	// Add XML header
 	xmlHeader := `<?xml version="1.0" encoding="UTF-8"?>
 	<!DOCTYPE tv SYSTEM "http://www.w3.org/2006/05/tv">`
-	xml = append([]byte(xmlHeader), xml...)
+	finalXML := append([]byte(xmlHeader), xmlData...) // Use finalXML after appending header
 	// write to file
 	f, err := os.Create(filename)
 	if err != nil {
@@ -245,7 +249,7 @@ func GenXMLGz(filename string) error {
 	gz := gzip.NewWriter(f)
 	defer gz.Close()
 
-	if _, err := gz.Write(xml); err != nil {
+	if _, err := gz.Write(finalXML); err != nil { // Write finalXML
 		return err
 	}
 	fmt.Println("\tEPG file generated successfully")
