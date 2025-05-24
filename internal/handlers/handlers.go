@@ -144,6 +144,22 @@ func LiveHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
+	
+	// Check if this is a custom channel
+	if television.IsCustomChannel(id) {
+		// Get all channels to find the custom channel URL
+		channels := television.Channels()
+		customURL, err := television.GetCustomChannelURL(id, channels.Result)
+		if err != nil {
+			utils.Log.Println(err)
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"message": "Custom channel not found: " + id,
+			})
+		}
+		// For custom channels, redirect directly to their URL
+		return c.Redirect(customURL, fiber.StatusFound)
+	}
+	
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
@@ -179,6 +195,22 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
+	
+	// Check if this is a custom channel
+	if television.IsCustomChannel(id) {
+		// Get all channels to find the custom channel URL
+		channels := television.Channels()
+		customURL, err := television.GetCustomChannelURL(id, channels.Result)
+		if err != nil {
+			utils.Log.Println(err)
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"message": "Custom channel not found: " + id,
+			})
+		}
+		// For custom channels, redirect directly to their URL (quality is ignored for custom channels)
+		return c.Redirect(customURL, fiber.StatusFound)
+	}
+	
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)

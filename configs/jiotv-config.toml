@@ -34,3 +34,6 @@ log_path = ""
 
 # LogToStdout controls logging to stdout/stderr. Default: false
 log_to_stdout = false
+
+# Disable Custom Channels. When set to true, custom channels will not be loaded. Default: false (custom channels enabled)
+disable_custom_channels = false

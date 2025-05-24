@@ -166,7 +166,7 @@ func (tv *Television) Render(url string) ([]byte, int) {
 	return buf, resp.StatusCode()
 }
 
-// Channels fetch channels from JioTV API
+// Channels fetch channels from JioTV API and merge with custom channels
 func Channels() ChannelsResponse {
 
 	// Create a fasthttp.Client
@@ -210,6 +210,12 @@ func Channels() ChannelsResponse {
 
 	// disable sony channels temporarily
 	// apiResponse.Result = append(apiResponse.Result, SONY_CHANNELS_API...)
+
+	// Load and merge custom channels
+	customChannels := LoadCustomChannels()
+	if len(customChannels) > 0 {
+		apiResponse.Result = append(apiResponse.Result, customChannels...)
+	}
 
 	return apiResponse
 }

@@ -1,0 +1,22 @@
+{
+  "channels": [
+    {
+      "id": "example1",
+      "name": "Example Channel 1",
+      "url": "https://example.com/stream1.m3u8",
+      "logo_url": "https://example.com/logo1.png",
+      "category": 5,
+      "language": 6,
+      "is_hd": true
+    },
+    {
+      "id": "example2",
+      "name": "Example Channel 2",
+      "url": "https://example.com/stream2.m3u8",
+      "logo_url": "https://example.com/logo2.png",
+      "category": 8,
+      "language": 1,
+      "is_hd": false
+    }
+  ]
+}
