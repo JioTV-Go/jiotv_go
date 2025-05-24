@@ -116,6 +116,19 @@ If a custom path is provided, the application will attempt to create the directo
 
 This option controls whether log messages are also output to the standard output (the console).
 Set to `true` to see logs in your terminal, or `false` to suppress console logging. The default value is `false` when specified in a configuration file.
+
+### Custom Channels Path:
+
+| Purpose | Config Value | Environment Variable | Default |
+| ----- | ------------ | -------------------- | ------- |
+| Path to custom channels JSON file. | `custom_channels_path` | `JIOTV_CUSTOM_CHANNELS_PATH` | `""` (empty string) |
+
+This option specifies the path to a JSON file containing custom channel definitions. When set, JioTV Go will load these custom channels alongside the official JioTV channels, making them available in both the web interface and IPTV playlists.
+
+If the path is empty or the file doesn't exist, custom channels will be disabled. Custom channels appear with a `custom_` prefix in their IDs to avoid conflicts with official channels.
+
+For detailed information about custom channels configuration and examples, see the [Custom Channels section](#custom-channels-configuration) below.
+
 ## Example Configurations
 
 Below are example configuration file for JioTV Go. All fields are optional, and the values shown are the default settings:
@@ -167,6 +180,9 @@ log_path = ""
 
 # LogToStdout controls logging to stdout/stderr. Default: false (when set in config)
 log_to_stdout = false
+
+# Path to custom channels JSON file. If empty, custom channels are disabled. Default: ""
+custom_channels_path = ""
 ```
 
 This example demonstrates how to customize the configuration parameters using TOML syntax. Feel free to modify the values based on your preferences and requirements.
@@ -189,6 +205,7 @@ path_prefix: ""
 proxy: ""
 log_path: ""
 log_to_stdout: false
+custom_channels_path: ""
 ```
 
 ### Example JSON Configuration
@@ -209,6 +226,151 @@ The file is also available at [configs/jiotv_go-config.json](https://github.com/
     "path_prefix": "",
     "proxy": "",
     "log_path": "",
-    "log_to_stdout": false
+    "log_to_stdout": false,
+    "custom_channels_path": ""
 }
 ```
+
+## Custom Channels Configuration
+
+JioTV Go supports adding custom channels alongside the official JioTV channels. Custom channels can be configured using a JSON file specified in the `custom_channels_path` configuration option.
+
+### Custom Channels File Format
+
+The custom channels file should be a JSON file with the following structure:
+
+```json
+{
+  "channels": [
+    {
+      "id": "channel_identifier",
+      "name": "Channel Display Name",
+      "url": "https://example.com/stream.m3u8",
+      "logo_url": "https://example.com/logo.png",
+      "category": 12,
+      "language": 6,
+      "is_hd": true
+    }
+  ]
+}
+```
+
+### Field Descriptions
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | string | ✅ | Unique identifier for the channel. Should not contain spaces or special characters. |
+| `name` | string | ✅ | Display name of the channel as it appears in the interface. |
+| `url` | string | ✅ | Direct URL to the channel's HLS stream (usually .m3u8 file). |
+| `logo_url` | string | ❌ | URL to the channel's logo image. Can be a full HTTP URL or a filename. |
+| `category` | integer | ✅ | Category ID. Refer to the category mapping below. |
+| `language` | integer | ✅ | Language ID. Refer to the language mapping below. |
+| `is_hd` | boolean | ❌ | Whether the channel is HD quality. Defaults to `false`. |
+
+### Category Mapping
+
+| ID | Category |
+|----|----------|
+| 5 | Entertainment |
+| 6 | Movies |
+| 7 | Kids |
+| 8 | Sports |
+| 9 | Lifestyle |
+| 10 | Infotainment |
+| 12 | News |
+| 13 | Music |
+| 15 | Devotional |
+| 16 | Business |
+| 17 | Educational |
+| 18 | Shopping |
+
+### Language Mapping
+
+| ID | Language |
+|----|----------|
+| 1 | Hindi |
+| 2 | Marathi |
+| 3 | Punjabi |
+| 4 | Urdu |
+| 5 | Bengali |
+| 6 | English |
+| 7 | Malayalam |
+| 8 | Tamil |
+| 9 | Gujarati |
+| 10 | Odia |
+| 11 | Telugu |
+| 12 | Bhojpuri |
+| 13 | Kannada |
+| 14 | Assamese |
+| 15 | Nepali |
+| 16 | French |
+| 18 | Other |
+
+### Example Custom Channels File
+
+Here's a complete example of a custom channels file:
+
+```json
+{
+  "channels": [
+    {
+      "id": "my_news",
+      "name": "My News Channel",
+      "url": "https://example.com/streams/news.m3u8",
+      "logo_url": "https://example.com/logos/news.png",
+      "category": 12,
+      "language": 6,
+      "is_hd": true
+    },
+    {
+      "id": "sports_stream",
+      "name": "Sports Stream",
+      "url": "https://example.com/streams/sports.m3u8",
+      "logo_url": "https://example.com/logos/sports.png",
+      "category": 8,
+      "language": 1,
+      "is_hd": false
+    },
+    {
+      "id": "entertainment",
+      "name": "Entertainment Plus",
+      "url": "https://example.com/streams/entertainment.m3u8",
+      "category": 5,
+      "language": 6,
+      "is_hd": true
+    }
+  ]
+}
+```
+
+### How to Use Custom Channels
+
+1. **Create the JSON file**: Create a JSON file with your custom channels using the format described above.
+
+2. **Configure the path**: Set the `custom_channels_path` in your JioTV Go configuration to point to your JSON file:
+   ```toml
+   custom_channels_path = "/path/to/your/custom-channels.json"
+   ```
+
+3. **Restart JioTV Go**: Restart the server to load the custom channels.
+
+4. **Access channels**: Custom channels will appear in:
+   - Web interface alongside JioTV channels
+   - IPTV playlists with `custom_` prefix (e.g., `custom_my_news`)
+   - Channel listings via API
+
+### Important Notes
+
+- **Channel IDs**: Custom channel IDs are automatically prefixed with `custom_` to avoid conflicts with official JioTV channels.
+- **Direct streaming**: Custom channels stream directly from their source URLs without processing through JioTV Go servers.
+- **Logo URLs**: If you provide full HTTP URLs for logos, they'll be used directly. If you provide just filenames, they'll be served through the JioTV Go image handler.
+- **Validation**: Invalid channels (missing required fields) will be skipped with warning messages in the logs.
+- **Disabling**: To disable custom channels, set `custom_channels_path` to an empty string or remove the configuration option.
+
+### Troubleshooting
+
+- **Channels not appearing**: Check the server logs for validation errors or file loading issues.
+- **Stream not working**: Ensure the stream URLs are accessible and in HLS format (.m3u8).
+- **Logo not showing**: Verify the logo URL is accessible and the image format is supported.
+
+An example configuration file is available at `configs/custom-channels.example.json` in the JioTV Go repository.

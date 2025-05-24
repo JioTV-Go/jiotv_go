@@ -1,0 +1,30 @@
+{
+  "channels": [
+    {
+      "id": "my_news",
+      "name": "My News Channel",
+      "url": "https://example.com/streams/news.m3u8",
+      "logo_url": "https://example.com/logos/news.png",
+      "category": 12,
+      "language": 6,
+      "is_hd": true
+    },
+    {
+      "id": "sports_stream",
+      "name": "Sports Stream",
+      "url": "https://example.com/streams/sports.m3u8",
+      "logo_url": "https://example.com/logos/sports.png",
+      "category": 8,
+      "language": 1,
+      "is_hd": false
+    },
+    {
+      "id": "entertainment",
+      "name": "Entertainment Plus",
+      "url": "https://example.com/streams/entertainment.m3u8",
+      "category": 5,
+      "language": 6,
+      "is_hd": true
+    }
+  ]
+}

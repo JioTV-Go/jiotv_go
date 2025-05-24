@@ -34,3 +34,6 @@ log_path = ""
 
 # LogToStdout controls logging to stdout/stderr. Default: false
 log_to_stdout = false
+
+# Path to custom channels JSON file. If empty, custom channels are disabled. Default: ""
+custom_channels_path = ""

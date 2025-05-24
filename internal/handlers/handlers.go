@@ -71,6 +71,11 @@ func Init() {
 		// Initialize TV object with credentials
 		TV = television.New(credentials)
 	}
+	
+	// Load custom channels
+	if err := television.LoadCustomChannels(); err != nil {
+		utils.Log.Printf("WARNING: Failed to load custom channels: %v\n", err)
+	}
 }
 
 // ErrorMessageHandler handles error messages
@@ -86,8 +91,8 @@ func ErrorMessageHandler(c *fiber.Ctx, err error) error {
 
 // IndexHandler handles the index page for `/` route
 func IndexHandler(c *fiber.Ctx) error {
-	// Get all channels
-	channels := television.Channels()
+	// Get all channels (JioTV + custom)
+	channels := television.GetChannelsWithCustom()
 
 	// Get language and category from query params
 	language := c.Query("language")
@@ -144,6 +149,26 @@ func LiveHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
+	
+	// Check if this is a custom channel
+	if television.IsCustomChannel(id) {
+		customURL, err := television.GetCustomChannelURL(id)
+		if err != nil {
+			utils.Log.Printf("Error getting custom channel URL for %s: %v\n", id, err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Error getting custom channel URL",
+			})
+		}
+		if customURL == "" {
+			utils.Log.Printf("Custom channel not found: %s\n", id)
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"message": "Custom channel not found",
+			})
+		}
+		// Redirect directly to the custom channel URL
+		return c.Redirect(customURL, fiber.StatusFound)
+	}
+	
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
@@ -179,6 +204,26 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
+	
+	// Check if this is a custom channel
+	if television.IsCustomChannel(id) {
+		customURL, err := television.GetCustomChannelURL(id)
+		if err != nil {
+			utils.Log.Printf("Error getting custom channel URL for %s: %v\n", id, err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": "Error getting custom channel URL",
+			})
+		}
+		if customURL == "" {
+			utils.Log.Printf("Custom channel not found: %s\n", id)
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"message": "Custom channel not found",
+			})
+		}
+		// For custom channels, ignore quality parameter and redirect directly to the custom channel URL
+		return c.Redirect(customURL, fiber.StatusFound)
+	}
+	
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
@@ -379,7 +424,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	splitCategory := strings.TrimSpace(c.Query("c"))
 	languages := strings.TrimSpace(c.Query("l"))
 	skipGenres := strings.TrimSpace(c.Query("sg"))
-	apiResponse := television.Channels()
+	apiResponse := television.GetChannelsWithCustom()
 	// hostUrl should be request URL like http://localhost:5001
 	hostURL := strings.ToLower(c.Protocol()) + "://" + c.Hostname()
 
@@ -404,7 +449,19 @@ func ChannelsHandler(c *fiber.Ctx) error {
 			} else {
 				channelURL = fmt.Sprintf("%s/live/%s.m3u8", hostURL, channel.ID)
 			}
-			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
+			var channelLogoURL string
+			if television.IsCustomChannel(channel.ID) {
+				// For custom channels, use the logo URL directly if it's a full URL, otherwise use jtvimage
+				if strings.HasPrefix(channel.LogoURL, "http") {
+					channelLogoURL = channel.LogoURL
+				} else if channel.LogoURL != "" {
+					channelLogoURL = fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
+				} else {
+					channelLogoURL = ""
+				}
+			} else {
+				channelLogoURL = fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
+			}
 			var groupTitle string
 			if splitCategory == "split" {
 				groupTitle = fmt.Sprintf("%s - %s", television.CategoryMap[channel.Category], television.LanguageMap[channel.Language])
