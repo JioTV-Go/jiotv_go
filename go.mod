@@ -1,8 +1,6 @@
 module github.com/jiotv-go/jiotv_go/v3
 
-go 1.23.0
-
-toolchain go1.23.8
+go 1.24.3
 
 require (
 	github.com/BurntSushi/toml v1.5.0
