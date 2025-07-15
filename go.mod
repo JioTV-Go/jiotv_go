@@ -5,12 +5,12 @@ go 1.24.3
 require (
 	github.com/BurntSushi/toml v1.5.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
-	github.com/urfave/cli/v2 v2.27.6
+	github.com/urfave/cli/v2 v2.27.7
 	golang.org/x/term v0.33.0
 )
 
 require (
-	github.com/cpuguy83/go-md2man/v2 v2.0.5 // indirect
+	github.com/cpuguy83/go-md2man/v2 v2.0.7 // indirect
 	github.com/gofiber/template v1.8.3 // indirect
 	github.com/gofiber/utils v1.1.0 // indirect
 	github.com/joho/godotenv v1.5.1 // indirect
