@@ -365,7 +365,13 @@ func RefreshSSOTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
 			utils.Log.Printf("SSOToken refresh failed: %v. Retrying in 30 minutes.", err)
 			// Retry in 30 minutes if refresh failed
 			go scheduler.Add(REFRESH_SSOTOKEN_TASK_ID, 30*time.Minute, func() error {
-				return RefreshSSOTokenIfExpired(credentials)
+				// Get fresh credentials in case they were updated
+				freshCreds, err := utils.GetJIOTVCredentials()
+				if err != nil {
+					utils.Log.Printf("Error getting fresh credentials for scheduled refresh: %v", err)
+					return err
+				}
+				return RefreshSSOTokenIfExpired(freshCreds)
 			})
 		}
 	} else {
