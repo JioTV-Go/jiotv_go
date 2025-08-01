@@ -48,8 +48,8 @@
         const controls = ui.getControls();
         const player = controls.getPlayer();
 
-        // Configure player for non-DRM DASH streams
-        player.configure({
+        // Configure player with conditional DRM settings
+        const playerConfig = {
           streaming: {
             retryParameters: {
               maxAttempts: 3,
@@ -57,14 +57,31 @@
             startAtSegmentBoundary: true,
             alwaysStreamFullSegments: true,
           },
-        });
+        };
+
+        {{ if .enable_drm }}
+        // Add DRM configuration when enabled
+        playerConfig.drm = {
+          servers: {
+            "com.widevine.alpha": "{{ .license_url }}",
+          },
+          advanced: {
+            "com.widevine.alpha": {
+              videoRobustness: "SW_SECURE_CRYPTO",
+              audioRobustness: "SW_SECURE_CRYPTO",
+            },
+          },
+        };
+        {{ end }}
+
+        player.configure(playerConfig);
 
         const RequestType = shaka.net.NetworkingEngine.RequestType;
 
         player
           .getNetworkingEngine()
           .registerRequestFilter(function (type, request, context) {
-            // Add host and path parameters for segment requests:
+            // Only add headers to license requests:
             if (
               type == shaka.net.NetworkingEngine.RequestType.SEGMENT &&
               request.uris[0].includes("/render.dash")
@@ -86,6 +103,13 @@
             case 1001:
               alert("The channel is not available.");
               break;
+            {{ if .enable_drm }}
+            case 6001:
+              alert(
+                "Widevine DRM content can't be played in http (except localhost). Please enable https in server."
+              );
+              break;
+            {{ end }}
             default:
               alert(
                 "An error occurred. Please try again later. Shaka Error code: " +

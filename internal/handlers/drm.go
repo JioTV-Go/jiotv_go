@@ -73,7 +73,7 @@ func getDrmMpd(channelID, quality string) (*DrmMpdOutput, error) {
 	}, nil
 }
 
-// LiveMpdHandler handles live stream routes /mpd/:channelID
+// LiveMpdHandler handles live stream routes /mpd/:channelID for DRM-protected streams
 func LiveMpdHandler(c *fiber.Ctx) error {
 	// Get channel ID from URL
 	channelID := c.Params("channelID")
@@ -87,11 +87,12 @@ func LiveMpdHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	return c.Render("views/flow_player_drm", fiber.Map{
+	return c.Render("views/flow_player_dash", fiber.Map{
 		"play_url":     drmMpdOutput.PlayUrl,
 		"license_url":  drmMpdOutput.LicenseUrl,
 		"channel_host": drmMpdOutput.Tv_url_host,
 		"channel_path": drmMpdOutput.Tv_url_path,
+		"enable_drm":   true,
 	})
 }
 
@@ -113,6 +114,7 @@ func LiveDashHandler(c *fiber.Ctx) error {
 		"play_url":     drmMpdOutput.PlayUrl,
 		"channel_host": drmMpdOutput.Tv_url_host,
 		"channel_path": drmMpdOutput.Tv_url_path,
+		"enable_drm":   false,
 	})
 }
 
