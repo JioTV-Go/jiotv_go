@@ -9,5 +9,6 @@
     "path_prefix": "",
     "proxy": "",
     "log_path": "",
-    "log_to_stdout": false
+    "log_to_stdout": false,
+    "custom_channels_file": ""
 }
