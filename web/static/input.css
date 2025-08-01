@@ -2,94 +2,72 @@
 @tailwind components;
 @tailwind utilities;
 
-/* TV Mode and Keyboard Navigation Styles */
-.tv-mode {
-  font-size: 110%;
+/* TV Mode and Keyboard Navigation Styles using Tailwind utilities */
+@layer utilities {
+  .tv-mode {
+    @apply text-lg;
+  }
+
+  .tv-mode .card {
+    @apply scale-100 transition-all duration-200 ease-in-out;
+  }
+
+  .tv-mode .card.tv-focused {
+    @apply scale-110 shadow-2xl relative z-10;
+    box-shadow: 0 0 0 4px hsl(var(--p)), 0 8px 25px -5px rgba(0, 0, 0, 0.3);
+  }
+
+  .tv-mode .btn.tv-focused,
+  .tv-mode input.tv-focused,
+  .tv-mode select.tv-focused {
+    @apply outline-none;
+    box-shadow: 0 0 0 3px hsl(var(--p));
+  }
+
+  .tv-mode .navbar {
+    @apply px-8 py-4;
+  }
+
+  .tv-mode .grid {
+    @apply gap-6;
+  }
+
+  .tv-mode .card .font-bold {
+    @apply text-lg;
+  }
+
+  .tv-mode .card img {
+    @apply w-20 h-20;
+  }
+
+  .tv-mode .favorite-btn {
+    @apply opacity-0 pointer-events-none;
+  }
+
+  .tv-mode .card.tv-focused .favorite-btn {
+    @apply opacity-100 pointer-events-auto;
+  }
+
+  .tv-mode .btn {
+    @apply px-6 py-3 text-base min-h-12;
+  }
+
+  .tv-mode .input,
+  .tv-mode .select {
+    @apply p-3 text-base min-h-12;
+  }
+
+  .tv-mode #portexe-search-input {
+    @apply text-xl p-4;
+  }
+
+  .tv-mode::before {
+    content: "TV Mode";
+    @apply fixed top-4 right-4 bg-primary text-primary-content px-4 py-2 rounded-lg text-sm z-50 opacity-80;
+  }
 }
 
-.tv-mode .card {
-  transform: scale(1);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.tv-mode .card.tv-focused {
-  transform: scale(1.1);
-  box-shadow: 0 0 0 4px theme('colors.primary'), 0 8px 25px -5px rgba(0, 0, 0, 0.3);
-  z-index: 10;
-  position: relative;
-}
-
-.tv-mode .btn.tv-focused,
-.tv-mode input.tv-focused,
-.tv-mode select.tv-focused {
-  box-shadow: 0 0 0 3px theme('colors.primary');
-  outline: none;
-}
-
-.tv-mode .navbar {
-  padding: 1rem 2rem;
-}
-
-.tv-mode .grid {
-  gap: 1.5rem;
-}
-
-.tv-mode .card .font-bold {
-  font-size: 1.1rem;
-}
-
-.tv-mode .card img {
-  width: 5rem;
-  height: 5rem;
-}
-
-/* Ensure smooth transitions */
+/* Global transition for focus states */
 * {
-  transition: box-shadow 0.2s ease;
-}
-
-/* Hide favorite buttons in TV mode for cleaner look */
-.tv-mode .favorite-btn {
-  opacity: 0;
-  pointer-events: none;
-}
-
-.tv-mode .card.tv-focused .favorite-btn {
-  opacity: 1;
-  pointer-events: auto;
-}
-
-/* Enhanced button visibility in TV mode */
-.tv-mode .btn {
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  min-height: 3rem;
-}
-
-.tv-mode .input,
-.tv-mode .select {
-  padding: 0.75rem;
-  font-size: 1rem;
-  min-height: 3rem;
-}
-
-/* Larger search input in TV mode */
-.tv-mode #portexe-search-input {
-  font-size: 1.2rem;
-  padding: 1rem;
-}
-
-/* TV mode indicator */
-.tv-mode::before {
-  content: "TV Mode";
-  position: fixed;
-  top: 1rem;
-  right: 1rem;
-  background: theme('colors.primary');
-  color: theme('colors.primary-content');
-  padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
-  font-size: 0.875rem;
-  z-index: 1000;
-  opacity: 0.8;
+  @apply transition-shadow duration-200 ease-in-out;
 }
