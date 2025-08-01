@@ -466,6 +466,7 @@ func PlayHandler(c *fiber.Ctx) error {
 	return c.Render("views/play", fiber.Map{
 		"Title":      Title,
 		"player_url": player_url,
+		"ChannelID":  id,
 	})
 }
 

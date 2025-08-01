@@ -10,13 +10,6 @@
   <body>
     {{ template "navbar" . }}
     <div class="p-1 sm:p-2 md:p-4 md:mx-8 lg:p-8 lg:mx-52">
-      <div class="mb-2 flex justify-center">
-        <div class="btn-group">
-          <button id="aspect-16-9" class="btn btn-sm" onclick="setAspectRatio('16/9')">16:9</button>
-          <button id="aspect-4-3" class="btn btn-sm" onclick="setAspectRatio('4/3')">4:3</button>
-          <button id="aspect-auto" class="btn btn-sm" onclick="setAspectRatio('auto')">Auto</button>
-        </div>
-      </div>
       <div
         id="player"
         class="relative overflow-hidden w-full rounded-xl bg-black"
@@ -34,44 +27,44 @@
           allow="autoplay"
         ></iframe>
       </div>
+      <div class="mt-2 flex justify-center">
+        <button id="aspect-43-toggle" class="btn btn-sm" onclick="toggleAspectRatio()">4:3</button>
+      </div>
       <script>
-        function setAspectRatio(ratio) {
+        const channelId = '{{ .ChannelID }}';
+        let current43Mode = false;
+        
+        function toggleAspectRatio() {
           const playerContainer = document.getElementById('player');
-          const buttons = document.querySelectorAll('.btn-group .btn');
+          const button = document.getElementById('aspect-43-toggle');
           
-          // Remove active class from all buttons
-          buttons.forEach(btn => btn.classList.remove('btn-active'));
-          
-          if (ratio === 'auto') {
-            // Auto mode: remove fixed aspect ratio, let content determine size
-            playerContainer.style.aspectRatio = 'unset';
-            playerContainer.style.height = 'auto';
-            playerContainer.style.minHeight = '200px';
-            document.getElementById('aspect-auto').classList.add('btn-active');
+          if (current43Mode) {
+            // Switch to 16:9 mode
+            playerContainer.style.aspectRatio = '16/9';
+            button.classList.remove('btn-active');
+            button.textContent = '4:3';
+            current43Mode = false;
+            localStorage.removeItem('aspectRatio_' + channelId);
           } else {
-            playerContainer.style.aspectRatio = ratio;
-            playerContainer.style.height = 'auto';
-            if (ratio === '16/9') {
-              document.getElementById('aspect-16-9').classList.add('btn-active');
-            } else if (ratio === '4/3') {
-              document.getElementById('aspect-4-3').classList.add('btn-active');
-            }
+            // Switch to 4:3 mode
+            playerContainer.style.aspectRatio = '4/3';
+            button.classList.add('btn-active');
+            button.textContent = '16:9';
+            current43Mode = true;
+            localStorage.setItem('aspectRatio_' + channelId, '4/3');
           }
-          
-          // Save preference in localStorage
-          localStorage.setItem('preferredAspectRatio', ratio);
         }
         
-        // Initialize with saved preference or default to 16:9
+        // Initialize with saved preference for this channel
         document.addEventListener('DOMContentLoaded', function() {
-          const savedRatio = localStorage.getItem('preferredAspectRatio') || '16/9';
-          setAspectRatio(savedRatio);
-          
-          // Check URL parameter for aspect ratio override
-          const urlParams = new URLSearchParams(window.location.search);
-          const aspectParam = urlParams.get('aspect');
-          if (aspectParam && ['16/9', '4/3', 'auto'].includes(aspectParam)) {
-            setAspectRatio(aspectParam);
+          const saved43Mode = localStorage.getItem('aspectRatio_' + channelId) === '4/3';
+          if (saved43Mode) {
+            current43Mode = true;
+            const playerContainer = document.getElementById('player');
+            const button = document.getElementById('aspect-43-toggle');
+            playerContainer.style.aspectRatio = '4/3';
+            button.classList.add('btn-active');
+            button.textContent = '16:9';
           }
         });
       </script>
