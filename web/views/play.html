@@ -28,7 +28,11 @@
         ></iframe>
       </div>
       <div class="mt-2 flex justify-center">
-        <button id="aspect-43-toggle" class="btn btn-sm" onclick="toggleAspectRatio()">4:3</button>
+        <button id="aspect-43-toggle" class="btn" onclick="toggleAspectRatio()">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 10l5 5 5-5z"/>
+          </svg>
+        </button>
       </div>
       <script>
         const channelId = '{{ .ChannelID }}';
@@ -42,14 +46,14 @@
             // Switch to 16:9 mode
             playerContainer.style.aspectRatio = '16/9';
             button.classList.remove('btn-active');
-            button.textContent = '4:3';
+            button.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>';
             current43Mode = false;
             localStorage.removeItem('aspectRatio_' + channelId);
           } else {
             // Switch to 4:3 mode
             playerContainer.style.aspectRatio = '4/3';
             button.classList.add('btn-active');
-            button.textContent = '16:9';
+            button.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>';
             current43Mode = true;
             localStorage.setItem('aspectRatio_' + channelId, '4/3');
           }
@@ -64,7 +68,7 @@
             const button = document.getElementById('aspect-43-toggle');
             playerContainer.style.aspectRatio = '4/3';
             button.classList.add('btn-active');
-            button.textContent = '16:9';
+            button.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>';
           }
         });
       </script>
