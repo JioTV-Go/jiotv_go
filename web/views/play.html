@@ -29,8 +29,8 @@
       </div>
       <div class="mt-2 flex justify-center">
         <button id="aspect-43-toggle" class="btn" onclick="toggleAspectRatio()">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M7 10l5 5 5-5z"/>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 16l-6-6h12l-6 6z"/>
           </svg>
         </button>
       </div>
@@ -46,14 +46,14 @@
             // Switch to 16:9 mode
             playerContainer.style.aspectRatio = '16/9';
             button.classList.remove('btn-active');
-            button.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 10l5 5 5-5z"/></svg>';
+            button.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 16l-6-6h12l-6 6z"/></svg>';
             current43Mode = false;
             localStorage.removeItem('aspectRatio_' + channelId);
           } else {
             // Switch to 4:3 mode
             playerContainer.style.aspectRatio = '4/3';
             button.classList.add('btn-active');
-            button.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>';
+            button.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8l6 6H6l6-6z"/></svg>';
             current43Mode = true;
             localStorage.setItem('aspectRatio_' + channelId, '4/3');
           }
@@ -68,7 +68,7 @@
             const button = document.getElementById('aspect-43-toggle');
             playerContainer.style.aspectRatio = '4/3';
             button.classList.add('btn-active');
-            button.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M7 14l5-5 5 5z"/></svg>';
+            button.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8l6 6H6l6-6z"/></svg>';
           }
         });
       </script>
