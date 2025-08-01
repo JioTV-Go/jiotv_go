@@ -95,6 +95,27 @@ func LiveMpdHandler(c *fiber.Ctx) error {
 	})
 }
 
+// LiveDashHandler handles live DASH stream routes /dash/:channelID for non-DRM streams
+func LiveDashHandler(c *fiber.Ctx) error {
+	// Get channel ID from URL
+	channelID := c.Params("channelID")
+	quality := c.Query("q")
+
+	drmMpdOutput, err := getDrmMpd(channelID, quality)
+	if err != nil {
+		utils.Log.Panicln(err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"message": err,
+		})
+	}
+
+	return c.Render("views/flow_player_dash", fiber.Map{
+		"play_url":     drmMpdOutput.PlayUrl,
+		"channel_host": drmMpdOutput.Tv_url_host,
+		"channel_path": drmMpdOutput.Tv_url_path,
+	})
+}
+
 func generateDateTime() string {
 	currentTime := time.Now()
 	formattedDateTime := fmt.Sprintf("%02d%02d%02d%02d%02d%03d",
