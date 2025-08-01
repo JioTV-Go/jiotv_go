@@ -13,7 +13,7 @@
       <div
         id="player"
         class="relative overflow-hidden w-full rounded-xl bg-black"
-        style="aspect-ratio: 16/9; min-height: 200px;"
+        style="aspect-ratio: 16/9; min-height: 200px"
       >
         <iframe
           id="playerIframe"
@@ -29,58 +29,74 @@
       </div>
       <div class="mt-2 flex justify-center">
         <button id="aspect-43-toggle" class="btn" onclick="toggleAspectRatio()">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 16l-6-6h12l-6 6z"/>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="size-6"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M12 2.25a.75.75 0 0 1 .75.75v16.19l6.22-6.22a.75.75 0 1 1 1.06 1.06l-7.5 7.5a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 1 1 1.06-1.06l6.22 6.22V3a.75.75 0 0 1 .75-.75Z"
+              clip-rule="evenodd"
+            />
           </svg>
         </button>
       </div>
       <script>
-        const channelId = '{{ .ChannelID }}';
+        const channelId = "{{ .ChannelID }}";
         let current43Mode = false;
-        
+
         function toggleAspectRatio() {
-          const playerContainer = document.getElementById('player');
-          const button = document.getElementById('aspect-43-toggle');
-          
+          const playerContainer = document.getElementById("player");
+          const button = document.getElementById("aspect-43-toggle");
+
           if (current43Mode) {
             // Switch to 16:9 mode
-            playerContainer.style.aspectRatio = '16/9';
-            button.classList.remove('btn-active');
-            button.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 16l-6-6h12l-6 6z"/></svg>';
+            playerContainer.style.aspectRatio = "16/9";
+            button.classList.remove("btn-active");
+            button.innerHTML =
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6"><path fill-rule="evenodd" d="M12 2.25a.75.75 0 0 1 .75.75v16.19l6.22-6.22a.75.75 0 1 1 1.06 1.06l-7.5 7.5a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 1 1 1.06-1.06l6.22 6.22V3a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd" /></svg>';
             current43Mode = false;
-            localStorage.removeItem('aspectRatio_' + channelId);
+            localStorage.removeItem("aspectRatio_" + channelId);
           } else {
             // Switch to 4:3 mode
-            playerContainer.style.aspectRatio = '4/3';
-            button.classList.add('btn-active');
-            button.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8l6 6H6l6-6z"/></svg>';
+            playerContainer.style.aspectRatio = "4/3";
+            button.classList.add("btn-active");
+            button.innerHTML =
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6"><path fill-rule="evenodd" d="M11.47 2.47a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 1 1-1.06 1.06l-6.22-6.22V21a.75.75 0 0 1-1.5 0V4.81l-6.22 6.22a.75.75 0 1 1-1.06-1.06l7.5-7.5Z" clip-rule="evenodd" /></svg>';
             current43Mode = true;
-            localStorage.setItem('aspectRatio_' + channelId, '4/3');
+            localStorage.setItem("aspectRatio_" + channelId, "4/3");
           }
         }
-        
+
         // Initialize with saved preference for this channel
-        document.addEventListener('DOMContentLoaded', function() {
-          const saved43Mode = localStorage.getItem('aspectRatio_' + channelId) === '4/3';
+        document.addEventListener("DOMContentLoaded", function () {
+          const saved43Mode =
+            localStorage.getItem("aspectRatio_" + channelId) === "4/3";
           if (saved43Mode) {
             current43Mode = true;
-            const playerContainer = document.getElementById('player');
-            const button = document.getElementById('aspect-43-toggle');
-            playerContainer.style.aspectRatio = '4/3';
-            button.classList.add('btn-active');
-            button.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 8l6 6H6l6-6z"/></svg>';
+            const playerContainer = document.getElementById("player");
+            const button = document.getElementById("aspect-43-toggle");
+            playerContainer.style.aspectRatio = "4/3";
+            button.classList.add("btn-active");
+            button.innerHTML =
+              '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6"><path fill-rule="evenodd" d="M11.47 2.47a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 1 1-1.06 1.06l-6.22-6.22V21a.75.75 0 0 1-1.5 0V4.81l-6.22 6.22a.75.75 0 1 1-1.06-1.06l7.5-7.5Z" clip-rule="evenodd" /></svg>';
           }
         });
       </script>
     </div>
     <div id="epg_parent" class="p-1 sm:p-2 md:p-4 md:mx-8 lg:p-8 lg:mx-52">
-      <h2 class="mt-4 sm:mt-0 mb-2 text-lg sm:text-xl font-bold text-center sm:text-left">Now Playing</h2>
+      <h2
+        class="mt-4 sm:mt-0 mb-2 text-lg sm:text-xl font-bold text-center sm:text-left"
+      >
+        Now Playing
+      </h2>
       <div id="epg" class="w-full">
         <div class="card w-full sm:w-96 bg-base-200 shadow-xl">
           <figure><img id="episodePoster" alt="Episode Poster" /></figure>
           <div class="card-body">
-            <h2 id="showname" class="card-title">
-            </h2>
+            <h2 id="showname" class="card-title"></h2>
             <div class="flex flex-row gap-2 items-center justify-between">
               <div class="badge badge-error badge-outline">Live</div>
               <div>
