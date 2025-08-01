@@ -326,7 +326,13 @@ func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
 			utils.Log.Printf("AccessToken refresh failed: %v. Retrying in 5 minutes.", err)
 			// Retry in 5 minutes if refresh failed
 			go scheduler.Add(REFRESH_TOKEN_TASK_ID, 5*time.Minute, func() error {
-				return RefreshTokenIfExpired(credentials)
+				// Get fresh credentials in case they were updated
+				freshCreds, err := utils.GetJIOTVCredentials()
+				if err != nil {
+					utils.Log.Printf("Error getting fresh credentials for scheduled retry: %v", err)
+					return err
+				}
+				return RefreshTokenIfExpired(freshCreds)
 			})
 		}
 	} else {
