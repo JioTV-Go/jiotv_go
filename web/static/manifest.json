@@ -5,6 +5,15 @@
   "short_name": "JioTV Go",
   "id": "/",
   "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "categories": [
+    "entertainment",
+    "lifestyle",
+    "news",
+    "audio-video"
+  ],
   "icons": [
     {
       "src": "/static/icons/windows11/SmallTile.scale-100.png",
@@ -58,419 +67,513 @@
     },
     {
       "src": "/static/icons/windows11/Wide310x150Logo.scale-100.png",
-      "sizes": "310x150"
+      "sizes": "310x150",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Wide310x150Logo.scale-125.png",
-      "sizes": "388x188"
+      "sizes": "388x188",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Wide310x150Logo.scale-150.png",
-      "sizes": "465x225"
+      "sizes": "465x225",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Wide310x150Logo.scale-200.png",
-      "sizes": "620x300"
+      "sizes": "620x300",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Wide310x150Logo.scale-400.png",
-      "sizes": "1240x600"
+      "sizes": "1240x600",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/LargeTile.scale-100.png",
-      "sizes": "310x310"
+      "sizes": "310x310",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/LargeTile.scale-125.png",
-      "sizes": "388x388"
+      "sizes": "388x388",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/LargeTile.scale-150.png",
-      "sizes": "465x465"
+      "sizes": "465x465",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/LargeTile.scale-200.png",
-      "sizes": "620x620"
+      "sizes": "620x620",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/LargeTile.scale-400.png",
-      "sizes": "1240x1240"
+      "sizes": "1240x1240",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.scale-100.png",
-      "sizes": "44x44"
+      "sizes": "44x44",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.scale-125.png",
-      "sizes": "55x55"
+      "sizes": "55x55",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.scale-150.png",
-      "sizes": "66x66"
+      "sizes": "66x66",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.scale-200.png",
-      "sizes": "88x88"
+      "sizes": "88x88",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.scale-400.png",
-      "sizes": "176x176"
+      "sizes": "176x176",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/StoreLogo.scale-100.png",
-      "sizes": "50x50"
+      "sizes": "50x50",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/StoreLogo.scale-125.png",
-      "sizes": "63x63"
+      "sizes": "63x63",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/StoreLogo.scale-150.png",
-      "sizes": "75x75"
+      "sizes": "75x75",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/StoreLogo.scale-200.png",
-      "sizes": "100x100"
+      "sizes": "100x100",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/StoreLogo.scale-400.png",
-      "sizes": "200x200"
+      "sizes": "200x200",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/SplashScreen.scale-100.png",
-      "sizes": "620x300"
+      "sizes": "620x300",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/SplashScreen.scale-125.png",
-      "sizes": "775x375"
+      "sizes": "775x375",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/SplashScreen.scale-150.png",
-      "sizes": "930x450"
+      "sizes": "930x450",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/SplashScreen.scale-200.png",
-      "sizes": "1240x600"
+      "sizes": "1240x600",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/SplashScreen.scale-400.png",
-      "sizes": "2480x1200"
+      "sizes": "2480x1200",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.targetsize-16.png",
-      "sizes": "16x16"
+      "sizes": "16x16",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.targetsize-20.png",
-      "sizes": "20x20"
+      "sizes": "20x20",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.targetsize-24.png",
-      "sizes": "24x24"
+      "sizes": "24x24",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.targetsize-30.png",
-      "sizes": "30x30"
+      "sizes": "30x30",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.targetsize-32.png",
-      "sizes": "32x32"
+      "sizes": "32x32",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.targetsize-36.png",
-      "sizes": "36x36"
+      "sizes": "36x36",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.targetsize-40.png",
-      "sizes": "40x40"
+      "sizes": "40x40",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.targetsize-44.png",
-      "sizes": "44x44"
+      "sizes": "44x44",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.targetsize-48.png",
-      "sizes": "48x48"
+      "sizes": "48x48",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.targetsize-60.png",
-      "sizes": "60x60"
+      "sizes": "60x60",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.targetsize-64.png",
-      "sizes": "64x64"
+      "sizes": "64x64",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.targetsize-72.png",
-      "sizes": "72x72"
+      "sizes": "72x72",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.targetsize-80.png",
-      "sizes": "80x80"
+      "sizes": "80x80",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.targetsize-96.png",
-      "sizes": "96x96"
+      "sizes": "96x96",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.targetsize-256.png",
-      "sizes": "256x256"
+      "sizes": "256x256",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-unplated_targetsize-16.png",
-      "sizes": "16x16"
+      "sizes": "16x16",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-unplated_targetsize-20.png",
-      "sizes": "20x20"
+      "sizes": "20x20",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-unplated_targetsize-24.png",
-      "sizes": "24x24"
+      "sizes": "24x24",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-unplated_targetsize-30.png",
-      "sizes": "30x30"
+      "sizes": "30x30",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-unplated_targetsize-32.png",
-      "sizes": "32x32"
+      "sizes": "32x32",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-unplated_targetsize-36.png",
-      "sizes": "36x36"
+      "sizes": "36x36",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-unplated_targetsize-40.png",
-      "sizes": "40x40"
+      "sizes": "40x40",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-unplated_targetsize-44.png",
-      "sizes": "44x44"
+      "sizes": "44x44",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-unplated_targetsize-48.png",
-      "sizes": "48x48"
+      "sizes": "48x48",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-unplated_targetsize-60.png",
-      "sizes": "60x60"
+      "sizes": "60x60",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-unplated_targetsize-64.png",
-      "sizes": "64x64"
+      "sizes": "64x64",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-unplated_targetsize-72.png",
-      "sizes": "72x72"
+      "sizes": "72x72",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-unplated_targetsize-80.png",
-      "sizes": "80x80"
+      "sizes": "80x80",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-unplated_targetsize-96.png",
-      "sizes": "96x96"
+      "sizes": "96x96",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-unplated_targetsize-256.png",
-      "sizes": "256x256"
+      "sizes": "256x256",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-lightunplated_targetsize-16.png",
-      "sizes": "16x16"
+      "sizes": "16x16",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-lightunplated_targetsize-20.png",
-      "sizes": "20x20"
+      "sizes": "20x20",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-lightunplated_targetsize-24.png",
-      "sizes": "24x24"
+      "sizes": "24x24",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-lightunplated_targetsize-30.png",
-      "sizes": "30x30"
+      "sizes": "30x30",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-lightunplated_targetsize-32.png",
-      "sizes": "32x32"
+      "sizes": "32x32",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-lightunplated_targetsize-36.png",
-      "sizes": "36x36"
+      "sizes": "36x36",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-lightunplated_targetsize-40.png",
-      "sizes": "40x40"
+      "sizes": "40x40",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-lightunplated_targetsize-44.png",
-      "sizes": "44x44"
+      "sizes": "44x44",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-lightunplated_targetsize-48.png",
-      "sizes": "48x48"
+      "sizes": "48x48",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-lightunplated_targetsize-60.png",
-      "sizes": "60x60"
+      "sizes": "60x60",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-lightunplated_targetsize-64.png",
-      "sizes": "64x64"
+      "sizes": "64x64",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-lightunplated_targetsize-72.png",
-      "sizes": "72x72"
+      "sizes": "72x72",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-lightunplated_targetsize-80.png",
-      "sizes": "80x80"
+      "sizes": "80x80",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-lightunplated_targetsize-96.png",
-      "sizes": "96x96"
+      "sizes": "96x96",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/windows11/Square44x44Logo.altform-lightunplated_targetsize-256.png",
-      "sizes": "256x256"
+      "sizes": "256x256",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/android/android-launchericon-512-512.png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/android/android-launchericon-192-192.png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/android/android-launchericon-144-144.png",
-      "sizes": "144x144"
+      "sizes": "144x144",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/android/android-launchericon-96-96.png",
-      "sizes": "96x96"
+      "sizes": "96x96",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/android/android-launchericon-72-72.png",
-      "sizes": "72x72"
+      "sizes": "72x72",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/android/android-launchericon-48-48.png",
-      "sizes": "48x48"
+      "sizes": "48x48",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/16.png",
-      "sizes": "16x16"
+      "sizes": "16x16",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/20.png",
-      "sizes": "20x20"
+      "sizes": "20x20",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/29.png",
-      "sizes": "29x29"
+      "sizes": "29x29",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/32.png",
-      "sizes": "32x32"
+      "sizes": "32x32",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/40.png",
-      "sizes": "40x40"
+      "sizes": "40x40",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/50.png",
-      "sizes": "50x50"
+      "sizes": "50x50",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/57.png",
-      "sizes": "57x57"
+      "sizes": "57x57",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/58.png",
-      "sizes": "58x58"
+      "sizes": "58x58",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/60.png",
-      "sizes": "60x60"
+      "sizes": "60x60",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/64.png",
-      "sizes": "64x64"
+      "sizes": "64x64",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/72.png",
-      "sizes": "72x72"
+      "sizes": "72x72",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/76.png",
-      "sizes": "76x76"
+      "sizes": "76x76",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/80.png",
-      "sizes": "80x80"
+      "sizes": "80x80",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/87.png",
-      "sizes": "87x87"
+      "sizes": "87x87",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/100.png",
-      "sizes": "100x100"
+      "sizes": "100x100",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/114.png",
-      "sizes": "114x114"
+      "sizes": "114x114",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/120.png",
-      "sizes": "120x120"
+      "sizes": "120x120",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/128.png",
-      "sizes": "128x128"
+      "sizes": "128x128",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/144.png",
-      "sizes": "144x144"
+      "sizes": "144x144",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/152.png",
-      "sizes": "152x152"
+      "sizes": "152x152",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/167.png",
-      "sizes": "167x167"
+      "sizes": "167x167",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/180.png",
-      "sizes": "180x180"
+      "sizes": "180x180",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/192.png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/256.png",
-      "sizes": "256x256"
+      "sizes": "256x256",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/512.png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "type": "image/png"
     },
     {
       "src": "/static/icons/ios/1024.png",
-      "sizes": "1024x1024"
+      "sizes": "1024x1024",
+      "type": "image/png"
     }
-  ],
-  "scope": "/",
-  "display": "standalone",
-  "categories": [
-    "entertainment",
-    "lifestyle",
-    "news",
-    "audio-video"
   ]
 }
