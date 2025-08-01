@@ -1,3 +1,95 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* TV Mode and Keyboard Navigation Styles */
+.tv-mode {
+  font-size: 110%;
+}
+
+.tv-mode .card {
+  transform: scale(1);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tv-mode .card.tv-focused {
+  transform: scale(1.1);
+  box-shadow: 0 0 0 4px theme('colors.primary'), 0 8px 25px -5px rgba(0, 0, 0, 0.3);
+  z-index: 10;
+  position: relative;
+}
+
+.tv-mode .btn.tv-focused,
+.tv-mode input.tv-focused,
+.tv-mode select.tv-focused {
+  box-shadow: 0 0 0 3px theme('colors.primary');
+  outline: none;
+}
+
+.tv-mode .navbar {
+  padding: 1rem 2rem;
+}
+
+.tv-mode .grid {
+  gap: 1.5rem;
+}
+
+.tv-mode .card .font-bold {
+  font-size: 1.1rem;
+}
+
+.tv-mode .card img {
+  width: 5rem;
+  height: 5rem;
+}
+
+/* Ensure smooth transitions */
+* {
+  transition: box-shadow 0.2s ease;
+}
+
+/* Hide favorite buttons in TV mode for cleaner look */
+.tv-mode .favorite-btn {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.tv-mode .card.tv-focused .favorite-btn {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Enhanced button visibility in TV mode */
+.tv-mode .btn {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  min-height: 3rem;
+}
+
+.tv-mode .input,
+.tv-mode .select {
+  padding: 0.75rem;
+  font-size: 1rem;
+  min-height: 3rem;
+}
+
+/* Larger search input in TV mode */
+.tv-mode #portexe-search-input {
+  font-size: 1.2rem;
+  padding: 1rem;
+}
+
+/* TV mode indicator */
+.tv-mode::before {
+  content: "TV Mode";
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  background: theme('colors.primary');
+  color: theme('colors.primary-content');
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  z-index: 1000;
+  opacity: 0.8;
+}
