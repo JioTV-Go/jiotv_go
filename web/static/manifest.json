@@ -455,6 +455,7 @@
       "sizes": "1024x1024"
     }
   ],
+  "scope": "/",
   "display": "standalone",
   "categories": [
     "entertainment",
