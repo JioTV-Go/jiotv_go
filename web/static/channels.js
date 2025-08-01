@@ -3,11 +3,56 @@ const categoryElement = document.getElementById("portexe-category-select");
 const catLangApplyButton = document.getElementById("portexe-search-button");
 const qualityElement = document.getElementById("portexe-quality-select");
 
+// Function to handle multi-select display behavior
+function toggleMultiSelectDisplay(selectElement) {
+  const selectedCount = selectElement.selectedOptions.length;
+  if (selectedCount > 1) {
+    selectElement.size = Math.min(selectedCount, 5); // Show up to 5 options
+  } else {
+    selectElement.size = 1; // Collapse back to single line
+  }
+  updateMultiSelectDisplay(selectElement);
+}
+
+// Function to update the visual representation of multi-select
+function updateMultiSelectDisplay(selectElement) {
+  const selectedOptions = Array.from(selectElement.selectedOptions);
+  const selectedCount = selectedOptions.length;
+  
+  if (selectedCount > 1) {
+    // Create a visual indicator of multiple selections
+    const firstSelectedText = selectedOptions[0].textContent;
+    const displayText = selectedCount > 1 ? `${firstSelectedText} (+${selectedCount - 1} more)` : firstSelectedText;
+    
+    // Update the visual appearance by adjusting the title attribute
+    selectElement.title = selectedOptions.map(opt => opt.textContent).join(', ');
+  } else if (selectedCount === 1) {
+    selectElement.title = selectedOptions[0].textContent;
+  } else {
+    selectElement.title = '';
+  }
+}
+
 catLangApplyButton.addEventListener("click", () => {
   // apply to current url as query params and reload
   const url = new URL(window.location.href);
-  url.searchParams.set("language", languageElement.value);
-  url.searchParams.set("category", categoryElement.value);
+  
+  // Handle multiple selected languages
+  const selectedLanguages = Array.from(languageElement.selectedOptions).map(option => option.value);
+  if (selectedLanguages.length > 0 && !selectedLanguages.includes("0")) {
+    url.searchParams.set("language", selectedLanguages.join(","));
+  } else {
+    url.searchParams.delete("language");
+  }
+  
+  // Handle multiple selected categories
+  const selectedCategories = Array.from(categoryElement.selectedOptions).map(option => option.value);
+  if (selectedCategories.length > 0 && !selectedCategories.includes("0")) {
+    url.searchParams.set("category", selectedCategories.join(","));
+  } else {
+    url.searchParams.delete("category");
+  }
+  
   url.searchParams.set("q", qualityElement.value);
 
   // reload
@@ -20,11 +65,23 @@ const language = url.searchParams.get("language");
 const category = url.searchParams.get("category");
 
 if (language) {
-  languageElement.value = language;
+  const languageValues = language.split(",");
+  Array.from(languageElement.options).forEach(option => {
+    if (languageValues.includes(option.value)) {
+      option.selected = true;
+    }
+  });
+  updateMultiSelectDisplay(languageElement);
 }
 
 if (category) {
-  categoryElement.value = category;
+  const categoryValues = category.split(",");
+  Array.from(categoryElement.options).forEach(option => {
+    if (categoryValues.includes(option.value)) {
+      option.selected = true;
+    }
+  });
+  updateMultiSelectDisplay(categoryElement);
 }
 
 const onQualityChange = (elem) => {

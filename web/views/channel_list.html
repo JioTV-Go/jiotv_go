@@ -1,4 +1,21 @@
 {{define "channel_list"}}
+<style>
+/* Multi-select dropdown enhancements */
+select[multiple] {
+  transition: height 0.2s ease-in-out;
+}
+select[multiple]:focus {
+  height: auto;
+  max-height: 200px;
+}
+select[multiple] option:checked {
+  background: #10b981 !important;
+  color: white !important;
+}
+select[multiple] option {
+  padding: 0.25rem 0.5rem;
+}
+</style>
 <div class="overflow-x-auto">
   <div
     id="portexe-search-root"
@@ -22,6 +39,9 @@
     <select
       id="portexe-category-select"
       class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl"
+      multiple
+      size="1"
+      onchange="toggleMultiSelectDisplay(this)"
     >
       {{ range $key, $value := .Categories }}
       <option value="{{$key}}">{{$value}}</option>
@@ -30,6 +50,9 @@
     <select
       id="portexe-language-select"
       class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl"
+      multiple
+      size="1"
+      onchange="toggleMultiSelectDisplay(this)"
     >
       {{ range $key, $value := .Languages }}
       <option value="{{$key}}">{{$value}}</option>

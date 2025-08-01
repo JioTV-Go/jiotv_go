@@ -117,15 +117,39 @@ func IndexHandler(c *fiber.Ctx) error {
 
 	// Filter channels by language and category if provided
 	if language != "" || category != "" {
-		language_int, err := strconv.Atoi(language)
-		if err != nil {
-			return ErrorMessageHandler(c, err)
+		// Parse multiple languages
+		var languageInts []int
+		if language != "" {
+			languageStrs := strings.Split(language, ",")
+			for _, langStr := range languageStrs {
+				langStr = strings.TrimSpace(langStr)
+				if langStr != "" {
+					language_int, err := strconv.Atoi(langStr)
+					if err != nil {
+						return ErrorMessageHandler(c, err)
+					}
+					languageInts = append(languageInts, language_int)
+				}
+			}
 		}
-		category_int, err := strconv.Atoi(category)
-		if err != nil {
-			return ErrorMessageHandler(c, err)
+		
+		// Parse multiple categories
+		var categoryInts []int
+		if category != "" {
+			categoryStrs := strings.Split(category, ",")
+			for _, catStr := range categoryStrs {
+				catStr = strings.TrimSpace(catStr)
+				if catStr != "" {
+					category_int, err := strconv.Atoi(catStr)
+					if err != nil {
+						return ErrorMessageHandler(c, err)
+					}
+					categoryInts = append(categoryInts, category_int)
+				}
+			}
 		}
-		channels_list := television.FilterChannels(channels.Result, language_int, category_int)
+		
+		channels_list := television.FilterChannelsMultiple(channels.Result, languageInts, categoryInts)
 		indexContext["Channels"] = channels_list
 		return c.Render("views/index", indexContext)
 	}

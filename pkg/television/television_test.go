@@ -118,6 +118,108 @@ func TestFilterChannels(t *testing.T) {
 	}
 }
 
+func TestFilterChannelsMultiple(t *testing.T) {
+	// Create test channels
+	testChannels := []Channel{
+		{ID: "1", Name: "Channel 1", Language: 1, Category: 5}, // Hindi, Entertainment
+		{ID: "2", Name: "Channel 2", Language: 6, Category: 8}, // English, Sports
+		{ID: "3", Name: "Channel 3", Language: 1, Category: 8}, // Hindi, Sports
+		{ID: "4", Name: "Channel 4", Language: 2, Category: 5}, // Marathi, Entertainment
+		{ID: "5", Name: "Channel 5", Language: 6, Category: 12}, // English, News
+	}
+
+	type args struct {
+		channels   []Channel
+		languages  []int
+		categories []int
+	}
+	tests := []struct {
+		name string
+		args args
+		want []Channel
+	}{
+		{
+			name: "No filters",
+			args: args{
+				channels:   testChannels,
+				languages:  []int{},
+				categories: []int{},
+			},
+			want: testChannels,
+		},
+		{
+			name: "Filter by single language",
+			args: args{
+				channels:   testChannels,
+				languages:  []int{1}, // Hindi
+				categories: []int{},
+			},
+			want: []Channel{testChannels[0], testChannels[2]}, // Hindi channels
+		},
+		{
+			name: "Filter by multiple languages",
+			args: args{
+				channels:   testChannels,
+				languages:  []int{1, 6}, // Hindi, English
+				categories: []int{},
+			},
+			want: []Channel{testChannels[0], testChannels[1], testChannels[2], testChannels[4]}, // Hindi and English channels
+		},
+		{
+			name: "Filter by single category",
+			args: args{
+				channels:   testChannels,
+				languages:  []int{},
+				categories: []int{8}, // Sports
+			},
+			want: []Channel{testChannels[1], testChannels[2]}, // Sports channels
+		},
+		{
+			name: "Filter by multiple categories",
+			args: args{
+				channels:   testChannels,
+				languages:  []int{},
+				categories: []int{5, 8}, // Entertainment, Sports
+			},
+			want: []Channel{testChannels[0], testChannels[1], testChannels[2], testChannels[3]}, // Entertainment and Sports
+		},
+		{
+			name: "Filter by language and category",
+			args: args{
+				channels:   testChannels,
+				languages:  []int{1}, // Hindi
+				categories: []int{8}, // Sports
+			},
+			want: []Channel{testChannels[2]}, // Hindi Sports channel
+		},
+		{
+			name: "Filter with no matches",
+			args: args{
+				channels:   testChannels,
+				languages:  []int{99}, // Non-existent language
+				categories: []int{},
+			},
+			want: []Channel(nil), // No matches - use nil instead of empty slice
+		},
+		{
+			name: "Filter ignoring zero values",
+			args: args{
+				channels:   testChannels,
+				languages:  []int{0, 1}, // "All Languages" and Hindi
+				categories: []int{0, 8}, // "All Categories" and Sports
+			},
+			want: []Channel{testChannels[2]}, // Hindi Sports channel (ignores 0 values)
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := FilterChannelsMultiple(tt.args.channels, tt.args.languages, tt.args.categories); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("FilterChannelsMultiple() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestReplaceM3U8(t *testing.T) {
 	type args struct {
 		baseUrl    []byte
