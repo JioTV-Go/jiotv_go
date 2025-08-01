@@ -308,7 +308,12 @@ func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
 		utils.Log.Printf("Error parsing LastTokenRefreshTime: %v. Scheduling refresh in 10 minutes.", err)
 		// Schedule refresh in 10 minutes if we can't parse the time
 		go scheduler.Add(REFRESH_TOKEN_TASK_ID, 10*time.Minute, func() error {
-			return RefreshTokenIfExpired(credentials)
+			freshCreds, err := utils.GetJIOTVCredentials()
+			if err != nil {
+				utils.Log.Printf("Error getting fresh credentials for scheduled refresh: %v", err)
+				return err
+			}
+			return RefreshTokenIfExpired(freshCreds)
 		})
 		return err
 	}
