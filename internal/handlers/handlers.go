@@ -54,22 +54,29 @@ func Init() {
 	utils.GetDeviceID()
 	// Get credentials from file
 	credentials, err := utils.GetJIOTVCredentials()
-	// Initialize TV object with nil credentials
+	// Initialize TV object with nil credentials initially
 	TV = television.New(nil)
 	if err != nil {
 		utils.Log.Println("Login error!", err)
 	} else {
 		// If AccessToken is present, check for its validity and schedule a refresh if required
-		if credentials.AccessToken != "" {
+		if credentials.AccessToken != "" && credentials.RefreshToken != "" {
 			// Check validity of credentials
 			go RefreshTokenIfExpired(credentials)
+		} else if credentials.AccessToken != "" && credentials.RefreshToken == "" {
+			utils.Log.Println("Warning: AccessToken present but RefreshToken is missing. Token refresh may fail.")
 		}
 		// If SsoToken is present, check for its validity and schedule a refresh if required
-		if credentials.SSOToken != "" {
+		if credentials.SSOToken != "" && credentials.UniqueID != "" {
 			go RefreshSSOTokenIfExpired(credentials)
+		} else if credentials.SSOToken != "" && credentials.UniqueID == "" {
+			utils.Log.Println("Warning: SSOToken present but UniqueID is missing. Token refresh may fail.")
 		}
 		// Initialize TV object with credentials
 		TV = television.New(credentials)
+		
+		// Start token health check to ensure refresh tasks remain active
+		go TokenHealthCheck()
 	}
 }
 
