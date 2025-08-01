@@ -44,7 +44,7 @@
         </button>
       </div>
       <script>
-        const channelId = "{{ .ChannelID }}";
+        const channelId = {{ printf "%q" .ChannelID }};
         let current43Mode = false;
 
         function toggleAspectRatio() {
