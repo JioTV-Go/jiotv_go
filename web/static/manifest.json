@@ -3,8 +3,8 @@
   "theme_color": "#000000",
   "background_color": "#000000",
   "short_name": "JioTV Go",
-  "id": "?q=high",
-  "start_url": "/?q=high",
+  "id": "/",
+  "start_url": "/",
   "icons": [
     {
       "src": "/static/icons/windows11/SmallTile.scale-100.png",
