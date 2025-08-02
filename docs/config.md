@@ -116,6 +116,16 @@ If a custom path is provided, the application will attempt to create the directo
 
 This option controls whether log messages are also output to the standard output (the console).
 Set to `true` to see logs in your terminal, or `false` to suppress console logging. The default value is `false` when specified in a configuration file.
+
+### Custom Channels:
+
+| Purpose | Config Value | Environment Variable | Default |
+| ----- | ------------ | -------------------- | ------- |
+| Path to custom channels configuration file. | `custom_channels_file` | `JIOTV_CUSTOM_CHANNELS_FILE` | `""` (empty string) |
+
+This option specifies the path to a JSON or YAML file containing custom channel definitions that will be integrated with JioTV channels. Custom channels will appear in the web interface and IPTV playlists alongside standard JioTV channels. If the file is not found or contains errors, the server will continue to work with only JioTV channels.
+
+For detailed information about custom channels configuration, including file format, field descriptions, and usage examples, please see [Custom Channels Documentation](./CUSTOM_CHANNELS.md).
 ## Example Configurations
 
 Below are example configuration file for JioTV Go. All fields are optional, and the values shown are the default settings:
@@ -167,6 +177,9 @@ log_path = ""
 
 # LogToStdout controls logging to stdout/stderr. Default: false (when set in config)
 log_to_stdout = false
+
+# CustomChannelsFile is the path to custom channels configuration file. Default: ""
+custom_channels_file = ""
 ```
 
 This example demonstrates how to customize the configuration parameters using TOML syntax. Feel free to modify the values based on your preferences and requirements.
@@ -189,6 +202,7 @@ path_prefix: ""
 proxy: ""
 log_path: ""
 log_to_stdout: false
+custom_channels_file: ""
 ```
 
 ### Example JSON Configuration
@@ -209,6 +223,7 @@ The file is also available at [configs/jiotv_go-config.json](https://github.com/
     "path_prefix": "",
     "proxy": "",
     "log_path": "",
-    "log_to_stdout": false
+    "log_to_stdout": false,
+    "custom_channels_file": ""
 }
 ```
