@@ -15,6 +15,49 @@ function toggleMultiSelectDisplay(selectElement) {
   updateMultiSelectDisplay(selectElement);
 }
 
+// Function to handle touch-friendly multi-select behavior
+function handleTouchFriendlySelect(selectElement) {
+  // Add event listeners for touch-friendly multi-select
+  Array.from(selectElement.options).forEach(option => {
+    option.addEventListener('click', function(event) {
+      event.preventDefault();
+      event.stopPropagation();
+      
+      const isAllOption = this.value === "0"; // "All Categories" or "All Languages"
+      
+      if (isAllOption) {
+        // Clicking "All" deselects everything else
+        Array.from(selectElement.options).forEach(opt => {
+          opt.selected = false;
+        });
+        this.selected = true;
+      } else {
+        // Remove "All" selection if it was selected
+        const allOption = Array.from(selectElement.options).find(opt => opt.value === "0");
+        if (allOption && allOption.selected) {
+          allOption.selected = false;
+        }
+        
+        // Toggle the clicked option
+        this.selected = !this.selected;
+      }
+      
+      // Update display
+      toggleMultiSelectDisplay(selectElement);
+      
+      // Trigger change event manually
+      selectElement.dispatchEvent(new Event('change'));
+    });
+  });
+  
+  // Prevent default multi-select behavior
+  selectElement.addEventListener('mousedown', function(event) {
+    if (event.target.tagName === 'OPTION') {
+      event.preventDefault();
+    }
+  });
+}
+
 // Function to update the visual representation of multi-select
 function updateMultiSelectDisplay(selectElement) {
   const selectedOptions = Array.from(selectElement.selectedOptions);
@@ -249,7 +292,12 @@ function updateFavoriteButtonStates() {
   });
 }
 
+// Initialize touch-friendly multi-select behavior on page load
 document.addEventListener('DOMContentLoaded', () => {
+  // Set up touch-friendly multi-select for both dropdowns
+  handleTouchFriendlySelect(languageElement);
+  handleTouchFriendlySelect(categoryElement);
+  
   updateFavoriteButtonStates();
   displayFavoriteChannels(); 
 });
