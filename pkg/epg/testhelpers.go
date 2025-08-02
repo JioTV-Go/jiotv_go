@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"math"
 
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 )
@@ -68,7 +69,13 @@ func NewMockEPGServer() *MockEPGServer {
 		channelID := r.URL.Query().Get("channel_id")
 		
 		offsetInt, _ := strconv.Atoi(offset)
-		channelIDInt, _ := strconv.Atoi(channelID)
+		channelIDInt, err := strconv.Atoi(channelID)
+		var channelIDUint16 uint16
+		if err == nil && channelIDInt >= 0 && channelIDInt <= int(math.MaxUint16) {
+			channelIDUint16 = uint16(channelIDInt)
+		} else {
+			channelIDUint16 = 0 // or some other default value
+		}
 		
 		// Mock EPG response with different data based on offset and channel
 		var epgData []EPGObject
@@ -85,7 +92,7 @@ func NewMockEPGServer() *MockEPGServer {
 			epgData = append(epgData, EPGObject{
 				StartEpoch:   startTime,
 				EndEpoch:     endTime,
-				ChannelID:    uint16(channelIDInt),
+				ChannelID:    channelIDUint16,
 				ChannelName:  fmt.Sprintf("Mock Channel %d", channelIDInt),
 				ShowCategory: "Entertainment",
 				Description:  fmt.Sprintf("Mock Program %d Description for Channel %d", programIndex+1, channelIDInt),
