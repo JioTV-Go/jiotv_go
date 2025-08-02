@@ -113,7 +113,7 @@ class KeyboardNavigation {
     
     // Handle mouse usage to temporarily disable keyboard navigation
     document.addEventListener('mousemove', (e) => {
-      if (this.isTVMode && Math.abs(e.movementX) > 0 || Math.abs(e.movementY) > 0) {
+      if (this.isTVMode && (Math.abs(e.movementX) > 0 || Math.abs(e.movementY) > 0)) {
         this.temporarilyDisable();
       }
     });
