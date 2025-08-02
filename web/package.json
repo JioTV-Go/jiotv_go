@@ -1,10 +1,14 @@
 {
   "devDependencies": {
     "daisyui": "^4.12.24",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "jest": "^30.0.5",
+    "jest-environment-jsdom": "^30.0.5",
+    "jsdom": "^26.1.0"
   },
   "scripts": {
     "build": "tailwindcss build -i ./static/input.css -o ./static/tailwind.css -m",
-    "watch": "tailwindcss -i ./static/input.css -o ./static/tailwind.css -w"
+    "watch": "tailwindcss -i ./static/input.css -o ./static/tailwind.css -w",
+    "test": "jest"
   }
 }
