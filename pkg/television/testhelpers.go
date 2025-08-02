@@ -154,9 +154,9 @@ func NewMockTelevisionServer() *MockTelevisionServer {
 	// Create URL mappings
 	serverURL, _ := url.Parse(server.URL)
 	urls := map[string]string{
-		"jiotvapi.media.jio.com": fmt.Sprintf("%s://%s", serverURL.Scheme, serverURL.Host),
-		"tv.media.jio.com":       fmt.Sprintf("%s://%s", serverURL.Scheme, serverURL.Host),
-		"jiotvapi.cdn.jio.com":   fmt.Sprintf("%s://%s", serverURL.Scheme, serverURL.Host),
+		JIOTV_API_DOMAIN: fmt.Sprintf("%s://%s", serverURL.Scheme, serverURL.Host),
+		TV_MEDIA_DOMAIN:  fmt.Sprintf("%s://%s", serverURL.Scheme, serverURL.Host),
+		JIOTV_CDN_DOMAIN: fmt.Sprintf("%s://%s", serverURL.Scheme, serverURL.Host),
 	}
 	
 	return &MockTelevisionServer{
@@ -170,10 +170,16 @@ func (m *MockTelevisionServer) Close() {
 	m.Server.Close()
 }
 
-// NewWithMockServer creates a new Television instance with mock server URLs
+// NewWithMockServer creates a new Television instance for testing purposes
+// Note: This function creates a standard Television instance. The mock server URLs
+// are used through the LiveWithMockServer method instead of modifying the client configuration.
+// This design maintains the separation between the production Television instance
+// and test-specific mock server interactions.
 func NewWithMockServer(credentials *utils.JIOTV_CREDENTIALS, mockServer *MockTelevisionServer) *Television {
 	tv := New(credentials)
-	// Update the client to use our mock server - this would be done through configuration in a real implementation
+	// The television instance uses the standard configuration.
+	// Mock server interactions are handled via specific test methods like LiveWithMockServer()
+	// This keeps the Television instance itself unchanged while allowing mock testing.
 	return tv
 }
 
@@ -185,11 +191,11 @@ func (tv *Television) LiveWithMockServer(channelID string, mockServer *MockTelev
 	}
 
 	// Use mock URLs instead of real ones
-	baseURL := mockServer.URLs["jiotvapi.media.jio.com"]
+	baseURL := mockServer.URLs[JIOTV_API_DOMAIN]
 	if tv.AccessToken != "" {
 		return tv.makeLiveRequest(channelID, baseURL+"/playback/apis/v1/geturl?langId=6")
 	} else {
-		return tv.makeLiveRequest(channelID, mockServer.URLs["tv.media.jio.com"]+"/apis/v2.2/getchannelurl/getchannelurl")
+		return tv.makeLiveRequest(channelID, mockServer.URLs[TV_MEDIA_DOMAIN]+"/apis/v2.2/getchannelurl/getchannelurl")
 	}
 }
 

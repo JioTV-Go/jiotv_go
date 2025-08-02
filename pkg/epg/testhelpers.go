@@ -14,6 +14,16 @@ import (
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 )
 
+// convertToUint16WithBounds safely converts a string to uint16 with bounds checking
+// This helper function encapsulates the repeated pattern of int conversion with bounds checking
+func convertToUint16WithBounds(s string) uint16 {
+	intVal, err := strconv.Atoi(s)
+	if err == nil && intVal >= 0 && intVal <= int(math.MaxUint16) {
+		return uint16(intVal)
+	}
+	return 0 // Default value for invalid input
+}
+
 // MockEPGServer provides HTTP mocking functionality for EPG tests
 type MockEPGServer struct {
 	Server *httptest.Server
@@ -72,13 +82,8 @@ func NewMockEPGServer() *MockEPGServer {
 		if err != nil {
 			offsetInt = 0 // or some other default value
 		}
-		channelIDInt, err := strconv.Atoi(channelID)
-		var channelIDUint16 uint16
-		if err == nil && channelIDInt >= 0 && channelIDInt <= int(math.MaxUint16) {
-			channelIDUint16 = uint16(channelIDInt)
-		} else {
-			channelIDUint16 = 0 // or some other default value
-		}
+		channelIDUint16 := convertToUint16WithBounds(channelID)
+		channelIDInt := int(channelIDUint16) // For display purposes
 		
 		// Mock EPG response with different data based on offset and channel
 		var epgData []EPGObject

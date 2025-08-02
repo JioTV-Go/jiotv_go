@@ -253,11 +253,11 @@ func NewMockServer() *MockServer {
 	// Create URL mappings for each domain
 	serverURL, _ := url.Parse(server.URL)
 	urls := map[string]string{
-		"api.jio.com":            fmt.Sprintf("%s://%s", serverURL.Scheme, serverURL.Host),
+		API_JIO_DOMAIN:   fmt.Sprintf("%s://%s", serverURL.Scheme, serverURL.Host),
 		"jiotv.data.cdn.jio.com": fmt.Sprintf("%s://%s", serverURL.Scheme, serverURL.Host),
-		"jiotvapi.media.jio.com": fmt.Sprintf("%s://%s", serverURL.Scheme, serverURL.Host),
+		JIOTV_API_DOMAIN: fmt.Sprintf("%s://%s", serverURL.Scheme, serverURL.Host),
 		"tv.media.jio.com":       fmt.Sprintf("%s://%s", serverURL.Scheme, serverURL.Host),
-		"auth.media.jio.com":     fmt.Sprintf("%s://%s", serverURL.Scheme, serverURL.Host),
+		AUTH_MEDIA_DOMAIN:        fmt.Sprintf("%s://%s", serverURL.Scheme, serverURL.Host),
 		"jiotvapi.cdn.jio.com":   fmt.Sprintf("%s://%s", serverURL.Scheme, serverURL.Host),
 	}
 	

@@ -233,7 +233,7 @@ func LoginWithBaseURL(username, password string, baseURL string) (map[string]str
 	}
 	req.SetBody(payloadJSON)
 
-	client := &fasthttp.Client{}
+	client := GetRequestClient()
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
 

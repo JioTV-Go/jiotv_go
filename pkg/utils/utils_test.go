@@ -95,17 +95,16 @@ func TestLoginSendOTP(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := LoginSendOTPWithBaseURL(tt.args.number, mockServer.URLs["jiotvapi.media.jio.com"])
+			got, err := LoginSendOTPWithBaseURL(tt.args.number, mockServer.URLs[JIOTV_API_DOMAIN])
 			if tt.wantErr && err == nil {
 				t.Errorf("LoginSendOTP() expected error but got none")
 			}
 			if !tt.wantErr && err != nil {
 				t.Errorf("LoginSendOTP() expected no error but got: %v", err)
 			}
-			// Function should return a boolean
-			if err == nil && got != true && got != false {
-				t.Errorf("LoginSendOTP() should return boolean, got %v", got)
-			}
+			// Function should return a boolean - no need to check if it's true or false
+			// since got is already declared as bool type
+			_ = got // Use the variable to avoid "unused variable" error
 		})
 	}
 }
@@ -150,7 +149,7 @@ func TestLoginVerifyOTP(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := LoginVerifyOTPWithBaseURL(tt.args.number, tt.args.otp, mockServer.URLs["jiotvapi.media.jio.com"])
+			got, err := LoginVerifyOTPWithBaseURL(tt.args.number, tt.args.otp, mockServer.URLs[JIOTV_API_DOMAIN])
 			if tt.wantErr && err == nil {
 				t.Errorf("LoginVerifyOTP() expected error but got none")
 			}
@@ -367,10 +366,9 @@ func TestCheckLoggedIn(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := CheckLoggedIn()
-			// This should return a boolean - either true or false
-			if got != true && got != false {
-				t.Errorf("CheckLoggedIn() should return boolean, got %v", got)
-			}
+			// This should return a boolean - got is already declared as bool type,
+			// so no need to check if it's true or false
+			_ = got // Use the variable to avoid "unused variable" error
 		})
 	}
 }
