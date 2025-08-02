@@ -214,14 +214,29 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 
 	var customConfig CustomChannelsConfig
 
-	// Determine file format by extension and parse accordingly
+	// Determine file format by extension and parse accordingly, fallback to content-based detection
 	if strings.HasSuffix(filePath, ".json") {
 		err = json.Unmarshal(data, &customConfig)
 	} else if strings.HasSuffix(filePath, ".yml") || strings.HasSuffix(filePath, ".yaml") {
 		err = yaml.Unmarshal(data, &customConfig)
 	} else {
-		return nil, fmt.Errorf("unsupported custom channels file format. Supported formats: .json, .yml, .yaml")
+		// Fallback: try to detect format by content
+		trimmed := strings.TrimSpace(string(data))
+		// Try JSON if content starts with '{' or '['
+		if strings.HasPrefix(trimmed, "{") || strings.HasPrefix(trimmed, "[") {
+			err = json.Unmarshal(data, &customConfig)
+			if err == nil {
+				goto PARSE_DONE
+			}
+		}
+		// Try YAML
+		err = yaml.Unmarshal(data, &customConfig)
+		if err == nil {
+			goto PARSE_DONE
+		}
+		return nil, fmt.Errorf("unsupported or invalid custom channels file format. Supported formats: .json, .yml, .yaml, or valid JSON/YAML content")
 	}
+PARSE_DONE:
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse custom channels file: %w", err)
