@@ -68,7 +68,10 @@ func NewMockEPGServer() *MockEPGServer {
 		offset := r.URL.Query().Get("offset")
 		channelID := r.URL.Query().Get("channel_id")
 		
-		offsetInt, _ := strconv.Atoi(offset)
+		offsetInt, err := strconv.Atoi(offset)
+		if err != nil {
+			offsetInt = 0 // or some other default value
+		}
 		channelIDInt, err := strconv.Atoi(channelID)
 		var channelIDUint16 uint16
 		if err == nil && channelIDInt >= 0 && channelIDInt <= int(math.MaxUint16) {
