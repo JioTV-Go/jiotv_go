@@ -7,7 +7,8 @@ const qualityElement = document.getElementById("portexe-quality-select");
 function toggleMultiSelectDisplay(selectElement) {
   const selectedCount = selectElement.selectedOptions.length;
   if (selectedCount > 1) {
-    selectElement.size = Math.min(selectedCount, 5); // Show up to 5 options
+    // Show all selected options up to the total available options
+    selectElement.size = Math.min(selectedCount, selectElement.options.length);
   } else {
     selectElement.size = 1; // Collapse back to single line
   }
