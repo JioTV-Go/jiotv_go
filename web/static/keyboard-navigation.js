@@ -366,7 +366,7 @@ class KeyboardNavigation {
         bestDistance = distance;
         bestElement = actualIndex;
       }
-    });
+    }
 
     return bestElement;
   }

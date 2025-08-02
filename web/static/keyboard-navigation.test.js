@@ -2,48 +2,40 @@
  * Tests for Keyboard Navigation functionality
  */
 
-// Mock DOM environment for testing
-const { JSDOM } = require('jsdom');
-const dom = new JSDOM(`
-<!DOCTYPE html>
-<html>
-<head>
-  <title>Test</title>
-</head>
-<body>
-  <div class="navbar">
-    <div class="navbar-end">
-      <button class="btn">Login</button>
-    </div>
-  </div>
-  <div class="container">
-    <input id="portexe-search-input" type="text" />
-    <select id="portexe-quality-select">
-      <option value="auto">Auto</option>
-    </select>
-    <div class="grid">
-      <a href="/play/1" class="card" data-channel-id="1">Channel 1</a>
-      <a href="/play/2" class="card" data-channel-id="2">Channel 2</a>
-      <a href="/play/3" class="card" data-channel-id="3">Channel 3</a>
-    </div>
-  </div>
-</body>
-</html>
-`, { 
-  url: "http://localhost",
-  pretendToBeVisual: true,
-  resources: "usable"
+// Mock localStorage
+Object.defineProperty(window, 'localStorage', {
+  value: {
+    getItem: jest.fn(() => null),
+    setItem: jest.fn(),
+    removeItem: jest.fn(),
+    clear: jest.fn()
+  },
+  writable: true
 });
 
-global.window = dom.window;
-global.document = dom.window.document;
-global.navigator = dom.window.navigator;
-global.localStorage = {
-  getItem: jest.fn(() => null),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn()
-};
+// Mock matchMedia
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  value: jest.fn().mockImplementation(query => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(), // deprecated
+    removeListener: jest.fn(), // deprecated
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+});
+
+// Mock screen
+Object.defineProperty(window, 'screen', {
+  writable: true,
+  value: {
+    width: 1920,
+    height: 1080
+  }
+});
 
 // Mock getBoundingClientRect for all elements
 Element.prototype.getBoundingClientRect = jest.fn(() => ({
@@ -58,7 +50,7 @@ Element.prototype.getBoundingClientRect = jest.fn(() => ({
 // Mock scrollIntoView
 Element.prototype.scrollIntoView = jest.fn();
 
-const { KeyboardNavigation } = require('./keyboard-navigation.js');
+const KeyboardNavigation = require('./keyboard-navigation.js');
 
 describe('KeyboardNavigation', () => {
   let keyboardNav;

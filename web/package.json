@@ -1,10 +1,22 @@
 {
   "devDependencies": {
     "daisyui": "^4.12.24",
-    "tailwindcss": "^3.4.17"
+    "tailwindcss": "^3.4.17",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "jsdom": "^24.0.0"
   },
   "scripts": {
     "build": "tailwindcss build -i ./static/input.css -o ./static/tailwind.css -m",
-    "watch": "tailwindcss -i ./static/input.css -o ./static/tailwind.css -w"
+    "watch": "tailwindcss -i ./static/input.css -o ./static/tailwind.css -w",
+    "test": "jest --testPathPattern='static/.*\\.test\\.js$'"
+  },
+  "jest": {
+    "testEnvironment": "jsdom",
+    "collectCoverageFrom": [
+      "static/**/*.js",
+      "!static/**/*.test.js",
+      "!static/**/*.min.js"
+    ]
   }
 }
