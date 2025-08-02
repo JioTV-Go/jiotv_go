@@ -1,99 +1,86 @@
 package television
 
 import (
-	"reflect"
+	"log"
+	"os"
+	"strings"
 	"testing"
 
+	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/store"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 )
 
+// Setup function to initialize store for tests
+func setupTest() {
+	// Initialize store for testing
+	store.Init()
+	// Initialize secureurl for URL encryption/decryption
+	secureurl.Init()
+	// Initialize the Log variable to prevent nil pointer dereference
+	if utils.Log == nil {
+		utils.Log = log.New(os.Stdout, "", log.LstdFlags)
+	}
+}
+
 func TestNew(t *testing.T) {
+	setupTest() // Initialize store and logger
 	type args struct {
 		credentials *utils.JIOTV_CREDENTIALS
 	}
 	tests := []struct {
 		name string
 		args args
-		want *Television
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Create TV instance with valid credentials",
+			args: args{
+				credentials: &utils.JIOTV_CREDENTIALS{
+					SSOToken: "test_sso_token",
+					CRM:      "test_crm",
+					UniqueID: "test_unique_id",
+				},
+			},
+		},
+		{
+			name: "Create TV instance with nil credentials",
+			args: args{
+				credentials: nil,
+			},
+		},
+		{
+			name: "Create TV instance with empty credentials",
+			args: args{
+				credentials: &utils.JIOTV_CREDENTIALS{},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := New(tt.args.credentials); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("New() = %v, want %v", got, tt.want)
+			got := New(tt.args.credentials)
+			if got == nil {
+				t.Errorf("New() returned nil")
+			}
+			if got.Headers == nil {
+				t.Errorf("New() should initialize Headers")
+			}
+			if got.Client == nil {
+				t.Errorf("New() should initialize Client")
 			}
 		})
 	}
 }
 
 func TestTelevision_Live(t *testing.T) {
-	type args struct {
-		channelID string
-	}
-	tests := []struct {
-		name    string
-		tv      *Television
-		args    args
-		want    *LiveURLOutput
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := tt.tv.Live(tt.args.channelID)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Television.Live() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Television.Live() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	t.Skip("Skipping API-dependent test that requires external network access")
 }
 
 func TestTelevision_Render(t *testing.T) {
-	type args struct {
-		url string
-	}
-	tests := []struct {
-		name  string
-		tv    *Television
-		args  args
-		want  []byte
-		want1 int
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, got1 := tt.tv.Render(tt.args.url)
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Television.Render() got = %v, want %v", got, tt.want)
-			}
-			if got1 != tt.want1 {
-				t.Errorf("Television.Render() got1 = %v, want %v", got1, tt.want1)
-			}
-		})
-	}
+	t.Skip("Skipping API-dependent test that requires external network access")
 }
 
 func TestChannels(t *testing.T) {
-	tests := []struct {
-		name string
-		want ChannelsResponse
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := Channels(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Channels() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	t.Skip("Skipping API-dependent test that requires external network access")
 }
 
 func TestFilterChannels(t *testing.T) {
@@ -187,6 +174,7 @@ func TestFilterChannels(t *testing.T) {
 }
 
 func TestReplaceM3U8(t *testing.T) {
+	setupTest() // Initialize necessary components
 	type args struct {
 		baseUrl    []byte
 		match      []byte
@@ -196,20 +184,52 @@ func TestReplaceM3U8(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want []byte
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Replace M3U8 URL with parameters",
+			args: args{
+				baseUrl:    []byte("test.m3u8"),
+				match:      []byte("test.m3u8"),
+				params:     "param1=value1",
+				channel_id: "123",
+			},
+		},
+		{
+			name: "Replace M3U8 URL with empty params",
+			args: args{
+				baseUrl:    []byte("example.m3u8"),
+				match:      []byte("example.m3u8"),
+				params:     "",
+				channel_id: "456",
+			},
+		},
+		{
+			name: "No match found",
+			args: args{
+				baseUrl:    []byte("original content"),
+				match:      []byte("not_found.m3u8"),
+				params:     "param1=value1",
+				channel_id: "123",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ReplaceM3U8(tt.args.baseUrl, tt.args.match, tt.args.params, tt.args.channel_id); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ReplaceM3U8() = %v, want %v", got, tt.want)
+			got := ReplaceM3U8(tt.args.baseUrl, tt.args.match, tt.args.params, tt.args.channel_id)
+			// The function encrypts URLs, so we check that it produces some output
+			if len(got) == 0 {
+				t.Errorf("ReplaceM3U8() returned empty result")
+			}
+			// Should contain render path
+			if !strings.Contains(string(got), "/render") {
+				t.Errorf("ReplaceM3U8() should contain /render path, got %s", string(got))
 			}
 		})
 	}
 }
 
 func TestReplaceTS(t *testing.T) {
+	setupTest() // Initialize necessary components
 	type args struct {
 		baseUrl []byte
 		match   []byte
@@ -218,20 +238,49 @@ func TestReplaceTS(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want []byte
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Replace TS URL with parameters",
+			args: args{
+				baseUrl: []byte("segment.ts"),
+				match:   []byte("segment.ts"),
+				params:  "param1=value1",
+			},
+		},
+		{
+			name: "Replace TS URL with empty params",
+			args: args{
+				baseUrl: []byte("test.ts"),
+				match:   []byte("test.ts"),
+				params:  "",
+			},
+		},
+		{
+			name: "No match found",
+			args: args{
+				baseUrl: []byte("original content"),
+				match:   []byte("not_found.ts"),
+				params:  "param1=value1",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ReplaceTS(tt.args.baseUrl, tt.args.match, tt.args.params); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ReplaceTS() = %v, want %v", got, tt.want)
+			got := ReplaceTS(tt.args.baseUrl, tt.args.match, tt.args.params)
+			// The function encrypts URLs, so we check that it produces some output
+			if len(got) == 0 {
+				t.Errorf("ReplaceTS() returned empty result")
+			}
+			// Should contain render path
+			if !strings.Contains(string(got), "/render") {
+				t.Errorf("ReplaceTS() should contain /render path, got %s", string(got))
 			}
 		})
 	}
 }
 
 func TestReplaceAAC(t *testing.T) {
+	setupTest() // Initialize necessary components
 	type args struct {
 		baseUrl []byte
 		match   []byte
@@ -240,20 +289,49 @@ func TestReplaceAAC(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want []byte
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Replace AAC URL with parameters",
+			args: args{
+				baseUrl: []byte("audio.aac"),
+				match:   []byte("audio.aac"),
+				params:  "param1=value1",
+			},
+		},
+		{
+			name: "Replace AAC URL with empty params",
+			args: args{
+				baseUrl: []byte("test.aac"),
+				match:   []byte("test.aac"),
+				params:  "",
+			},
+		},
+		{
+			name: "No match found",
+			args: args{
+				baseUrl: []byte("original content"),
+				match:   []byte("not_found.aac"),
+				params:  "param1=value1",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ReplaceAAC(tt.args.baseUrl, tt.args.match, tt.args.params); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ReplaceAAC() = %v, want %v", got, tt.want)
+			got := ReplaceAAC(tt.args.baseUrl, tt.args.match, tt.args.params)
+			// The function encrypts URLs, so we check that it produces some output
+			if len(got) == 0 {
+				t.Errorf("ReplaceAAC() returned empty result")
+			}
+			// Should contain render path
+			if !strings.Contains(string(got), "/render") {
+				t.Errorf("ReplaceAAC() should contain /render path, got %s", string(got))
 			}
 		})
 	}
 }
 
 func TestReplaceKey(t *testing.T) {
+	setupTest() // Initialize necessary components
 	type args struct {
 		match      []byte
 		params     string
@@ -262,41 +340,47 @@ func TestReplaceKey(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want []byte
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Replace key with parameters",
+			args: args{
+				match:      []byte("key.bin"),
+				params:     "param1=value1",
+				channel_id: "123",
+			},
+		},
+		{
+			name: "Replace key with empty params",
+			args: args{
+				match:      []byte("test.key"),
+				params:     "",
+				channel_id: "456",
+			},
+		},
+		{
+			name: "Replace key with empty channel_id",
+			args: args{
+				match:      []byte("test.key"),
+				params:     "param1=value1",
+				channel_id: "",
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := ReplaceKey(tt.args.match, tt.args.params, tt.args.channel_id); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ReplaceKey() = %v, want %v", got, tt.want)
+			got := ReplaceKey(tt.args.match, tt.args.params, tt.args.channel_id)
+			// The function encrypts URLs, so we check that it produces some output
+			if len(got) == 0 {
+				t.Errorf("ReplaceKey() returned empty result")
+			}
+			// Should contain render path
+			if !strings.Contains(string(got), "/render") {
+				t.Errorf("ReplaceKey() should contain /render path, got %s", string(got))
 			}
 		})
 	}
 }
 
 func Test_getSLChannel(t *testing.T) {
-	type args struct {
-		channelID string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    *LiveURLOutput
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := getSLChannel(tt.args.channelID)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getSLChannel() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("getSLChannel() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	t.Skip("Skipping API-dependent test that requires external network access")
 }

@@ -1,22 +1,24 @@
 package epg
 
 import (
-	"reflect"
+	"log"
+	"os"
 	"testing"
 	"time"
+
+	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 )
 
+// Setup function to initialize dependencies for tests
+func setupTest() {
+	// Initialize the Log variable to prevent nil pointer dereference
+	if utils.Log == nil {
+		utils.Log = log.New(os.Stdout, "", log.LstdFlags)
+	}
+}
+
 func TestInit(t *testing.T) {
-	tests := []struct {
-		name string
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			Init()
-		})
-	}
+	t.Skip("Skipping API-dependent test that requires external network access")
 }
 
 func TestNewProgramme(t *testing.T) {
@@ -119,25 +121,7 @@ func TestNewProgramme(t *testing.T) {
 }
 
 func Test_genXML(t *testing.T) {
-	tests := []struct {
-		name    string
-		want    []byte
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := genXML()
-			if (err != nil) != tt.wantErr {
-				t.Errorf("genXML() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("genXML() = %v, want %v", got, tt.want)
-			}
-		})
-	}
+	t.Skip("Skipping API-dependent test that requires external network access")
 }
 
 func Test_formatTime(t *testing.T) {
@@ -175,21 +159,5 @@ func Test_formatTime(t *testing.T) {
 }
 
 func TestGenXMLGz(t *testing.T) {
-	type args struct {
-		filename string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := GenXMLGz(tt.args.filename); (err != nil) != tt.wantErr {
-				t.Errorf("GenXMLGz() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
+	t.Skip("Skipping API-dependent test that requires external network access")
 }
