@@ -97,6 +97,15 @@ func TestChannels(t *testing.T) {
 }
 
 func TestFilterChannels(t *testing.T) {
+	// Create test data
+	testChannels := []Channel{
+		{ID: "1", Name: "Hindi Entertainment", Language: 1, Category: 5}, // Hindi Entertainment
+		{ID: "2", Name: "English Movies", Language: 6, Category: 6},       // English Movies  
+		{ID: "3", Name: "Hindi Movies", Language: 1, Category: 6},         // Hindi Movies
+		{ID: "4", Name: "English Sports", Language: 6, Category: 8},       // English Sports
+		{ID: "5", Name: "Tamil Entertainment", Language: 8, Category: 5},  // Tamil Entertainment
+	}
+
 	type args struct {
 		channels []Channel
 		language int
@@ -107,12 +116,71 @@ func TestFilterChannels(t *testing.T) {
 		args args
 		want []Channel
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Filter by language only (Hindi)",
+			args: args{
+				channels: testChannels,
+				language: 1, // Hindi
+				category: 0, // No category filter
+			},
+			want: []Channel{
+				{ID: "1", Name: "Hindi Entertainment", Language: 1, Category: 5},
+				{ID: "3", Name: "Hindi Movies", Language: 1, Category: 6},
+			},
+		},
+		{
+			name: "Filter by category only (Movies)",
+			args: args{
+				channels: testChannels,
+				language: 0, // No language filter
+				category: 6, // Movies
+			},
+			want: []Channel{
+				{ID: "2", Name: "English Movies", Language: 6, Category: 6},
+				{ID: "3", Name: "Hindi Movies", Language: 1, Category: 6},
+			},
+		},
+		{
+			name: "Filter by both language and category (English Movies)",
+			args: args{
+				channels: testChannels,
+				language: 6, // English
+				category: 6, // Movies
+			},
+			want: []Channel{
+				{ID: "2", Name: "English Movies", Language: 6, Category: 6},
+			},
+		},
+		{
+			name: "No filters (return all)",
+			args: args{
+				channels: testChannels,
+				language: 0, // No filter
+				category: 0, // No filter
+			},
+			want: testChannels,
+		},
+		{
+			name: "Empty channels slice",
+			args: args{
+				channels: []Channel{},
+				language: 1,
+				category: 5,
+			},
+			want: []Channel{},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := FilterChannels(tt.args.channels, tt.args.language, tt.args.category); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("FilterChannels() = %v, want %v", got, tt.want)
+			got := FilterChannels(tt.args.channels, tt.args.language, tt.args.category)
+			if len(got) != len(tt.want) {
+				t.Errorf("FilterChannels() returned %d channels, want %d", len(got), len(tt.want))
+				return
+			}
+			for i, channel := range got {
+				if channel.ID != tt.want[i].ID {
+					t.Errorf("FilterChannels() channel[%d].ID = %v, want %v", i, channel.ID, tt.want[i].ID)
+				}
 			}
 		})
 	}

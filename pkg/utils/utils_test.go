@@ -251,7 +251,21 @@ func TestFileExists(t *testing.T) {
 		args args
 		want bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Existing file",
+			args: args{filename: "utils.go"}, // This file should exist
+			want: true,
+		},
+		{
+			name: "Non-existing file",
+			args: args{filename: "nonexistent_file.txt"}, 
+			want: false,
+		},
+		{
+			name: "Empty filename",
+			args: args{filename: ""}, 
+			want: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -264,15 +278,41 @@ func TestFileExists(t *testing.T) {
 
 func TestGenerateCurrentTime(t *testing.T) {
 	tests := []struct {
-		name string
-		want string
+		name        string
+		wantFormat  string
+		wantLength  int
 	}{
-		// TODO: Add test cases.
+		{
+			name:        "Current time format",
+			wantFormat:  "20060102T150405", // Expected format pattern
+			wantLength:  15, // YYYYMMDDTHHMMSS should be 15 characters
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GenerateCurrentTime(); got != tt.want {
-				t.Errorf("GenerateCurrentTime() = %v, want %v", got, tt.want)
+			got := GenerateCurrentTime()
+			
+			// Check length
+			if len(got) != tt.wantLength {
+				t.Errorf("GenerateCurrentTime() length = %v, want %v", len(got), tt.wantLength)
+			}
+			
+			// Check format by trying to parse it
+			if len(got) == 15 {
+				// Should have T at position 8
+				if got[8] != 'T' {
+					t.Errorf("GenerateCurrentTime() should have 'T' at position 8, got %c", got[8])
+				}
+				
+				// All other characters should be digits
+				for i, c := range got {
+					if i == 8 { // Skip the 'T'
+						continue
+					}
+					if c < '0' || c > '9' {
+						t.Errorf("GenerateCurrentTime() character at position %d should be digit, got %c", i, c)
+					}
+				}
 			}
 		})
 	}
@@ -280,15 +320,28 @@ func TestGenerateCurrentTime(t *testing.T) {
 
 func TestGenerateDate(t *testing.T) {
 	tests := []struct {
-		name string
-		want string
+		name        string
+		wantLength  int
 	}{
-		// TODO: Add test cases.
+		{
+			name:        "Date format",
+			wantLength:  8, // YYYYMMDD should be 8 characters
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := GenerateDate(); got != tt.want {
-				t.Errorf("GenerateDate() = %v, want %v", got, tt.want)
+			got := GenerateDate()
+			
+			// Check length
+			if len(got) != tt.wantLength {
+				t.Errorf("GenerateDate() length = %v, want %v", len(got), tt.wantLength)
+			}
+			
+			// All characters should be digits
+			for i, c := range got {
+				if c < '0' || c > '9' {
+					t.Errorf("GenerateDate() character at position %d should be digit, got %c", i, c)
+				}
 			}
 		})
 	}
@@ -304,7 +357,46 @@ func TestContainsString(t *testing.T) {
 		args args
 		want bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Item exists in slice",
+			args: args{
+				item:  "apple",
+				slice: []string{"apple", "banana", "cherry"},
+			},
+			want: true,
+		},
+		{
+			name: "Item does not exist in slice",
+			args: args{
+				item:  "grape",
+				slice: []string{"apple", "banana", "cherry"},
+			},
+			want: false,
+		},
+		{
+			name: "Empty slice",
+			args: args{
+				item:  "apple",
+				slice: []string{},
+			},
+			want: false,
+		},
+		{
+			name: "Empty item in slice with empty string",
+			args: args{
+				item:  "",
+				slice: []string{"", "apple", "banana"},
+			},
+			want: true,
+		},
+		{
+			name: "Empty item not in slice",
+			args: args{
+				item:  "",
+				slice: []string{"apple", "banana"},
+			},
+			want: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
