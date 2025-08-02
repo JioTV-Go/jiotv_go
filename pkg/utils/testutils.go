@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/jiotv-go/jiotv_go/v3/pkg/store"
 	"github.com/valyala/fasthttp"
 )
 
@@ -366,4 +367,44 @@ func PerformServerLogoutWithBaseURL(baseURL string) error {
 
 	Log.Printf("Server-side logout failed with status code: %d, body: %s\n", resp.StatusCode(), string(resp.Body()))
 	return fmt.Errorf("server logout API request failed with status code: %d", resp.StatusCode())
+}
+
+// LogoutWithBaseURL function deletes credentials file using custom base URL for server logout
+func LogoutWithBaseURL(baseURL string) error {
+	// Perform server-side logout first using the provided base URL
+	if err := PerformServerLogoutWithBaseURL(baseURL); err != nil {
+		// Log the error but continue with local logout
+		Log.Printf("PerformServerLogout failed: %v", err)
+	}
+
+	// Delete all key-value pairs from the store
+	if err := store.Delete("ssoToken"); err != nil {
+		return err
+	}
+
+	if err := store.Delete("crm"); err != nil {
+		return err
+	}
+
+	if err := store.Delete("uniqueId"); err != nil {
+		return err
+	}
+
+	if err := store.Delete("accessToken"); err != nil {
+		return err
+	}
+
+	if err := store.Delete("refreshToken"); err != nil {
+		return err
+	}
+
+	if err := store.Delete("lastTokenRefreshTime"); err != nil {
+		return err
+	}
+
+	if err := store.Delete("lastSSOTokenRefreshTime"); err != nil {
+		return err
+	}
+
+	return nil
 }

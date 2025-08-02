@@ -374,7 +374,8 @@ func TestCheckLoggedIn(t *testing.T) {
 }
 
 func TestLogout(t *testing.T) {
-	setupTest() // Don't need mock server for this test since we're only testing local cleanup
+	mockServer := setupTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
 	
 	tests := []struct {
 		name    string
@@ -412,7 +413,7 @@ func TestLogout(t *testing.T) {
 				tt.setup()
 			}
 			
-			err := Logout()
+			err := LogoutWithBaseURL(mockServer.URLs[AUTH_MEDIA_DOMAIN])
 			if tt.wantErr && err == nil {
 				t.Errorf("Logout() expected error but got none")
 			}
