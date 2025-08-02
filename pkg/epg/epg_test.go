@@ -161,3 +161,83 @@ func Test_formatTime(t *testing.T) {
 func TestGenXMLGz(t *testing.T) {
 	t.Skip("Skipping API-dependent test that requires external network access")
 }
+
+func TestEpochString_UnmarshalJSON(t *testing.T) {
+	type args struct {
+		data []byte
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    EpochString
+		wantErr bool
+	}{
+		{
+			name: "Unmarshal from integer",
+			args: args{data: []byte("1609459200123")}, // 13-digit timestamp
+			want: EpochString("1609459200"),           // Should be truncated to 10 digits
+			wantErr: false,
+		},
+		{
+			name: "Unmarshal from string",
+			args: args{data: []byte(`"test_string"`)},
+			want: EpochString("test_string"),
+			wantErr: false,
+		},
+		{
+			name: "Unmarshal from empty string",
+			args: args{data: []byte(`""`)},
+			want: EpochString(""),
+			wantErr: false,
+		},
+		{
+			name: "Unmarshal invalid JSON",
+			args: args{data: []byte("invalid json")},
+			want: EpochString(""),
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var id EpochString
+			err := id.UnmarshalJSON(tt.args.data)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("EpochString.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if !tt.wantErr && id != tt.want {
+				t.Errorf("EpochString.UnmarshalJSON() = %v, want %v", id, tt.want)
+			}
+		})
+	}
+}
+
+func TestEpochString_String(t *testing.T) {
+	tests := []struct {
+		name string
+		id   EpochString
+		want string
+	}{
+		{
+			name: "String representation of epoch",
+			id:   EpochString("1609459200"),
+			want: "1609459200",
+		},
+		{
+			name: "String representation of empty epoch",
+			id:   EpochString(""),
+			want: "",
+		},
+		{
+			name: "String representation of text epoch",
+			id:   EpochString("test_string"),
+			want: "test_string",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.id.String(); got != tt.want {
+				t.Errorf("EpochString.String() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
