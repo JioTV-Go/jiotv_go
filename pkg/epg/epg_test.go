@@ -3,42 +3,45 @@ package epg
 import (
 	"log"
 	"os"
+	"strings"
+	"sync"
 	"testing"
 	"time"
 
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 )
 
-var mockEPGServer *MockEPGServer
+var (
+	setupOnce sync.Once
+)
 
 // Setup function to initialize dependencies for tests
 func setupTest() {
-	// Initialize the Log variable to prevent nil pointer dereference
-	if utils.Log == nil {
-		utils.Log = log.New(os.Stdout, "", log.LstdFlags)
-	}
+	setupOnce.Do(func() {
+		// Initialize the Log variable to prevent nil pointer dereference
+		if utils.Log == nil {
+			utils.Log = log.New(os.Stdout, "", log.LstdFlags)
+		}
+	})
 }
 
 // setupTestWithMockServer initializes test environment with HTTP mocking
+// Returns a new mock server instance for each test to prevent test interference
 func setupTestWithMockServer() *MockEPGServer {
 	setupTest()
-	if mockEPGServer == nil {
-		mockEPGServer = NewMockEPGServer()
-	}
-	return mockEPGServer
+	return NewMockEPGServer()
 }
 
-// teardownTestWithMockServer cleans up the mock server
-func teardownTestWithMockServer() {
-	if mockEPGServer != nil {
-		mockEPGServer.Close()
-		mockEPGServer = nil
+// teardownTestWithMockServer cleans up the mock server instance
+func teardownTestWithMockServer(mockServer *MockEPGServer) {
+	if mockServer != nil {
+		mockServer.Close()
 	}
 }
 
 func TestInit(t *testing.T) {
 	mockServer := setupTestWithMockServer()
-	defer teardownTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
 	
 	tests := []struct {
 		name string
@@ -165,7 +168,7 @@ func TestNewProgramme(t *testing.T) {
 
 func Test_genXML(t *testing.T) {
 	mockServer := setupTestWithMockServer()
-	defer teardownTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
 	
 	tests := []struct {
 		name    string
@@ -241,7 +244,7 @@ func Test_formatTime(t *testing.T) {
 
 func TestGenXMLGz(t *testing.T) {
 	mockServer := setupTestWithMockServer()
-	defer teardownTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
 	
 	tests := []struct {
 		name     string

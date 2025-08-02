@@ -4,37 +4,39 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/jiotv-go/jiotv_go/v3/pkg/store"
 )
 
-var mockServer *MockServer
+var (
+	setupOnce sync.Once
+)
 
 // Setup function to initialize store for tests
 func setupTest() {
-	// Initialize store for testing
-	store.Init()
-	// Initialize the Log variable to prevent nil pointer dereference
-	if Log == nil {
-		Log = log.New(os.Stdout, "", log.LstdFlags)
-	}
+	setupOnce.Do(func() {
+		// Initialize store for testing
+		store.Init()
+		// Initialize the Log variable to prevent nil pointer dereference
+		if Log == nil {
+			Log = log.New(os.Stdout, "", log.LstdFlags)
+		}
+	})
 }
 
 // setupTestWithMockServer initializes test environment with HTTP mocking
+// Returns a new mock server instance for each test to prevent test interference
 func setupTestWithMockServer() *MockServer {
 	setupTest()
-	if mockServer == nil {
-		mockServer = NewMockServer()
-	}
-	return mockServer
+	return NewMockServer()
 }
 
-// teardownTestWithMockServer cleans up the mock server
-func teardownTestWithMockServer() {
+// teardownTestWithMockServer cleans up the mock server instance
+func teardownTestWithMockServer(mockServer *MockServer) {
 	if mockServer != nil {
 		mockServer.Close()
-		mockServer = nil
 	}
 }
 
@@ -59,7 +61,7 @@ func TestGetLogger(t *testing.T) {
 
 func TestLoginSendOTP(t *testing.T) {
 	mockServer := setupTestWithMockServer()
-	defer teardownTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
 	
 	type args struct {
 		number string
@@ -110,7 +112,7 @@ func TestLoginSendOTP(t *testing.T) {
 
 func TestLoginVerifyOTP(t *testing.T) {
 	mockServer := setupTestWithMockServer()
-	defer teardownTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
 	
 	type args struct {
 		number string
@@ -171,7 +173,7 @@ func TestLoginVerifyOTP(t *testing.T) {
 
 func TestLogin(t *testing.T) {
 	mockServer := setupTestWithMockServer()
-	defer teardownTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
 	
 	type args struct {
 		username string
@@ -425,7 +427,7 @@ func TestLogout(t *testing.T) {
 
 func TestPerformServerLogout(t *testing.T) {
 	mockServer := setupTestWithMockServer()
-	defer teardownTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
 	
 	tests := []struct {
 		name    string

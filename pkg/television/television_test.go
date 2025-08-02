@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"strings"
+	"sync"
 	"testing"
 
 	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
@@ -11,34 +12,35 @@ import (
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 )
 
-var mockTelevisionServer *MockTelevisionServer
+var (
+	setupOnce sync.Once
+)
 
 // Setup function to initialize store for tests
 func setupTest() {
-	// Initialize store for testing
-	store.Init()
-	// Initialize secureurl for URL encryption/decryption
-	secureurl.Init()
-	// Initialize the Log variable to prevent nil pointer dereference
-	if utils.Log == nil {
-		utils.Log = log.New(os.Stdout, "", log.LstdFlags)
-	}
+	setupOnce.Do(func() {
+		// Initialize store for testing
+		store.Init()
+		// Initialize secureurl for URL encryption/decryption
+		secureurl.Init()
+		// Initialize the Log variable to prevent nil pointer dereference
+		if utils.Log == nil {
+			utils.Log = log.New(os.Stdout, "", log.LstdFlags)
+		}
+	})
 }
 
 // setupTestWithMockServer initializes test environment with HTTP mocking
+// Returns a new mock server instance for each test to prevent test interference
 func setupTestWithMockServer() *MockTelevisionServer {
 	setupTest()
-	if mockTelevisionServer == nil {
-		mockTelevisionServer = NewMockTelevisionServer()
-	}
-	return mockTelevisionServer
+	return NewMockTelevisionServer()
 }
 
-// teardownTestWithMockServer cleans up the mock server
-func teardownTestWithMockServer() {
-	if mockTelevisionServer != nil {
-		mockTelevisionServer.Close()
-		mockTelevisionServer = nil
+// teardownTestWithMockServer cleans up the mock server instance
+func teardownTestWithMockServer(mockServer *MockTelevisionServer) {
+	if mockServer != nil {
+		mockServer.Close()
 	}
 }
 
@@ -92,7 +94,7 @@ func TestNew(t *testing.T) {
 
 func TestTelevision_Live(t *testing.T) {
 	mockServer := setupTestWithMockServer()
-	defer teardownTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
 	
 	type args struct {
 		channelID   string
@@ -169,7 +171,7 @@ func TestTelevision_Live(t *testing.T) {
 
 func TestTelevision_Render(t *testing.T) {
 	mockServer := setupTestWithMockServer()
-	defer teardownTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
 	
 	type args struct {
 		url         string
@@ -216,7 +218,7 @@ func TestTelevision_Render(t *testing.T) {
 
 func TestChannels(t *testing.T) {
 	mockServer := setupTestWithMockServer()
-	defer teardownTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
 	
 	tests := []struct {
 		name string
@@ -546,7 +548,7 @@ func TestReplaceKey(t *testing.T) {
 
 func Test_getSLChannel(t *testing.T) {
 	mockServer := setupTestWithMockServer()
-	defer teardownTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
 	
 	type args struct {
 		channelID string
