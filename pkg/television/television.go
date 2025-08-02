@@ -306,6 +306,12 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 	} else {
 		// Fallback: try to detect format by content
 		trimmed := strings.TrimSpace(string(data))
+		
+		// For unsupported extensions, require non-empty content
+		if trimmed == "" {
+			return nil, fmt.Errorf("unsupported or invalid custom channels file format. Supported formats: .json, .yml, .yaml, or valid JSON/YAML content")
+		}
+		
 		// Try JSON if content starts with '{' or '['
 		if strings.HasPrefix(trimmed, "{") || strings.HasPrefix(trimmed, "[") {
 			err = json.Unmarshal(data, &customConfig)
