@@ -25,6 +25,21 @@ const (
 	maxRecommendedChannels = 1000
 )
 
+// logExcessiveChannelsWarning logs a comprehensive warning when the number of custom channels exceeds the recommended limit
+func logExcessiveChannelsWarning(channelCount int, context string) {
+	if channelCount <= maxRecommendedChannels || utils.Log == nil {
+		return
+	}
+	
+	utils.Log.Printf("WARNING: %s %d custom channels, which exceeds the recommended limit of %d channels.", context, channelCount, maxRecommendedChannels)
+	utils.Log.Printf("WARNING: Large numbers of custom channels may impact performance:")
+	utils.Log.Printf("  - Slower channel listing and filtering operations")
+	utils.Log.Printf("  - Increased memory usage")
+	utils.Log.Printf("  - Longer startup times")
+	utils.Log.Printf("  - Potential UI responsiveness issues")
+	utils.Log.Printf("Consider splitting channels into multiple configuration files or reducing the total number.")
+}
+
 var (
 	// customChannelsCache holds cached custom channels
 	customChannelsCache []Channel
@@ -136,10 +151,7 @@ func loadAndCacheCustomChannels() []Channel {
 		}
 		
 		// Warn user about performance implications if too many channels
-		if len(channels) > maxRecommendedChannels && utils.Log != nil {
-			utils.Log.Printf("WARNING: Cached %d custom channels, which exceeds the recommended limit of %d channels.", len(channels), maxRecommendedChannels)
-			utils.Log.Printf("WARNING: This may impact application performance. Consider reducing the number of custom channels.")
-		}
+		logExcessiveChannelsWarning(len(channels), "Cached")
 	}
 	
 	customChannelsCacheLoaded = true
@@ -172,10 +184,7 @@ func ReloadCustomChannels() error {
 		utils.Log.Printf("Reloaded %d custom channels", len(channels))
 		
 		// Warn user about performance implications if too many channels
-		if len(channels) > maxRecommendedChannels {
-			utils.Log.Printf("WARNING: Reloaded %d custom channels, which exceeds the recommended limit of %d channels.", len(channels), maxRecommendedChannels)
-			utils.Log.Printf("WARNING: This may impact application performance. Consider reducing the number of custom channels.")
-		}
+		logExcessiveChannelsWarning(len(channels), "Reloaded")
 	}
 	
 	return nil
@@ -402,15 +411,7 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 		utils.Log.Printf("Loaded %d custom channels from %s", len(channels), filePath)
 		
 		// Warn user about performance implications if too many channels
-		if len(channels) > maxRecommendedChannels {
-			utils.Log.Printf("WARNING: You have loaded %d custom channels, which exceeds the recommended limit of %d channels.", len(channels), maxRecommendedChannels)
-			utils.Log.Printf("WARNING: Large numbers of custom channels may impact performance:")
-			utils.Log.Printf("  - Slower channel listing and filtering operations")
-			utils.Log.Printf("  - Increased memory usage")
-			utils.Log.Printf("  - Longer startup times")
-			utils.Log.Printf("  - Potential UI responsiveness issues")
-			utils.Log.Printf("Consider splitting channels into multiple configuration files or reducing the total number.")
-		}
+		logExcessiveChannelsWarning(len(channels), "You have loaded")
 	}
 	return channels, nil
 }
