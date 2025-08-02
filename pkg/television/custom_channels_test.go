@@ -230,3 +230,93 @@ func TestChannelsWithCustomChannels(t *testing.T) {
 		t.Skip("Skipping actual API call test")
 	})
 }
+
+func TestCustomChannelsCaching(t *testing.T) {
+	// Save original config
+	originalCustomChannelsFile := config.Cfg.CustomChannelsFile
+	defer func() {
+		config.Cfg.CustomChannelsFile = originalCustomChannelsFile
+	}()
+
+	// Clear cache before test
+	ClearCustomChannelsCache()
+
+	// Create temporary JSON file
+	tempFile, err := os.CreateTemp("", "custom_channels_cache_*.json")
+	if err != nil {
+		t.Fatalf("Failed to create temp file: %v", err)
+	}
+	defer os.Remove(tempFile.Name())
+
+	customConfig := CustomChannelsConfig{
+		Channels: []CustomChannel{
+			{
+				ID:       "cache_test_channel",
+				Name:     "Cache Test Channel",
+				URL:      "https://example.com/cache_test.m3u8",
+				LogoURL:  "https://example.com/cache_logo.png",
+				Category: 12,
+				Language: 6,
+				IsHD:     true,
+			},
+		},
+	}
+
+	jsonData, err := json.Marshal(customConfig)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	if _, err := tempFile.Write(jsonData); err != nil {
+		t.Fatalf("Failed to write to temp file: %v", err)
+	}
+	tempFile.Close()
+
+	// Set config to use the temp file
+	config.Cfg.CustomChannelsFile = tempFile.Name()
+
+	// Test getCustomChannels function (which uses caching internally)
+	channels1 := getCustomChannels()
+	if len(channels1) != 1 {
+		t.Fatalf("Expected 1 channel, got %d", len(channels1))
+	}
+	if channels1[0].ID != "cache_test_channel" {
+		t.Errorf("Expected channel ID 'cache_test_channel', got '%s'", channels1[0].ID)
+	}
+
+	// Call again to test cache usage
+	channels2 := getCustomChannels()
+	if len(channels2) != 1 {
+		t.Fatalf("Expected 1 channel from cache, got %d", len(channels2))
+	}
+	if channels2[0].ID != "cache_test_channel" {
+		t.Errorf("Expected channel ID 'cache_test_channel' from cache, got '%s'", channels2[0].ID)
+	}
+
+	// Test cache reload
+	err = ReloadCustomChannels()
+	if err != nil {
+		t.Fatalf("Failed to reload custom channels: %v", err)
+	}
+
+	// After reload, should still work
+	channels3 := getCustomChannels()
+	if len(channels3) != 1 {
+		t.Fatalf("Expected 1 channel after reload, got %d", len(channels3))
+	}
+	if channels3[0].ID != "cache_test_channel" {
+		t.Errorf("Expected channel ID 'cache_test_channel' after reload, got '%s'", channels3[0].ID)
+	}
+
+	// Clear cache
+	ClearCustomChannelsCache()
+
+	// After clearing cache, it should reload from file
+	channels4 := getCustomChannels()
+	if len(channels4) != 1 {
+		t.Fatalf("Expected 1 channel after cache clear, got %d", len(channels4))
+	}
+	if channels4[0].ID != "cache_test_channel" {
+		t.Errorf("Expected channel ID 'cache_test_channel' after cache clear, got '%s'", channels4[0].ID)
+	}
+}

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"sync"
 
 	"github.com/valyala/fasthttp"
 	"gopkg.in/yaml.v3"
@@ -18,6 +19,15 @@ import (
 const (
 	// URL for fetching channels from JioTV API
 	CHANNELS_API_URL = "https://jiotvapi.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?langId=6&os=android&devicetype=phone&usertype=JIO&version=315&langId=6"
+)
+
+var (
+	// customChannelsCache holds cached custom channels
+	customChannelsCache []Channel
+	// customChannelsCacheMutex protects the cache from concurrent access
+	customChannelsCacheMutex sync.RWMutex
+	// customChannelsCacheLoaded indicates if cache has been loaded
+	customChannelsCacheLoaded bool
 )
 
 // New function creates a new Television instance with the provided credentials
@@ -66,28 +76,102 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 	}
 }
 
+// getCustomChannels returns cached custom channels, loading them if necessary
+func getCustomChannels() []Channel {
+	customChannelsCacheMutex.RLock()
+	if customChannelsCacheLoaded {
+		channels := make([]Channel, len(customChannelsCache))
+		copy(channels, customChannelsCache)
+		customChannelsCacheMutex.RUnlock()
+		return channels
+	}
+	customChannelsCacheMutex.RUnlock()
+
+	// Need to load channels
+	return loadAndCacheCustomChannels()
+}
+
+// loadAndCacheCustomChannels loads custom channels from file and caches them
+func loadAndCacheCustomChannels() []Channel {
+	customChannelsCacheMutex.Lock()
+	defer customChannelsCacheMutex.Unlock()
+
+	// Double-check pattern - another goroutine might have loaded while we waited
+	if customChannelsCacheLoaded {
+		channels := make([]Channel, len(customChannelsCache))
+		copy(channels, customChannelsCache)
+		return channels
+	}
+
+	// Load channels from file
+	channels, err := LoadCustomChannels(config.Cfg.CustomChannelsFile)
+	if err != nil {
+		if utils.Log != nil {
+			utils.Log.Printf("Error loading custom channels: %v", err)
+		}
+		// Cache empty result to avoid repeated file I/O errors
+		customChannelsCache = []Channel{}
+	} else {
+		customChannelsCache = channels
+	}
+	
+	customChannelsCacheLoaded = true
+	
+	// Return a copy to prevent external modifications
+	result := make([]Channel, len(customChannelsCache))
+	copy(result, customChannelsCache)
+	return result
+}
+
+// ReloadCustomChannels reloads custom channels from file and updates cache
+func ReloadCustomChannels() error {
+	customChannelsCacheMutex.Lock()
+	defer customChannelsCacheMutex.Unlock()
+
+	channels, err := LoadCustomChannels(config.Cfg.CustomChannelsFile)
+	if err != nil {
+		return err
+	}
+
+	customChannelsCache = channels
+	customChannelsCacheLoaded = true
+	
+	if utils.Log != nil {
+		utils.Log.Printf("Reloaded %d custom channels", len(channels))
+	}
+	
+	return nil
+}
+
+// ClearCustomChannelsCache clears the custom channels cache
+func ClearCustomChannelsCache() {
+	customChannelsCacheMutex.Lock()
+	defer customChannelsCacheMutex.Unlock()
+	
+	customChannelsCache = nil
+	customChannelsCacheLoaded = false
+}
+
 // Live method generates m3u8 link from JioTV API with the provided channel ID
 func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
-	// Check if this is a custom channel by looking it up in loaded custom channels
+	// Check if this is a custom channel by looking it up in cached custom channels
 	if config.Cfg.CustomChannelsFile != "" {
-		customChannels, err := LoadCustomChannels(config.Cfg.CustomChannelsFile)
-		if err == nil {
-			for _, channel := range customChannels {
-				if channel.ID == channelID {
-					// For custom channels, return the URL directly
-					result := &LiveURLOutput{
-						Result: channel.URL,
-						Bitrates: Bitrates{
-							Auto:   channel.URL,
-							High:   channel.URL,
-							Medium: channel.URL,
-							Low:    channel.URL,
-						},
-						Code:    200,
-						Message: "success",
-					}
-					return result, nil
+		customChannels := getCustomChannels()
+		for _, channel := range customChannels {
+			if channel.ID == channelID {
+				// For custom channels, return the URL directly
+				result := &LiveURLOutput{
+					Result: channel.URL,
+					Bitrates: Bitrates{
+						Auto:   channel.URL,
+						High:   channel.URL,
+						Medium: channel.URL,
+						Low:    channel.URL,
+					},
+					Code:    200,
+					Message: "success",
 				}
+				return result, nil
 			}
 		}
 	}
@@ -310,14 +394,8 @@ func Channels() ChannelsResponse {
 
 	// Load and append custom channels if configured
 	if config.Cfg.CustomChannelsFile != "" {
-		customChannels, err := LoadCustomChannels(config.Cfg.CustomChannelsFile)
-		if err != nil {
-			if utils.Log != nil {
-				utils.Log.Printf("Error loading custom channels: %v", err)
-			}
-		} else {
-			apiResponse.Result = append(apiResponse.Result, customChannels...)
-		}
+		customChannels := getCustomChannels()
+		apiResponse.Result = append(apiResponse.Result, customChannels...)
 	}
 
 	return apiResponse
