@@ -93,7 +93,7 @@ func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
 	}
 
 	// If channelID starts with sl, then it is a Sony Channel
-	if channelID[:2] == "sl" {
+	if len(channelID) >= 2 && channelID[:2] == "sl" {
 		return getSLChannel(channelID)
 	}
 
