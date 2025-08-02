@@ -7,8 +7,8 @@
     "jsdom": "^26.1.0"
   },
   "scripts": {
-    "build": "tailwindcss build -i ./static/input.css -o ./static/tailwind.css -m",
-    "watch": "tailwindcss -i ./static/input.css -o ./static/tailwind.css -w",
+    "build": "tailwindcss build -i ./static/css/internal/input.css -o ./static/css/internal/tailwind.css -m",
+    "watch": "tailwindcss -i ./static/css/internal/input.css -o ./static/css/internal/tailwind.css -w",
     "test": "jest"
   }
 }
