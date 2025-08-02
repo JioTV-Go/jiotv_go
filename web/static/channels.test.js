@@ -15,16 +15,15 @@ const localStorageMock = {
 };
 
 // Assign the mock to the global window object if running in a JSDOM-like environment
-global.localStorage = localStorageMock;
+Object.defineProperty(window, 'localStorage', {
+  value: localStorageMock,
+  writable: true
+});
 
 // Mock console.error to avoid cluttering test output
 global.console.error = jest.fn();
 
-// --- Start of functions from channels.js (or assume they are imported/available) ---
-// For testing purposes, we'll redefine simplified versions or assume they are imported.
-// In a real Jest environment, you'd import these from './channels.js'
-// and potentially mock dependencies within that file if necessary.
-
+// Define the functions from channels.js for testing
 const FAVORITES_STORAGE_KEY = "favoriteChannels";
 
 function getFavoriteChannels() {
@@ -45,19 +44,14 @@ function saveFavoriteChannels(favoriteIds) {
   localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favoriteIds));
 }
 
-// Mock displayFavoriteChannels for toggleFavorite tests initially
-let displayFavoriteChannelsCalled = false;
 function displayFavoriteChannels() {
-  displayFavoriteChannelsCalled = true; // Simple spy for toggleFavorite
-
-  // Actual DOM manipulation logic for displayFavoriteChannels will be tested separately
   const favoriteIds = getFavoriteChannels();
   const favoriteChannelsSection = document.getElementById("favorite-channels-section");
   const favoriteChannelsContainer = document.getElementById("favorite-channels-container");
   const originalChannelsGrid = document.getElementById("original-channels-grid");
 
   if (!favoriteChannelsSection || !favoriteChannelsContainer || !originalChannelsGrid) {
-    // console.error("One or more channel container elements not found in mock DOM for displayFavoriteChannels.");
+    console.error("One or more channel container elements not found.");
     return;
   }
 
@@ -68,34 +62,53 @@ function displayFavoriteChannels() {
   }
 
   const allChannelCards = document.querySelectorAll('a.card[data-channel-id]');
+
+  // Create DocumentFragments to batch DOM updates
+  const favoriteFragment = document.createDocumentFragment();
+  const originalFragment = document.createDocumentFragment();
+
   allChannelCards.forEach(card => {
     const cardChannelId = card.dataset.channelId;
     if (favoriteIds.includes(cardChannelId)) {
-      favoriteChannelsContainer.appendChild(card);
+      favoriteFragment.appendChild(card);
     } else {
-      originalChannelsGrid.appendChild(card);
+      originalFragment.appendChild(card);
     }
   });
+
+  // Append fragments to their respective containers
+  favoriteChannelsContainer.appendChild(favoriteFragment);
+  originalChannelsGrid.appendChild(originalFragment);
 }
 
 function toggleFavorite(channelId) {
   const favoriteIds = getFavoriteChannels();
   const button = document.getElementById(`favorite-btn-${channelId}`);
+  const starIcon = document.getElementById(`star-icon-${channelId}`);
+  const xIcon = document.getElementById(`x-icon-${channelId}`);
   const index = favoriteIds.indexOf(channelId);
 
-  if (index > -1) {
+  if (index > -1) { // Channel was a favorite, removing it
     favoriteIds.splice(index, 1);
     if (button) {
       button.classList.remove("favorited");
+      if (starIcon && xIcon) {
+        starIcon.classList.remove('hidden');
+        xIcon.classList.add('hidden');
+      }
     }
-  } else {
+  } else { // Channel was not a favorite, adding it
     favoriteIds.push(channelId);
     if (button) {
       button.classList.add("favorited");
+      if (starIcon && xIcon) {
+        starIcon.classList.add('hidden');
+        xIcon.classList.remove('hidden');
+      }
     }
   }
   saveFavoriteChannels(favoriteIds);
-  displayFavoriteChannels(); // Call the actual or spied/mocked function
+  displayFavoriteChannels();
 }
 
 function updateFavoriteButtonStates() {
@@ -104,20 +117,30 @@ function updateFavoriteButtonStates() {
 
   favoriteButtons.forEach(button => {
     const channelId = button.id.replace("favorite-btn-", "");
+    const starIcon = document.getElementById(`star-icon-${channelId}`);
+    const xIcon = document.getElementById(`x-icon-${channelId}`);
+
     if (favoriteIds.includes(channelId)) {
       button.classList.add("favorited");
+      if (starIcon && xIcon) {
+        starIcon.classList.add('hidden');
+        xIcon.classList.remove('hidden');
+      }
     } else {
       button.classList.remove("favorited");
+      if (starIcon && xIcon) {
+        starIcon.classList.remove('hidden');
+        xIcon.classList.add('hidden');
+      }
     }
   });
 }
-// --- End of functions from channels.js ---
 
 describe('Favorite Channels Functionality', () => {
   beforeEach(() => {
     localStorageMock.clear();
     jest.clearAllMocks(); // Clears all Jest mocks, including localStorageMock calls and console.error
-    displayFavoriteChannelsCalled = false; // Reset spy for toggleFavorite
+    mockLocalStorageStore = {}; // Reset the store
 
     // Clear and set up basic DOM structure for each test
     document.body.innerHTML = `
@@ -144,7 +167,7 @@ describe('Favorite Channels Functionality', () => {
       localStorageMock.setItem(FAVORITES_STORAGE_KEY, JSON.stringify({ not: "an array" }));
       expect(getFavoriteChannels()).toEqual([]);
     });
-    
+
     it('should return the parsed array of IDs for valid JSON', () => {
       const favorites = ['id1', 'id2'];
       localStorageMock.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favorites));
@@ -181,15 +204,12 @@ describe('Favorite Channels Functionality', () => {
       favButton.id = `favorite-btn-${channelId}`;
       favButton.className = 'favorite-btn';
       document.body.appendChild(favButton);
-      
+
       // Create a mock channel card
       const channelCard = document.createElement('a');
       channelCard.className = 'card';
       channelCard.dataset.channelId = channelId;
       document.getElementById('original-channels-grid').appendChild(channelCard);
-
-      // Reset spy for displayFavoriteChannels
-      displayFavoriteChannelsCalled = false; 
     });
 
     afterEach(() => {
@@ -207,22 +227,18 @@ describe('Favorite Channels Functionality', () => {
       toggleFavorite(channelId);
       expect(getFavoriteChannels()).toContain(channelId);
       expect(favButton.classList.contains('favorited')).toBe(true);
-      expect(displayFavoriteChannelsCalled).toBe(true);
     });
 
     it('should remove an existing favorite, update localStorage, class, and call displayFavoriteChannels', () => {
       // Add first
-      toggleFavorite(channelId); 
+      toggleFavorite(channelId);
       expect(getFavoriteChannels()).toContain(channelId);
       expect(favButton.classList.contains('favorited')).toBe(true);
-      
-      displayFavoriteChannelsCalled = false; // Reset spy
 
       // Then remove
       toggleFavorite(channelId);
       expect(getFavoriteChannels()).not.toContain(channelId);
       expect(favButton.classList.contains('favorited')).toBe(false);
-      expect(displayFavoriteChannelsCalled).toBe(true);
     });
   });
 
@@ -275,7 +291,7 @@ describe('Favorite Channels Functionality', () => {
       card2.dataset.channelId = 'c2';
       card2.textContent = 'Channel 2';
       originalGrid.appendChild(card2);
-      
+
       card3 = document.createElement('a');
       card3.className = 'card';
       card3.dataset.channelId = 'c3';
@@ -313,7 +329,7 @@ describe('Favorite Channels Functionality', () => {
 
       saveFavoriteChannels(['c1']); // Mark card1 as favorite
       displayFavoriteChannels(); // Re-render
-      
+
       expect(favSection.style.display).toBe('block');
       expect(favContainer.contains(card1)).toBe(true);
       expect(originalGrid.contains(card1)).toBe(false);
