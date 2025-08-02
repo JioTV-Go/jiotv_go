@@ -331,13 +331,14 @@ class KeyboardNavigation {
     let bestElement = null;
     let bestDistance = Infinity;
 
-    channelCards.forEach((card) => {
-      if (card === currentElement) return;
+    for (let i = 0; i < channelCards.length; i++) {
+      const card = channelCards[i];
+      if (card === currentElement) continue;
       
       const rect = card.getBoundingClientRect();
       const actualIndex = this.focusableElements.findIndex(el => el === card);
       
-      if (actualIndex === -1) return; // Element not found in focusable elements
+      if (actualIndex === -1) continue; // Element not found in focusable elements
       
       let isValidDirection = false;
       let distance = 0;
