@@ -5,56 +5,35 @@ const qualityElement = document.getElementById("portexe-quality-select");
 
 // Function to handle multi-select display behavior
 function toggleMultiSelectDisplay(selectElement) {
-  const selectedCount = selectElement.selectedOptions.length;
-  if (selectedCount > 1) {
-    // Show all selected options up to the total available options
-    selectElement.size = Math.min(selectedCount, selectElement.options.length);
-  } else {
-    selectElement.size = 1; // Collapse back to single line
-  }
+  // No need to change size anymore, just update tooltip
   updateMultiSelectDisplay(selectElement);
 }
 
 // Function to handle touch-friendly multi-select behavior
 function handleTouchFriendlySelect(selectElement) {
-  // Add event listeners for touch-friendly multi-select
-  Array.from(selectElement.options).forEach(option => {
-    option.addEventListener('click', function(event) {
-      event.preventDefault();
-      event.stopPropagation();
-      
-      const isAllOption = this.value === "0"; // "All Categories" or "All Languages"
-      
-      if (isAllOption) {
-        // Clicking "All" deselects everything else
-        Array.from(selectElement.options).forEach(opt => {
-          opt.selected = false;
-        });
-        this.selected = true;
-      } else {
-        // Remove "All" selection if it was selected
-        const allOption = Array.from(selectElement.options).find(opt => opt.value === "0");
-        if (allOption && allOption.selected) {
-          allOption.selected = false;
-        }
-        
-        // Toggle the clicked option
-        this.selected = !this.selected;
+  // Use change event to handle "All" option logic without preventing dropdown opening
+  selectElement.addEventListener('change', function(event) {
+    const selectedOptions = Array.from(this.selectedOptions);
+    const allOption = Array.from(this.options).find(opt => opt.value === "0");
+    
+    // Check if "All" option was just selected
+    const allOptionSelected = allOption && allOption.selected;
+    const nonAllOptionsSelected = selectedOptions.filter(opt => opt.value !== "0");
+    
+    if (allOptionSelected && nonAllOptionsSelected.length > 0) {
+      // If "All" is selected along with other options, deselect everything else and keep only "All"
+      Array.from(this.options).forEach(opt => {
+        opt.selected = opt.value === "0";
+      });
+    } else if (nonAllOptionsSelected.length > 0 && allOptionSelected) {
+      // If non-"All" options are selected and "All" is also selected, deselect "All"
+      if (allOption) {
+        allOption.selected = false;
       }
-      
-      // Update display
-      toggleMultiSelectDisplay(selectElement);
-      
-      // Trigger change event manually
-      selectElement.dispatchEvent(new Event('change'));
-    });
-  });
-  
-  // Prevent default multi-select behavior
-  selectElement.addEventListener('mousedown', function(event) {
-    if (event.target.tagName === 'OPTION') {
-      event.preventDefault();
     }
+    
+    // Update display
+    toggleMultiSelectDisplay(this);
   });
 }
 

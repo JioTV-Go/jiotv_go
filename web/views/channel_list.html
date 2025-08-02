@@ -3,8 +3,12 @@
 /* Multi-select dropdown enhancements */
 select[multiple] {
   transition: height 0.2s ease-in-out;
+  min-height: 2.5em;
+  height: 2.5em;
 }
-select[multiple]:focus {
+select[multiple]:focus,
+select[multiple]:active {
+  height: auto;
   min-height: 2.5em;
   max-height: 200px;
 }
@@ -40,7 +44,6 @@ select[multiple] option {
       id="portexe-category-select"
       class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl"
       multiple
-      size="1"
     >
       {{ range $key, $value := .Categories }}
       <option value="{{$key}}">{{$value}}</option>
@@ -50,7 +53,6 @@ select[multiple] option {
       id="portexe-language-select"
       class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl"
       multiple
-      size="1"
     >
       {{ range $key, $value := .Languages }}
       <option value="{{$key}}">{{$value}}</option>
