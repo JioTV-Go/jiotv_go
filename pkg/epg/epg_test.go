@@ -1,20 +1,68 @@
 package epg
 
 import (
-	"reflect"
+	"log"
+	"os"
+	"strings"
+	"sync"
 	"testing"
 	"time"
+
+	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 )
 
+var (
+	setupOnce sync.Once
+)
+
+// Setup function to initialize dependencies for tests
+func setupTest() {
+	setupOnce.Do(func() {
+		// Initialize the Log variable to prevent nil pointer dereference
+		if utils.Log == nil {
+			utils.Log = log.New(os.Stdout, "", log.LstdFlags)
+		}
+	})
+}
+
+// setupTestWithMockServer initializes test environment with HTTP mocking
+// Returns a new mock server instance for each test to prevent test interference
+func setupTestWithMockServer() *MockEPGServer {
+	setupTest()
+	return NewMockEPGServer()
+}
+
+// teardownTestWithMockServer cleans up the mock server instance
+func teardownTestWithMockServer(mockServer *MockEPGServer) {
+	if mockServer != nil {
+		mockServer.Close()
+	}
+}
+
 func TestInit(t *testing.T) {
+	mockServer := setupTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
+	
 	tests := []struct {
 		name string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Initialize EPG with mock server",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			Init()
+			// Test the EPG initialization without external API calls
+			InitWithMockServer(mockServer)
+			
+			// Check if test EPG file was created
+			epgFile := utils.GetPathPrefix() + "epg_test.xml.gz"
+			if !utils.FileExists(epgFile) {
+				t.Errorf("EPG file was not created: %s", epgFile)
+			} else {
+				// Clean up test file
+				os.Remove(epgFile)
+			}
 		})
 	}
 }
@@ -119,25 +167,45 @@ func TestNewProgramme(t *testing.T) {
 }
 
 func Test_genXML(t *testing.T) {
+	mockServer := setupTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
+	
 	tests := []struct {
 		name    string
-		want    []byte
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name:    "Generate XML with mock server",
+			wantErr: false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := genXML()
+			got, err := genXMLWithMockServer(mockServer)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("genXML() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("genXML() = %v, want %v", got, tt.want)
+			if !tt.wantErr && len(got) == 0 {
+				t.Errorf("genXML() returned empty result")
+			}
+			// Check if the result contains expected XML structure
+			if !tt.wantErr && len(got) > 0 {
+				xmlString := string(got)
+				if !containsString(xmlString, "channel") {
+					t.Errorf("genXML() result should contain channel elements")
+				}
+				if !containsString(xmlString, "programme") {
+					t.Errorf("genXML() result should contain programme elements")
+				}
 			}
 		})
 	}
+}
+
+// Helper function to check if string contains substring
+func containsString(s, substr string) bool {
+	return strings.Contains(s, substr)
 }
 
 func Test_formatTime(t *testing.T) {
@@ -175,20 +243,119 @@ func Test_formatTime(t *testing.T) {
 }
 
 func TestGenXMLGz(t *testing.T) {
-	type args struct {
+	mockServer := setupTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
+	
+	tests := []struct {
+		name     string
 		filename string
+		wantErr  bool
+	}{
+		{
+			name:     "Generate gzipped XML with mock server",
+			filename: "/tmp/test_epg.xml.gz",
+			wantErr:  false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			// Clean up any existing test file
+			os.Remove(tt.filename)
+			
+			err := GenXMLGzWithMockServer(tt.filename, mockServer)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GenXMLGz() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			
+			if !tt.wantErr {
+				// Check if file was created
+				if !utils.FileExists(tt.filename) {
+					t.Errorf("GenXMLGz() should create file %s", tt.filename)
+				} else {
+					// Clean up test file
+					os.Remove(tt.filename)
+				}
+			}
+		})
+	}
+}
+
+func TestEpochString_UnmarshalJSON(t *testing.T) {
+	type args struct {
+		data []byte
 	}
 	tests := []struct {
 		name    string
 		args    args
+		want    EpochString
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Unmarshal from integer",
+			args: args{data: []byte("1609459200123")}, // 13-digit timestamp
+			want: EpochString("1609459200"),           // Should be truncated to 10 digits
+			wantErr: false,
+		},
+		{
+			name: "Unmarshal from string",
+			args: args{data: []byte(`"test_string"`)},
+			want: EpochString("test_string"),
+			wantErr: false,
+		},
+		{
+			name: "Unmarshal from empty string",
+			args: args{data: []byte(`""`)},
+			want: EpochString(""),
+			wantErr: false,
+		},
+		{
+			name: "Unmarshal invalid JSON",
+			args: args{data: []byte("invalid json")},
+			want: EpochString(""),
+			wantErr: true,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := GenXMLGz(tt.args.filename); (err != nil) != tt.wantErr {
-				t.Errorf("GenXMLGz() error = %v, wantErr %v", err, tt.wantErr)
+			var id EpochString
+			err := id.UnmarshalJSON(tt.args.data)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("EpochString.UnmarshalJSON() error = %v, wantErr %v", err, tt.wantErr)
+			}
+			if !tt.wantErr && id != tt.want {
+				t.Errorf("EpochString.UnmarshalJSON() = %v, want %v", id, tt.want)
+			}
+		})
+	}
+}
+
+func TestEpochString_String(t *testing.T) {
+	tests := []struct {
+		name string
+		id   EpochString
+		want string
+	}{
+		{
+			name: "String representation of epoch",
+			id:   EpochString("1609459200"),
+			want: "1609459200",
+		},
+		{
+			name: "String representation of empty epoch",
+			id:   EpochString(""),
+			want: "",
+		},
+		{
+			name: "String representation of text epoch",
+			id:   EpochString("test_string"),
+			want: "test_string",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := tt.id.String(); got != tt.want {
+				t.Errorf("EpochString.String() = %v, want %v", got, tt.want)
 			}
 		})
 	}

@@ -1,21 +1,34 @@
 package secureurl
 
 import (
-	"reflect"
 	"testing"
 )
 
 func Test_generateKey(t *testing.T) {
 	tests := []struct {
 		name string
-		want []byte
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Generate encryption key",
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := generateKey(); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("generateKey() = %v, want %v", got, tt.want)
+			got := generateKey()
+			// Key should be 32 bytes (256 bits) for AES-256
+			if len(got) != 32 {
+				t.Errorf("generateKey() returned key of length %d, want 32", len(got))
+			}
+			// Should not be all zeros
+			allZeros := true
+			for _, b := range got {
+				if b != 0 {
+					allZeros = false
+					break
+				}
+			}
+			if allZeros {
+				t.Errorf("generateKey() returned all zeros")
 			}
 		})
 	}

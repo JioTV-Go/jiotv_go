@@ -1,36 +1,52 @@
 package cmd
 
-import "testing"
-
-func TestAutoStart(t *testing.T) {
-	type args struct {
-		extraArgs string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := AutoStart(tt.args.extraArgs); (err != nil) != tt.wantErr {
-				t.Errorf("AutoStart() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
+import (
+	"os"
+	"strings"
+	"testing"
+)
 
 func Test_isTermux(t *testing.T) {
+	originalPrefix, present := os.LookupEnv("PREFIX")
+	defer func() {
+		if present {
+			os.Setenv("PREFIX", originalPrefix)
+		} else {
+			os.Unsetenv("PREFIX")
+		}
+	}()
+
 	tests := []struct {
-		name string
-		want bool
+		name   string
+		prefix string
+		setEnv bool
+		want   bool
 	}{
-		// TODO: Add test cases.
+		{
+			name:   "Termux environment (PREFIX is set)",
+			prefix: "/data/data/com.termux/files/usr",
+			setEnv: true,
+			want:   true,
+		},
+		{
+			name:   "Non-Termux environment (PREFIX is empty)",
+			prefix: "",
+			setEnv: true,
+			want:   false,
+		},
+		{
+			name:   "Non-Termux environment (PREFIX is not set)",
+			setEnv: false,
+			want:   false,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			if tt.setEnv {
+				os.Setenv("PREFIX", tt.prefix)
+			} else {
+				os.Unsetenv("PREFIX")
+			}
 			if got := isTermux(); got != tt.want {
 				t.Errorf("isTermux() = %v, want %v", got, tt.want)
 			}
@@ -38,23 +54,21 @@ func Test_isTermux(t *testing.T) {
 	}
 }
 
-func Test_getConsentFromUser(t *testing.T) {
-	tests := []struct {
-		name string
-		want bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := getConsentFromUser(); got != tt.want {
-				t.Errorf("getConsentFromUser() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
 func Test_grep(t *testing.T) {
+	content := "hello world\nfind me\nanother line"
+	tmpfile, err := os.CreateTemp("", "testgrep")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(tmpfile.Name()) // clean up
+
+	if _, err := tmpfile.Write([]byte(content)); err != nil {
+		t.Fatal(err)
+	}
+	if err := tmpfile.Close(); err != nil {
+		t.Fatal(err)
+	}
+
 	type args struct {
 		filename string
 		pattern  string
@@ -65,7 +79,9 @@ func Test_grep(t *testing.T) {
 		want    bool
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{"Pattern exists", args{tmpfile.Name(), "find me"}, true, false},
+		{"Pattern does not exist", args{tmpfile.Name(), "not here"}, false, false},
+		{"File does not exist", args{"no_such_file", "anything"}, false, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -81,44 +97,64 @@ func Test_grep(t *testing.T) {
 	}
 }
 
-func Test_addToBashrc(t *testing.T) {
-	type args struct {
-		filename string
-		line     string
+// Test_bashrcModifiers tests both addToBashrc and removeFromBashrc.
+func Test_bashrcModifiers(t *testing.T) {
+	tmpfile, err := os.CreateTemp("", "testbashrc")
+	if err != nil {
+		t.Fatal(err)
 	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
+	filename := tmpfile.Name()
+	defer os.Remove(filename)
+	tmpfile.Close()
+
+	// Test addToBashrc
+	lineToAdd := "export TEST_VAR=1"
+	if err := addToBashrc(filename, lineToAdd); err != nil {
+		t.Fatalf("addToBashrc() failed: %v", err)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := addToBashrc(tt.args.filename, tt.args.line); (err != nil) != tt.wantErr {
-				t.Errorf("addToBashrc() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
+
+	content, err := os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("Failed to read file: %v", err)
+	}
+	if !strings.Contains(string(content), lineToAdd) {
+		t.Errorf("addToBashrc() did not add the line to the file")
+	}
+
+	// Add another line to test removal of a specific line
+	anotherLine := "export ANOTHER_VAR=2"
+	if err := addToBashrc(filename, anotherLine); err != nil {
+		t.Fatalf("addToBashrc() failed to add second line: %v", err)
+	}
+
+	// Test removeFromBashrc
+	if err := removeFromBashrc(filename, lineToAdd); err != nil {
+		t.Fatalf("removeFromBashrc() failed: %v", err)
+	}
+
+	content, err = os.ReadFile(filename)
+	if err != nil {
+		t.Fatalf("Failed to read file after removal: %v", err)
+	}
+	if strings.Contains(string(content), lineToAdd) {
+		t.Errorf("removeFromBashrc() did not remove the line from the file")
+	}
+	if !strings.Contains(string(content), anotherLine) {
+		t.Errorf("removeFromBashrc() removed the wrong line")
 	}
 }
 
-func Test_removeFromBashrc(t *testing.T) {
-	type args struct {
-		filename string
-		line     string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := removeFromBashrc(tt.args.filename, tt.args.line); (err != nil) != tt.wantErr {
-				t.Errorf("removeFromBashrc() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
+// TestAutoStart and Test_getConsentFromUser are intentionally left empty
+// as they require user interaction or significant mocking of the OS,
+// making them unsuitable for simple unit tests. A senior developer would
+// likely refactor the production code to be more testable, for example
+// by injecting dependencies for filesystem access and user input.
+// For now, we will skip adding tests for it.
+
+func TestAutoStart(t *testing.T) {}
+
+func Test_getConsentFromUser(t *testing.T) {}
+
+// The following tests are covered by Test_bashrcModifiers
+func Test_addToBashrc(t *testing.T) {}
+func Test_removeFromBashrc(t *testing.T) {}
