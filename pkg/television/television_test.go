@@ -93,24 +93,159 @@ func TestNew(t *testing.T) {
 }
 
 func TestTelevision_Live(t *testing.T) {
-	// This test requires external API calls which are not suitable for unit testing
-	// without changing production code to accept dependency injection.
-	// Skipping to avoid external dependencies in unit tests.
-	t.Skip("Skipping Television_Live test - requires external API calls")
+	mockServer := setupTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
+	
+	type args struct {
+		channelID   string
+		credentials *utils.JIOTV_CREDENTIALS
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Live channel with access token",
+			args: args{
+				channelID: "123",
+				credentials: &utils.JIOTV_CREDENTIALS{
+					AccessToken: "test_access_token",
+					SSOToken:    "test_sso_token",
+					CRM:         "test_crm",
+					UniqueID:    "test_unique_id",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Live channel with SSO token",
+			args: args{
+				channelID: "456",
+				credentials: &utils.JIOTV_CREDENTIALS{
+					AccessToken: "", // No access token
+					SSOToken:    "test_sso_token",
+					CRM:         "test_crm",
+					UniqueID:    "test_unique_id",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "Sony channel",
+			args: args{
+				channelID: "sl291", // Sony channel ID
+				credentials: &utils.JIOTV_CREDENTIALS{
+					SSOToken: "test_sso_token",
+					CRM:      "test_crm",
+					UniqueID: "test_unique_id",
+				},
+			},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tv := New(tt.args.credentials)
+			got, err := tv.LiveWithMockServer(tt.args.channelID, mockServer)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Television.Live() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr {
+				if got == nil {
+					t.Errorf("Television.Live() returned nil result")
+					return
+				}
+				if got.Result == "" {
+					t.Errorf("Television.Live() returned empty result URL")
+				}
+				// Check that we got a mock streaming URL
+				if !strings.Contains(got.Result, "mock") {
+					t.Errorf("Television.Live() should return mock URL, got %s", got.Result)
+				}
+			}
+		})
+	}
 }
 
 func TestTelevision_Render(t *testing.T) {
-	// This test requires external API calls which are not suitable for unit testing
-	// without changing production code to accept dependency injection.
-	// Skipping to avoid external dependencies in unit tests.
-	t.Skip("Skipping Television_Render test - requires external API calls")
+	mockServer := setupTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
+	
+	type args struct {
+		url         string
+		credentials *utils.JIOTV_CREDENTIALS
+	}
+	tests := []struct {
+		name           string
+		args           args
+		wantStatusCode int
+		wantContentLen int
+	}{
+		{
+			name: "Render mock content",
+			args: args{
+				url: "/mock-content",
+				credentials: &utils.JIOTV_CREDENTIALS{
+					SSOToken: "test_sso_token",
+					CRM:      "test_crm",
+					UniqueID: "test_unique_id",
+				},
+			},
+			wantStatusCode: 200,
+			wantContentLen: 1, // Should have some content
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tv := New(tt.args.credentials)
+			got, statusCode := tv.RenderWithMockServer(tt.args.url, mockServer)
+			if statusCode != tt.wantStatusCode {
+				t.Errorf("Television.Render() status code = %v, want %v", statusCode, tt.wantStatusCode)
+			}
+			if len(got) < tt.wantContentLen {
+				t.Errorf("Television.Render() content length = %v, want >= %v", len(got), tt.wantContentLen)
+			}
+			// Check that we got some M3U8-like content
+			content := string(got)
+			if !strings.Contains(content, "#EXTM3U") {
+				t.Errorf("Television.Render() should return M3U8 content, got %s", content)
+			}
+		})
+	}
 }
 
 func TestChannels(t *testing.T) {
-	// This test requires external API calls which are not suitable for unit testing
-	// without changing production code to accept dependency injection.
-	// Skipping to avoid external dependencies in unit tests.
-	t.Skip("Skipping Channels test - requires external API calls")
+	mockServer := setupTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
+	
+	tests := []struct {
+		name string
+	}{
+		{
+			name: "Fetch channels with mock server",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := ChannelsWithMockServer(mockServer)
+			if len(got.Result) == 0 {
+				t.Errorf("Channels() returned empty result")
+			}
+			// Check that we got mock channels
+			found := false
+			for _, channel := range got.Result {
+				if strings.Contains(channel.Name, "Mock") {
+					found = true
+					break
+				}
+			}
+			if !found {
+				t.Errorf("Channels() should return mock channels")
+			}
+		})
+	}
 }
 
 func TestFilterChannels(t *testing.T) {
@@ -412,8 +547,52 @@ func TestReplaceKey(t *testing.T) {
 }
 
 func Test_getSLChannel(t *testing.T) {
-	// This test requires external API calls which are not suitable for unit testing
-	// without changing production code to accept dependency injection.
-	// Skipping to avoid external dependencies in unit tests.
-	t.Skip("Skipping getSLChannel test - requires external API calls")
+	mockServer := setupTestWithMockServer()
+	defer teardownTestWithMockServer(mockServer)
+	
+	type args struct {
+		channelID string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantErr bool
+	}{
+		{
+			name: "Valid Sony channel",
+			args: args{
+				channelID: "sl291", // Sony HD
+			},
+			wantErr: false,
+		},
+		{
+			name: "Invalid Sony channel",
+			args: args{
+				channelID: "sl999", // Non-existent Sony channel
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := getSLChannelWithMockServer(tt.args.channelID, mockServer)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("getSLChannel() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr {
+				if got == nil {
+					t.Errorf("getSLChannel() returned nil result")
+					return
+				}
+				if got.Result == "" {
+					t.Errorf("getSLChannel() returned empty result URL")
+				}
+				// Check that we got a mock Sony streaming URL
+				if !strings.Contains(got.Result, "mock.sony") {
+					t.Errorf("getSLChannel() should return mock Sony URL, got %s", got.Result)
+				}
+			}
+		})
+	}
 }
