@@ -405,7 +405,9 @@ class KeyboardNavigation {
 }
 
 // Initialize keyboard navigation when script loads
-const keyboardNavigation = new KeyboardNavigation();
+if (typeof module === 'undefined' || !module.exports) {
+  const keyboardNavigation = new KeyboardNavigation();
+}
 
 // Export for testing
 if (typeof module !== 'undefined' && module.exports) {
