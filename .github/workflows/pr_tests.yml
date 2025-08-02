@@ -7,25 +7,29 @@ on:
   pull_request:
     types: [opened, synchronize]
     paths-ignore:
-      - "README.md"
       - "LICENSE"
       - "docs/**"
       - "**.sh"
       - "**.md"
       - "scripts/**"
-      - ".github/workflows/dependabot_action.yml"
-      - ".github/workflows/pre-release.yml"
-      - ".github/workflows/test-build.yml"
-      - ".github/workflows/docker.yml"
-      - ".github/dependabot.yml"
-      - ".github/workflows/sync-wiki.yml"
+
+  push: 
+    branches:
+      - "main"
+      - "develop"
+    paths-ignore:
+      - "LICENSE"
+      - "**.sh"
+      - "**.md"
+      - "scripts/**"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
+  test-builds:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -48,7 +52,7 @@ jobs:
           name: jiotv_go-${{ matrix.goos }}-${{ matrix.goarch }}
           path: ./bin/
 
-  tests:
+  go-tests:
     name: Run Go Tests
     runs-on: ubuntu-latest
 
@@ -68,3 +72,28 @@ jobs:
 
     - name: Run Tests
       run: go test -v ./...
+  
+  web-tests:
+    name: Run Web Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+        cache: 'npm'
+        cache-dependency-path: "web/package-lock.json"
+
+    - name: Install Dependencies
+      run: |
+        cd web
+        npm ci
+
+    - name: Run Tests
+      run: |
+        cd web
+        npm test -- --watchAll=false --ci
