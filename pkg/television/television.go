@@ -14,6 +14,11 @@ import (
 )
 
 const (
+	// JioTV API domain constants
+	JIOTV_API_DOMAIN = "jiotvapi.media.jio.com"
+	TV_MEDIA_DOMAIN  = "tv.media.jio.com"
+	JIOTV_CDN_DOMAIN = "jiotvapi.cdn.jio.com"
+
 	// URL for fetching channels from JioTV API
 	CHANNELS_API_URL = "https://jiotvapi.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?langId=6&os=android&devicetype=phone&usertype=JIO&version=315&langId=6"
 )
@@ -89,13 +94,13 @@ func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
 
 	var url string
 	if tv.AccessToken != "" {
-		url = "https://jiotvapi.media.jio.com/playback/apis/v1/geturl?langId=6"
+		url = "https://" + JIOTV_API_DOMAIN + "/playback/apis/v1/geturl?langId=6"
 		req.Header.Set("accesstoken", tv.AccessToken)
 	} else {
 		req.Header.Set("osVersion", "8.1.0")
 		req.Header.Set("ssotoken", tv.SsoToken)
 		req.Header.Set("versionCode", "277")
-		url = "https://tv.media.jio.com/apis/v2.2/getchannelurl/getchannelurl"
+		url = "https://" + TV_MEDIA_DOMAIN + "/apis/v2.2/getchannelurl/getchannelurl"
 		req.Header.SetUserAgent("plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7")
 	}
 	req.SetRequestURI(url)

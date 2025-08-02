@@ -23,6 +23,13 @@ import (
 	"github.com/valyala/fasthttp/fasthttpproxy"
 )
 
+const (
+	// JioTV API domain constants
+	JIOTV_API_DOMAIN = "jiotvapi.media.jio.com"
+	API_JIO_DOMAIN   = "api.jio.com"
+	AUTH_MEDIA_DOMAIN = "auth.media.jio.com"
+)
+
 // Log is a global logger
 // initialized in main.go
 // used to log debug messages and errors
@@ -112,7 +119,7 @@ func LoginSendOTP(number string) (bool, error) {
 	}
 
 	// Make the request
-	url := "https://jiotvapi.media.jio.com/userservice/apis/v1/loginotp/send"
+	url := "https://" + JIOTV_API_DOMAIN + "/userservice/apis/v1/loginotp/send"
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
@@ -175,7 +182,7 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 	}
 
 	// Make the request
-	url := "https://jiotvapi.media.jio.com/userservice/apis/v1/loginotp/verify"
+	url := "https://" + JIOTV_API_DOMAIN + "/userservice/apis/v1/loginotp/verify"
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
@@ -299,7 +306,7 @@ func Login(username, password string) (map[string]string, error) {
 	}
 
 	// Make the request
-	url := "https://api.jio.com/v3/dip/user/unpw/verify"
+	url := "https://" + API_JIO_DOMAIN + "/v3/dip/user/unpw/verify"
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 
@@ -578,7 +585,7 @@ func PerformServerLogout() error {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 
-	req.SetRequestURI("https://auth.media.jio.com/tokenservice/apis/v1/logout?langId=6")
+	req.SetRequestURI("https://" + AUTH_MEDIA_DOMAIN + "/tokenservice/apis/v1/logout?langId=6")
 	req.Header.SetMethod("POST")
 	req.Header.SetUserAgent("okhttp/4.9.3")
 	req.Header.Set("Accept-Encoding", "gzip")

@@ -1,57 +1,39 @@
 package cmd
 
-import "testing"
+import (
+	"strings"
+	"testing"
 
-func Test_readPIDPath(t *testing.T) {
+	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
+)
+
+func Test_getPIDPath(t *testing.T) {
 	tests := []struct {
 		name string
+		want string
 	}{
-		// TODO: Add test cases.
+		{
+			name: "Test getPIDPath",
+			want: utils.GetPathPrefix() + PID_FILE_NAME,
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			readPIDPath()
-		})
-	}
-}
-
-func TestRunInBackground(t *testing.T) {
-	type args struct {
-		args       string
-		configPath string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := RunInBackground(tt.args.args, tt.args.configPath); (err != nil) != tt.wantErr {
-				t.Errorf("RunInBackground() error = %v, wantErr %v", err, tt.wantErr)
+			if got := getPIDPath(); got != tt.want {
+				t.Errorf("getPIDPath() = %v, want %v", got, tt.want)
+			}
+			// Also check that the path ends with the expected file name
+			if !strings.HasSuffix(getPIDPath(), PID_FILE_NAME) {
+				t.Errorf("getPIDPath() should end with %v", PID_FILE_NAME)
 			}
 		})
 	}
 }
 
-func TestStopBackground(t *testing.T) {
-	type args struct {
-		configPath string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		// TODO: Add test cases.
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := StopBackground(tt.args.configPath); (err != nil) != tt.wantErr {
-				t.Errorf("StopBackground() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
-	}
-}
+// RunInBackground and StopBackground are difficult to test without a complex setup,
+// including building the binary and running it as a separate process.
+// A senior developer would likely use integration or end-to-end tests for these.
+
+func TestRunInBackground(t *testing.T) {}
+
+func TestStopBackground(t *testing.T) {}
