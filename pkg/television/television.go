@@ -19,6 +19,8 @@ import (
 const (
 	// URL for fetching channels from JioTV API
 	CHANNELS_API_URL = "https://jiotvapi.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?langId=6&os=android&devicetype=phone&usertype=JIO&version=315&langId=6"
+	// Error message for unsupported custom channels file formats
+	errUnsupportedChannelsFormat = "unsupported or invalid custom channels file format. Supported formats: .json, .yml, .yaml, or valid JSON/YAML content"
 )
 
 var (
@@ -296,6 +298,51 @@ func (tv *Television) Render(url string) ([]byte, int) {
 	return buf, resp.StatusCode()
 }
 
+// detectAndParseFormat attempts to detect the format of custom channels data and parse it
+func detectAndParseFormat(data []byte, filePath string) (CustomChannelsConfig, error) {
+	var customConfig CustomChannelsConfig
+	
+	// Determine file format by extension and parse accordingly, fallback to content-based detection
+	if strings.HasSuffix(filePath, ".json") {
+		err := json.Unmarshal(data, &customConfig)
+		return customConfig, err
+	}
+	
+	if strings.HasSuffix(filePath, ".yml") || strings.HasSuffix(filePath, ".yaml") {
+		err := yaml.Unmarshal(data, &customConfig)
+		return customConfig, err
+	}
+	
+	// Fallback: try to detect format by content for unknown extensions
+	trimmed := strings.TrimSpace(string(data))
+	
+	// For unsupported extensions, require non-empty content
+	if trimmed == "" {
+		return customConfig, fmt.Errorf(errUnsupportedChannelsFormat)
+	}
+	
+	// Try JSON if content starts with '{' or '['
+	if strings.HasPrefix(trimmed, "{") || strings.HasPrefix(trimmed, "[") {
+		err := json.Unmarshal(data, &customConfig)
+		if err == nil {
+			return customConfig, nil
+		}
+		// If JSON parsing failed, try YAML as fallback
+		err = yaml.Unmarshal(data, &customConfig)
+		if err != nil {
+			return customConfig, fmt.Errorf(errUnsupportedChannelsFormat)
+		}
+		return customConfig, nil
+	}
+	
+	// Try YAML for other content
+	err := yaml.Unmarshal(data, &customConfig)
+	if err != nil {
+		return customConfig, fmt.Errorf(errUnsupportedChannelsFormat)
+	}
+	return customConfig, nil
+}
+
 // LoadCustomChannels loads custom channels from configuration file
 func LoadCustomChannels(filePath string) ([]Channel, error) {
 	if filePath == "" {
@@ -316,43 +363,8 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 		return nil, fmt.Errorf("failed to read custom channels file: %w", err)
 	}
 
-	var customConfig CustomChannelsConfig
-
-	// Determine file format by extension and parse accordingly, fallback to content-based detection
-	if strings.HasSuffix(filePath, ".json") {
-		err = json.Unmarshal(data, &customConfig)
-	} else if strings.HasSuffix(filePath, ".yml") || strings.HasSuffix(filePath, ".yaml") {
-		err = yaml.Unmarshal(data, &customConfig)
-	} else {
-		// Fallback: try to detect format by content
-		trimmed := strings.TrimSpace(string(data))
-		
-		// For unsupported extensions, require non-empty content
-		if trimmed == "" {
-			return nil, fmt.Errorf("unsupported or invalid custom channels file format. Supported formats: .json, .yml, .yaml, or valid JSON/YAML content")
-		}
-		
-		// Try JSON if content starts with '{' or '['
-		if strings.HasPrefix(trimmed, "{") || strings.HasPrefix(trimmed, "[") {
-			err = json.Unmarshal(data, &customConfig)
-			if err == nil {
-				// Successfully parsed as JSON, continue with processing
-			} else {
-				// Try YAML as fallback
-				err = yaml.Unmarshal(data, &customConfig)
-				if err != nil {
-					return nil, fmt.Errorf("unsupported or invalid custom channels file format. Supported formats: .json, .yml, .yaml, or valid JSON/YAML content")
-				}
-			}
-		} else {
-			// Try YAML
-			err = yaml.Unmarshal(data, &customConfig)
-			if err != nil {
-				return nil, fmt.Errorf("unsupported or invalid custom channels file format. Supported formats: .json, .yml, .yaml, or valid JSON/YAML content")
-			}
-		}
-	}
-
+	// Parse the file using format detection
+	customConfig, err := detectAndParseFormat(data, filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse custom channels file: %w", err)
 	}
