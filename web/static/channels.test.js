@@ -140,7 +140,6 @@ describe('Favorite Channels Functionality', () => {
   beforeEach(() => {
     localStorageMock.clear();
     jest.clearAllMocks(); // Clears all Jest mocks, including localStorageMock calls and console.error
-    mockLocalStorageStore = {}; // Reset the store
 
     // Clear and set up basic DOM structure for each test
     document.body.innerHTML = `
