@@ -26,6 +26,27 @@ custom_channels_file: "./configs/custom-channels.yml"
 export JIOTV_CUSTOM_CHANNELS_FILE="./configs/custom-channels.json"
 ```
 
+## Performance Considerations
+
+> **⚠️ WARNING:** Adding excessive custom channels may impact performance
+
+**Recommended Limit:** Keep custom channels under **1000 channels** for optimal performance.
+
+**Performance Impact of Excessive Channels (>1000):**
+- **Slower Operations**: Channel listing, filtering, and search operations become noticeably slower
+- **Increased Memory Usage**: Higher RAM consumption, especially during startup and operations
+- **Longer Startup Times**: Application takes more time to initialize and load channels
+- **UI Responsiveness**: Web dashboard may become less responsive with large channel lists
+- **IPTV Client Impact**: M3U playlist generation and loading times increase significantly
+
+**Best Practices:**
+- Split large channel collections into multiple configuration files if needed
+- Remove unused or duplicate channels regularly  
+- Consider using channel categories to organize and filter channels effectively
+- Monitor application logs for performance warnings when loading channels
+
+The application will log warnings when you exceed the recommended limit and provide guidance on potential performance impacts.
+
 ## Custom Channels File Format
 
 ### JSON Format

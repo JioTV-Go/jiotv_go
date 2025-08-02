@@ -21,6 +21,8 @@ const (
 	CHANNELS_API_URL = "https://jiotvapi.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?langId=6&os=android&devicetype=phone&usertype=JIO&version=315&langId=6"
 	// Error message for unsupported custom channels file formats
 	errUnsupportedChannelsFormat = "unsupported or invalid custom channels file format. Supported formats: .json, .yml, .yaml, or valid JSON/YAML content"
+	// Maximum recommended number of custom channels before performance warnings
+	maxRecommendedChannels = 1000
 )
 
 var (
@@ -132,6 +134,12 @@ func loadAndCacheCustomChannels() []Channel {
 		for _, channel := range channels {
 			customChannelsCacheMap[channel.ID] = channel
 		}
+		
+		// Warn user about performance implications if too many channels
+		if len(channels) > maxRecommendedChannels && utils.Log != nil {
+			utils.Log.Printf("WARNING: Cached %d custom channels, which exceeds the recommended limit of %d channels.", len(channels), maxRecommendedChannels)
+			utils.Log.Printf("WARNING: This may impact application performance. Consider reducing the number of custom channels.")
+		}
 	}
 	
 	customChannelsCacheLoaded = true
@@ -162,6 +170,12 @@ func ReloadCustomChannels() error {
 	
 	if utils.Log != nil {
 		utils.Log.Printf("Reloaded %d custom channels", len(channels))
+		
+		// Warn user about performance implications if too many channels
+		if len(channels) > maxRecommendedChannels {
+			utils.Log.Printf("WARNING: Reloaded %d custom channels, which exceeds the recommended limit of %d channels.", len(channels), maxRecommendedChannels)
+			utils.Log.Printf("WARNING: This may impact application performance. Consider reducing the number of custom channels.")
+		}
 	}
 	
 	return nil
@@ -386,6 +400,17 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 
 	if utils.Log != nil {
 		utils.Log.Printf("Loaded %d custom channels from %s", len(channels), filePath)
+		
+		// Warn user about performance implications if too many channels
+		if len(channels) > maxRecommendedChannels {
+			utils.Log.Printf("WARNING: You have loaded %d custom channels, which exceeds the recommended limit of %d channels.", len(channels), maxRecommendedChannels)
+			utils.Log.Printf("WARNING: Large numbers of custom channels may impact performance:")
+			utils.Log.Printf("  - Slower channel listing and filtering operations")
+			utils.Log.Printf("  - Increased memory usage")
+			utils.Log.Printf("  - Longer startup times")
+			utils.Log.Printf("  - Potential UI responsiveness issues")
+			utils.Log.Printf("Consider splitting channels into multiple configuration files or reducing the total number.")
+		}
 	}
 	return channels, nil
 }

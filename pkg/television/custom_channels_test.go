@@ -2,6 +2,7 @@ package television
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"testing"
 
@@ -416,5 +417,78 @@ func TestCustomChannelEfficientLookup(t *testing.T) {
 	_, exists4 := getCustomChannelByID("lookup_test_1")
 	if exists4 {
 		t.Error("Expected no channel to exist after cache clear")
+	}
+}
+
+func TestExcessiveChannelsWarning(t *testing.T) {
+	// Create temporary JSON file with more than 1000 channels to test warning
+	tempFile, err := os.CreateTemp("", "excessive_channels_*.json")
+	if err != nil {
+		t.Fatalf("Failed to create temp file: %v", err)
+	}
+	defer os.Remove(tempFile.Name())
+
+	// Generate 1500 channels to exceed the limit
+	var channels []CustomChannel
+	for i := 1; i <= 1500; i++ {
+		channels = append(channels, CustomChannel{
+			ID:       fmt.Sprintf("test_channel_%d", i),
+			Name:     fmt.Sprintf("Test Channel %d", i),
+			URL:      fmt.Sprintf("https://example.com/test%d.m3u8", i),
+			LogoURL:  fmt.Sprintf("https://example.com/logo%d.png", i),
+			Category: 5,
+			Language: 1,
+			IsHD:     i%2 == 0, // Half HD, half not
+		})
+	}
+
+	customConfig := CustomChannelsConfig{
+		Channels: channels,
+	}
+
+	jsonData, err := json.Marshal(customConfig)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	if _, err := tempFile.Write(jsonData); err != nil {
+		t.Fatalf("Failed to write to temp file: %v", err)
+	}
+	tempFile.Close()
+
+	// Test LoadCustomChannels with excessive channels
+	loadedChannels, err := LoadCustomChannels(tempFile.Name())
+	if err != nil {
+		t.Fatalf("Failed to load custom channels: %v", err)
+	}
+
+	// Verify we loaded the correct number of channels
+	if len(loadedChannels) != 1500 {
+		t.Errorf("Expected 1500 channels, got %d", len(loadedChannels))
+	}
+
+	// Test caching with excessive channels
+	config.Cfg.CustomChannelsFile = tempFile.Name()
+	ClearCustomChannelsCache()
+	
+	// This should trigger the warning in loadAndCacheCustomChannels
+	InitCustomChannels()
+	
+	// Verify channels are cached
+	cachedChannels := getCustomChannels()
+	if len(cachedChannels) != 1500 {
+		t.Errorf("Expected 1500 cached channels, got %d", len(cachedChannels))
+	}
+
+	// Test reload with excessive channels  
+	err = ReloadCustomChannels()
+	if err != nil {
+		t.Fatalf("Failed to reload custom channels: %v", err)
+	}
+
+	// Verify reload worked
+	reloadedChannels := getCustomChannels()
+	if len(reloadedChannels) != 1500 {
+		t.Errorf("Expected 1500 reloaded channels, got %d", len(reloadedChannels))
 	}
 }
