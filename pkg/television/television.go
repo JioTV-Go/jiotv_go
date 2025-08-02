@@ -76,32 +76,28 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 	}
 }
 
-// getCustomChannels returns cached custom channels, loading them if necessary
+// InitCustomChannels initializes custom channels at startup if configured
+func InitCustomChannels() {
+	if config.Cfg.CustomChannelsFile != "" {
+		loadAndCacheCustomChannels()
+	}
+}
+
+// getCustomChannels returns cached custom channels
 func getCustomChannels() []Channel {
 	customChannelsCacheMutex.RLock()
-	if customChannelsCacheLoaded {
-		channels := make([]Channel, len(customChannelsCache))
-		copy(channels, customChannelsCache)
-		customChannelsCacheMutex.RUnlock()
-		return channels
-	}
-	customChannelsCacheMutex.RUnlock()
-
-	// Need to load channels
-	return loadAndCacheCustomChannels()
+	defer customChannelsCacheMutex.RUnlock()
+	
+	// Return a copy to prevent external modifications
+	channels := make([]Channel, len(customChannelsCache))
+	copy(channels, customChannelsCache)
+	return channels
 }
 
 // loadAndCacheCustomChannels loads custom channels from file and caches them
 func loadAndCacheCustomChannels() []Channel {
 	customChannelsCacheMutex.Lock()
 	defer customChannelsCacheMutex.Unlock()
-
-	// Double-check pattern - another goroutine might have loaded while we waited
-	if customChannelsCacheLoaded {
-		channels := make([]Channel, len(customChannelsCache))
-		copy(channels, customChannelsCache)
-		return channels
-	}
 
 	// Load channels from file
 	channels, err := LoadCustomChannels(config.Cfg.CustomChannelsFile)
@@ -316,17 +312,22 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 		if strings.HasPrefix(trimmed, "{") || strings.HasPrefix(trimmed, "[") {
 			err = json.Unmarshal(data, &customConfig)
 			if err == nil {
-				goto PARSE_DONE
+				// Successfully parsed as JSON, continue with processing
+			} else {
+				// Try YAML as fallback
+				err = yaml.Unmarshal(data, &customConfig)
+				if err != nil {
+					return nil, fmt.Errorf("unsupported or invalid custom channels file format. Supported formats: .json, .yml, .yaml, or valid JSON/YAML content")
+				}
+			}
+		} else {
+			// Try YAML
+			err = yaml.Unmarshal(data, &customConfig)
+			if err != nil {
+				return nil, fmt.Errorf("unsupported or invalid custom channels file format. Supported formats: .json, .yml, .yaml, or valid JSON/YAML content")
 			}
 		}
-		// Try YAML
-		err = yaml.Unmarshal(data, &customConfig)
-		if err == nil {
-			goto PARSE_DONE
-		}
-		return nil, fmt.Errorf("unsupported or invalid custom channels file format. Supported formats: .json, .yml, .yaml, or valid JSON/YAML content")
 	}
-PARSE_DONE:
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse custom channels file: %w", err)

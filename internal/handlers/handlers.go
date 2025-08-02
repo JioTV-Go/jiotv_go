@@ -78,6 +78,9 @@ func Init() {
 		// Start token health check to ensure refresh tasks remain active
 		go TokenHealthCheck()
 	}
+	
+	// Initialize custom channels at startup if configured
+	television.InitCustomChannels()
 }
 
 // ErrorMessageHandler handles error messages

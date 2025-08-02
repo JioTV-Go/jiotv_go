@@ -275,6 +275,9 @@ func TestCustomChannelsCaching(t *testing.T) {
 	// Set config to use the temp file
 	config.Cfg.CustomChannelsFile = tempFile.Name()
 
+	// Initialize custom channels now that config is set
+	InitCustomChannels()
+
 	// Test getCustomChannels function (which uses caching internally)
 	channels1 := getCustomChannels()
 	if len(channels1) != 1 {
@@ -311,7 +314,8 @@ func TestCustomChannelsCaching(t *testing.T) {
 	// Clear cache
 	ClearCustomChannelsCache()
 
-	// After clearing cache, it should reload from file
+	// After clearing cache, need to reinitialize to reload from file
+	InitCustomChannels()
 	channels4 := getCustomChannels()
 	if len(channels4) != 1 {
 		t.Fatalf("Expected 1 channel after cache clear, got %d", len(channels4))
