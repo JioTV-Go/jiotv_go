@@ -58,7 +58,7 @@ Element.prototype.getBoundingClientRect = jest.fn(() => ({
 // Mock scrollIntoView
 Element.prototype.scrollIntoView = jest.fn();
 
-const KeyboardNavigation = require('./keyboard-navigation.js');
+const { KeyboardNavigation } = require('./keyboard-navigation.js');
 
 describe('KeyboardNavigation', () => {
   let keyboardNav;
