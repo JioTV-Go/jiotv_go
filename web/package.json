@@ -10,13 +10,5 @@
     "build": "tailwindcss build -i ./static/input.css -o ./static/tailwind.css -m",
     "watch": "tailwindcss -i ./static/input.css -o ./static/tailwind.css -w",
     "test": "jest"
-  },
-  "jest": {
-    "testEnvironment": "jsdom",
-    "collectCoverageFrom": [
-      "static/**/*.js",
-      "!static/**/*.test.js",
-      "!static/**/*.min.js"
-    ]
   }
 }
