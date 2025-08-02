@@ -98,6 +98,26 @@ func TestAdd(t *testing.T) {
 				},
 			},
 		},
+		{
+			name: "Add task with empty ID",
+			args: args{
+				id:       "", // Empty ID might trigger different code path
+				interval: 1 * time.Second,
+				task: func() error {
+					return nil
+				},
+			},
+		},
+		{
+			name: "Add task with very short interval",
+			args: args{
+				id:       "test_task_short",
+				interval: 1 * time.Nanosecond, // Very short interval
+				task: func() error {
+					return nil
+				},
+			},
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -105,4 +125,10 @@ func TestAdd(t *testing.T) {
 			Add(tt.args.id, tt.args.interval, tt.args.task)
 		})
 	}
+	
+	// Test adding task with nil function
+	t.Run("Add task with nil function", func(t *testing.T) {
+		// This might trigger an error condition
+		Add("nil_task", 1*time.Second, nil)
+	})
 }

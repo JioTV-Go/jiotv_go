@@ -199,10 +199,18 @@ func Test_saveConfig(t *testing.T) {
 		name    string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		{
+			name:    "Test saveConfig function",
+			wantErr: false, // Should work if store is initialized
+		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Initialize store first
+			if err := Init(); err != nil {
+				t.Fatalf("Failed to initialize store: %v", err)
+			}
+			
 			if err := saveConfig(); (err != nil) != tt.wantErr {
 				t.Errorf("saveConfig() error = %v, wantErr %v", err, tt.wantErr)
 			}
