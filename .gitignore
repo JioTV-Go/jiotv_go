@@ -11,6 +11,9 @@ jiotv_go
 build/
 jiotv_go
 
+# Main binary
+jiotv_go
+
 # Test binary, built with `go test -c`
 *.test
 
