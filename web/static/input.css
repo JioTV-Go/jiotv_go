@@ -4,6 +4,11 @@
 
 /* TV Mode and Keyboard Navigation Styles using Tailwind utilities */
 @layer utilities {
+  /* Smooth transition for TV mode changes */
+  .transitioning-tv-mode * {
+    @apply transition-all duration-300 ease-in-out;
+  }
+
   .tv-mode {
     @apply text-lg;
   }
@@ -64,6 +69,11 @@
   .tv-mode::before {
     content: "TV Mode";
     @apply fixed top-4 right-4 bg-primary text-primary-content px-4 py-2 rounded-lg text-sm z-50 opacity-80;
+  }
+
+  /* TV Mode toggle button styles */
+  .tv-mode-toggle {
+    @apply transition-all duration-200 ease-in-out;
   }
 }
 
