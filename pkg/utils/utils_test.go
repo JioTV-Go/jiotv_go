@@ -9,6 +9,8 @@ import (
 	"github.com/jiotv-go/jiotv_go/v3/pkg/store"
 )
 
+var mockServer *MockServer
+
 // Setup function to initialize store for tests
 func setupTest() {
 	// Initialize store for testing
@@ -16,6 +18,23 @@ func setupTest() {
 	// Initialize the Log variable to prevent nil pointer dereference
 	if Log == nil {
 		Log = log.New(os.Stdout, "", log.LstdFlags)
+	}
+}
+
+// setupTestWithMockServer initializes test environment with HTTP mocking
+func setupTestWithMockServer() *MockServer {
+	setupTest()
+	if mockServer == nil {
+		mockServer = NewMockServer()
+	}
+	return mockServer
+}
+
+// teardownTestWithMockServer cleans up the mock server
+func teardownTestWithMockServer() {
+	if mockServer != nil {
+		mockServer.Close()
+		mockServer = nil
 	}
 }
 
@@ -39,7 +58,9 @@ func TestGetLogger(t *testing.T) {
 }
 
 func TestLoginSendOTP(t *testing.T) {
-	setupTest() // Initialize store
+	mockServer := setupTestWithMockServer()
+	defer teardownTestWithMockServer()
+	
 	type args struct {
 		number string
 	}
@@ -56,20 +77,28 @@ func TestLoginSendOTP(t *testing.T) {
 			wantErr: true, // Should handle empty input gracefully
 		},
 		{
+			name: "Valid phone number",
+			args: args{
+				number: "1234567890",
+			},
+			wantErr: false, // Should succeed with mock server
+		},
+		{
 			name: "Invalid phone number format",
 			args: args{
 				number: "invalid",
 			},
-			wantErr: true, // May fail but shouldn't panic
+			wantErr: false, // Mock server accepts any non-empty number
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			// Note: This test will actually make API calls, so we're primarily
-			// testing that the function doesn't panic and handles errors gracefully
-			got, err := LoginSendOTP(tt.args.number)
+			got, err := LoginSendOTPWithBaseURL(tt.args.number, mockServer.URLs["jiotvapi.media.jio.com"])
 			if tt.wantErr && err == nil {
 				t.Errorf("LoginSendOTP() expected error but got none")
+			}
+			if !tt.wantErr && err != nil {
+				t.Errorf("LoginSendOTP() expected no error but got: %v", err)
 			}
 			// Function should return a boolean
 			if err == nil && got != true && got != false {
@@ -80,7 +109,9 @@ func TestLoginSendOTP(t *testing.T) {
 }
 
 func TestLoginVerifyOTP(t *testing.T) {
-	setupTest() // Initialize store
+	mockServer := setupTestWithMockServer()
+	defer teardownTestWithMockServer()
+	
 	type args struct {
 		number string
 		otp    string
@@ -99,30 +130,49 @@ func TestLoginVerifyOTP(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Invalid OTP format",
+			name: "Valid credentials",
 			args: args{
 				number: "1234567890",
-				otp:    "invalid",
+				otp:    "123456",
+			},
+			wantErr: false,
+		},
+		{
+			name: "Valid number, empty OTP",
+			args: args{
+				number: "1234567890",
+				otp:    "",
 			},
 			wantErr: true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := LoginVerifyOTP(tt.args.number, tt.args.otp)
+			got, err := LoginVerifyOTPWithBaseURL(tt.args.number, tt.args.otp, mockServer.URLs["jiotvapi.media.jio.com"])
 			if tt.wantErr && err == nil {
 				t.Errorf("LoginVerifyOTP() expected error but got none")
+			}
+			if !tt.wantErr && err != nil {
+				t.Errorf("LoginVerifyOTP() expected no error but got: %v", err)
 			}
 			// If no error, should return a map
 			if err == nil && got == nil {
 				t.Errorf("LoginVerifyOTP() should return map when successful")
+			}
+			// Check for expected fields in successful response
+			if err == nil && got != nil {
+				if status, exists := got["status"]; !exists || status != "success" {
+					t.Errorf("LoginVerifyOTP() should return success status, got %v", got)
+				}
 			}
 		})
 	}
 }
 
 func TestLogin(t *testing.T) {
-	setupTest() // Initialize store
+	mockServer := setupTestWithMockServer()
+	defer teardownTestWithMockServer()
+	
 	type args struct {
 		username string
 		password string
@@ -141,23 +191,40 @@ func TestLogin(t *testing.T) {
 			wantErr: true,
 		},
 		{
-			name: "Invalid credentials format",
+			name: "Valid credentials",
 			args: args{
-				username: "test",
-				password: "test",
+				username: "test@example.com",
+				password: "testpassword",
 			},
-			wantErr: true, // Should fail for invalid credentials
+			wantErr: false,
+		},
+		{
+			name: "Valid phone number credentials",
+			args: args{
+				username: "1234567890",
+				password: "testpassword",
+			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := Login(tt.args.username, tt.args.password)
+			got, err := LoginWithBaseURL(tt.args.username, tt.args.password, mockServer.URLs["api.jio.com"])
 			if tt.wantErr && err == nil {
 				t.Errorf("Login() expected error but got none")
+			}
+			if !tt.wantErr && err != nil {
+				t.Errorf("Login() expected no error but got: %v", err)
 			}
 			// If no error, should return a map
 			if err == nil && got == nil {
 				t.Errorf("Login() should return map when successful")
+			}
+			// Check for expected fields in successful response
+			if err == nil && got != nil {
+				if status, exists := got["status"]; !exists || status != "success" {
+					t.Errorf("Login() should return success status, got %v", got)
+				}
 			}
 		})
 	}
@@ -307,42 +374,114 @@ func TestCheckLoggedIn(t *testing.T) {
 }
 
 func TestLogout(t *testing.T) {
-	setupTest() // Initialize store
+	setupTest() // Don't need mock server for this test since we're only testing local cleanup
+	
 	tests := []struct {
 		name    string
+		setup   func() // Function to set up test conditions
 		wantErr bool
 	}{
 		{
-			name:    "Logout (may succeed or fail depending on state)",
-			wantErr: false, // We'll allow either outcome
+			name: "Logout with no credentials",
+			setup: func() {
+				// Clear all credentials to simulate no login state
+				store.Delete("ssoToken")
+				store.Delete("refreshToken")
+				store.Delete("accessToken")
+			},
+			wantErr: false, // Logout should not fail even if no credentials exist
+		},
+		{
+			name: "Logout with valid credentials",
+			setup: func() {
+				// Set up valid credentials
+				WriteJIOTVCredentials(&JIOTV_CREDENTIALS{
+					SSOToken:     "test_sso",
+					AccessToken:  "test_access",
+					RefreshToken: "test_refresh",
+					UniqueID:     "test_unique",
+				})
+			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Run setup function if provided
+			if tt.setup != nil {
+				tt.setup()
+			}
+			
 			err := Logout()
-			// The function may fail if no credentials exist or server logout fails, 
-			// but it should not panic
-			_ = err // We don't check specific error condition as it depends on state
+			if tt.wantErr && err == nil {
+				t.Errorf("Logout() expected error but got none")
+			}
+			if !tt.wantErr && err != nil {
+				t.Errorf("Logout() expected no error but got: %v", err)
+			}
 		})
 	}
 }
 
 func TestPerformServerLogout(t *testing.T) {
-	setupTest() // Initialize store
+	mockServer := setupTestWithMockServer()
+	defer teardownTestWithMockServer()
+	
 	tests := []struct {
 		name    string
+		setup   func() // Function to set up test conditions
 		wantErr bool
 	}{
 		{
-			name:    "Perform server logout",
-			wantErr: false, // May succeed or fail, we just test it doesn't panic
+			name: "No credentials available",
+			setup: func() {
+				// Clear all credentials to simulate no login state
+				store.Delete("ssoToken")
+				store.Delete("refreshToken")
+				store.Delete("accessToken")
+			},
+			wantErr: true,
+		},
+		{
+			name: "Missing refresh token",
+			setup: func() {
+				// Set up credentials but without refresh token
+				WriteJIOTVCredentials(&JIOTV_CREDENTIALS{
+					SSOToken:     "test_sso",
+					AccessToken:  "test_access",
+					RefreshToken: "", // Missing refresh token
+				})
+			},
+			wantErr: true,
+		},
+		{
+			name: "Valid credentials",
+			setup: func() {
+				// Set up valid credentials including refresh token
+				WriteJIOTVCredentials(&JIOTV_CREDENTIALS{
+					SSOToken:     "test_sso",
+					AccessToken:  "test_access",
+					RefreshToken: "test_refresh",
+					UniqueID:     "test_unique",
+				})
+			},
+			wantErr: false,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := PerformServerLogout()
-			// Function may fail if not logged in or server issues, but shouldn't panic
-			_ = err // We don't assert specific error conditions
+			// Run setup function if provided
+			if tt.setup != nil {
+				tt.setup()
+			}
+			
+			err := PerformServerLogoutWithBaseURL(mockServer.URLs["auth.media.jio.com"])
+			if tt.wantErr && err == nil {
+				t.Errorf("PerformServerLogout() expected error but got none")
+			}
+			if !tt.wantErr && err != nil {
+				t.Errorf("PerformServerLogout() expected no error but got: %v", err)
+			}
 		})
 	}
 }
