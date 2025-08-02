@@ -172,7 +172,7 @@ const scrollToTop = () => {
 // Favorite Channels Functionality
 const FAVORITES_STORAGE_KEY = "favoriteChannels";
 
-function getFavoriteChannels() {
+export function getFavoriteChannels() {
   const storedFavorites = localStorage.getItem(FAVORITES_STORAGE_KEY);
   if (!storedFavorites) {
     return [];
@@ -186,11 +186,11 @@ function getFavoriteChannels() {
   }
 }
 
-function saveFavoriteChannels(favoriteIds) {
+export function saveFavoriteChannels(favoriteIds) {
   localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favoriteIds));
 }
 
-function displayFavoriteChannels() {
+export function displayFavoriteChannels() {
   const favoriteIds = getFavoriteChannels();
   const favoriteChannelsSection = document.getElementById("favorite-channels-section");
   const favoriteChannelsContainer = document.getElementById("favorite-channels-container");
@@ -239,7 +239,7 @@ function displayFavoriteChannels() {
   originalChannelsGrid.appendChild(originalFragment);
 }
 
-function toggleFavorite(channelId) {
+export function toggleFavorite(channelId) {
   const favoriteIds = getFavoriteChannels();
   const button = document.getElementById(`favorite-btn-${channelId}`);
   const starIcon = document.getElementById(`star-icon-${channelId}`);
@@ -269,7 +269,7 @@ function toggleFavorite(channelId) {
   displayFavoriteChannels(); // Refresh the channel lists
 }
 
-function updateFavoriteButtonStates() {
+export function updateFavoriteButtonStates() {
   const favoriteIds = getFavoriteChannels();
   const favoriteButtons = document.querySelectorAll(".favorite-btn");
 
