@@ -197,7 +197,7 @@ func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
 	}
 
 	// If channelID starts with sl, then it is a Sony Channel
-	if strings.HasPrefix(channelID, "sl") {
+	if len(channelID) >= 2 && channelID[:2] == "sl" {
 		return getSLChannel(channelID)
 	}
 
