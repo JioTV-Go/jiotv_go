@@ -24,6 +24,8 @@ const (
 var (
 	// customChannelsCache holds cached custom channels
 	customChannelsCache []Channel
+	// customChannelsCacheMap holds cached custom channels indexed by ID for efficient lookups
+	customChannelsCacheMap map[string]Channel
 	// customChannelsCacheMutex protects the cache from concurrent access
 	customChannelsCacheMutex sync.RWMutex
 	// customChannelsCacheLoaded indicates if cache has been loaded
@@ -94,6 +96,19 @@ func getCustomChannels() []Channel {
 	return channels
 }
 
+// getCustomChannelByID efficiently looks up a custom channel by ID
+func getCustomChannelByID(channelID string) (Channel, bool) {
+	customChannelsCacheMutex.RLock()
+	defer customChannelsCacheMutex.RUnlock()
+	
+	if customChannelsCacheMap == nil {
+		return Channel{}, false
+	}
+	
+	channel, exists := customChannelsCacheMap[channelID]
+	return channel, exists
+}
+
 // loadAndCacheCustomChannels loads custom channels from file and caches them
 func loadAndCacheCustomChannels() []Channel {
 	customChannelsCacheMutex.Lock()
@@ -107,8 +122,14 @@ func loadAndCacheCustomChannels() []Channel {
 		}
 		// Cache empty result to avoid repeated file I/O errors
 		customChannelsCache = []Channel{}
+		customChannelsCacheMap = make(map[string]Channel)
 	} else {
 		customChannelsCache = channels
+		// Populate the map for efficient lookups
+		customChannelsCacheMap = make(map[string]Channel)
+		for _, channel := range channels {
+			customChannelsCacheMap[channel.ID] = channel
+		}
 	}
 	
 	customChannelsCacheLoaded = true
@@ -130,6 +151,11 @@ func ReloadCustomChannels() error {
 	}
 
 	customChannelsCache = channels
+	// Update the map for efficient lookups
+	customChannelsCacheMap = make(map[string]Channel)
+	for _, channel := range channels {
+		customChannelsCacheMap[channel.ID] = channel
+	}
 	customChannelsCacheLoaded = true
 	
 	if utils.Log != nil {
@@ -145,30 +171,28 @@ func ClearCustomChannelsCache() {
 	defer customChannelsCacheMutex.Unlock()
 	
 	customChannelsCache = nil
+	customChannelsCacheMap = nil
 	customChannelsCacheLoaded = false
 }
 
 // Live method generates m3u8 link from JioTV API with the provided channel ID
 func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
-	// Check if this is a custom channel by looking it up in cached custom channels
+	// Check if this is a custom channel by looking it up efficiently
 	if config.Cfg.CustomChannelsFile != "" {
-		customChannels := getCustomChannels()
-		for _, channel := range customChannels {
-			if channel.ID == channelID {
-				// For custom channels, return the URL directly
-				result := &LiveURLOutput{
-					Result: channel.URL,
-					Bitrates: Bitrates{
-						Auto:   channel.URL,
-						High:   channel.URL,
-						Medium: channel.URL,
-						Low:    channel.URL,
-					},
-					Code:    200,
-					Message: "success",
-				}
-				return result, nil
+		if channel, exists := getCustomChannelByID(channelID); exists {
+			// For custom channels, return the URL directly
+			result := &LiveURLOutput{
+				Result: channel.URL,
+				Bitrates: Bitrates{
+					Auto:   channel.URL,
+					High:   channel.URL,
+					Medium: channel.URL,
+					Low:    channel.URL,
+				},
+				Code:    200,
+				Message: "success",
 			}
+			return result, nil
 		}
 	}
 

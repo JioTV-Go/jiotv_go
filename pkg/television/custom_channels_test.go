@@ -324,3 +324,97 @@ func TestCustomChannelsCaching(t *testing.T) {
 		t.Errorf("Expected channel ID 'cache_test_channel' after cache clear, got '%s'", channels4[0].ID)
 	}
 }
+
+func TestCustomChannelEfficientLookup(t *testing.T) {
+	// Save original config
+	originalCustomChannelsFile := config.Cfg.CustomChannelsFile
+	defer func() {
+		config.Cfg.CustomChannelsFile = originalCustomChannelsFile
+	}()
+
+	// Clear cache before test
+	ClearCustomChannelsCache()
+
+	// Create temporary JSON file with multiple channels
+	tempFile, err := os.CreateTemp("", "custom_channels_lookup_*.json")
+	if err != nil {
+		t.Fatalf("Failed to create temp file: %v", err)
+	}
+	defer os.Remove(tempFile.Name())
+
+	customConfig := CustomChannelsConfig{
+		Channels: []CustomChannel{
+			{
+				ID:       "lookup_test_1",
+				Name:     "Lookup Test Channel 1",
+				URL:      "https://example.com/test1.m3u8",
+				LogoURL:  "https://example.com/logo1.png",
+				Category: 12,
+				Language: 6,
+				IsHD:     true,
+			},
+			{
+				ID:       "lookup_test_2",
+				Name:     "Lookup Test Channel 2",
+				URL:      "https://example.com/test2.m3u8",
+				LogoURL:  "https://example.com/logo2.png",
+				Category: 5,
+				Language: 1,
+				IsHD:     false,
+			},
+		},
+	}
+
+	jsonData, err := json.Marshal(customConfig)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	if _, err := tempFile.Write(jsonData); err != nil {
+		t.Fatalf("Failed to write to temp file: %v", err)
+	}
+	tempFile.Close()
+
+	// Set config to use the temp file
+	config.Cfg.CustomChannelsFile = tempFile.Name()
+
+	// Initialize custom channels
+	InitCustomChannels()
+
+	// Test efficient lookup - channel exists
+	channel, exists := getCustomChannelByID("lookup_test_1")
+	if !exists {
+		t.Error("Expected channel 'lookup_test_1' to exist")
+	}
+	if channel.ID != "lookup_test_1" {
+		t.Errorf("Expected channel ID 'lookup_test_1', got '%s'", channel.ID)
+	}
+	if channel.Name != "Lookup Test Channel 1" {
+		t.Errorf("Expected channel name 'Lookup Test Channel 1', got '%s'", channel.Name)
+	}
+
+	// Test efficient lookup - another channel exists
+	channel2, exists2 := getCustomChannelByID("lookup_test_2")
+	if !exists2 {
+		t.Error("Expected channel 'lookup_test_2' to exist")
+	}
+	if channel2.ID != "lookup_test_2" {
+		t.Errorf("Expected channel ID 'lookup_test_2', got '%s'", channel2.ID)
+	}
+	if channel2.IsHD {
+		t.Error("Expected channel 'lookup_test_2' to not be HD")
+	}
+
+	// Test efficient lookup - non-existent channel
+	_, exists3 := getCustomChannelByID("non_existent_channel")
+	if exists3 {
+		t.Error("Expected channel 'non_existent_channel' to not exist")
+	}
+
+	// Test lookup with empty cache
+	ClearCustomChannelsCache()
+	_, exists4 := getCustomChannelByID("lookup_test_1")
+	if exists4 {
+		t.Error("Expected no channel to exist after cache clear")
+	}
+}
