@@ -27,9 +27,10 @@ jobs:
         -
             name: Setup Node.js
             if: steps.dependabot-metadata.outputs.package-ecosystem == 'npm_and_yarn'
-            uses: actions/setup-node@v3
+            uses: actions/setup-node@v4
             with:
-                node-version: latest
+                node-version: lts/*
+                cache: 'npm'
         -   
             name: Update tailwindcss with build changes
             if: steps.dependabot-metadata.outputs.package-ecosystem == 'npm_and_yarn'
