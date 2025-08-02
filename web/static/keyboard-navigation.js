@@ -190,10 +190,8 @@ class KeyboardNavigation {
       });
     });
 
-    // Remove duplicates while preserving order
-    this.focusableElements = this.focusableElements.filter((el, index) => 
-      this.focusableElements.indexOf(el) === index
-    );
+    // Remove duplicates while preserving order (O(n) using Set)
+    this.focusableElements = [...new Set(this.focusableElements)];
   }
 
   isElementVisible(el) {
