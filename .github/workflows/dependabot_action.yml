@@ -24,6 +24,7 @@ jobs:
         with:
           node-version: lts/*
           cache: "npm"
+          cache-dependency-path: "web/package-lock.json"
 
       - name: Update TailwindCSS output
         run: |
