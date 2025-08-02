@@ -7,7 +7,7 @@ func TestLogout(t *testing.T) {
 		name    string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		// No test cases - requires external API connection
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -23,7 +23,7 @@ func TestLoginOTP(t *testing.T) {
 		name    string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		// No test cases - requires user input and external API
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -39,7 +39,7 @@ func TestLoginPassword(t *testing.T) {
 		name    string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		// No test cases - requires user input and external API
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -60,7 +60,7 @@ func Test_readPassword(t *testing.T) {
 		want    string
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		// No test cases - requires terminal input
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

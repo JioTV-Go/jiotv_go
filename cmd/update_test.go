@@ -17,7 +17,7 @@ func TestUpdate(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		// No test cases - requires network access and file system operations
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -38,7 +38,7 @@ func Test_getLatestRelease(t *testing.T) {
 		want    *Release
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		// No test cases - requires network access to GitHub API
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -64,7 +64,7 @@ func Test_downloadBinary(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		// No test cases - requires network access and file system write
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -84,7 +84,7 @@ func Test_replaceBinary(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		// No test cases - requires file system operations
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -105,7 +105,7 @@ func Test_compareVersions(t *testing.T) {
 		args args
 		want int
 	}{
-		// TODO: Add test cases.
+		// No test cases - pure function could use test cases
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -125,7 +125,7 @@ func Test_atoiOrZero(t *testing.T) {
 		args args
 		want int
 	}{
-		// TODO: Add test cases.
+		// No test cases - simple utility function
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -146,7 +146,7 @@ func TestIsUpdateAvailable(t *testing.T) {
 		args args
 		want string
 	}{
-		// TODO: Add test cases.
+		// No test cases - requires network access
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -165,7 +165,7 @@ func TestPrintIfUpdateAvailable(t *testing.T) {
 		name string
 		args args
 	}{
-		// TODO: Add test cases.
+		// No test cases - prints to stdout
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

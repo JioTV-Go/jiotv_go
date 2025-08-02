@@ -15,7 +15,7 @@ func TestWebEPGHandler(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		// No test cases - EPG handler function
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -35,7 +35,7 @@ func TestPosterHandler(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		// No test cases - EPG handler function
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

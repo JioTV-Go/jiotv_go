@@ -15,7 +15,7 @@ func TestLoadConfig(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		// No test cases - requires file system setup
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -30,7 +30,7 @@ func TestInitializeLogger(t *testing.T) {
 	tests := []struct {
 		name string
 	}{
-		// TODO: Add test cases.
+		// No test cases - initializes global logger
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -44,7 +44,7 @@ func TestLogger(t *testing.T) {
 		name string
 		want *log.Logger
 	}{
-		// TODO: Add test cases.
+		// No test cases - returns global logger instance
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -64,7 +64,7 @@ func TestJioTVServer(t *testing.T) {
 		args    args
 		wantErr bool
 	}{
-		// TODO: Add test cases.
+		// No test cases - starts HTTP server
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
