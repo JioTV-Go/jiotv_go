@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -12,7 +11,6 @@ import (
 	"github.com/jiotv-go/jiotv_go/v3/internal/config"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
-	"github.com/jiotv-go/jiotv_go/v3/pkg/epg"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/television"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
@@ -536,43 +534,6 @@ func ImageHandler(c *fiber.Ctx) error {
 	}
 	c.Response().Header.Del(fiber.HeaderServer)
 	return nil
-}
-
-// EPGHandler handles EPG requests
-func EPGHandler(c *fiber.Ctx) error {
-	epgFilePath := utils.GetPathPrefix() + "epg.xml.gz"
-	
-	// Check if EPG file exists and is current
-	if stat, err := os.Stat(epgFilePath); err == nil {
-		// Check if file was modified today
-		fileDate := stat.ModTime().Format("2006-01-02")
-		todayDate := time.Now().Format("2006-01-02")
-		
-		if fileDate == todayDate {
-			// File is current, serve it
-			return c.SendFile(epgFilePath, true)
-		} else {
-			// File is old, regenerate it in the background and serve the old one for now
-			utils.Log.Println("EPG file is outdated, regenerating in background...")
-			go func() {
-				if err := epg.GenXMLGz(epgFilePath); err != nil {
-					utils.Log.Printf("Background EPG regeneration failed: %v", err)
-				} else {
-					utils.Log.Println("EPG file regenerated successfully")
-				}
-			}()
-			return c.SendFile(epgFilePath, true)
-		}
-	} else {
-		// File doesn't exist, try to generate it
-		utils.Log.Println("EPG file not found, generating...")
-		if err := epg.GenXMLGz(epgFilePath); err != nil {
-			err_message := "EPG generation failed. Please restart the server after setting the environment variable JIOTV_EPG to true."
-			utils.Log.Printf("EPG generation failed: %v", err)
-			return c.Status(fiber.StatusNotFound).SendString(err_message)
-		}
-		return c.SendFile(epgFilePath, true)
-	}
 }
 
 func DASHTimeHandler(c *fiber.Ctx) error {
