@@ -12,22 +12,25 @@ import (
 	"gopkg.in/yaml.v3"
 
 	"github.com/jiotv-go/jiotv_go/v3/internal/config"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 )
 
 const (
 	// JioTV API domain constants
-	JIOTV_API_DOMAIN = "jiotvapi.media.jio.com"
-	TV_MEDIA_DOMAIN  = "tv.media.jio.com"
-	JIOTV_CDN_DOMAIN = "jiotvapi.cdn.jio.com"
+	JIOTV_API_DOMAIN = urls.JioTVAPIDomain
+	TV_MEDIA_DOMAIN  = urls.TVMediaDomain
+	JIOTV_CDN_DOMAIN = urls.JioTVCDNDomain
 
 	// URL for fetching channels from JioTV API
-	CHANNELS_API_URL = "https://jiotvapi.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?langId=6&os=android&devicetype=phone&usertype=JIO&version=315&langId=6"
+	CHANNELS_API_URL = urls.ChannelsAPIURL
 	// Error message for unsupported custom channels file formats
-	errUnsupportedChannelsFormat = "unsupported or invalid custom channels file format. Supported formats: .json, .yml, .yaml, or valid JSON/YAML content"
+	errUnsupportedChannelsFormat = constants.ErrUnsupportedChannelsFormat
 	// Maximum recommended number of custom channels before performance warnings
-	maxRecommendedChannels = 1000
+	maxRecommendedChannels = constants.MaxRecommendedChannels
 )
 
 // logExcessiveChannelsWarning logs a comprehensive warning when the number of custom channels exceeds the recommended limit
@@ -83,7 +86,7 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 		"osVersion":    "13",
 		"subscriberId": credentials.CRM,
 		"uniqueId":     credentials.UniqueID,
-		"User-Agent":   "okhttp/4.2.2",
+		headers.UserAgent:   headers.UserAgentOkHttp,
 		"usergroup":    "tvYR7NSNn7rymo3F",
 		"versionCode":  "330",
 	}
@@ -250,7 +253,7 @@ func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
 	var url string
 	if tv.AccessToken != "" {
 		url = "https://" + JIOTV_API_DOMAIN + "/playback/apis/v1/geturl?langId=6"
-		req.Header.Set("accesstoken", tv.AccessToken)
+		req.Header.Set(headers.AccessToken, tv.AccessToken)
 	} else {
 		req.Header.Set("osVersion", "8.1.0")
 		req.Header.Set("ssotoken", tv.SsoToken)
@@ -433,10 +436,10 @@ func Channels() ChannelsResponse {
 	req.SetRequestURI(CHANNELS_API_URL)
 
 	req.Header.SetMethod("GET")
-	req.Header.Add("User-Agent", "okhttp/4.2.2")
-	req.Header.Add("Accept", "application/json")
-	req.Header.Add("devicetype", "phone")
-	req.Header.Add("os", "android")
+	req.Header.Add(headers.UserAgent, headers.UserAgentOkHttp)
+	req.Header.Add(headers.Accept, headers.AcceptJSON)
+	req.Header.Add(headers.DeviceType, headers.DeviceTypePhone)
+	req.Header.Add(headers.OS, headers.OSAndroid)
 	req.Header.Add("appkey", "NzNiMDhlYzQyNjJm")
 	req.Header.Add("lbcookie", "1")
 	req.Header.Add("usertype", "JIO")

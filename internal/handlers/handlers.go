@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/jiotv-go/jiotv_go/v3/internal/config"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/television"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
@@ -28,10 +30,10 @@ var (
 )
 
 const (
-	REFRESH_TOKEN_URL     = "https://auth.media.jio.com/tokenservice/apis/v1/refreshtoken?langId=6"
-	REFRESH_SSO_TOKEN_URL = "https://tv.media.jio.com/apis/v2.0/loginotp/refresh?langId=6"
-	PLAYER_USER_AGENT     = "plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7"
-	REQUEST_USER_AGENT    = "okhttp/4.2.2"
+	REFRESH_TOKEN_URL     = urls.RefreshTokenURL
+	REFRESH_SSO_TOKEN_URL = urls.RefreshSSOTokenURL
+	PLAYER_USER_AGENT     = headers.UserAgentPlayTV
+	REQUEST_USER_AGENT    = headers.UserAgentOkHttp
 )
 
 // Init initializes the necessary operations required for the handlers to work.

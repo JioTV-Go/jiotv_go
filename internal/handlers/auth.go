@@ -7,6 +7,9 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/tasks"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/scheduler"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/television"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
@@ -14,9 +17,9 @@ import (
 )
 
 const (
-	REFRESH_TOKEN_TASK_ID    = "jiotv_refresh_token"
-	REFRESH_SSOTOKEN_TASK_ID = "jiotv_refresh_sso_token"
-	HEALTH_CHECK_TASK_ID     = "jiotv_token_health_check"
+	REFRESH_TOKEN_TASK_ID    = tasks.RefreshTokenTaskID
+	REFRESH_SSOTOKEN_TASK_ID = tasks.RefreshSSOTokenTaskID
+	HEALTH_CHECK_TASK_ID     = tasks.HealthCheckTaskID
 )
 
 // LoginSendOTPHandler sends OTP for login
@@ -155,13 +158,13 @@ func LoginRefreshAccessToken() error {
 	defer fasthttp.ReleaseRequest(req)
 	req.SetRequestURI(REFRESH_TOKEN_URL)
 	req.Header.SetMethod("POST")
-	req.Header.Set("devicetype", "phone")
-	req.Header.Set("versionCode", "315")
-	req.Header.Set("os", "android")
-	req.Header.Set("Content-Type", "application/json; charset=utf-8")
-	req.Header.Set("Host", "auth.media.jio.com")
-	req.Header.Set("User-Agent", "okhttp/4.2.2")
-	req.Header.Set("accessToken", tokenData.AccessToken)
+	req.Header.Set(headers.DeviceType, headers.DeviceTypePhone)
+	req.Header.Set(headers.VersionCode, headers.VersionCode315)
+	req.Header.Set(headers.OS, headers.OSAndroid)
+	req.Header.Set(headers.ContentType, headers.ContentTypeJSONCharsetUTF8)
+	req.Header.Set(headers.Host, urls.AuthMediaDomain)
+	req.Header.Set(headers.UserAgent, headers.UserAgentOkHttp)
+	req.Header.Set(headers.AccessToken, tokenData.AccessToken)
 	req.SetBody(requestBodyJSON)
 
 	// Send the request
@@ -244,11 +247,11 @@ func LoginRefreshSSOToken() error {
 	defer fasthttp.ReleaseRequest(req)
 	req.SetRequestURI(REFRESH_SSO_TOKEN_URL)
 	req.Header.SetMethod("GET")
-	req.Header.Set("devicetype", "phone")
-	req.Header.Set("versionCode", "315")
-	req.Header.Set("os", "android")
-	req.Header.Set("Host", "tv.media.jio.com")
-	req.Header.Set("User-Agent", "okhttp/4.2.2")
+	req.Header.Set(headers.DeviceType, headers.DeviceTypePhone)
+	req.Header.Set(headers.VersionCode, headers.VersionCode315)
+	req.Header.Set(headers.OS, headers.OSAndroid)
+	req.Header.Set(headers.Host, urls.TVMediaDomain)
+	req.Header.Set(headers.UserAgent, headers.UserAgentOkHttp)
 	req.Header.Set("ssoToken", tokenData.SSOToken)
 	req.Header.Set("uniqueid", tokenData.UniqueID)
 	req.Header.Set("deviceid", deviceID)
