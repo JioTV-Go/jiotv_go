@@ -193,7 +193,7 @@ func TestTelevision_RequestDashSegment(t *testing.T) {
 				}
 
 				// Verify User-Agent header
-				expectedUA := "plaYtv/7.1.3 (Linux;Android 13) ExoPlayerLib/2.11.7"
+				expectedUA := headers.UserAgentPlayTVNew
 				if r.Header.Get("User-Agent") != expectedUA {
 					t.Errorf("Expected User-Agent %s, got %s", expectedUA, r.Header.Get("User-Agent"))
 				}
