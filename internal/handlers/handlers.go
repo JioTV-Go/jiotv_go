@@ -256,13 +256,17 @@ func RenderHandler(c *fiber.Ctx) error {
 		return err
 	}
 	
-	// Ensure tokens are fresh before making API call
-	if err := EnsureFreshTokens(); err != nil {
-		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
-		// Continue with the request - tokens might still work or it might be a custom channel
-	}
-	
 	renderResult, statusCode := TV.Render(decoded_url)
+	
+	// If we get a 403 (Forbidden), try refreshing tokens and retry once
+	if statusCode == fiber.StatusForbidden {
+		if err := EnsureFreshTokens(); err != nil {
+			utils.Log.Printf("Failed to refresh tokens after 403: %v", err)
+		} else {
+			// Retry the request once after refreshing tokens
+			renderResult, statusCode = TV.Render(decoded_url)
+		}
+	}
 	// baseUrl is the part of the url excluding suffix file.m3u8 and params is the part of the url after the suffix
 	split_url_by_params := strings.Split(decoded_url, "?")
 	baseStringUrl := split_url_by_params[0]
