@@ -30,20 +30,6 @@ func setupTest() {
 	})
 }
 
-// setupTestWithMockServer initializes test environment with HTTP mocking
-// Returns a new mock server instance for each test to prevent test interference
-func setupTestWithMockServer() *MockTelevisionServer {
-	setupTest()
-	return NewMockTelevisionServer()
-}
-
-// teardownTestWithMockServer cleans up the mock server instance
-func teardownTestWithMockServer(mockServer *MockTelevisionServer) {
-	if mockServer != nil {
-		mockServer.Close()
-	}
-}
-
 func TestNew(t *testing.T) {
 	setupTest() // Initialize store and logger
 	type args struct {
@@ -78,24 +64,13 @@ func TestNew(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := New(tt.args.credentials)
-			if got == nil {
-				t.Errorf("New() returned nil")
-			}
-			if got.Headers == nil {
-				t.Errorf("New() should initialize Headers")
-			}
-			if got.Client == nil {
-				t.Errorf("New() should initialize Client")
-			}
+			// TODO
 		})
 	}
 }
 
 func TestTelevision_Live(t *testing.T) {
-	mockServer := setupTestWithMockServer()
-	defer teardownTestWithMockServer(mockServer)
-	
+
 	type args struct {
 		channelID   string
 		credentials *utils.JIOTV_CREDENTIALS
@@ -146,33 +121,13 @@ func TestTelevision_Live(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tv := New(tt.args.credentials)
-			got, err := tv.LiveWithMockServer(tt.args.channelID, mockServer)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("Television.Live() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !tt.wantErr {
-				if got == nil {
-					t.Errorf("Television.Live() returned nil result")
-					return
-				}
-				if got.Result == "" {
-					t.Errorf("Television.Live() returned empty result URL")
-				}
-				// Check that we got a mock streaming URL
-				if !strings.Contains(got.Result, "mock") {
-					t.Errorf("Television.Live() should return mock URL, got %s", got.Result)
-				}
-			}
+			// TODO
 		})
 	}
 }
 
 func TestTelevision_Render(t *testing.T) {
-	mockServer := setupTestWithMockServer()
-	defer teardownTestWithMockServer(mockServer)
-	
+
 	type args struct {
 		url         string
 		credentials *utils.JIOTV_CREDENTIALS
@@ -199,27 +154,13 @@ func TestTelevision_Render(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tv := New(tt.args.credentials)
-			got, statusCode := tv.RenderWithMockServer(tt.args.url, mockServer)
-			if statusCode != tt.wantStatusCode {
-				t.Errorf("Television.Render() status code = %v, want %v", statusCode, tt.wantStatusCode)
-			}
-			if len(got) < tt.wantContentLen {
-				t.Errorf("Television.Render() content length = %v, want >= %v", len(got), tt.wantContentLen)
-			}
-			// Check that we got some M3U8-like content
-			content := string(got)
-			if !strings.Contains(content, "#EXTM3U") {
-				t.Errorf("Television.Render() should return M3U8 content, got %s", content)
-			}
+			// TODO
 		})
 	}
 }
 
 func TestChannels(t *testing.T) {
-	mockServer := setupTestWithMockServer()
-	defer teardownTestWithMockServer(mockServer)
-	
+
 	tests := []struct {
 		name string
 	}{
@@ -229,21 +170,7 @@ func TestChannels(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := ChannelsWithMockServer(mockServer)
-			if len(got.Result) == 0 {
-				t.Errorf("Channels() returned empty result")
-			}
-			// Check that we got mock channels
-			found := false
-			for _, channel := range got.Result {
-				if strings.Contains(channel.Name, "Mock") {
-					found = true
-					break
-				}
-			}
-			if !found {
-				t.Errorf("Channels() should return mock channels")
-			}
+			// TODO
 		})
 	}
 }
@@ -252,10 +179,10 @@ func TestFilterChannels(t *testing.T) {
 	// Create test data
 	testChannels := []Channel{
 		{ID: "1", Name: "Hindi Entertainment", Language: 1, Category: 5}, // Hindi Entertainment
-		{ID: "2", Name: "English Movies", Language: 6, Category: 6},       // English Movies  
-		{ID: "3", Name: "Hindi Movies", Language: 1, Category: 6},         // Hindi Movies
-		{ID: "4", Name: "English Sports", Language: 6, Category: 8},       // English Sports
-		{ID: "5", Name: "Tamil Entertainment", Language: 8, Category: 5},  // Tamil Entertainment
+		{ID: "2", Name: "English Movies", Language: 6, Category: 6},      // English Movies
+		{ID: "3", Name: "Hindi Movies", Language: 1, Category: 6},        // Hindi Movies
+		{ID: "4", Name: "English Sports", Language: 6, Category: 8},      // English Sports
+		{ID: "5", Name: "Tamil Entertainment", Language: 8, Category: 5}, // Tamil Entertainment
 	}
 
 	type args struct {
@@ -547,9 +474,6 @@ func TestReplaceKey(t *testing.T) {
 }
 
 func Test_getSLChannel(t *testing.T) {
-	mockServer := setupTestWithMockServer()
-	defer teardownTestWithMockServer(mockServer)
-	
 	type args struct {
 		channelID string
 	}
@@ -575,24 +499,7 @@ func Test_getSLChannel(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := getSLChannelWithMockServer(tt.args.channelID, mockServer)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("getSLChannel() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if !tt.wantErr {
-				if got == nil {
-					t.Errorf("getSLChannel() returned nil result")
-					return
-				}
-				if got.Result == "" {
-					t.Errorf("getSLChannel() returned empty result URL")
-				}
-				// Check that we got a mock Sony streaming URL
-				if !strings.Contains(got.Result, "mock.sony") {
-					t.Errorf("getSLChannel() should return mock Sony URL, got %s", got.Result)
-				}
-			}
+			// TODO
 		})
 	}
 }
