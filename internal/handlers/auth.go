@@ -4,23 +4,112 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
-	"github.com/jiotv-go/jiotv_go/v3/internal/constants/tasks"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
-	"github.com/jiotv-go/jiotv_go/v3/pkg/scheduler"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/television"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 	"github.com/valyala/fasthttp"
 )
 
-const (
-	REFRESH_TOKEN_TASK_ID    = tasks.RefreshTokenTaskID
-	REFRESH_SSOTOKEN_TASK_ID = tasks.RefreshSSOTokenTaskID
-	HEALTH_CHECK_TASK_ID     = tasks.HealthCheckTaskID
+var (
+	// tokenRefreshMutex prevents concurrent token refreshes
+	tokenRefreshMutex sync.Mutex
 )
+
+// IsAccessTokenExpired checks if the AccessToken needs refreshing
+// Returns true if the token is expired or will expire within the next 10 minutes
+func IsAccessTokenExpired(credentials *utils.JIOTV_CREDENTIALS) bool {
+	if credentials.LastTokenRefreshTime == "" {
+		return true // No refresh time recorded, assume expired
+	}
+	
+	lastTokenRefreshTime, err := strconv.ParseInt(credentials.LastTokenRefreshTime, 10, 64)
+	if err != nil {
+		utils.Log.Printf("Error parsing LastTokenRefreshTime: %v", err)
+		return true // Error parsing, assume expired
+	}
+	
+	lastTokenRefreshTimeUnix := time.Unix(lastTokenRefreshTime, 0)
+	// AccessToken expires after 2 hours, refresh 10 minutes early
+	thresholdTime := lastTokenRefreshTimeUnix.Add(1*time.Hour + 50*time.Minute)
+	
+	return thresholdTime.Before(time.Now())
+}
+
+// IsSSOTokenExpired checks if the SSOToken needs refreshing
+// Returns true if the token is expired or will expire within the next hour
+func IsSSOTokenExpired(credentials *utils.JIOTV_CREDENTIALS) bool {
+	if credentials.LastSSOTokenRefreshTime == "" {
+		return true // No refresh time recorded, assume expired
+	}
+	
+	lastTokenRefreshTime, err := strconv.ParseInt(credentials.LastSSOTokenRefreshTime, 10, 64)
+	if err != nil {
+		utils.Log.Printf("Error parsing LastSSOTokenRefreshTime: %v", err)
+		return true // Error parsing, assume expired
+	}
+	
+	lastTokenRefreshTimeUnix := time.Unix(lastTokenRefreshTime, 0)
+	// SSOToken expires after 24 hours, refresh 1 hour early
+	thresholdTime := lastTokenRefreshTimeUnix.Add(23 * time.Hour)
+	
+	return thresholdTime.Before(time.Now())
+}
+
+// EnsureFreshTokens checks and refreshes tokens if needed
+// This is the main function that should be called before making API requests
+func EnsureFreshTokens() error {
+	tokenRefreshMutex.Lock()
+	defer tokenRefreshMutex.Unlock()
+	
+	credentials, err := utils.GetJIOTVCredentials()
+	if err != nil {
+		return fmt.Errorf("failed to get credentials: %v", err)
+	}
+	
+	var refreshed bool
+	
+	// Check and refresh AccessToken if needed
+	if credentials.AccessToken != "" && credentials.RefreshToken != "" {
+		if IsAccessTokenExpired(credentials) {
+			utils.Log.Println("AccessToken is expired, refreshing...")
+			err := LoginRefreshAccessToken()
+			if err != nil {
+				utils.Log.Printf("AccessToken refresh failed: %v", err)
+				return err
+			}
+			refreshed = true
+		}
+	}
+	
+	// Check and refresh SSOToken if needed  
+	if credentials.SSOToken != "" && credentials.UniqueID != "" {
+		if IsSSOTokenExpired(credentials) {
+			utils.Log.Println("SSOToken is expired, refreshing...")
+			err := LoginRefreshSSOToken()
+			if err != nil {
+				utils.Log.Printf("SSOToken refresh failed: %v", err)
+				return err
+			}
+			refreshed = true
+		}
+	}
+	
+	if refreshed {
+		// Update the TV object with fresh credentials
+		freshCreds, err := utils.GetJIOTVCredentials()
+		if err != nil {
+			return fmt.Errorf("failed to get fresh credentials: %v", err)
+		}
+		TV = television.New(freshCreds)
+	}
+	
+	return nil
+}
 
 // LoginSendOTPHandler sends OTP for login
 func LoginSendOTPHandler(c *fiber.Ctx) error {
@@ -203,9 +292,6 @@ func LoginRefreshAccessToken() error {
 		}
 		TV = television.New(tokenData)
 		utils.Log.Println("AccessToken refreshed successfully")
-		
-		// Schedule next refresh
-		go RefreshTokenIfExpired(tokenData)
 		return nil
 	} else {
 		err := fmt.Errorf("AccessToken not found in response")
@@ -292,9 +378,6 @@ func LoginRefreshSSOToken() error {
 		}
 		TV = television.New(tokenData)
 		utils.Log.Println("SSOToken refreshed successfully")
-		
-		// Schedule next refresh
-		go RefreshSSOTokenIfExpired(tokenData)
 		return nil
 	} else {
 		err := fmt.Errorf("SSOToken not found in response")
@@ -304,159 +387,29 @@ func LoginRefreshSSOToken() error {
 }
 
 // RefreshTokenIfExpired Function is used to handle AccessToken refresh
+// This function is now simplified for on-demand use only
 func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
 	utils.Log.Println("Checking if AccessToken is expired...")
-	lastTokenRefreshTime, err := strconv.ParseInt(credentials.LastTokenRefreshTime, 10, 64)
-	if err != nil {
-		utils.Log.Printf("Error parsing LastTokenRefreshTime: %v. Scheduling refresh in 10 minutes.", err)
-		// Schedule refresh in 10 minutes if we can't parse the time
-		go scheduler.Add(REFRESH_TOKEN_TASK_ID, 10*time.Minute, func() error {
-			freshCreds, err := utils.GetJIOTVCredentials()
-			if err != nil {
-				utils.Log.Printf("Error getting fresh credentials for scheduled refresh: %v", err)
-				return err
-			}
-			return RefreshTokenIfExpired(freshCreds)
-		})
-		return err
+	
+	if IsAccessTokenExpired(credentials) {
+		return LoginRefreshAccessToken()
 	}
-	lastTokenRefreshTimeUnix := time.Unix(lastTokenRefreshTime, 0)
-	thresholdTime := lastTokenRefreshTimeUnix.Add(1*time.Hour + 50*time.Minute)
-
-	if thresholdTime.Before(time.Now()) {
-		err := LoginRefreshAccessToken()
-		if err != nil {
-			utils.Log.Printf("AccessToken refresh failed: %v. Retrying in 5 minutes.", err)
-			// Retry in 5 minutes if refresh failed
-			go scheduler.Add(REFRESH_TOKEN_TASK_ID, 5*time.Minute, func() error {
-				// Get fresh credentials in case they were updated
-				freshCreds, err := utils.GetJIOTVCredentials()
-				if err != nil {
-					utils.Log.Printf("Error getting fresh credentials for scheduled retry: %v", err)
-					return err
-				}
-				return RefreshTokenIfExpired(freshCreds)
-			})
-		}
-	} else {
-		utils.Log.Println("Refreshing AccessToken after", time.Until(thresholdTime).Truncate(time.Second))
-		go scheduler.Add(REFRESH_TOKEN_TASK_ID, time.Until(thresholdTime), func() error {
-			// Get fresh credentials in case they were updated
-			freshCreds, err := utils.GetJIOTVCredentials()
-			if err != nil {
-				utils.Log.Printf("Error getting fresh credentials for scheduled refresh: %v", err)
-				return err
-			}
-			return RefreshTokenIfExpired(freshCreds)
-		})
-	}
+	
+	utils.Log.Println("AccessToken is still valid")
 	return nil
 }
 
 // RefreshSSOTokenIfExpired Function is used to handle SSOToken refresh
+// This function is now simplified for on-demand use only
 func RefreshSSOTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
 	utils.Log.Println("Checking if SSOToken is expired...")
-	lastTokenRefreshTime, err := strconv.ParseInt(credentials.LastSSOTokenRefreshTime, 10, 64)
-	if err != nil {
-		utils.Log.Printf("Error parsing LastSSOTokenRefreshTime: %v. Scheduling refresh in 1 hour.", err)
-		// Schedule refresh in 1 hour if we can't parse the time
-		go scheduler.Add(REFRESH_SSOTOKEN_TASK_ID, 1*time.Hour, func() error {
-			// Get fresh credentials in case they were updated
-			freshCreds, err := utils.GetJIOTVCredentials()
-			if err != nil {
-				utils.Log.Printf("Error getting fresh credentials for scheduled refresh: %v", err)
-				return err
-			}
-			return RefreshSSOTokenIfExpired(freshCreds)
-		})
-		return err
-	}
-	lastTokenRefreshTimeUnix := time.Unix(lastTokenRefreshTime, 0)
-	thresholdTime := lastTokenRefreshTimeUnix.Add(24 * time.Hour)
-
-	if thresholdTime.Before(time.Now()) {
-		err := LoginRefreshSSOToken()
-		if err != nil {
-			utils.Log.Printf("SSOToken refresh failed: %v. Retrying in 30 minutes.", err)
-			// Retry in 30 minutes if refresh failed
-			go scheduler.Add(REFRESH_SSOTOKEN_TASK_ID, 30*time.Minute, func() error {
-				// Get fresh credentials in case they were updated
-				freshCreds, err := utils.GetJIOTVCredentials()
-				if err != nil {
-					utils.Log.Printf("Error getting fresh credentials for scheduled refresh: %v", err)
-					return err
-				}
-				return RefreshSSOTokenIfExpired(freshCreds)
-			})
-		}
-	} else {
-		utils.Log.Println("Refreshing SSOToken after", time.Until(thresholdTime).Truncate(time.Second))
-		go scheduler.Add(REFRESH_SSOTOKEN_TASK_ID, time.Until(thresholdTime), func() error {
-			// Get fresh credentials in case they were updated
-			freshCreds, err := utils.GetJIOTVCredentials()
-			if err != nil {
-				utils.Log.Printf("Error getting fresh credentials for scheduled refresh: %v", err)
-				return err
-			}
-			return RefreshSSOTokenIfExpired(freshCreds)
-		})
-	}
-	return nil
-}
-
-// TokenHealthCheck verifies that token refresh tasks are properly scheduled and tokens are valid
-func TokenHealthCheck() error {
-	utils.Log.Println("Running token health check...")
 	
-	credentials, err := utils.GetJIOTVCredentials()
-	if err != nil {
-		utils.Log.Printf("Health check: No credentials found: %v", err)
-		// Schedule next health check
-		go scheduler.Add(HEALTH_CHECK_TASK_ID, 1*time.Hour, TokenHealthCheck)
-		return err
+	if IsSSOTokenExpired(credentials) {
+		return LoginRefreshSSOToken()
 	}
-
-	var needsReschedule bool
-
-	// Check AccessToken health
-	if credentials.AccessToken != "" && credentials.RefreshToken != "" {
-		if credentials.LastTokenRefreshTime != "" {
-			lastTime, err := strconv.ParseInt(credentials.LastTokenRefreshTime, 10, 64)
-			if err == nil {
-				lastRefresh := time.Unix(lastTime, 0)
-				// If token was last refreshed more than 3 hours ago, it might be stale
-				if time.Since(lastRefresh) > 3*time.Hour {
-					utils.Log.Printf("Health check: AccessToken may be stale (last refresh: %v). Triggering refresh.", lastRefresh)
-					go RefreshTokenIfExpired(credentials)
-					needsReschedule = true
-				}
-			}
-		}
-	}
-
-	// Check SSOToken health
-	if credentials.SSOToken != "" && credentials.UniqueID != "" {
-		if credentials.LastSSOTokenRefreshTime != "" {
-			lastTime, err := strconv.ParseInt(credentials.LastSSOTokenRefreshTime, 10, 64)
-			if err == nil {
-				lastRefresh := time.Unix(lastTime, 0)
-				// If token was last refreshed more than 26 hours ago, it might be stale
-				if time.Since(lastRefresh) > 26*time.Hour {
-					utils.Log.Printf("Health check: SSOToken may be stale (last refresh: %v). Triggering refresh.", lastRefresh)
-					go RefreshSSOTokenIfExpired(credentials)
-					needsReschedule = true
-				}
-			}
-		}
-	}
-
-	if needsReschedule {
-		utils.Log.Println("Health check: Token refresh tasks rescheduled")
-	} else {
-		utils.Log.Println("Health check: All tokens appear healthy")
-	}
-
-	// Schedule next health check in 2 hours
-	go scheduler.Add(HEALTH_CHECK_TASK_ID, 2*time.Hour, TokenHealthCheck)
+	
+	utils.Log.Println("SSOToken is still valid")
 	return nil
 }
+
+

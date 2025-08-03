@@ -12,6 +12,7 @@ import (
 	"github.com/jiotv-go/jiotv_go/v3/internal/config"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/epg"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/television"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
@@ -61,24 +62,16 @@ func Init() {
 	if err != nil {
 		utils.Log.Println("Login error!", err)
 	} else {
-		// If AccessToken is present, check for its validity and schedule a refresh if required
-		if credentials.AccessToken != "" && credentials.RefreshToken != "" {
-			// Check validity of credentials
-			go RefreshTokenIfExpired(credentials)
-		} else if credentials.AccessToken != "" && credentials.RefreshToken == "" {
+		// If AccessToken is present, validate on first use
+		if credentials.AccessToken != "" && credentials.RefreshToken == "" {
 			utils.Log.Println("Warning: AccessToken present but RefreshToken is missing. Token refresh may fail.")
 		}
-		// If SsoToken is present, check for its validity and schedule a refresh if required
-		if credentials.SSOToken != "" && credentials.UniqueID != "" {
-			go RefreshSSOTokenIfExpired(credentials)
-		} else if credentials.SSOToken != "" && credentials.UniqueID == "" {
+		// If SsoToken is present, validate on first use  
+		if credentials.SSOToken != "" && credentials.UniqueID == "" {
 			utils.Log.Println("Warning: SSOToken present but UniqueID is missing. Token refresh may fail.")
 		}
 		// Initialize TV object with credentials
 		TV = television.New(credentials)
-
-		// Start token health check to ensure refresh tasks remain active
-		go TokenHealthCheck()
 	}
 
 	// Initialize custom channels at startup if configured
@@ -156,6 +149,13 @@ func LiveHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
+	
+	// Ensure tokens are fresh before making API call
+	if err := EnsureFreshTokens(); err != nil {
+		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
+		// Continue with the request - tokens might still work or it might be a custom channel
+	}
+	
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
@@ -191,6 +191,13 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
+	
+	// Ensure tokens are fresh before making API call
+	if err := EnsureFreshTokens(); err != nil {
+		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
+		// Continue with the request - tokens might still work or it might be a custom channel
+	}
+	
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
@@ -449,6 +456,12 @@ func PlayHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	quality := c.Query("q")
 
+	// Ensure tokens are fresh before making API call for DRM channels
+	if err := EnsureFreshTokens(); err != nil {
+		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
+		// Continue with the request - tokens might still work or it might be a custom channel
+	}
+
 	var player_url string
 	if EnableDRM {
 		// Some sonyLiv channels are DRM protected and others are not
@@ -528,13 +541,37 @@ func ImageHandler(c *fiber.Ctx) error {
 // EPGHandler handles EPG requests
 func EPGHandler(c *fiber.Ctx) error {
 	epgFilePath := utils.GetPathPrefix() + "epg.xml.gz"
-	// if epg.xml.gz exists, return it
-	if _, err := os.Stat(epgFilePath); err == nil {
-		return c.SendFile(epgFilePath, true)
+	
+	// Check if EPG file exists and is current
+	if stat, err := os.Stat(epgFilePath); err == nil {
+		// Check if file was modified today
+		fileDate := stat.ModTime().Format("2006-01-02")
+		todayDate := time.Now().Format("2006-01-02")
+		
+		if fileDate == todayDate {
+			// File is current, serve it
+			return c.SendFile(epgFilePath, true)
+		} else {
+			// File is old, regenerate it in the background and serve the old one for now
+			utils.Log.Println("EPG file is outdated, regenerating in background...")
+			go func() {
+				if err := epg.GenXMLGz(epgFilePath); err != nil {
+					utils.Log.Printf("Background EPG regeneration failed: %v", err)
+				} else {
+					utils.Log.Println("EPG file regenerated successfully")
+				}
+			}()
+			return c.SendFile(epgFilePath, true)
+		}
 	} else {
-		err_message := "EPG not found. Please restart the server after setting the environment variable JIOTV_EPG to true."
-		utils.Log.Println(err_message) // Changed from fmt.Println
-		return c.Status(fiber.StatusNotFound).SendString(err_message)
+		// File doesn't exist, try to generate it
+		utils.Log.Println("EPG file not found, generating...")
+		if err := epg.GenXMLGz(epgFilePath); err != nil {
+			err_message := "EPG generation failed. Please restart the server after setting the environment variable JIOTV_EPG to true."
+			utils.Log.Printf("EPG generation failed: %v", err)
+			return c.Status(fiber.StatusNotFound).SendString(err_message)
+		}
+		return c.SendFile(epgFilePath, true)
 	}
 }
 
