@@ -53,9 +53,9 @@ func IsSSOTokenExpired(credentials *utils.JIOTV_CREDENTIALS) bool {
 		return true // Error parsing, assume expired
 	}
 	
-	lastTokenRefreshTimeUnix := time.Unix(lastTokenRefreshTime, 0)
+	lastRefreshTime := time.Unix(lastTokenRefreshTime, 0)
 	// SSOToken expires after 24 hours, refresh 1 hour early
-	thresholdTime := lastTokenRefreshTimeUnix.Add(23 * time.Hour)
+	thresholdTime := lastRefreshTime.Add(23 * time.Hour)
 	
 	return thresholdTime.Before(time.Now())
 }
