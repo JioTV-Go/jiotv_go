@@ -18,6 +18,8 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 
 	"github.com/jiotv-go/jiotv_go/v3/internal/config"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/store"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/fasthttpproxy"
@@ -25,9 +27,9 @@ import (
 
 const (
 	// JioTV API domain constants
-	JIOTV_API_DOMAIN = "jiotvapi.media.jio.com"
-	API_JIO_DOMAIN   = "api.jio.com"
-	AUTH_MEDIA_DOMAIN = "auth.media.jio.com"
+	JIOTV_API_DOMAIN = urls.JioTVAPIDomain
+	API_JIO_DOMAIN   = urls.APIJioDomain
+	AUTH_MEDIA_DOMAIN = urls.AuthMediaDomain
 )
 
 // Log is a global logger
@@ -274,9 +276,9 @@ func Login(username, password string) (map[string]string, error) {
 	passw := postData["password"]
 
 	// Set headers
-	headers := map[string]string{
-		"x-api-key":    "l7xx75e822925f184370b2e25170c5d5820a",
-		"Content-Type": "application/json",
+	headerMap := map[string]string{
+		headers.XAPIKey:    headers.APIKeyJio,
+		headers.ContentType: headers.ContentTypeJSON,
 	}
 
 	// Construct payload
@@ -313,7 +315,7 @@ func Login(username, password string) (map[string]string, error) {
 	req.SetRequestURI(url)
 	req.Header.SetContentType("application/json")
 	req.Header.SetMethod("POST")
-	for key, value := range headers {
+	for key, value := range headerMap {
 		req.Header.Set(key, value)
 	}
 	req.SetBody(payloadJSON)
@@ -588,21 +590,21 @@ func PerformServerLogout() error {
 	req.SetRequestURI("https://" + AUTH_MEDIA_DOMAIN + "/tokenservice/apis/v1/logout?langId=6")
 	req.Header.SetMethod("POST")
 	req.Header.SetUserAgent("okhttp/4.9.3")
-	req.Header.Set("Accept-Encoding", "gzip")
+	req.Header.Set(headers.AcceptEncoding, headers.AcceptEncodingGzip)
 	if creds.AccessToken != "" {
-		req.Header.Set("accesstoken", creds.AccessToken)
+		req.Header.Set(headers.AccessToken, creds.AccessToken)
 	} else {
 		Log.Println("AccessToken is missing, proceeding without it for server logout.")
 	}
-	req.Header.Set("devicetype", "phone")
+	req.Header.Set(headers.DeviceType, headers.DeviceTypePhone)
 	req.Header.Set("versioncode", "371") // As per new requirement
-	req.Header.Set("os", "android")
+	req.Header.Set(headers.OS, headers.OSAndroid)
 	if creds.UniqueID != "" {
 		req.Header.Set("uniqueid", creds.UniqueID)
 	} else {
 		Log.Println("UniqueID is missing, proceeding without it for server logout.")
 	}
-	req.Header.Set("content-type", "application/json; charset=utf-8")
+	req.Header.Set(headers.ContentType, headers.ContentTypeJSONCharsetUTF8)
 	req.SetBody(requestBodyJSON)
 
 	// Get the HTTP client

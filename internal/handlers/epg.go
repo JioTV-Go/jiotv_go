@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/epg"
 
 	"github.com/gofiber/fiber/v2"
@@ -11,7 +12,7 @@ import (
 )
 
 const (
-	EPG_POSTER_URL = "https://jiotv.catchup.cdn.jio.com/dare_images/shows/"
+	EPG_POSTER_URL = urls.EPGPosterURLSlash
 )
 
 // WebEPGHandler responds to requests for EPG data for individual channels.
