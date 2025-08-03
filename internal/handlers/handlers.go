@@ -451,7 +451,7 @@ func PlayHandler(c *fiber.Ctx) error {
 	if EnableDRM {
 		// Some sonyLiv channels are DRM protected and others are not
 		// In order to check, we need to make additional request to JioTV API
-		// Quick dirty fix, otherise we need to refactor entire LiveTV Handler approach
+		// Quick dirty fix, otherwise we need to refactor entire LiveTV Handler approach
 		if utils.ContainsString(id, SONY_LIST) {
 			liveResult, err := TV.Live(id)
 			if err != nil {
