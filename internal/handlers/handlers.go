@@ -74,11 +74,11 @@ func Init() {
 		}
 		// Initialize TV object with credentials
 		TV = television.New(credentials)
-		
+
 		// Start token health check to ensure refresh tasks remain active
 		go TokenHealthCheck()
 	}
-	
+
 	// Initialize custom channels at startup if configured
 	television.InitCustomChannels()
 }
@@ -416,11 +416,12 @@ func ChannelsHandler(c *fiber.Ctx) error {
 			}
 			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
 			var groupTitle string
-			if splitCategory == "split" {
+			switch splitCategory {
+			case "split":
 				groupTitle = fmt.Sprintf("%s - %s", television.CategoryMap[channel.Category], television.LanguageMap[channel.Language])
-			} else if splitCategory == "language" {
+			case "language":
 				groupTitle = television.LanguageMap[channel.Language]
-			} else {
+			default:
 				groupTitle = television.CategoryMap[channel.Category]
 			}
 			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-id=%q tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
@@ -524,7 +525,7 @@ func ImageHandler(c *fiber.Ctx) error {
 
 // EPGHandler handles EPG requests
 func EPGHandler(c *fiber.Ctx) error {
-	 epgFilePath := utils.GetPathPrefix() + "epg.xml.gz";
+	epgFilePath := utils.GetPathPrefix() + "epg.xml.gz"
 	// if epg.xml.gz exists, return it
 	if _, err := os.Stat(epgFilePath); err == nil {
 		return c.SendFile(epgFilePath, true)
