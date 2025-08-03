@@ -7,6 +7,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/valyala/fasthttp"
 	"gopkg.in/yaml.v3"
@@ -542,6 +543,108 @@ func ReplaceKey(match []byte, params, channel_id string) []byte {
 		return nil
 	}
 	return []byte("/render.key?auth=" + coded_url + "&channel_key_id=" + channel_id)
+}
+
+// generateDateTime generates a timestamp in the format required by DRM requests
+func generateDateTime() string {
+	currentTime := time.Now()
+	formattedDateTime := fmt.Sprintf("%02d%02d%02d%02d%02d%03d",
+		currentTime.Year()%100, currentTime.Month(), currentTime.Day(),
+		currentTime.Hour(), currentTime.Minute(),
+		currentTime.Nanosecond()/1000000)
+	return formattedDateTime
+}
+
+// RequestDRMKey makes HTTP requests for DRM key with appropriate headers
+func (tv *Television) RequestDRMKey(url, channelID string) ([]byte, int, error) {
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+
+	req.SetRequestURI(url)
+	req.Header.SetMethod("POST")
+
+	// Set DRM-specific headers
+	req.Header.Set("accesstoken", tv.AccessToken)
+	req.Header.Set("Connection", "keep-alive")
+	req.Header.Set("os", "android")
+	req.Header.Set("appName", "RJIL_JioTV")
+	req.Header.Set("subscriberId", tv.Crm)
+	req.Header.Set("User-Agent", "plaYtv/7.1.3 (Linux;Android 13) ExoPlayerLib/2.11.7")
+	req.Header.Set("ssotoken", tv.SsoToken)
+	req.Header.Set("x-platform", "android")
+	req.Header.Set("srno", generateDateTime())
+	req.Header.Set("crmid", tv.Crm)
+	req.Header.Set("channelid", channelID)
+	req.Header.Set("uniqueId", tv.UniqueID)
+	req.Header.Set("versionCode", "330")
+	req.Header.Set("usergroup", "tvYR7NSNn7rymo3F")
+	req.Header.Set("devicetype", "phone")
+	req.Header.Set("Accept-Encoding", "gzip, deflate")
+	req.Header.Set("osVersion", "13")
+	req.Header.Set("deviceId", utils.GetDeviceID())
+	req.Header.Set("Content-Type", "application/octet-stream")
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	// Perform the HTTP request
+	if err := tv.Client.Do(req, resp); err != nil {
+		return nil, 0, err
+	}
+
+	// Copy response body before releasing
+	body := make([]byte, len(resp.Body()))
+	copy(body, resp.Body())
+
+	return body, resp.StatusCode(), nil
+}
+
+// RequestMPD makes HTTP requests for MPD manifest files
+func (tv *Television) RequestMPD(url string) ([]byte, int, error) {
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+
+	req.SetRequestURI(url)
+	req.Header.SetMethod("GET")
+	req.Header.Set("User-Agent", "plaYtv/7.1.3 (Linux;Android 13) ExoPlayerLib/2.11.7")
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	// Perform the HTTP request
+	if err := tv.Client.Do(req, resp); err != nil {
+		return nil, 0, err
+	}
+
+	// Copy response body before releasing
+	body := make([]byte, len(resp.Body()))
+	copy(body, resp.Body())
+
+	return body, resp.StatusCode(), nil
+}
+
+// RequestDashSegment makes HTTP requests for DASH segments
+func (tv *Television) RequestDashSegment(url string) ([]byte, int, error) {
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+
+	req.SetRequestURI(url)
+	req.Header.SetMethod("GET")
+	req.Header.Set("User-Agent", "plaYtv/7.1.3 (Linux;Android 13) ExoPlayerLib/2.11.7")
+
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+
+	// Perform the HTTP request
+	if err := tv.Client.Do(req, resp); err != nil {
+		return nil, 0, err
+	}
+
+	// Copy response body before releasing
+	body := make([]byte, len(resp.Body()))
+	copy(body, resp.Body())
+
+	return body, resp.StatusCode(), nil
 }
 
 func getSLChannel(channelID string) (*LiveURLOutput, error) {

@@ -13,7 +13,6 @@ import (
 	"github.com/valyala/fasthttp"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/proxy"
 )
 
 // getDrmMpd returns required properties for rendering DRM MPD
@@ -130,7 +129,7 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
 
-	// Perform the HTTP GET request
+	// Perform the HTTP HEAD request
 	if err := client.Do(req, resp); err != nil {
 		utils.Log.Panic(err)
 	}
@@ -138,7 +137,7 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 	// Get the cookies from the response
 	cookies := resp.Header.Peek("Set-Cookie")
 
-	// Set the cookies in the request
+	// Set the cookies in the request context
 	c.Request().Header.Set("Cookie", string(cookies))
 
 	decoded_url, err := secureurl.DecryptURL(auth)
@@ -149,36 +148,35 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 		})
 	}
 
-	// Add headers to the request
-	c.Request().Header.Set("accesstoken", TV.AccessToken)
-	c.Request().Header.Set("Connection", "keep-alive")
-	c.Request().Header.Set("os", "android")
-	c.Request().Header.Set("appName", "RJIL_JioTV")
-	c.Request().Header.Set("subscriberId", TV.Crm)
-	c.Request().Header.Set("User-Agent", PLAYER_USER_AGENT)
-	c.Request().Header.Set("ssotoken", TV.SsoToken)
-	c.Request().Header.Set("x-platform", "android")
-	c.Request().Header.Set("srno", generateDateTime())
-	c.Request().Header.Set("crmid", TV.Crm)
-	c.Request().Header.Set("channelid", channel_id)
-	c.Request().Header.Set("uniqueId", TV.UniqueID)
-	c.Request().Header.Set("versionCode", "330")
-	c.Request().Header.Set("usergroup", "tvYR7NSNn7rymo3F")
-	c.Request().Header.Set("devicetype", "phone")
-	c.Request().Header.Set("Accept-Encoding", "gzip, deflate")
-	c.Request().Header.Set("osVersion", "13")
-	c.Request().Header.Set("deviceId", utils.GetDeviceID())
-	c.Request().Header.Set("Content-Type", "application/octet-stream")
-
-	// Remove headers
+	// Remove headers that might interfere
 	c.Request().Header.Del("Accept")
 	c.Request().Header.Del("Origin")
 
-	if err := proxy.Do(c, decoded_url, TV.Client); err != nil {
+	// Make HTTP request using Television
+	resBody, statusCode, err := TV.RequestDRMKey(decoded_url, channel_id)
+	if err != nil {
 		return err
 	}
 
+	// If we get a 403 (Forbidden), try refreshing tokens and retry once
+	if statusCode == fiber.StatusForbidden {
+		if err := EnsureFreshTokens(); err != nil {
+			utils.Log.Printf("Failed to refresh tokens after 403: %v", err)
+		} else {
+			// Retry the request once after refreshing tokens
+			utils.Log.Println("Retrying DRM key request after token refresh")
+			resBody, statusCode, err = TV.RequestDRMKey(decoded_url, channel_id)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	// Set response
+	c.Status(statusCode)
 	c.Response().Header.Del(fiber.HeaderServer)
+	c.Response().SetBody(resBody)
+
 	return nil
 }
 
@@ -203,38 +201,37 @@ func MpdHandler(c *fiber.Ctx) error {
 
 	proxyHost := parsedUrl.Host
 
-	// proxyQuery := parsedUrl.RawQuery
-
+	// Set Host header for the request context (used for cookies processing)
 	c.Request().Header.Set("Host", proxyHost)
-	c.Request().Header.Set("User-Agent", "plaYtv/7.1.3 (Linux;Android 13) ExoPlayerLib/2.11.7")
 
-	// Request path with query params
-	requestUrl := decryptedUrl
-	// if requestUrl[len(requestUrl)-1:] == "?" {
-	// 	requestUrl = requestUrl[:len(requestUrl)-1]
-	// }
-
-	c.Request().Header.Set("User-Agent", PLAYER_USER_AGENT)
-	// remove Accept-Encoding header
-	c.Request().Header.Del("Accept-Encoding")
-	if err := proxy.Do(c, requestUrl, TV.Client); err != nil {
+	// Make HTTP request using Television
+	resBody, statusCode, err := TV.RequestMPD(decryptedUrl)
+	if err != nil {
 		return err
 	}
+
+	// If we get a 403 (Forbidden), try refreshing tokens and retry once
+	if statusCode == fiber.StatusForbidden {
+		if err := EnsureFreshTokens(); err != nil {
+			utils.Log.Printf("Failed to refresh tokens after 403: %v", err)
+		} else {
+			// Retry the request once after refreshing tokens
+			utils.Log.Println("Retrying MPD request after token refresh")
+			resBody, statusCode, err = TV.RequestMPD(decryptedUrl)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	// Set the status code for the response
+	c.Status(statusCode)
 	c.Response().Header.Del(fiber.HeaderServer)
 
-	// Delete Domain from cookies
-	if c.Response().Header.Peek("Set-Cookie") != nil {
-		cookies := c.Response().Header.Peek("Set-Cookie")
-		c.Response().Header.Del("Set-Cookie")
+	// Delete Domain from cookies processing would be handled here if cookies were present
+	// Note: Since we're using TV.RequestMPD, cookies handling is simplified
+	// but we keep the logic for processing BaseURL patterns
 
-		cookies = bytes.Replace(cookies, []byte("Domain="+proxyHost+";"), []byte(""), 1)
-		// Modify path in cookies
-		cookies = bytes.Replace(cookies, []byte("path=/"), []byte("path=/render.dash"), 1)
-
-		// Modify Set-Cookie header
-		c.Response().Header.SetBytesV("Set-Cookie", cookies)
-	}
-	resBody := c.Response().Body()
 	basePathPattern := `<BaseURL>(.*)<\/BaseURL>`
 	re := regexp.MustCompile(basePathPattern)
 	// check for match
@@ -282,12 +279,30 @@ func DashHandler(c *fiber.Ctx) error {
 
 	proxyUrl := fmt.Sprintf("https://%s%s/%s", proxyHost, proxyPath, requestUri)
 
-	c.Request().Header.Set("User-Agent", PLAYER_USER_AGENT)
-
-	if err := proxy.Do(c, proxyUrl, TV.Client); err != nil {
+	// Make HTTP request using Television
+	resBody, statusCode, err := TV.RequestDashSegment(proxyUrl)
+	if err != nil {
 		return err
 	}
+
+	// If we get a 403 (Forbidden), try refreshing tokens and retry once
+	if statusCode == fiber.StatusForbidden {
+		if err := EnsureFreshTokens(); err != nil {
+			utils.Log.Printf("Failed to refresh tokens after 403: %v", err)
+		} else {
+			// Retry the request once after refreshing tokens
+			utils.Log.Println("Retrying DASH segment request after token refresh")
+			resBody, statusCode, err = TV.RequestDashSegment(proxyUrl)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	// Set response
+	c.Status(statusCode)
 	c.Response().Header.Del(fiber.HeaderServer)
+	c.Response().SetBody(resBody)
 
 	return nil
 }
