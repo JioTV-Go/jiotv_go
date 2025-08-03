@@ -33,9 +33,9 @@ func IsAccessTokenExpired(credentials *utils.JIOTV_CREDENTIALS) bool {
 		return true // Error parsing, assume expired
 	}
 	
-	lastTokenRefreshTimeUnix := time.Unix(lastTokenRefreshTime, 0)
+	lastRefreshTime := time.Unix(lastTokenRefreshTime, 0)
 	// AccessToken expires after 2 hours, refresh 10 minutes early
-	thresholdTime := lastTokenRefreshTimeUnix.Add(1*time.Hour + 50*time.Minute)
+	thresholdTime := lastRefreshTime.Add(1*time.Hour + 50*time.Minute)
 	
 	return thresholdTime.Before(time.Now())
 }
