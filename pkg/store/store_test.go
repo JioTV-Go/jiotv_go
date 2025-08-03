@@ -14,6 +14,13 @@ func TestInit(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Setup test environment with temporary pathPrefix
+			cleanup, err := SetupTestPathPrefix()
+			if err != nil {
+				t.Fatalf("Failed to setup test environment: %v", err)
+			}
+			defer cleanup()
+
 			if err := Init(); (err != nil) != tt.wantErr {
 				t.Errorf("Init() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -26,6 +33,13 @@ func TestInit(t *testing.T) {
 }
 
 func TestGet(t *testing.T) {
+	// Setup test environment with temporary pathPrefix
+	cleanup, err := SetupTestPathPrefix()
+	if err != nil {
+		t.Fatalf("Failed to setup test environment: %v", err)
+	}
+	defer cleanup()
+
 	// Initialize store first
 	if err := Init(); err != nil {
 		t.Fatalf("Failed to initialize store: %v", err)
@@ -81,6 +95,13 @@ func TestGet(t *testing.T) {
 }
 
 func TestSet(t *testing.T) {
+	// Setup test environment with temporary pathPrefix
+	cleanup, err := SetupTestPathPrefix()
+	if err != nil {
+		t.Fatalf("Failed to setup test environment: %v", err)
+	}
+	defer cleanup()
+
 	// Initialize store first
 	if err := Init(); err != nil {
 		t.Fatalf("Failed to initialize store: %v", err)
@@ -139,6 +160,13 @@ func TestSet(t *testing.T) {
 }
 
 func TestDelete(t *testing.T) {
+	// Setup test environment with temporary pathPrefix
+	cleanup, err := SetupTestPathPrefix()
+	if err != nil {
+		t.Fatalf("Failed to setup test environment: %v", err)
+	}
+	defer cleanup()
+
 	// Initialize store first
 	if err := Init(); err != nil {
 		t.Fatalf("Failed to initialize store: %v", err)
@@ -206,6 +234,13 @@ func Test_saveConfig(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
+			// Setup test environment with temporary pathPrefix
+			cleanup, err := SetupTestPathPrefix()
+			if err != nil {
+				t.Fatalf("Failed to setup test environment: %v", err)
+			}
+			defer cleanup()
+
 			// Initialize store first
 			if err := Init(); err != nil {
 				t.Fatalf("Failed to initialize store: %v", err)
