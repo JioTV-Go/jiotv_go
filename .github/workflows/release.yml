@@ -46,7 +46,7 @@ jobs:
           git config user.name "GitHub Action"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # Get the latest semver tag
+          # Get the latest semver tag or fallback
           tag=$(git describe --tags --match "v[0-9]*.[0-9]*.[0-9]*" --abbrev=0 || true)
           if [[ -z "$tag" ]]; then
             echo "No semver tag found, defaulting to v0.0.0"
@@ -54,49 +54,59 @@ jobs:
           fi
           echo "Latest tag: $tag"
 
-          # Extract version parts
-          major_minor_patch="${tag#v}"
-          IFS='.' read -r major minor patch <<< "$major_minor_patch"
-          echo "Parsed version: $major.$minor.$patch"
+          # Parse version
+          version_core="${tag#v}"
+          IFS='.' read -r major minor patch <<< "$version_core"
 
-          # Get commit messages since last tag
+          # Gather commit messages
           commit_messages=$(git log "${tag}.." --pretty=%B || true)
-          commit_count=$(git rev-list "${tag}.." --count)
-          echo "Commits since last tag: $commit_count"
 
-          # Determine version bump type
+          # Determine version bump
           if echo "$commit_messages" | grep -qi "BREAKING"; then
-            ((major++))
-            minor=0
-            patch=0
-            echo "Detected breaking change, bumping major version"
+            ((major++)); minor=0; patch=0
           elif echo "$commit_messages" | grep -qiE "feat|compatibility|integration|upgrade"; then
-            ((minor++))
-            patch=0
-            echo "Detected feature, bumping minor version"
+            ((minor++)); patch=0
           else
             ((patch++))
-            echo "No major/minor change, bumping patch version"
           fi
 
-          # Generate new version
+          # Compose new version
           new_version="v${major}.${minor}.${patch}"
           echo "New version: $new_version"
 
-          # Update VERSION file and commit
+          # Create temp branch from current HEAD
+          temp_branch="version-bump/$new_version"
+          git checkout -b "$temp_branch"
+
+          # Write and commit VERSION file
           echo "$new_version" > VERSION
           git add VERSION
-          git commit -m "Bump version to ${new_version}"
+          git commit -m "Bump version to $new_version"
 
-          # Push to main and develop
-          git push origin HEAD:main
-          git push origin HEAD:develop
+          # Save commit hash for cherry-pick
+          version_commit=$(git rev-parse HEAD)
 
-          # Add mirror tags (v1, v1.2)
+          # Cherry-pick to develop
+          git checkout develop
+          git pull origin develop
+          git cherry-pick "$version_commit"
+          git push origin develop
+
+          # Cherry-pick to main
+          git checkout main
+          git pull origin main
+          git cherry-pick "$version_commit"
+          git push origin main
+
+          # Tagging (mirror tags + full version)
           git tag -fa "v${major}" -m "Mirror tag $new_version"
           git tag -fa "v${major}.${minor}" -m "Mirror tag $new_version"
           git tag -fa "$new_version" -m "Release $new_version"
           git push origin --tags --force
+
+          # Cleanup
+          git branch -d "$temp_branch"
+          git push origin --delete "$temp_branch" || true
 
           # Output tag to GitHub Actions
           echo "tag=$new_version" >> $GITHUB_OUTPUT
