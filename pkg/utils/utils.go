@@ -128,9 +128,9 @@ func LoginSendOTP(number string) (bool, error) {
 
 	req.SetRequestURI(url)
 
-	req.Header.SetContentType("application/json")
+	req.Header.SetContentType(headers.ContentTypeJSON)
 	req.Header.SetMethod("POST")
-	req.Header.SetUserAgent("okhttp/4.2.2")
+	req.Header.SetUserAgent(headers.UserAgentOkHttp)
 	// Set headers
 	req.Header.Add("appname", "RJIL_JioTV")
 	req.Header.Add("os", "android")
@@ -191,9 +191,9 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 
 	req.SetRequestURI(url)
 
-	req.Header.SetContentType("application/json")
+	req.Header.SetContentType(headers.ContentTypeJSON)
 	req.Header.SetMethod("POST")
-	req.Header.SetUserAgent("okhttp/4.2.2")
+	req.Header.SetUserAgent(headers.UserAgentOkHttp)
 	// Set headers
 	req.Header.Add("appname", "RJIL_JioTV")
 	req.Header.Add("os", "android")
@@ -313,7 +313,7 @@ func Login(username, password string) (map[string]string, error) {
 	defer fasthttp.ReleaseRequest(req)
 
 	req.SetRequestURI(url)
-	req.Header.SetContentType("application/json")
+	req.Header.SetContentType(headers.ContentTypeJSON)
 	req.Header.SetMethod("POST")
 	for key, value := range headerMap {
 		req.Header.Set(key, value)
@@ -589,7 +589,7 @@ func PerformServerLogout() error {
 
 	req.SetRequestURI("https://" + AUTH_MEDIA_DOMAIN + "/tokenservice/apis/v1/logout?langId=6")
 	req.Header.SetMethod("POST")
-	req.Header.SetUserAgent("okhttp/4.9.3")
+	req.Header.SetUserAgent(headers.UserAgentOkHttp)
 	req.Header.Set(headers.AcceptEncoding, headers.AcceptEncodingGzip)
 	if creds.AccessToken != "" {
 		req.Header.Set(headers.AccessToken, creds.AccessToken)

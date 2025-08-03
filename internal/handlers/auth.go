@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/tasks"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/scheduler"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/television"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
@@ -161,7 +162,7 @@ func LoginRefreshAccessToken() error {
 	req.Header.Set(headers.VersionCode, headers.VersionCode315)
 	req.Header.Set(headers.OS, headers.OSAndroid)
 	req.Header.Set(headers.ContentType, headers.ContentTypeJSONCharsetUTF8)
-	req.Header.Set(headers.Host, "auth.media.jio.com")
+	req.Header.Set(headers.Host, urls.AuthMediaDomain)
 	req.Header.Set(headers.UserAgent, headers.UserAgentOkHttp)
 	req.Header.Set(headers.AccessToken, tokenData.AccessToken)
 	req.SetBody(requestBodyJSON)
@@ -249,7 +250,7 @@ func LoginRefreshSSOToken() error {
 	req.Header.Set(headers.DeviceType, headers.DeviceTypePhone)
 	req.Header.Set(headers.VersionCode, headers.VersionCode315)
 	req.Header.Set(headers.OS, headers.OSAndroid)
-	req.Header.Set(headers.Host, "tv.media.jio.com")
+	req.Header.Set(headers.Host, urls.TVMediaDomain)
 	req.Header.Set(headers.UserAgent, headers.UserAgentOkHttp)
 	req.Header.Set("ssoToken", tokenData.SSOToken)
 	req.Header.Set("uniqueid", tokenData.UniqueID)

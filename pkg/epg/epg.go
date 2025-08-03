@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/tasks"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/scheduler"
@@ -120,7 +121,7 @@ func genXML() ([]byte, error) {
 	// Define a worker function for fetching EPG data
 	fetchEPG := func(channel Channel, bar *progressbar.ProgressBar) {
 		req := fasthttp.AcquireRequest()
-		req.Header.SetUserAgent("okhttp/4.2.2")
+		req.Header.SetUserAgent(headers.UserAgentOkHttp)
 		defer fasthttp.ReleaseRequest(req)
 
 		resp := fasthttp.AcquireResponse()
