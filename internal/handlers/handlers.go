@@ -264,6 +264,7 @@ func RenderHandler(c *fiber.Ctx) error {
 			utils.Log.Printf("Failed to refresh tokens after 403: %v", err)
 		} else {
 			// Retry the request once after refreshing tokens
+			utils.Log.Println("Retrying render request after token refresh")
 			renderResult, statusCode = TV.Render(decoded_url)
 		}
 	}
