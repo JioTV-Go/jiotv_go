@@ -3,6 +3,7 @@ package handlers
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -534,6 +535,19 @@ func ImageHandler(c *fiber.Ctx) error {
 	}
 	c.Response().Header.Del(fiber.HeaderServer)
 	return nil
+}
+
+// EPGHandler handles EPG requests
+func EPGHandler(c *fiber.Ctx) error {
+	epgFilePath := utils.GetPathPrefix() + "epg.xml.gz"
+	// if epg.xml.gz exists, return it
+	if _, err := os.Stat(epgFilePath); err == nil {
+		return c.SendFile(epgFilePath, true)
+	} else {
+		err_message := "EPG not found. Please restart the server after setting the environment variable JIOTV_EPG to true."
+		utils.Log.Println(err_message) // Changed from fmt.Println
+		return c.Status(fiber.StatusNotFound).SendString(err_message)
+	}
 }
 
 func DASHTimeHandler(c *fiber.Ctx) error {
