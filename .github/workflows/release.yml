@@ -96,6 +96,7 @@ jobs:
           git push origin develop
 
           # Cherry-pick to main
+          git fetch origin main
           git checkout main
           git cherry-pick "$version_commit" || { echo "Cherry-pick to main failed"; exit 1; }
           git push origin main
