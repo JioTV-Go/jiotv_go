@@ -74,11 +74,11 @@ func Init() {
 		}
 		// Initialize TV object with credentials
 		TV = television.New(credentials)
-		
+
 		// Start token health check to ensure refresh tasks remain active
 		go TokenHealthCheck()
 	}
-	
+
 	// Initialize custom channels at startup if configured
 	television.InitCustomChannels()
 }
@@ -416,11 +416,12 @@ func ChannelsHandler(c *fiber.Ctx) error {
 			}
 			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
 			var groupTitle string
-			if splitCategory == "split" {
+			switch splitCategory {
+			case "split":
 				groupTitle = fmt.Sprintf("%s - %s", television.CategoryMap[channel.Category], television.LanguageMap[channel.Language])
-			} else if splitCategory == "language" {
+			case "language":
 				groupTitle = television.LanguageMap[channel.Language]
-			} else {
+			default:
 				groupTitle = television.CategoryMap[channel.Category]
 			}
 			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-id=%q tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
@@ -448,28 +449,26 @@ func PlayHandler(c *fiber.Ctx) error {
 
 	var player_url string
 	if EnableDRM {
-		// Get live stream info to check DRM status for all channels
-		liveResult, err := TV.Live(id)
-		if err != nil {
-			utils.Log.Println(err)
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": err,
-			})
-		}
-		
-		// Check if the stream has DASH/MPD content available
-		hasDashContent := liveResult.Mpd.Result != "" || liveResult.Mpd.Bitrates.Auto != ""
-		
-		// Determine player based on DRM status and content availability
-		if hasDashContent && liveResult.IsDRM {
-			// DRM-protected DASH stream - use Shaka Player with DRM
-			player_url = "/mpd/" + id + "?q=" + quality
-		} else if hasDashContent && !liveResult.IsDRM {
-			// Non-DRM DASH stream - use Shaka Player without DRM
-			player_url = "/dash/" + id + "?q=" + quality
+		// Some sonyLiv channels are DRM protected and others are not
+		// In order to check, we need to make additional request to JioTV API
+		// Quick dirty fix, otherwise we need to refactor entire LiveTV Handler approach
+		if utils.ContainsString(id, SONY_LIST) {
+			liveResult, err := TV.Live(id)
+			if err != nil {
+				utils.Log.Println(err)
+				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"message": err,
+				})
+			}
+			// if drm is available, use DRM player
+			if liveResult.IsDRM {
+				player_url = "/mpd/" + id + "?q=" + quality
+			} else {
+				// if not, use HLS player
+				player_url = "/player/" + id + "?q=" + quality
+			}
 		} else {
-			// HLS stream or fallback - use Flowplayer
-			player_url = "/player/" + id + "?q=" + quality
+			player_url = "/mpd/" + id + "?q=" + quality
 		}
 	} else {
 		player_url = "/player/" + id + "?q=" + quality
@@ -526,7 +525,7 @@ func ImageHandler(c *fiber.Ctx) error {
 
 // EPGHandler handles EPG requests
 func EPGHandler(c *fiber.Ctx) error {
-	 epgFilePath := utils.GetPathPrefix() + "epg.xml.gz";
+	epgFilePath := utils.GetPathPrefix() + "epg.xml.gz"
 	// if epg.xml.gz exists, return it
 	if _, err := os.Stat(epgFilePath); err == nil {
 		return c.SendFile(epgFilePath, true)

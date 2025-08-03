@@ -124,7 +124,6 @@ func JioTVServer(jiotvServerConfig JioTVServerConfig) error {
 	app.Get("/epg/:channelID/:offset", handlers.WebEPGHandler)
 	app.Get("/jtvposter/:date/:file", handlers.PosterHandler)
 	app.Get("/mpd/:channelID", handlers.LiveMpdHandler)
-	app.Get("/dash/:channelID", handlers.LiveDashHandler)
 	app.Post("/drm", handlers.DRMKeyHandler)
 	app.Get("/dashtime", handlers.DASHTimeHandler)
 
