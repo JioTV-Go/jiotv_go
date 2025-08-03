@@ -3,7 +3,6 @@ package handlers
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -61,24 +60,16 @@ func Init() {
 	if err != nil {
 		utils.Log.Println("Login error!", err)
 	} else {
-		// If AccessToken is present, check for its validity and schedule a refresh if required
-		if credentials.AccessToken != "" && credentials.RefreshToken != "" {
-			// Check validity of credentials
-			go RefreshTokenIfExpired(credentials)
-		} else if credentials.AccessToken != "" && credentials.RefreshToken == "" {
+		// If AccessToken is present, validate on first use
+		if credentials.AccessToken != "" && credentials.RefreshToken == "" {
 			utils.Log.Println("Warning: AccessToken present but RefreshToken is missing. Token refresh may fail.")
 		}
-		// If SsoToken is present, check for its validity and schedule a refresh if required
-		if credentials.SSOToken != "" && credentials.UniqueID != "" {
-			go RefreshSSOTokenIfExpired(credentials)
-		} else if credentials.SSOToken != "" && credentials.UniqueID == "" {
+		// If SsoToken is present, validate on first use  
+		if credentials.SSOToken != "" && credentials.UniqueID == "" {
 			utils.Log.Println("Warning: SSOToken present but UniqueID is missing. Token refresh may fail.")
 		}
 		// Initialize TV object with credentials
 		TV = television.New(credentials)
-
-		// Start token health check to ensure refresh tasks remain active
-		go TokenHealthCheck()
 	}
 
 	// Initialize custom channels at startup if configured
@@ -156,6 +147,13 @@ func LiveHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
+	
+	// Ensure tokens are fresh before making API call
+	if err := EnsureFreshTokens(); err != nil {
+		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
+		// Continue with the request - tokens might still work or it might be a custom channel
+	}
+	
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
@@ -191,6 +189,13 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
+	
+	// Ensure tokens are fresh before making API call
+	if err := EnsureFreshTokens(); err != nil {
+		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
+		// Continue with the request - tokens might still work or it might be a custom channel
+	}
+	
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
@@ -449,6 +454,12 @@ func PlayHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	quality := c.Query("q")
 
+	// Ensure tokens are fresh before making API call for DRM channels
+	if err := EnsureFreshTokens(); err != nil {
+		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
+		// Continue with the request - tokens might still work or it might be a custom channel
+	}
+
 	var player_url string
 	if EnableDRM {
 		// Some sonyLiv channels are DRM protected and others are not
@@ -523,19 +534,6 @@ func ImageHandler(c *fiber.Ctx) error {
 	}
 	c.Response().Header.Del(fiber.HeaderServer)
 	return nil
-}
-
-// EPGHandler handles EPG requests
-func EPGHandler(c *fiber.Ctx) error {
-	epgFilePath := utils.GetPathPrefix() + "epg.xml.gz"
-	// if epg.xml.gz exists, return it
-	if _, err := os.Stat(epgFilePath); err == nil {
-		return c.SendFile(epgFilePath, true)
-	} else {
-		err_message := "EPG not found. Please restart the server after setting the environment variable JIOTV_EPG to true."
-		utils.Log.Println(err_message) // Changed from fmt.Println
-		return c.Status(fiber.StatusNotFound).SendString(err_message)
-	}
 }
 
 func DASHTimeHandler(c *fiber.Ctx) error {
