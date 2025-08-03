@@ -201,7 +201,7 @@ func LoginRefreshAccessToken() error {
 		TV = television.New(tokenData)
 		utils.Log.Println("AccessToken refreshed successfully")
 		
-		// Schedule next refresh
+		// Schedule next refresh based on the new refresh time
 		go RefreshTokenIfExpired(tokenData)
 		return nil
 	} else {
@@ -290,7 +290,7 @@ func LoginRefreshSSOToken() error {
 		TV = television.New(tokenData)
 		utils.Log.Println("SSOToken refreshed successfully")
 		
-		// Schedule next refresh
+		// Schedule next refresh based on the new refresh time
 		go RefreshSSOTokenIfExpired(tokenData)
 		return nil
 	} else {
@@ -401,6 +401,179 @@ func RefreshSSOTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
 	return nil
 }
 
+// LoginRefreshAccessTokenSync synchronously refreshes AccessToken without scheduling new tasks
+func LoginRefreshAccessTokenSync() error {
+	utils.Log.Println("Synchronously refreshing AccessToken...")
+	tokenData, err := utils.GetJIOTVCredentials()
+	if err != nil {
+		utils.Log.Printf("Error getting credentials for AccessToken refresh: %v", err)
+		return err
+	}
+
+	// Validate that we have the required refresh token
+	if tokenData.RefreshToken == "" {
+		err := fmt.Errorf("RefreshToken is empty, cannot refresh AccessToken")
+		utils.Log.Printf("Error: %v", err)
+		return err
+	}
+
+	// Prepare the request body
+	requestBody := map[string]string{
+		"appName":      "RJIL_JioTV",
+		"deviceId":     utils.GetDeviceID(),
+		"refreshToken": tokenData.RefreshToken,
+	}
+
+	requestBodyJSON, err := json.Marshal(requestBody)
+	if err != nil {
+		utils.Log.Printf("Error marshaling request body for AccessToken refresh: %v", err)
+		return err
+	}
+
+	// Prepare the request
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+	req.SetRequestURI(REFRESH_TOKEN_URL)
+	req.Header.SetMethod("POST")
+	req.Header.Set("devicetype", "phone")
+	req.Header.Set("versionCode", "315")
+	req.Header.Set("os", "android")
+	req.Header.Set("Content-Type", "application/json; charset=utf-8")
+	req.Header.Set("Host", "auth.media.jio.com")
+	req.Header.Set("User-Agent", "okhttp/4.2.2")
+	req.Header.Set("accessToken", tokenData.AccessToken)
+	req.SetBody(requestBodyJSON)
+
+	// Send the request
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+	client := utils.GetRequestClient()
+	if err := client.Do(req, resp); err != nil {
+		utils.Log.Printf("HTTP request failed for AccessToken refresh: %v", err)
+		return err
+	}
+
+	// Check the response
+	if resp.StatusCode() != fasthttp.StatusOK {
+		err := fmt.Errorf("AccessToken refresh failed with status code: %d, body: %s", resp.StatusCode(), string(resp.Body()))
+		utils.Log.Printf("Error: %v", err)
+		return err
+	}
+
+	// Parse the response body
+	respBody := resp.Body()
+
+	var response RefreshTokenResponse
+	if err := json.Unmarshal(respBody, &response); err != nil {
+		utils.Log.Printf("Error unmarshaling AccessToken refresh response: %v", err)
+		return err
+	}
+
+	// Update tokenData
+	if response.AccessToken != "" {
+		tokenData.AccessToken = response.AccessToken
+		tokenData.LastTokenRefreshTime = strconv.FormatInt(time.Now().Unix(), 10)
+		err := utils.WriteJIOTVCredentials(tokenData)
+		if err != nil {
+			utils.Log.Printf("Error saving refreshed credentials: %v", err)
+			return err
+		}
+		TV = television.New(tokenData)
+		utils.Log.Println("AccessToken refreshed successfully")
+		return nil
+	} else {
+		err := fmt.Errorf("AccessToken not found in response")
+		utils.Log.Printf("Error: %v", err)
+		return err
+	}
+}
+
+// LoginRefreshSSOTokenSync synchronously refreshes SSOToken without scheduling new tasks
+func LoginRefreshSSOTokenSync() error {
+	utils.Log.Println("Synchronously refreshing SsoToken...")
+	tokenData, err := utils.GetJIOTVCredentials()
+	if err != nil {
+		utils.Log.Printf("Error getting credentials for SSOToken refresh: %v", err)
+		return err
+	}
+
+	// Validate that we have the required tokens
+	if tokenData.SSOToken == "" {
+		err := fmt.Errorf("SSOToken is empty, cannot refresh SSOToken")
+		utils.Log.Printf("Error: %v", err)
+		return err
+	}
+	if tokenData.UniqueID == "" {
+		err := fmt.Errorf("UniqueID is empty, cannot refresh SSOToken")
+		utils.Log.Printf("Error: %v", err)
+		return err
+	}
+
+	deviceID := utils.GetDeviceID()
+	if deviceID == "" {
+		err := fmt.Errorf("DeviceID is empty, cannot refresh SSOToken")
+		utils.Log.Printf("Error: %v", err)
+		return err
+	}
+
+	// Prepare the request
+	req := fasthttp.AcquireRequest()
+	defer fasthttp.ReleaseRequest(req)
+	req.SetRequestURI(REFRESH_SSO_TOKEN_URL)
+	req.Header.SetMethod("GET")
+	req.Header.Set("devicetype", "phone")
+	req.Header.Set("versionCode", "315")
+	req.Header.Set("os", "android")
+	req.Header.Set("Host", "tv.media.jio.com")
+	req.Header.Set("User-Agent", "okhttp/4.2.2")
+	req.Header.Set("ssoToken", tokenData.SSOToken)
+	req.Header.Set("uniqueid", tokenData.UniqueID)
+	req.Header.Set("deviceid", deviceID)
+
+	// Send the request
+	resp := fasthttp.AcquireResponse()
+	defer fasthttp.ReleaseResponse(resp)
+	client := utils.GetRequestClient()
+	if err := client.Do(req, resp); err != nil {
+		utils.Log.Printf("HTTP request failed for SSOToken refresh: %v", err)
+		return err
+	}
+
+	// Check the response
+	if resp.StatusCode() != fasthttp.StatusOK {
+		err := fmt.Errorf("SSOToken refresh failed with status code: %d, body: %s", resp.StatusCode(), string(resp.Body()))
+		utils.Log.Printf("Error: %v", err)
+		return err
+	}
+
+	// Parse the response body
+	respBody := resp.Body()
+
+	var response RefreshSSOTokenResponse
+	if err := json.Unmarshal(respBody, &response); err != nil {
+		utils.Log.Printf("Error unmarshaling SSOToken refresh response: %v", err)
+		return err
+	}
+
+	// Update tokenData
+	if response.SSOToken != "" {
+		tokenData.SSOToken = response.SSOToken
+		tokenData.LastSSOTokenRefreshTime = strconv.FormatInt(time.Now().Unix(), 10)
+		err := utils.WriteJIOTVCredentials(tokenData)
+		if err != nil {
+			utils.Log.Printf("Error saving refreshed SSOToken credentials: %v", err)
+			return err
+		}
+		TV = television.New(tokenData)
+		utils.Log.Println("SSOToken refreshed successfully")
+		return nil
+	} else {
+		err := fmt.Errorf("SSOToken not found in response")
+		utils.Log.Printf("Error: %v", err)
+		return err
+	}
+}
+
 // TokenHealthCheck verifies that token refresh tasks are properly scheduled and tokens are valid
 func TokenHealthCheck() error {
 	utils.Log.Println("Running token health check...")
@@ -410,12 +583,12 @@ func TokenHealthCheck() error {
 		utils.Log.Printf("Health check: No credentials found: %v", err)
 		// Schedule next health check
 		go scheduler.Add(HEALTH_CHECK_TASK_ID, 1*time.Hour, TokenHealthCheck)
-		return err
+		return nil // Don't return error when no credentials are found - this is expected behavior
 	}
 
-	var needsReschedule bool
+	var refreshedTokens bool
 
-	// Check AccessToken health
+	// Check AccessToken health and refresh synchronously if needed
 	if credentials.AccessToken != "" && credentials.RefreshToken != "" {
 		if credentials.LastTokenRefreshTime != "" {
 			lastTime, err := strconv.ParseInt(credentials.LastTokenRefreshTime, 10, 64)
@@ -423,15 +596,20 @@ func TokenHealthCheck() error {
 				lastRefresh := time.Unix(lastTime, 0)
 				// If token was last refreshed more than 3 hours ago, it might be stale
 				if time.Since(lastRefresh) > 3*time.Hour {
-					utils.Log.Printf("Health check: AccessToken may be stale (last refresh: %v). Triggering refresh.", lastRefresh)
-					go RefreshTokenIfExpired(credentials)
-					needsReschedule = true
+					utils.Log.Printf("Health check: AccessToken may be stale (last refresh: %v). Refreshing synchronously.", lastRefresh)
+					if err := LoginRefreshAccessTokenSync(); err != nil {
+						utils.Log.Printf("Health check: Failed to refresh AccessToken: %v", err)
+					} else {
+						refreshedTokens = true
+						// Re-fetch credentials after refresh
+						credentials, _ = utils.GetJIOTVCredentials()
+					}
 				}
 			}
 		}
 	}
 
-	// Check SSOToken health
+	// Check SSOToken health and refresh synchronously if needed
 	if credentials.SSOToken != "" && credentials.UniqueID != "" {
 		if credentials.LastSSOTokenRefreshTime != "" {
 			lastTime, err := strconv.ParseInt(credentials.LastSSOTokenRefreshTime, 10, 64)
@@ -439,16 +617,19 @@ func TokenHealthCheck() error {
 				lastRefresh := time.Unix(lastTime, 0)
 				// If token was last refreshed more than 26 hours ago, it might be stale
 				if time.Since(lastRefresh) > 26*time.Hour {
-					utils.Log.Printf("Health check: SSOToken may be stale (last refresh: %v). Triggering refresh.", lastRefresh)
-					go RefreshSSOTokenIfExpired(credentials)
-					needsReschedule = true
+					utils.Log.Printf("Health check: SSOToken may be stale (last refresh: %v). Refreshing synchronously.", lastRefresh)
+					if err := LoginRefreshSSOTokenSync(); err != nil {
+						utils.Log.Printf("Health check: Failed to refresh SSOToken: %v", err)
+					} else {
+						refreshedTokens = true
+					}
 				}
 			}
 		}
 	}
 
-	if needsReschedule {
-		utils.Log.Println("Health check: Token refresh tasks rescheduled")
+	if refreshedTokens {
+		utils.Log.Println("Health check: Tokens refreshed synchronously")
 	} else {
 		utils.Log.Println("Health check: All tokens appear healthy")
 	}

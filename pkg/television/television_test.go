@@ -1,6 +1,7 @@
 package television
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -502,4 +503,84 @@ func Test_getSLChannel(t *testing.T) {
 			// TODO
 		})
 	}
+}
+
+func TestHTTPError(t *testing.T) {
+tests := []struct {
+name       string
+statusCode int
+message    string
+wantError  string
+}{
+{
+name:       "HTTP 400 error",
+statusCode: 400,
+message:    "Bad Request",
+wantError:  "HTTP 400: Bad Request",
+},
+{
+name:       "HTTP 500 error",
+statusCode: 500,
+message:    "Internal Server Error",
+wantError:  "HTTP 500: Internal Server Error",
+},
+}
+for _, tt := range tests {
+t.Run(tt.name, func(t *testing.T) {
+err := &HTTPError{
+StatusCode: tt.statusCode,
+Message:    tt.message,
+}
+if err.Error() != tt.wantError {
+t.Errorf("HTTPError.Error() = %v, want %v", err.Error(), tt.wantError)
+}
+})
+}
+}
+
+func TestIsStatusCode(t *testing.T) {
+tests := []struct {
+name       string
+err        error
+statusCode int
+want       bool
+}{
+{
+name: "Matching status code",
+err: &HTTPError{
+StatusCode: 400,
+Message:    "Bad Request",
+},
+statusCode: 400,
+want:       true,
+},
+{
+name: "Non-matching status code",
+err: &HTTPError{
+StatusCode: 500,
+Message:    "Internal Server Error",
+},
+statusCode: 400,
+want:       false,
+},
+{
+name:       "Non-HTTPError",
+err:        fmt.Errorf("regular error"),
+statusCode: 400,
+want:       false,
+},
+{
+name:       "Nil error",
+err:        nil,
+statusCode: 400,
+want:       false,
+},
+}
+for _, tt := range tests {
+t.Run(tt.name, func(t *testing.T) {
+if got := IsStatusCode(tt.err, tt.statusCode); got != tt.want {
+t.Errorf("IsStatusCode() = %v, want %v", got, tt.want)
+}
+})
+}
 }

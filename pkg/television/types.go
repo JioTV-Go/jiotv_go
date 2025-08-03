@@ -2,10 +2,29 @@ package television
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 
 	"github.com/valyala/fasthttp"
 )
+
+// HTTPError represents an HTTP error with status code
+type HTTPError struct {
+	StatusCode int
+	Message    string
+}
+
+func (e *HTTPError) Error() string {
+	return fmt.Sprintf("HTTP %d: %s", e.StatusCode, e.Message)
+}
+
+// IsStatusCode checks if the error is an HTTPError with the specified status code
+func IsStatusCode(err error, statusCode int) bool {
+	if httpErr, ok := err.(*HTTPError); ok {
+		return httpErr.StatusCode == statusCode
+	}
+	return false
+}
 
 // Television struct to store credentials and client required for making requests to JioTV API
 type Television struct {

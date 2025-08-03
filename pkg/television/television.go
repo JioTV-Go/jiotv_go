@@ -288,7 +288,10 @@ func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
 		utils.Log.Println("Request data:", formData.String())
 		utils.Log.Panicln("Response: ", response)
 
-		return nil, fmt.Errorf("Request failed with status code: %d\nresponse: %s", resp.StatusCode(), response)
+		return nil, &HTTPError{
+			StatusCode: resp.StatusCode(),
+			Message:    fmt.Sprintf("Request failed with status code: %d\nresponse: %s", resp.StatusCode(), response),
+		}
 	}
 
 	var result LiveURLOutput

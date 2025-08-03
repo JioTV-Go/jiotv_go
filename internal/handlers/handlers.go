@@ -154,12 +154,43 @@ func LiveHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
+	
+	// Try to get live stream
 	liveResult, err := TV.Live(id)
 	if err != nil {
-		utils.Log.Println(err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err,
-		})
+		// Check if it's a 400 status error (missing parameters) and attempt relogin once
+		if television.IsStatusCode(err, 400) && utils.CheckLoggedIn() {
+			utils.Log.Printf("Received 400 status for channel %s, attempting relogin once", id)
+			
+			// Attempt to refresh tokens synchronously 
+			credentials, credErr := utils.GetJIOTVCredentials()
+			if credErr == nil {
+				// Try refreshing access token first
+				if credentials.AccessToken != "" && credentials.RefreshToken != "" {
+					if refreshErr := LoginRefreshAccessTokenSync(); refreshErr == nil {
+						utils.Log.Println("AccessToken refreshed, retrying live stream request")
+						// Retry the live request after successful token refresh
+						liveResult, err = TV.Live(id)
+					}
+				}
+				// If access token refresh failed or wasn't applicable, try SSO token refresh
+				if err != nil && credentials.SSOToken != "" && credentials.UniqueID != "" {
+					if refreshErr := LoginRefreshSSOTokenSync(); refreshErr == nil {
+						utils.Log.Println("SSOToken refreshed, retrying live stream request")
+						// Retry the live request after successful token refresh
+						liveResult, err = TV.Live(id)
+					}
+				}
+			}
+		}
+		
+		// If still error after retry attempt, return error
+		if err != nil {
+			utils.Log.Println(err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": err,
+			})
+		}
 	}
 
 	// Check if liveResult.Bitrates.Auto is empty
@@ -191,10 +222,39 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	id = strings.Replace(id, ".m3u8", "", 1)
 	liveResult, err := TV.Live(id)
 	if err != nil {
-		utils.Log.Println(err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err,
-		})
+		// Check if it's a 400 status error (missing parameters) and attempt relogin once
+		if television.IsStatusCode(err, 400) && utils.CheckLoggedIn() {
+			utils.Log.Printf("Received 400 status for channel %s, attempting relogin once", id)
+			
+			// Attempt to refresh tokens synchronously 
+			credentials, credErr := utils.GetJIOTVCredentials()
+			if credErr == nil {
+				// Try refreshing access token first
+				if credentials.AccessToken != "" && credentials.RefreshToken != "" {
+					if refreshErr := LoginRefreshAccessTokenSync(); refreshErr == nil {
+						utils.Log.Println("AccessToken refreshed, retrying live stream request")
+						// Retry the live request after successful token refresh
+						liveResult, err = TV.Live(id)
+					}
+				}
+				// If access token refresh failed or wasn't applicable, try SSO token refresh
+				if err != nil && credentials.SSOToken != "" && credentials.UniqueID != "" {
+					if refreshErr := LoginRefreshSSOTokenSync(); refreshErr == nil {
+						utils.Log.Println("SSOToken refreshed, retrying live stream request")
+						// Retry the live request after successful token refresh
+						liveResult, err = TV.Live(id)
+					}
+				}
+			}
+		}
+		
+		// If still error after retry attempt, return error
+		if err != nil {
+			utils.Log.Println(err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": err,
+			})
+		}
 	}
 	Bitrates := liveResult.Bitrates
 	// if id[:2] == "sl" {
