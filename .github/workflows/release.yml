@@ -87,6 +87,10 @@ jobs:
           version_commit=$(git rev-parse HEAD)
 
           # Cherry-pick to develop
+          # Ensure develop branch exists locally; fetch if missing
+          if ! git show-ref --verify --quiet refs/heads/develop; then
+            git fetch origin develop:develop
+          fi
           git checkout develop
           git cherry-pick "$version_commit" || { echo "Cherry-pick to develop failed"; exit 1; }
           git push origin develop
