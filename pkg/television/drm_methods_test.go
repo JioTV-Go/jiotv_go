@@ -48,12 +48,12 @@ func TestTelevision_RequestDRMKey(t *testing.T) {
 				if r.Method != "POST" {
 					t.Errorf("Expected POST request, got %s", r.Method)
 				}
-				
+
 				// Verify headers are set correctly
 				if r.Header.Get("channelid") != tt.channelID {
 					t.Errorf("Expected channelid header %s, got %s", tt.channelID, r.Header.Get("channelid"))
 				}
-				
+
 				if r.Header.Get("Content-Type") != "application/octet-stream" {
 					t.Errorf("Expected Content-Type application/octet-stream, got %s", r.Header.Get("Content-Type"))
 				}
@@ -123,7 +123,7 @@ func TestTelevision_RequestMPD(t *testing.T) {
 				if r.Method != "GET" {
 					t.Errorf("Expected GET request, got %s", r.Method)
 				}
-				
+
 				// Verify User-Agent header
 				expectedUA := "plaYtv/7.1.3 (Linux;Android 13) ExoPlayerLib/2.11.7"
 				if r.Header.Get("User-Agent") != expectedUA {
@@ -191,7 +191,7 @@ func TestTelevision_RequestDashSegment(t *testing.T) {
 				if r.Method != "GET" {
 					t.Errorf("Expected GET request, got %s", r.Method)
 				}
-				
+
 				// Verify User-Agent header
 				expectedUA := "plaYtv/7.1.3 (Linux;Android 13) ExoPlayerLib/2.11.7"
 				if r.Header.Get("User-Agent") != expectedUA {
@@ -231,19 +231,19 @@ func Test_generateDateTime(t *testing.T) {
 	t.Run("Generate datetime string", func(t *testing.T) {
 		result1 := generateDateTime()
 		result2 := generateDateTime()
-		
+
 		// Should be valid format (13 digits: YYMMDDHHMM + 3 digit milliseconds)
 		if len(result1) != 13 {
 			t.Errorf("generateDateTime() length = %d, want 13", len(result1))
 		}
-		
+
 		// Should contain only digits
 		for _, r := range result1 {
 			if r < '0' || r > '9' {
 				t.Errorf("generateDateTime() contains non-digit character: %c", r)
 			}
 		}
-		
+
 		// Two calls should be different (due to millisecond precision)
 		if result1 == result2 {
 			t.Logf("generateDateTime() returned same value twice: %s", result1)

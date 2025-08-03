@@ -7,7 +7,6 @@ import (
 	"os"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/valyala/fasthttp"
 	"gopkg.in/yaml.v3"
@@ -39,7 +38,7 @@ func logExcessiveChannelsWarning(channelCount int, context string) {
 	if channelCount <= maxRecommendedChannels || utils.Log == nil {
 		return
 	}
-	
+
 	utils.Log.Printf("WARNING: %s %d custom channels, which exceeds the recommended limit of %d channels.", context, channelCount, maxRecommendedChannels)
 	utils.Log.Printf("WARNING: Large numbers of custom channels may impact performance:")
 	utils.Log.Printf("  - Slower channel listing and filtering operations")
@@ -73,23 +72,23 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 		}
 	}
 	headers := map[string]string{
-		"Content-type": "application/x-www-form-urlencoded",
-		"appkey":       "NzNiMDhlYzQyNjJm",
-		"channel_id":   "",
-		"crmid":        credentials.CRM,
-		"userId":       credentials.CRM,
-		"deviceId":     utils.GetDeviceID(),
-		"devicetype":   "phone",
-		"isott":        "false",
-		"languageId":   "6",
-		"lbcookie":     "1",
-		"os":           "android",
-		"osVersion":    "13",
-		"subscriberId": credentials.CRM,
-		"uniqueId":     credentials.UniqueID,
-		headers.UserAgent:   headers.UserAgentOkHttp,
-		"usergroup":    "tvYR7NSNn7rymo3F",
-		"versionCode":  "330",
+		"Content-type":    "application/x-www-form-urlencoded",
+		"appkey":          "NzNiMDhlYzQyNjJm",
+		"channel_id":      "",
+		"crmid":           credentials.CRM,
+		"userId":          credentials.CRM,
+		"deviceId":        utils.GetDeviceID(),
+		"devicetype":      "phone",
+		"isott":           "false",
+		"languageId":      "6",
+		"lbcookie":        "1",
+		"os":              "android",
+		"osVersion":       "13",
+		"subscriberId":    credentials.CRM,
+		"uniqueId":        credentials.UniqueID,
+		headers.UserAgent: headers.UserAgentOkHttp,
+		"usergroup":       "tvYR7NSNn7rymo3F",
+		"versionCode":     "330",
 	}
 
 	// Create a fasthttp.Client
@@ -117,7 +116,7 @@ func InitCustomChannels() {
 func getCustomChannels() []Channel {
 	customChannelsCacheMutex.RLock()
 	defer customChannelsCacheMutex.RUnlock()
-	
+
 	// Return a copy to prevent external modifications
 	channels := make([]Channel, len(customChannelsCache))
 	copy(channels, customChannelsCache)
@@ -128,11 +127,11 @@ func getCustomChannels() []Channel {
 func getCustomChannelByID(channelID string) (Channel, bool) {
 	customChannelsCacheMutex.RLock()
 	defer customChannelsCacheMutex.RUnlock()
-	
+
 	if customChannelsCacheMap == nil {
 		return Channel{}, false
 	}
-	
+
 	channel, exists := customChannelsCacheMap[channelID]
 	return channel, exists
 }
@@ -158,13 +157,13 @@ func loadAndCacheCustomChannels() []Channel {
 		for _, channel := range channels {
 			customChannelsCacheMap[channel.ID] = channel
 		}
-		
+
 		// Warn user about performance implications if too many channels
 		logExcessiveChannelsWarning(len(channels), "Cached")
 	}
-	
+
 	customChannelsCacheLoaded = true
-	
+
 	// Return a copy to prevent external modifications
 	result := make([]Channel, len(customChannelsCache))
 	copy(result, customChannelsCache)
@@ -188,14 +187,14 @@ func ReloadCustomChannels() error {
 		customChannelsCacheMap[channel.ID] = channel
 	}
 	customChannelsCacheLoaded = true
-	
+
 	if utils.Log != nil {
 		utils.Log.Printf("Reloaded %d custom channels", len(channels))
-		
+
 		// Warn user about performance implications if too many channels
 		logExcessiveChannelsWarning(len(channels), "Reloaded")
 	}
-	
+
 	return nil
 }
 
@@ -203,7 +202,7 @@ func ReloadCustomChannels() error {
 func ClearCustomChannelsCache() {
 	customChannelsCacheMutex.Lock()
 	defer customChannelsCacheMutex.Unlock()
-	
+
 	customChannelsCache = nil
 	customChannelsCacheMap = nil
 	customChannelsCacheLoaded = false
@@ -333,26 +332,26 @@ func (tv *Television) Render(url string) ([]byte, int) {
 // detectAndParseFormat attempts to detect the format of custom channels data and parse it
 func detectAndParseFormat(data []byte, filePath string) (CustomChannelsConfig, error) {
 	var customConfig CustomChannelsConfig
-	
+
 	// Determine file format by extension and parse accordingly, fallback to content-based detection
 	if strings.HasSuffix(filePath, ".json") {
 		err := json.Unmarshal(data, &customConfig)
 		return customConfig, err
 	}
-	
+
 	if strings.HasSuffix(filePath, ".yml") || strings.HasSuffix(filePath, ".yaml") {
 		err := yaml.Unmarshal(data, &customConfig)
 		return customConfig, err
 	}
-	
+
 	// Fallback: try to detect format by content for unknown extensions
 	trimmed := strings.TrimSpace(string(data))
-	
+
 	// For unsupported extensions, require non-empty content
 	if trimmed == "" {
 		return customConfig, fmt.Errorf(errUnsupportedChannelsFormat)
 	}
-	
+
 	// Try JSON if content starts with '{' or '['
 	if strings.HasPrefix(trimmed, "{") || strings.HasPrefix(trimmed, "[") {
 		err := json.Unmarshal(data, &customConfig)
@@ -366,7 +365,7 @@ func detectAndParseFormat(data []byte, filePath string) (CustomChannelsConfig, e
 		}
 		return customConfig, nil
 	}
-	
+
 	// Try YAML for other content
 	err := yaml.Unmarshal(data, &customConfig)
 	if err != nil {
@@ -418,7 +417,7 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 
 	if utils.Log != nil {
 		utils.Log.Printf("Loaded %d custom channels from %s", len(channels), filePath)
-		
+
 		// Warn user about performance implications if too many channels
 		logExcessiveChannelsWarning(len(channels), "You have loaded")
 	}
@@ -543,108 +542,6 @@ func ReplaceKey(match []byte, params, channel_id string) []byte {
 		return nil
 	}
 	return []byte("/render.key?auth=" + coded_url + "&channel_key_id=" + channel_id)
-}
-
-// generateDateTime generates a timestamp in the format required by DRM requests
-func generateDateTime() string {
-	currentTime := time.Now()
-	formattedDateTime := fmt.Sprintf("%02d%02d%02d%02d%02d%03d",
-		currentTime.Year()%100, currentTime.Month(), currentTime.Day(),
-		currentTime.Hour(), currentTime.Minute(),
-		currentTime.Nanosecond()/1000000)
-	return formattedDateTime
-}
-
-// RequestDRMKey makes HTTP requests for DRM key with appropriate headers
-func (tv *Television) RequestDRMKey(url, channelID string) ([]byte, int, error) {
-	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
-
-	req.SetRequestURI(url)
-	req.Header.SetMethod("POST")
-
-	// Set DRM-specific headers
-	req.Header.Set("accesstoken", tv.AccessToken)
-	req.Header.Set("Connection", "keep-alive")
-	req.Header.Set("os", "android")
-	req.Header.Set("appName", "RJIL_JioTV")
-	req.Header.Set("subscriberId", tv.Crm)
-	req.Header.Set("User-Agent", "plaYtv/7.1.3 (Linux;Android 13) ExoPlayerLib/2.11.7")
-	req.Header.Set("ssotoken", tv.SsoToken)
-	req.Header.Set("x-platform", "android")
-	req.Header.Set("srno", generateDateTime())
-	req.Header.Set("crmid", tv.Crm)
-	req.Header.Set("channelid", channelID)
-	req.Header.Set("uniqueId", tv.UniqueID)
-	req.Header.Set("versionCode", "330")
-	req.Header.Set("usergroup", "tvYR7NSNn7rymo3F")
-	req.Header.Set("devicetype", "phone")
-	req.Header.Set("Accept-Encoding", "gzip, deflate")
-	req.Header.Set("osVersion", "13")
-	req.Header.Set("deviceId", utils.GetDeviceID())
-	req.Header.Set("Content-Type", "application/octet-stream")
-
-	resp := fasthttp.AcquireResponse()
-	defer fasthttp.ReleaseResponse(resp)
-
-	// Perform the HTTP request
-	if err := tv.Client.Do(req, resp); err != nil {
-		return nil, 0, err
-	}
-
-	// Copy response body before releasing
-	body := make([]byte, len(resp.Body()))
-	copy(body, resp.Body())
-
-	return body, resp.StatusCode(), nil
-}
-
-// RequestMPD makes HTTP requests for MPD manifest files
-func (tv *Television) RequestMPD(url string) ([]byte, int, error) {
-	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
-
-	req.SetRequestURI(url)
-	req.Header.SetMethod("GET")
-	req.Header.Set("User-Agent", "plaYtv/7.1.3 (Linux;Android 13) ExoPlayerLib/2.11.7")
-
-	resp := fasthttp.AcquireResponse()
-	defer fasthttp.ReleaseResponse(resp)
-
-	// Perform the HTTP request
-	if err := tv.Client.Do(req, resp); err != nil {
-		return nil, 0, err
-	}
-
-	// Copy response body before releasing
-	body := make([]byte, len(resp.Body()))
-	copy(body, resp.Body())
-
-	return body, resp.StatusCode(), nil
-}
-
-// RequestDashSegment makes HTTP requests for DASH segments
-func (tv *Television) RequestDashSegment(url string) ([]byte, int, error) {
-	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
-
-	req.SetRequestURI(url)
-	req.Header.SetMethod("GET")
-	req.Header.Set("User-Agent", "plaYtv/7.1.3 (Linux;Android 13) ExoPlayerLib/2.11.7")
-
-	resp := fasthttp.AcquireResponse()
-	defer fasthttp.ReleaseResponse(resp)
-
-	// Perform the HTTP request
-	if err := tv.Client.Do(req, resp); err != nil {
-		return nil, 0, err
-	}
-
-	// Copy response body before releasing
-	body := make([]byte, len(resp.Body()))
-	copy(body, resp.Body())
-
-	return body, resp.StatusCode(), nil
 }
 
 func getSLChannel(channelID string) (*LiveURLOutput, error) {
