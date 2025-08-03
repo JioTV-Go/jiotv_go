@@ -42,56 +42,74 @@ jobs:
       - name: Increment version 📈
         id: gen_tag
         run: |
-          # setup git
+          # Setup Git
           git config user.name "GitHub Action"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          # Get the latest tag that looks like a semver tag.
-          tag=$(git describe --tags --match "v[0-9]*.[0-9]*.[0-9]*" --abbrev=0)
-          echo "Latest tag: $tag"
-          if [[ $tag == "" ]]; then
-            echo "No semver tag found, use 0.0.0"
+
+          # Get the latest semver tag or fallback
+          tag=$(git describe --tags --match "v[0-9]*.[0-9]*.[0-9]*" --abbrev=0 || true)
+          if [[ -z "$tag" ]]; then
+            echo "No semver tag found, defaulting to v0.0.0"
             tag="v0.0.0"
           fi
-          # Get the major, minor and patch parts from the tag.
-          major_minor_patch=$(echo $tag | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")
-          echo "Major, minor and patch version: $major_minor_patch"
-          major=$(echo $major_minor_patch | grep -oE "^[0-9]+")
-          minor=$(echo $major_minor_patch | grep -oE "\.[0-9]+\." | grep -oE "[0-9]+")
-          patch=$(echo $major_minor_patch | grep -oE "[0-9]+$")
-          echo "Major version: $major"
-          echo "Minor version: $minor"
-          echo "Patch version: $patch"
-          commits=$(git rev-list $tag.. --count)
-          echo "Commits since last tag: $commits"
-          # If any of commit messages contains "BREAKING" string, increment major version.
-          breaking_changes=$(git log $tag.. --pretty=%B | grep -iE "BREAKING" | wc -l)
-          echo "Breaking changes: $breaking_changes"
-          if [[ $breaking_changes -gt 0 ]]; then
-            major=$((major + 1))
-            minor=0
-            patch=0
+          echo "Latest tag: $tag"
+
+          # Parse version
+          version_core="${tag#v}"
+          IFS='.' read -r major minor patch <<< "$version_core"
+
+          # Gather commit messages
+          commit_messages=$(git log "${tag}.." --pretty=%B || true)
+
+          # Determine version bump
+          if echo "$commit_messages" | grep -qi "BREAKING"; then
+            ((major++)); minor=0; patch=0
+          elif echo "$commit_messages" | grep -qiE "feat|compatibility|integration|upgrade"; then
+            ((minor++)); patch=0
           else
-            # Increment minor version.
-            features=$(git log $tag.. --pretty=%B | grep -iE "feat|compatibility|integration|upgrade" | wc -l)
-            echo "Features: $features"
-            if [[ $features -gt 0 ]]; then
-              minor=$((minor + 1))
-              patch=0
-            else
-              patch=$((patch + 1))
-            fi
+            ((patch++))
           fi
-          # Calculate the new version number.
+
+          # Compose new version
           new_version="v${major}.${minor}.${patch}"
           echo "New version: $new_version"
-          # Update the version in VERSION file
-          echo $new_version > VERSION
-          git add VERSION && git commit -m "Bump version to $new_version" && git push origin HEAD:main
-          # Mirrors tags
-          git tag -fa v$major -m "Mirror tag $new_version"
-          git tag -fa v$major.$minor -m "Mirror tag $new_version"
-          git push --tags --force
-          # Set the new tag.
+
+          # Create temp branch from current HEAD
+          temp_branch="version-bump/$new_version"
+          git checkout -b "$temp_branch"
+
+          # Write and commit VERSION file
+          echo "$new_version" > VERSION
+          git add VERSION
+          git commit -m "Bump version to $new_version"
+
+          # Save commit hash for cherry-pick
+          version_commit=$(git rev-parse HEAD)
+
+          # Cherry-pick to develop
+          # Ensure develop branch exists locally; fetch if missing
+          if ! git show-ref --verify --quiet refs/heads/develop; then
+            git fetch origin develop:develop
+          fi
+          git checkout develop
+          git cherry-pick "$version_commit" || { echo "Cherry-pick to develop failed"; exit 1; }
+          git push origin develop
+
+          # Cherry-pick to main
+          git fetch origin main
+          git checkout main
+          git cherry-pick "$version_commit" || { echo "Cherry-pick to main failed"; exit 1; }
+          git push origin main
+
+          # Tagging (mirror tags + full version)
+          git tag -fa "v${major}" -m "Mirror tag $new_version"
+          git tag -fa "v${major}.${minor}" -m "Mirror tag $new_version"
+          git tag -fa "$new_version" -m "Release $new_version"
+          git push origin --tags --force
+
+          # Cleanup
+          git branch -D "$temp_branch"
+          # Output tag to GitHub Actions
           echo "tag=$new_version" >> $GITHUB_OUTPUT
 
       - name: Setup android NDK
@@ -148,7 +166,7 @@ jobs:
                       ;;
               esac
           done
-          
+
           # Wait for all background jobs to finish
           wait
 
