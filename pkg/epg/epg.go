@@ -2,15 +2,20 @@ package epg
 
 import (
 	"compress/gzip"
+	"crypto/rand"
 	"encoding/json"
 	"encoding/xml"
 	"fmt"
+	"math/big"
+
 	"os"
 	"sync"
 	"time"
 
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/tasks"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/scheduler"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 	"github.com/schollz/progressbar/v3"
 	"github.com/valyala/fasthttp"
@@ -23,10 +28,11 @@ const (
 	EPG_URL = urls.EPGURL
 	// EPG_POSTER_URL
 	EPG_POSTER_URL = urls.EPGPosterURL
+	// EPG_TASK_ID is the ID of the EPG generation task
+	EPG_TASK_ID = tasks.EPGTaskID
 )
 
-// Init initializes EPG generation if the file is old or doesn't exist.
-// EPG will be regenerated on-demand when needed.
+// Init initializes EPG generation and schedules it for the next day.
 func Init() {
 	epgFile := utils.GetPathPrefix() + "epg.xml.gz"
 	var lastModTime time.Time
@@ -49,15 +55,33 @@ func Init() {
 		flag = true
 	}
 
-	if flag {
-		utils.Log.Println("Generating new EPG file... Please wait.")
+	genepg := func() error {
+		fmt.Println("\tGenerating new EPG file... Please wait.")
 		err := GenXMLGz(epgFile)
 		if err != nil {
-			utils.Log.Printf("EPG generation failed: %v", err)
+			utils.Log.Fatal(err)
 		}
+		return err
 	}
-	
-	utils.Log.Println("EPG initialization complete. EPG will be regenerated automatically when the file becomes outdated.")
+
+	if flag {
+		genepg()
+	}
+	// setup random time to avoid server load
+	random_hour_bigint, err := rand.Int(rand.Reader, big.NewInt(3))
+	if err != nil {
+		panic(err)
+	}
+	random_min_bigint, err := rand.Int(rand.Reader, big.NewInt(60))
+	if err != nil {
+		panic(err)
+	}
+	random_hour := int(-5 + random_hour_bigint.Int64()) // random number between 1 and 5
+	random_min := int(-30 + random_min_bigint.Int64())  // random number between 0 and 59
+	time_now := time.Now()
+	schedule_time := time.Date(time_now.Year(), time_now.Month(), time_now.Day()+1, random_hour, random_min, 0, 0, time.UTC)
+	utils.Log.Println("Scheduled EPG generation on", schedule_time.Local())
+	go scheduler.Add(EPG_TASK_ID, time.Until(schedule_time), genepg)
 }
 
 // NewProgramme creates a new Programme with the given parameters.
