@@ -12,18 +12,20 @@ import (
 )
 
 var (
-	setupOnce sync.Once
+	setupOnce    sync.Once
+	testCleanup  func()
 )
 
 // Setup function to initialize store for tests
 func setupTest() {
 	setupOnce.Do(func() {
 		// Setup test environment with temporary pathPrefix
-		_, err := store.SetupTestPathPrefix()
+		cleanup, err := store.SetupTestPathPrefix()
 		if err != nil {
 			panic(fmt.Sprintf("Failed to setup test environment: %v", err))
 		}
-		// Note: cleanup is handled by the temp directory system cleanup
+		// Store cleanup function for later use
+		testCleanup = cleanup
 		
 		// Initialize store for testing
 		store.Init()
