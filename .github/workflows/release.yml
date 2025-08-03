@@ -106,8 +106,6 @@ jobs:
 
           # Cleanup
           git branch -d "$temp_branch"
-          git push origin --delete "$temp_branch" || true
-
           # Output tag to GitHub Actions
           echo "tag=$new_version" >> $GITHUB_OUTPUT
 
