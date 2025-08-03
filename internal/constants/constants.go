@@ -14,5 +14,3 @@ const (
 	// Limits and thresholds
 	MaxRecommendedChannels = 1000
 )
-
-// Constants do not contain tests or other code, only definitions and values.
