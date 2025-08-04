@@ -74,40 +74,54 @@ jobs:
           new_version="v${major}.${minor}.${patch}"
           echo "New version: $new_version"
 
-          # Create temp branch from current HEAD
-          temp_branch="version-bump/$new_version"
-          git checkout -b "$temp_branch"
-
-          # Write and commit VERSION file
-          echo "$new_version" > VERSION
-          git add VERSION
-          git commit -m "Bump version to $new_version"
-
-          # Merge into develop
-          if ! git show-ref --verify --quiet refs/heads/develop; then
-            git fetch origin develop:develop
-          fi
-          git checkout develop
-          git merge --ff-only "$temp_branch" || { echo "Merge to develop failed"; exit 1; }
-          git push origin develop
-
-          # Merge into main
-          git fetch origin main
-          git checkout main
-          git merge --ff-only "$temp_branch" || { echo "Merge to main failed"; exit 1; }
-          git push origin main
-
           # Tagging (mirror tags + full version)
           git tag -fa "v${major}" -m "Mirror tag $new_version"
           git tag -fa "v${major}.${minor}" -m "Mirror tag $new_version"
           git tag -fa "$new_version" -m "Release $new_version"
           git push origin --tags --force
 
-          # Cleanup
-          git branch -D "$temp_branch"
-
           # Output tag to GitHub Actions
           echo "tag=$new_version" >> $GITHUB_OUTPUT
+
+      - name: Update VERSION file 📄
+        run: |
+          set -e  # Exit on any error
+
+          new_version="${{ steps.gen_tag.outputs.tag }}"
+          echo "Updating VERSION file with new version: $new_version"
+
+          # Write VERSION file
+          echo "$new_version" > VERSION
+
+          # Setup Git
+          git config user.name "GitHub Action"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # Create and commit to temp branch from current HEAD
+          temp_branch="version-bump/$new_version"
+          git checkout -b "$temp_branch"
+          git add VERSION
+          git commit -m "Bump version to $new_version"
+
+          # Push temp branch (optional for visibility)
+          git push origin "$temp_branch"
+
+          # Merge into develop
+          git fetch origin develop
+          git checkout develop
+          git merge --ff-only "$temp_branch" || { echo "FF-only merge to develop failed"; exit 1; }
+          git push origin develop
+
+          # Merge into main
+          git fetch origin main
+          git checkout main
+          git merge --ff-only "$temp_branch" || { echo "FF-only merge to main failed"; exit 1; }
+          git push origin main
+
+          # Cleanup
+          git branch -d "$temp_branch"
+          git push origin --delete "$temp_branch" || true
+
 
       - name: Setup android NDK
         run: |
