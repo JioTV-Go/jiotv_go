@@ -83,21 +83,18 @@ jobs:
           git add VERSION
           git commit -m "Bump version to $new_version"
 
-          # Save commit hash
-          version_commit=$(git rev-parse HEAD)
-
           # Merge into develop
           if ! git show-ref --verify --quiet refs/heads/develop; then
             git fetch origin develop:develop
           fi
           git checkout develop
-          git merge "$version_commit" || { echo "Merge to develop failed"; exit 1; }
+          git merge --ff-only "$temp_branch" || { echo "Merge to develop failed"; exit 1; }
           git push origin develop
 
           # Merge into main
           git fetch origin main
           git checkout main
-          git merge "$version_commit" || { echo "Merge to main failed"; exit 1; }
+          git merge --ff-only "$temp_branch" || { echo "Merge to main failed"; exit 1; }
           git push origin main
 
           # Tagging (mirror tags + full version)
