@@ -76,6 +76,8 @@ jobs:
 
           # Output tag to GitHub Actions
           echo "tag=$new_version" >> $GITHUB_OUTPUT
+          echo "major=$major" >> $GITHUB_OUTPUT
+          echo "minor=$minor" >> $GITHUB_OUTPUT
 
       - name: Update VERSION file 📄
         run: |
@@ -121,6 +123,8 @@ jobs:
           set -e  # Exit on any error
 
           new_version="${{ steps.gen_tag.outputs.tag }}"
+          major="${{ steps.gen_tag.outputs.major }}"
+          minor="${{ steps.gen_tag.outputs.minor }}"
           echo "Creating git tag: $new_version"
 
           # Tagging (mirror tags + full version)
