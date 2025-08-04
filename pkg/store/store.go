@@ -9,6 +9,7 @@ import (
 
 	"github.com/BurntSushi/toml"
 	"github.com/jiotv-go/jiotv_go/v3/internal/config"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants"
 )
 
 // Config represents the structure of the TOML file.
@@ -98,7 +99,7 @@ var (
 
 const (
 	// PATH_PREFIX is the default path prefix for all files managed by JioTV Go.
-	PATH_PREFIX = ".jiotv_go"
+	PATH_PREFIX = constants.PathPrefix
 )
 
 // GetPathPrefix returns the path prefix for all files managed by JioTV Go.
@@ -126,4 +127,37 @@ func GetPathPrefix() string {
 	}
 
 	return pathPrefix
+}
+
+// SetupTestPathPrefix sets up a temporary directory for testing and configures
+// the pathPrefix to use it. Returns a cleanup function that should be called
+// when the test is complete to restore the original configuration and clean up
+// the temporary directory.
+func SetupTestPathPrefix() (cleanup func(), err error) {
+	// Create a temporary directory
+	tempDir, err := os.MkdirTemp("", "jiotv_go_test_*")
+	if err != nil {
+		return nil, fmt.Errorf("failed to create temp directory: %v", err)
+	}
+
+	// Save the original pathPrefix
+	originalPathPrefix := config.Cfg.PathPrefix
+
+	// Set the pathPrefix to the temporary directory
+	config.Cfg.PathPrefix = tempDir
+
+	// Reset the global store to nil so Init() can be called again
+	KVS = nil
+
+	// Return cleanup function
+	cleanup = func() {
+		// Restore the original pathPrefix
+		config.Cfg.PathPrefix = originalPathPrefix
+		// Reset KVS to nil
+		KVS = nil
+		// Clean up the temporary directory
+		os.RemoveAll(tempDir)
+	}
+
+	return cleanup, nil
 }

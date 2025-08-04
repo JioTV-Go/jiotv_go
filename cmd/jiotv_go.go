@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"log" // Added import for *log.Logger type
 	"net/http"
 
 	"github.com/jiotv-go/jiotv_go/v3/internal/config"
@@ -10,8 +11,6 @@ import (
 	"github.com/jiotv-go/jiotv_go/v3/internal/middleware"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/epg"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/scheduler"
-	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
-	"github.com/jiotv-go/jiotv_go/v3/pkg/store"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 	"github.com/jiotv-go/jiotv_go/v3/web"
 
@@ -22,36 +21,39 @@ import (
 	"github.com/gofiber/template/html/v2"
 )
 
+// LoadConfig loads the application configuration from the given path.
+func LoadConfig(configPath string) error {
+	return config.Cfg.Load(configPath)
+}
+
+// InitializeLogger initializes the global logger.
+// This should be called after LoadConfig.
+func InitializeLogger() {
+	utils.Log = utils.GetLogger()
+}
+
+// Logger returns the initialized global logger.
+// Ensure InitializeLogger has been called before using this.
+func Logger() *log.Logger { // Corrected to *log.Logger
+	return utils.Log
+}
+
 type JioTVServerConfig struct {
 	Host        string
 	Port        string
-	ConfigPath  string
 	TLS         bool
 	TLSCertPath string
 	TLSKeyPath  string
 }
 
 // JioTVServer starts the JioTV server.
-// It loads the config, initializes logging, secure URLs, and EPG.
+// Assumes config and logger are already initialized.
+// It initializes secure URLs, EPG, store, and handlers.
 // It then configures the Fiber app with middleware and routes.
 // It starts listening on the provided host and port.
 // Returns an error if listening fails.
 func JioTVServer(jiotvServerConfig JioTVServerConfig) error {
-	// Load the config file
-	if err := config.Cfg.Load(jiotvServerConfig.ConfigPath); err != nil {
-		return err
-	}
-
-	// Initialize the logger object
-	utils.Log = utils.GetLogger()
-
-	// Initialize the store object
-	if err := store.Init(); err != nil {
-		return err
-	}
-
-	// Initialize the secureurl object
-	secureurl.Init()
+	// Config, Logger and Store are assumed to be initialized in main.go
 
 	// if config EPG is true or file epg.xml.gz exists
 	if config.Cfg.EPG || utils.FileExists("epg.xml.gz") {

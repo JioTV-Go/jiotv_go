@@ -3,13 +3,14 @@ package handlers
 import (
 	"bytes"
 	"fmt"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/jiotv-go/jiotv_go/v3/internal/config"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/television"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
@@ -28,10 +29,10 @@ var (
 )
 
 const (
-	REFRESH_TOKEN_URL     = "https://auth.media.jio.com/tokenservice/apis/v1/refreshtoken?langId=6"
-	REFRESH_SSO_TOKEN_URL = "https://tv.media.jio.com/apis/v2.0/loginotp/refresh?langId=6"
-	PLAYER_USER_AGENT     = "plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7"
-	REQUEST_USER_AGENT    = "okhttp/4.2.2"
+	REFRESH_TOKEN_URL     = urls.RefreshTokenURL
+	REFRESH_SSO_TOKEN_URL = urls.RefreshSSOTokenURL
+	PLAYER_USER_AGENT     = headers.UserAgentPlayTV
+	REQUEST_USER_AGENT    = headers.UserAgentOkHttp
 )
 
 // Init initializes the necessary operations required for the handlers to work.
@@ -48,29 +49,31 @@ func Init() {
 		utils.Log.Println("TS Handler disabled!. All TS video requests will be served directly from JioTV servers.")
 	}
 	if !EnableDRM {
-		fmt.Println("If you're not using IPTV Client. We strongly recommend enabling DRM for accessing channels without any issues! Either enable by setting environment variable JIOTV_DRM=true or by setting DRM: true in config. For more info Read https://telegram.me/jiotv_go/128")
+		utils.Log.Println("If you're not using IPTV Client. We strongly recommend enabling DRM for accessing channels without any issues! Either enable by setting environment variable JIOTV_DRM=true or by setting DRM: true in config. For more info Read https://telegram.me/jiotv_go/128")
 	}
 	// Generate a new device ID if not present
 	utils.GetDeviceID()
 	// Get credentials from file
 	credentials, err := utils.GetJIOTVCredentials()
-	// Initialize TV object with nil credentials
+	// Initialize TV object with nil credentials initially
 	TV = television.New(nil)
 	if err != nil {
 		utils.Log.Println("Login error!", err)
 	} else {
-		// If AccessToken is present, check for its validity and schedule a refresh if required
-		if credentials.AccessToken != "" {
-			// Check validity of credentials
-			go RefreshTokenIfExpired(credentials)
+		// If AccessToken is present, validate on first use
+		if credentials.AccessToken != "" && credentials.RefreshToken == "" {
+			utils.Log.Println("Warning: AccessToken present but RefreshToken is missing. Token refresh may fail.")
 		}
-		// If SsoToken is present, check for its validity and schedule a refresh if required
-		if credentials.SSOToken != "" {
-			go RefreshSSOTokenIfExpired(credentials)
+		// If SsoToken is present, validate on first use  
+		if credentials.SSOToken != "" && credentials.UniqueID == "" {
+			utils.Log.Println("Warning: SSOToken present but UniqueID is missing. Token refresh may fail.")
 		}
 		// Initialize TV object with credentials
 		TV = television.New(credentials)
 	}
+
+	// Initialize custom channels at startup if configured
+	television.InitCustomChannels()
 }
 
 // ErrorMessageHandler handles error messages
@@ -144,6 +147,13 @@ func LiveHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
+	
+	// Ensure tokens are fresh before making API call
+	if err := EnsureFreshTokens(); err != nil {
+		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
+		// Continue with the request - tokens might still work or it might be a custom channel
+	}
+	
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
@@ -179,6 +189,13 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
+	
+	// Ensure tokens are fresh before making API call
+	if err := EnsureFreshTokens(); err != nil {
+		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
+		// Continue with the request - tokens might still work or it might be a custom channel
+	}
+	
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
@@ -238,7 +255,19 @@ func RenderHandler(c *fiber.Ctx) error {
 		utils.Log.Println(err)
 		return err
 	}
+	
 	renderResult, statusCode := TV.Render(decoded_url)
+	
+	// If we get a 403 (Forbidden), try refreshing tokens and retry once
+	if statusCode == fiber.StatusForbidden {
+		if err := EnsureFreshTokens(); err != nil {
+			utils.Log.Printf("Failed to refresh tokens after 403: %v", err)
+		} else {
+			// Retry the request once after refreshing tokens
+			utils.Log.Println("Retrying render request after token refresh")
+			renderResult, statusCode = TV.Render(decoded_url)
+		}
+	}
 	// baseUrl is the part of the url excluding suffix file.m3u8 and params is the part of the url after the suffix
 	split_url_by_params := strings.Split(decoded_url, "?")
 	baseStringUrl := split_url_by_params[0]
@@ -406,14 +435,15 @@ func ChannelsHandler(c *fiber.Ctx) error {
 			}
 			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
 			var groupTitle string
-			if splitCategory == "split" {
+			switch splitCategory {
+			case "split":
 				groupTitle = fmt.Sprintf("%s - %s", television.CategoryMap[channel.Category], television.LanguageMap[channel.Language])
-			} else if splitCategory == "language" {
+			case "language":
 				groupTitle = television.LanguageMap[channel.Language]
-			} else {
+			default:
 				groupTitle = television.CategoryMap[channel.Category]
 			}
-			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-id=%s tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
+			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-id=%q tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
 				channel.ID, channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], groupTitle, channel.Name, channelURL)
 		}
 
@@ -436,11 +466,17 @@ func PlayHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	quality := c.Query("q")
 
+	// Ensure tokens are fresh before making API call for DRM channels
+	if err := EnsureFreshTokens(); err != nil {
+		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
+		// Continue with the request - tokens might still work or it might be a custom channel
+	}
+
 	var player_url string
 	if EnableDRM {
 		// Some sonyLiv channels are DRM protected and others are not
-		// Inorder to check, we need to make additional request to JioTV API
-		// Quick dirty fix, otherise we need to refactor entire LiveTV Handler approach
+		// In order to check, we need to make additional request to JioTV API
+		// Quick dirty fix, otherwise we need to refactor entire LiveTV Handler approach
 		if utils.ContainsString(id, SONY_LIST) {
 			liveResult, err := TV.Live(id)
 			if err != nil {
@@ -466,6 +502,7 @@ func PlayHandler(c *fiber.Ctx) error {
 	return c.Render("views/play", fiber.Map{
 		"Title":      Title,
 		"player_url": player_url,
+		"ChannelID":  id,
 	})
 }
 
@@ -509,19 +546,6 @@ func ImageHandler(c *fiber.Ctx) error {
 	}
 	c.Response().Header.Del(fiber.HeaderServer)
 	return nil
-}
-
-// EPGHandler handles EPG requests
-func EPGHandler(c *fiber.Ctx) error {
-	 epgFilePath := utils.GetPathPrefix() + "epg.xml.gz";
-	// if epg.xml.gz exists, return it
-	if _, err := os.Stat(epgFilePath); err == nil {
-		return c.SendFile(epgFilePath, true)
-	} else {
-		err_message := "EPG not found. Please restart the server after setting the environment variable JIOTV_EPG to true."
-		fmt.Println(err_message)
-		return c.Status(fiber.StatusNotFound).SendString(err_message)
-	}
 }
 
 func DASHTimeHandler(c *fiber.Ctx) error {

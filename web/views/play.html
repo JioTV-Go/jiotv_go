@@ -12,9 +12,11 @@
     <div class="p-1 sm:p-2 md:p-4 md:mx-8 lg:p-8 lg:mx-52">
       <div
         id="player"
-        class="relative overflow-hidden w-full pt-[56.25%] rounded-xl"
+        class="relative overflow-hidden w-full rounded-xl bg-black"
+        style="aspect-ratio: 16/9; min-height: 200px"
       >
         <iframe
+          id="playerIframe"
           class="absolute top-0 left-0 bottom-0 right-0 w-full h-full"
           src="{{ .player_url }}"
           width="100%"
@@ -25,15 +27,80 @@
           allow="autoplay"
         ></iframe>
       </div>
+      <div class="mt-2 flex justify-center">
+        <button id="aspect-43-toggle" class="btn" onclick="toggleAspectRatio()">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            class="size-6"
+          >
+            <path
+              fill-rule="evenodd"
+              d="M12 2.25a.75.75 0 0 1 .75.75v16.19l6.22-6.22a.75.75 0 1 1 1.06 1.06l-7.5 7.5a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 1 1 1.06-1.06l6.22 6.22V3a.75.75 0 0 1 .75-.75Z"
+              clip-rule="evenodd"
+            />
+          </svg>
+        </button>
+      </div>
+      <script>
+        const channelId = {{ printf "%q" .ChannelID }};
+        let current43Mode = false;
+
+        // SVG icon constants
+        const DOWN_ARROW_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6"><path fill-rule="evenodd" d="M12 2.25a.75.75 0 0 1 .75.75v16.19l6.22-6.22a.75.75 0 1 1 1.06 1.06l-7.5 7.5a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 1 1 1.06-1.06l6.22 6.22V3a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd" /></svg>';
+        const UP_ARROW_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6"><path fill-rule="evenodd" d="M11.47 2.47a.75.75 0 0 1 1.06 0l7.5 7.5a.75.75 0 1 1-1.06 1.06l-6.22-6.22V21a.75.75 0 0 1-1.5 0V4.81l-6.22 6.22a.75.75 0 1 1-1.06-1.06l7.5-7.5Z" clip-rule="evenodd" /></svg>';
+
+        function updateAspectRatioUI(is43Mode) {
+          const playerContainer = document.getElementById("player");
+          const button = document.getElementById("aspect-43-toggle");
+
+          if (is43Mode) {
+            playerContainer.style.aspectRatio = "4/3";
+            button.classList.add("btn-active");
+            button.innerHTML = UP_ARROW_SVG;
+          } else {
+            playerContainer.style.aspectRatio = "16/9";
+            button.classList.remove("btn-active");
+            button.innerHTML = DOWN_ARROW_SVG;
+          }
+        }
+
+        function toggleAspectRatio() {
+          if (current43Mode) {
+            // Switch to 16:9 mode
+            current43Mode = false;
+            localStorage.removeItem("aspectRatio_" + channelId);
+          } else {
+            // Switch to 4:3 mode
+            current43Mode = true;
+            localStorage.setItem("aspectRatio_" + channelId, "4/3");
+          }
+          updateAspectRatioUI(current43Mode);
+        }
+
+        // Initialize with saved preference for this channel
+        document.addEventListener("DOMContentLoaded", function () {
+          const saved43Mode =
+            localStorage.getItem("aspectRatio_" + channelId) === "4/3";
+          if (saved43Mode) {
+            current43Mode = true;
+          }
+          updateAspectRatioUI(current43Mode);
+        });
+      </script>
     </div>
     <div id="epg_parent" class="p-1 sm:p-2 md:p-4 md:mx-8 lg:p-8 lg:mx-52">
-      <h2 class="mt-4 sm:mt-0 mb-2 text-lg sm:text-xl font-bold text-center sm:text-left">Now Playing</h2>
+      <h2
+        class="mt-4 sm:mt-0 mb-2 text-lg sm:text-xl font-bold text-center sm:text-left"
+      >
+        Now Playing
+      </h2>
       <div id="epg" class="w-full">
         <div class="card w-full sm:w-96 bg-base-200 shadow-xl">
           <figure><img id="episodePoster" alt="Episode Poster" /></figure>
           <div class="card-body">
-            <h2 id="showname" class="card-title">
-            </h2>
+            <h2 id="showname" class="card-title"></h2>
             <div class="flex flex-row gap-2 items-center justify-between">
               <div class="badge badge-error badge-outline">Live</div>
               <div>
@@ -57,8 +124,8 @@
         </div>
       </div>
     </div>
-    <script src="/static/common.js"></script>
-    <script src="/static/epg.js"></script>
+    <script src="/static/internal/common.js"></script>
+    <script src="/static/internal/epg.js"></script>
     {{ template "footer" . }}
   </body>
 </html>

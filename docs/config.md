@@ -22,7 +22,7 @@ An EPG is an electronic program guide, an interactive on-screen menu that displa
 | ----- | ------------ | -------------------- | ------- |
 | Enable or disable debug mode. | `debug` | `JIOTV_DEBUG` | `false` |
 
-Debug mode enables additional logging and debugging features for developers. It is recommended to disable debug mode if you are not a developer.
+When `debug: true`, logging becomes more verbose, including file and line numbers for log messages, and the log prefix is set to `[DEBUG]`. This option works in conjunction with `log_to_stdout` and `log_path` to control the overall logging behavior. It is recommended to disable debug mode for regular use unless you are troubleshooting issues.
 
 ### TS Handler:
 
@@ -56,6 +56,7 @@ DRM is a method of restricting access to copyrighted. The latest version of JioT
 For future compatibility, I have added this feature.
 
 Currently, the DRM is only supported by the web interface. It is not supported by the IPTV playlist.
+For more detailed information about the DRM feature, including setup and limitations, please see [DRM Documentation](./drm.md).
 
 ### Title:
 
@@ -97,6 +98,34 @@ All Other Proxy (user:pass@host:port).
 
 If your proxy does not require authentication, you can omit the `user:pass@` part.
 
+### Log Path:
+
+| Purpose | Config Value | Environment Variable | Default |
+| ----- | ------------ | -------------------- | ------- |
+| Directory for storing log files. | `log_path` | `JIOTV_LOG_PATH` | `""` (empty string) |
+
+This option specifies the directory where the `jiotv_go.log` file will be stored.
+If `log_path` is not set (i.e., an empty string), log files will be stored in a default location, which is typically under the directory specified by `path_prefix` (if set), or `$HOME/.jiotv_go/` if `path_prefix` is also not set.
+If a custom path is provided, the application will attempt to create the directory if it doesn't exist.
+
+### Log to Stdout:
+
+| Purpose | Config Value | Environment Variable | Default |
+| ----- | ------------ | -------------------- | ------- |
+| Enable or disable logging to standard output. | `log_to_stdout` | `JIOTV_LOG_TO_STDOUT` | `false` |
+
+This option controls whether log messages are also output to the standard output (the console).
+Set to `true` to see logs in your terminal, or `false` to suppress console logging. The default value is `false` when specified in a configuration file.
+
+### Custom Channels:
+
+| Purpose | Config Value | Environment Variable | Default |
+| ----- | ------------ | -------------------- | ------- |
+| Path to custom channels configuration file. | `custom_channels_file` | `JIOTV_CUSTOM_CHANNELS_FILE` | `""` (empty string) |
+
+This option specifies the path to a JSON or YAML file containing custom channel definitions that will be integrated with JioTV channels. Custom channels will appear in the web interface and IPTV playlists alongside standard JioTV channels. If the file is not found or contains errors, the server will continue to work with only JioTV channels.
+
+For detailed information about custom channels configuration, including file format, field descriptions, and usage examples, please see [Custom Channels Documentation](./CUSTOM_CHANNELS.md).
 ## Example Configurations
 
 Below are example configuration file for JioTV Go. All fields are optional, and the values shown are the default settings:
@@ -142,6 +171,15 @@ path_prefix = ""
 
 # Proxy URL. Proxy is useful to bypass geo-restrictions and ip-restrictions for JioTV API. Default: ""
 proxy = ""
+
+# LogPath is the directory for log files. Default: "" (logs to default path like $HOME/.jiotv_go/jiotv_go.log)
+log_path = ""
+
+# LogToStdout controls logging to stdout/stderr. Default: false (when set in config)
+log_to_stdout = false
+
+# CustomChannelsFile is the path to custom channels configuration file. Default: ""
+custom_channels_file = ""
 ```
 
 This example demonstrates how to customize the configuration parameters using TOML syntax. Feel free to modify the values based on your preferences and requirements.
@@ -162,6 +200,9 @@ title: ""
 disable_url_encryption: false
 path_prefix: ""
 proxy: ""
+log_path: ""
+log_to_stdout: false
+custom_channels_file: ""
 ```
 
 ### Example JSON Configuration
@@ -180,6 +221,9 @@ The file is also available at [configs/jiotv_go-config.json](https://github.com/
     "title": "",
     "disable_url_encryption": false,
     "path_prefix": "",
-    "proxy": ""
+    "proxy": "",
+    "log_path": "",
+    "log_to_stdout": false,
+    "custom_channels_file": ""
 }
 ```

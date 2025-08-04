@@ -8,6 +8,10 @@
 *.so
 *.dylib
 build/
+jiotv_go
+
+# Main binary
+jiotv_go
 
 # Test binary, built with `go test -c`
 *.test
@@ -36,6 +40,7 @@ jiotv_credentials_v2.json
 # Node
 node_modules/
 web/node_modules/
+web/coverage/
 
 # Logs
 jiotv_go.log
