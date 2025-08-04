@@ -83,22 +83,21 @@ jobs:
           git add VERSION
           git commit -m "Bump version to $new_version"
 
-          # Save commit hash for cherry-pick
+          # Save commit hash
           version_commit=$(git rev-parse HEAD)
 
-          # Cherry-pick to develop
-          # Ensure develop branch exists locally; fetch if missing
+          # Merge into develop
           if ! git show-ref --verify --quiet refs/heads/develop; then
             git fetch origin develop:develop
           fi
           git checkout develop
-          git cherry-pick "$version_commit" || { echo "Cherry-pick to develop failed"; exit 1; }
+          git merge --ff-only "$version_commit" || { echo "Merge to develop failed"; exit 1; }
           git push origin develop
 
-          # Cherry-pick to main
+          # Merge into main
           git fetch origin main
           git checkout main
-          git cherry-pick "$version_commit" || { echo "Cherry-pick to main failed"; exit 1; }
+          git merge --ff-only "$version_commit" || { echo "Merge to main failed"; exit 1; }
           git push origin main
 
           # Tagging (mirror tags + full version)
@@ -109,6 +108,7 @@ jobs:
 
           # Cleanup
           git branch -D "$temp_branch"
+          
           # Output tag to GitHub Actions
           echo "tag=$new_version" >> $GITHUB_OUTPUT
 
