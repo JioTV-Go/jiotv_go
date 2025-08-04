@@ -74,12 +74,6 @@ jobs:
           new_version="v${major}.${minor}.${patch}"
           echo "New version: $new_version"
 
-          # Tagging (mirror tags + full version)
-          git tag -fa "v${major}" -m "Mirror tag $new_version"
-          git tag -fa "v${major}.${minor}" -m "Mirror tag $new_version"
-          git tag -fa "$new_version" -m "Release $new_version"
-          git push origin --tags --force
-
           # Output tag to GitHub Actions
           echo "tag=$new_version" >> $GITHUB_OUTPUT
 
@@ -121,6 +115,19 @@ jobs:
           # Cleanup
           git branch -d "$temp_branch"
           git push origin --delete "$temp_branch" || true
+
+      - name: Update git tags 📌
+        run: |
+          set -e  # Exit on any error
+
+          new_version="${{ steps.gen_tag.outputs.tag }}"
+          echo "Creating git tag: $new_version"
+
+          # Tagging (mirror tags + full version)
+          git tag -fa "v${major}" -m "Mirror tag $new_version"
+          git tag -fa "v${major}.${minor}" -m "Mirror tag $new_version"
+          git tag -fa "$new_version" -m "Release $new_version"
+          git push origin --tags --force
 
 
       - name: Setup android NDK
