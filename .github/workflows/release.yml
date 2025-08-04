@@ -91,13 +91,13 @@ jobs:
             git fetch origin develop:develop
           fi
           git checkout develop
-          git merge --ff-only "$version_commit" || { echo "Merge to develop failed"; exit 1; }
+          git merge "$version_commit" || { echo "Merge to develop failed"; exit 1; }
           git push origin develop
 
           # Merge into main
           git fetch origin main
           git checkout main
-          git merge --ff-only "$version_commit" || { echo "Merge to main failed"; exit 1; }
+          git merge "$version_commit" || { echo "Merge to main failed"; exit 1; }
           git push origin main
 
           # Tagging (mirror tags + full version)
@@ -108,7 +108,7 @@ jobs:
 
           # Cleanup
           git branch -D "$temp_branch"
-          
+
           # Output tag to GitHub Actions
           echo "tag=$new_version" >> $GITHUB_OUTPUT
 
