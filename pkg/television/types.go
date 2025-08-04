@@ -158,6 +158,22 @@ var SONY_JIO_MAP = map[string]string{
 	"sl852":  "sonybbcearthhd",
 }
 
+// CustomChannel represents a custom channel definition from configuration file
+type CustomChannel struct {
+	ID       string `json:"id" yaml:"id"`
+	Name     string `json:"name" yaml:"name"`
+	URL      string `json:"url" yaml:"url"`
+	LogoURL  string `json:"logo_url" yaml:"logo_url"`
+	Category int    `json:"category" yaml:"category"`
+	Language int    `json:"language" yaml:"language"`
+	IsHD     bool   `json:"is_hd" yaml:"is_hd"`
+}
+
+// CustomChannelsConfig represents the structure of custom channels configuration file
+type CustomChannelsConfig struct {
+	Channels []CustomChannel `json:"channels" yaml:"channels"`
+}
+
 var SONY_CHANNELS_API = []Channel{
 	{
 		ID:       "sl291",

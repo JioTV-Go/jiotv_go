@@ -1,0 +1,32 @@
+{
+  "name": "JioTV Go",
+  "short_name": "JioTV Go",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "categories": [
+    "entertainment",
+    "lifestyle",
+    "news",
+    "audio-video"
+  ],
+  "icons": [
+    {
+      "src": "/static/icons/icon-small.webp",
+      "sizes": "48x48",
+      "type": "image/webp"
+    },
+    {
+      "src": "/static/icons/icon-medium.png",
+      "sizes": "72x72 96x96 128x128 256x256",
+      "type": "image/png"
+    },
+    {
+      "src": "/static/icons/icon-high.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+channels:
+  - id: custom_news_1
+    name: Sample News Channel
+    url: https://example.com/news/playlist.m3u8
+    logo_url: https://example.com/logos/news.png
+    category: 12  # News
+    language: 6   # English
+    is_hd: true
+  - id: custom_entertainment_1
+    name: Sample Entertainment Channel
+    url: https://example.com/entertainment/playlist.m3u8
+    logo_url: https://example.com/logos/entertainment.png
+    category: 5   # Entertainment
+    language: 1   # Hindi
+    is_hd: false

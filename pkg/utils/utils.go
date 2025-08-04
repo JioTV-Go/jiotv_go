@@ -6,9 +6,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io" // Ensure io is imported
 	"log"
 	"net"
 	"os"
+	"path/filepath" // Ensure path/filepath is imported
 	"strconv"
 	"strings"
 	"time"
@@ -16,9 +18,18 @@ import (
 	"gopkg.in/natefinch/lumberjack.v2"
 
 	"github.com/jiotv-go/jiotv_go/v3/internal/config"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/store"
 	"github.com/valyala/fasthttp"
 	"github.com/valyala/fasthttp/fasthttpproxy"
+)
+
+const (
+	// JioTV API domain constants
+	JIOTV_API_DOMAIN = urls.JioTVAPIDomain
+	API_JIO_DOMAIN   = urls.APIJioDomain
+	AUTH_MEDIA_DOMAIN = urls.AuthMediaDomain
 )
 
 // Log is a global logger
@@ -28,27 +39,65 @@ var Log *log.Logger
 
 // GetLogger creates a new logger instance with custom settings
 func GetLogger() *log.Logger {
-	logFilePath := GetPathPrefix() + "jiotv_go.log"
-	var logger *log.Logger
-	if config.Cfg.Debug {
-		logger = log.New(os.Stdout, "[DEBUG] ", log.Ldate|log.Ltime|log.Lshortfile)
-	} else {
-		// write logs to a file jiotv_go.log
-		file, err := os.OpenFile(logFilePath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0640) // skipcq: GSC-G302
-		if err != nil {
-			log.Println(err)
+	// Step 1: Determine Log File Path
+	logFilePath := "" // Initialize logFilePath
+	if config.Cfg.LogPath != "" {
+		logFilePath = filepath.Join(config.Cfg.LogPath, "jiotv_go.log")
+		// Ensure the directory config.Cfg.LogPath exists.
+		if _, err := os.Stat(config.Cfg.LogPath); os.IsNotExist(err) {
+			if err := os.MkdirAll(config.Cfg.LogPath, 0755); err != nil {
+				// Log error if directory creation fails. Lumberjack will handle actual file I/O errors.
+				log.Printf("Error creating custom log directory %s: %v. File logging by lumberjack might fail.", config.Cfg.LogPath, err)
+			}
 		}
-		logger = log.New(file, "[DEBUG] ", log.Ldate|log.Ltime|log.Lshortfile)
-		// rotate log file if it is larger than 10MB
-		// necessary to prevent filling up disk space with logs
-		logger.SetOutput(&lumberjack.Logger{
-			Filename:   logFilePath,
-			MaxSize:    5, // megabytes
-			MaxBackups: 3,
-			MaxAge:     7, // days
-		})
+	} else {
+		// If LogPath is empty, use the default path.
+		logFilePath = filepath.Join(GetPathPrefix(), "jiotv_go.log")
+		// Ensure the default log directory exists.
+		defaultLogDir := filepath.Dir(logFilePath) // Get directory from path
+		if _, err := os.Stat(defaultLogDir); os.IsNotExist(err) {
+			if err := os.MkdirAll(defaultLogDir, 0755); err != nil {
+				// Log error if default directory creation fails. Lumberjack will handle actual file I/O errors.
+				log.Printf("Error creating default log directory %s: %v. File logging by lumberjack might fail.", defaultLogDir, err)
+			}
+		}
 	}
-	return logger
+
+	// Step 2: Initialize Writers
+	outputWriters := []io.Writer{}
+	if config.Cfg.LogToStdout {
+		outputWriters = append(outputWriters, os.Stdout)
+	}
+
+	fileLogger := &lumberjack.Logger{
+		Filename:   logFilePath,
+		MaxSize:    5, // megabytes
+		MaxBackups: 3,
+		MaxAge:     7, // days
+	}
+	outputWriters = append(outputWriters, fileLogger)
+
+	// Step 3: Create Logger
+	if len(outputWriters) == 0 {
+		// This case means LogToStdout was false and file logging was somehow skipped (e.g. logFilePath became empty).
+		// Default to os.Stdout with a warning.
+		log.Println("Warning: No logging output explicitly configured (e.g., LogToStdout is false and file path is invalid or empty). Defaulting to Stdout.")
+		outputWriters = append(outputWriters, os.Stdout)
+	}
+
+	multiWriter := io.MultiWriter(outputWriters...)
+	logger := log.New(multiWriter, "", 0) // Initial prefix and flags are set to zero values.
+
+	// Step 4: Set Logger Flags and Prefix
+	if config.Cfg.Debug {
+		logger.SetPrefix("[DEBUG] ")
+		logger.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+	} else {
+		logger.SetPrefix("[INFO] ")
+		logger.SetFlags(log.Ldate | log.Ltime)
+	}
+
+	return logger // Step 5: Return the configured logger
 }
 
 // LoginSendOTP sends OTP to the given number for login
@@ -72,16 +121,16 @@ func LoginSendOTP(number string) (bool, error) {
 	}
 
 	// Make the request
-	url := "https://jiotvapi.media.jio.com/userservice/apis/v1/loginotp/send"
+	url := "https://" + JIOTV_API_DOMAIN + "/userservice/apis/v1/loginotp/send"
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 
 	req.SetRequestURI(url)
 
-	req.Header.SetContentType("application/json")
+	req.Header.SetContentType(headers.ContentTypeJSON)
 	req.Header.SetMethod("POST")
-	req.Header.SetUserAgent("okhttp/4.2.2")
+	req.Header.SetUserAgent(headers.UserAgentOkHttp)
 	// Set headers
 	req.Header.Add("appname", "RJIL_JioTV")
 	req.Header.Add("os", "android")
@@ -135,16 +184,16 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 	}
 
 	// Make the request
-	url := "https://jiotvapi.media.jio.com/userservice/apis/v1/loginotp/verify"
+	url := "https://" + JIOTV_API_DOMAIN + "/userservice/apis/v1/loginotp/verify"
 
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 
 	req.SetRequestURI(url)
 
-	req.Header.SetContentType("application/json")
+	req.Header.SetContentType(headers.ContentTypeJSON)
 	req.Header.SetMethod("POST")
-	req.Header.SetUserAgent("okhttp/4.2.2")
+	req.Header.SetUserAgent(headers.UserAgentOkHttp)
 	// Set headers
 	req.Header.Add("appname", "RJIL_JioTV")
 	req.Header.Add("os", "android")
@@ -227,9 +276,9 @@ func Login(username, password string) (map[string]string, error) {
 	passw := postData["password"]
 
 	// Set headers
-	headers := map[string]string{
-		"x-api-key":    "l7xx75e822925f184370b2e25170c5d5820a",
-		"Content-Type": "application/json",
+	headerMap := map[string]string{
+		headers.XAPIKey:    headers.APIKeyJio,
+		headers.ContentType: headers.ContentTypeJSON,
 	}
 
 	// Construct payload
@@ -259,14 +308,14 @@ func Login(username, password string) (map[string]string, error) {
 	}
 
 	// Make the request
-	url := "https://api.jio.com/v3/dip/user/unpw/verify"
+	url := "https://" + API_JIO_DOMAIN + "/v3/dip/user/unpw/verify"
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 
 	req.SetRequestURI(url)
-	req.Header.SetContentType("application/json")
+	req.Header.SetContentType(headers.ContentTypeJSON)
 	req.Header.SetMethod("POST")
-	for key, value := range headers {
+	for key, value := range headerMap {
 		req.Header.Set(key, value)
 	}
 	req.SetBody(payloadJSON)
@@ -538,24 +587,24 @@ func PerformServerLogout() error {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 
-	req.SetRequestURI("https://auth.media.jio.com/tokenservice/apis/v1/logout?langId=6")
+	req.SetRequestURI("https://" + AUTH_MEDIA_DOMAIN + "/tokenservice/apis/v1/logout?langId=6")
 	req.Header.SetMethod("POST")
-	req.Header.SetUserAgent("okhttp/4.9.3")
-	req.Header.Set("Accept-Encoding", "gzip")
+	req.Header.SetUserAgent(headers.UserAgentOkHttp)
+	req.Header.Set(headers.AcceptEncoding, headers.AcceptEncodingGzip)
 	if creds.AccessToken != "" {
-		req.Header.Set("accesstoken", creds.AccessToken)
+		req.Header.Set(headers.AccessToken, creds.AccessToken)
 	} else {
 		Log.Println("AccessToken is missing, proceeding without it for server logout.")
 	}
-	req.Header.Set("devicetype", "phone")
+	req.Header.Set(headers.DeviceType, headers.DeviceTypePhone)
 	req.Header.Set("versioncode", "371") // As per new requirement
-	req.Header.Set("os", "android")
+	req.Header.Set(headers.OS, headers.OSAndroid)
 	if creds.UniqueID != "" {
 		req.Header.Set("uniqueid", creds.UniqueID)
 	} else {
 		Log.Println("UniqueID is missing, proceeding without it for server logout.")
 	}
-	req.Header.Set("content-type", "application/json; charset=utf-8")
+	req.Header.Set(headers.ContentType, headers.ContentTypeJSONCharsetUTF8)
 	req.SetBody(requestBodyJSON)
 
 	// Get the HTTP client

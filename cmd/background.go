@@ -13,10 +13,9 @@ import (
 )
 
 var PID_FILE_NAME = ".jiotv_go.pid"
-var PID_FILE_PATH string
 
-func readPIDPath() {
-	PID_FILE_PATH = utils.GetPathPrefix() + PID_FILE_NAME
+func getPIDPath() string {
+	return utils.GetPathPrefix() + PID_FILE_NAME
 }
 
 // RunInBackground starts the JioTV Go server as a background process by
@@ -29,7 +28,7 @@ func RunInBackground(args string, configPath string) error {
 	}
 
 	fmt.Println("Starting JioTV Go server in background...")
-	readPIDPath()
+	pidPath := getPIDPath()
 
 	// Get the path of the current binary executable
 	binaryExecutablePath, err := os.Executable()
@@ -55,7 +54,7 @@ func RunInBackground(args string, configPath string) error {
 	// Store the PID in a file
 	pid := cmd.Process.Pid
 	// skipcq: GSC-G302
-	err = os.WriteFile(PID_FILE_PATH, []byte(strconv.Itoa(pid)), 0644)
+	err = os.WriteFile(pidPath, []byte(strconv.Itoa(pid)), 0644)
 	if err != nil {
 		return fmt.Errorf("failed to write PID file: %w", err)
 	}
@@ -77,10 +76,10 @@ func StopBackground(configPath string) error {
 	}
 
 	fmt.Println("Stopping JioTV Go server running in background...")
-	readPIDPath()
+	pidPath := getPIDPath()
 
 	// Read the PID from the file
-	pidBytes, err := os.ReadFile(PID_FILE_PATH)
+	pidBytes, err := os.ReadFile(pidPath)
 	if err != nil {
 		return fmt.Errorf("failed to read PID file: %w", err)
 	}
@@ -104,7 +103,7 @@ func StopBackground(configPath string) error {
 	}
 
 	// Remove the PID file after successfully killing the process
-	err = os.Remove(PID_FILE_PATH)
+	err = os.Remove(pidPath)
 	if err != nil {
 		return fmt.Errorf("failed to remove PID file: %w", err)
 	}
