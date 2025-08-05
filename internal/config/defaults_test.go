@@ -95,26 +95,9 @@ func TestDefaultCategoriesAndLanguagesConfig(t *testing.T) {
 				t.Fatalf("Failed to load config: %v", err)
 			}
 
-			// Check default categories
-			if !reflect.DeepEqual(config.DefaultCategories, tt.expected.DefaultCategories) {
-				t.Errorf("DefaultCategories mismatch. Got %v, expected %v", config.DefaultCategories, tt.expected.DefaultCategories)
-			}
-
-			// Check default languages
-			if !reflect.DeepEqual(config.DefaultLanguages, tt.expected.DefaultLanguages) {
-				t.Errorf("DefaultLanguages mismatch. Got %v, expected %v", config.DefaultLanguages, tt.expected.DefaultLanguages)
-			}
-
-			// Check other fields
-			if config.Debug != tt.expected.Debug {
-				t.Errorf("Debug = %v, expected %v", config.Debug, tt.expected.Debug)
-			}
-			if config.EPG != tt.expected.EPG {
-				t.Errorf("EPG = %v, expected %v", config.EPG, tt.expected.EPG)
-			}
-			if config.Title != tt.expected.Title {
-				t.Errorf("Title = %v, expected %v", config.Title, tt.expected.Title)
-			}
-		})
+            // Compare the entire loaded config with the expected config.
+            if !reflect.DeepEqual(config, tt.expected) {
+                t.Errorf("Config mismatch.\nGot:    %+v\nWanted: %+v", config, tt.expected)
+            }
 	}
 }
