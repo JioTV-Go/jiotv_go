@@ -512,32 +512,32 @@ func FilterChannelsByDefaults(channels []Channel, categories, languages []int) [
 		return channels
 	}
 
+	// Use maps for efficient O(1) lookups
+	categorySet := make(map[int]struct{}, len(categories))
+	for _, cat := range categories {
+		categorySet[cat] = struct{}{}
+	}
+
+	languageSet := make(map[int]struct{}, len(languages))
+	for _, lang := range languages {
+		languageSet[lang] = struct{}{}
+	}
+
 	var filteredChannels []Channel
 	for _, channel := range channels {
-		categoryMatch := len(categories) == 0 // If no categories specified, consider it a match
-		languageMatch := len(languages) == 0  // If no languages specified, consider it a match
-
-		// Check if channel category matches any of the default categories
-		if len(categories) > 0 {
-			for _, cat := range categories {
-				if channel.Category == cat {
-					categoryMatch = true
-					break
-				}
-			}
+		// If categories are specified, channel must match one of them
+		categoryMatch := len(categories) == 0
+		if !categoryMatch {
+			_, categoryMatch = categorySet[channel.Category]
 		}
 
-		// Check if channel language matches any of the default languages
-		if len(languages) > 0 {
-			for _, lang := range languages {
-				if channel.Language == lang {
-					languageMatch = true
-					break
-				}
-			}
+		// If languages are specified, channel must match one of them
+		languageMatch := len(languages) == 0
+		if !languageMatch {
+			_, languageMatch = languageSet[channel.Language]
 		}
 
-		// Include channel if it matches both criteria (or if one criteria is not specified)
+		// Include channel if it matches both criteria (or if a criterion is not specified)
 		if categoryMatch && languageMatch {
 			filteredChannels = append(filteredChannels, channel)
 		}

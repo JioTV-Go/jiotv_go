@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"os"
+	"reflect"
 	"testing"
 
 	"gopkg.in/yaml.v3"
@@ -70,10 +71,13 @@ func TestDefaultCategoriesAndLanguagesConfig(t *testing.T) {
 
 			// Write config data to file
 			var data []byte
-			if tt.configType == "json" {
+			switch tt.configType {
+			case "json":
 				data, err = json.Marshal(tt.configData)
-			} else if tt.configType == "yaml" {
+			case "yaml":
 				data, err = yaml.Marshal(tt.configData)
+			default:
+				t.Fatalf("unsupported config type: %s", tt.configType)
 			}
 			if err != nil {
 				t.Fatalf("Failed to marshal config data: %v", err)
@@ -92,27 +96,13 @@ func TestDefaultCategoriesAndLanguagesConfig(t *testing.T) {
 			}
 
 			// Check default categories
-			if len(config.DefaultCategories) != len(tt.expected.DefaultCategories) {
-				t.Errorf("DefaultCategories length mismatch. Got %d, expected %d",
-					len(config.DefaultCategories), len(tt.expected.DefaultCategories))
-			}
-			for i, cat := range tt.expected.DefaultCategories {
-				if i >= len(config.DefaultCategories) || config.DefaultCategories[i] != cat {
-					t.Errorf("DefaultCategories[%d] = %v, expected %v", i, config.DefaultCategories, tt.expected.DefaultCategories)
-					break
-				}
+			if !reflect.DeepEqual(config.DefaultCategories, tt.expected.DefaultCategories) {
+				t.Errorf("DefaultCategories mismatch. Got %v, expected %v", config.DefaultCategories, tt.expected.DefaultCategories)
 			}
 
 			// Check default languages
-			if len(config.DefaultLanguages) != len(tt.expected.DefaultLanguages) {
-				t.Errorf("DefaultLanguages length mismatch. Got %d, expected %d",
-					len(config.DefaultLanguages), len(tt.expected.DefaultLanguages))
-			}
-			for i, lang := range tt.expected.DefaultLanguages {
-				if i >= len(config.DefaultLanguages) || config.DefaultLanguages[i] != lang {
-					t.Errorf("DefaultLanguages[%d] = %v, expected %v", i, config.DefaultLanguages, tt.expected.DefaultLanguages)
-					break
-				}
+			if !reflect.DeepEqual(config.DefaultLanguages, tt.expected.DefaultLanguages) {
+				t.Errorf("DefaultLanguages mismatch. Got %v, expected %v", config.DefaultLanguages, tt.expected.DefaultLanguages)
 			}
 
 			// Check other fields

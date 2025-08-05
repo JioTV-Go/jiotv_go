@@ -12,6 +12,7 @@ import (
 func TestIndexHandlerWithDefaultConfig(t *testing.T) {
 	// Save original config
 	originalCfg := config.Cfg
+	t.Cleanup(func() { config.Cfg = originalCfg })
 
 	// Create test app
 	app := fiber.New()
@@ -22,7 +23,6 @@ func TestIndexHandlerWithDefaultConfig(t *testing.T) {
 		defaultLangs   []int
 		queryParams    string
 		expectedStatus int
-		description    string
 	}{
 		{
 			name:           "No defaults, no query params",
@@ -30,7 +30,6 @@ func TestIndexHandlerWithDefaultConfig(t *testing.T) {
 			defaultLangs:   []int{},
 			queryParams:    "",
 			expectedStatus: 200,
-			description:    "Should show all channels when no defaults and no query params",
 		},
 		{
 			name:           "With defaults, no query params",
@@ -38,7 +37,6 @@ func TestIndexHandlerWithDefaultConfig(t *testing.T) {
 			defaultLangs:   []int{1, 6}, // Hindi, English
 			queryParams:    "",
 			expectedStatus: 200,
-			description:    "Should apply default filtering when no query params",
 		},
 		{
 			name:           "With defaults, but query params override",
@@ -46,7 +44,6 @@ func TestIndexHandlerWithDefaultConfig(t *testing.T) {
 			defaultLangs:   []int{1, 6}, // Hindi, English
 			queryParams:    "?language=2&category=6", // Marathi, Movies
 			expectedStatus: 200,
-			description:    "Query params should override defaults",
 		},
 		{
 			name:           "With defaults, partial query params",
@@ -54,7 +51,6 @@ func TestIndexHandlerWithDefaultConfig(t *testing.T) {
 			defaultLangs:   []int{1, 6},
 			queryParams:    "?language=1", // Hindi only
 			expectedStatus: 200,
-			description:    "Any query params should override all defaults",
 		},
 	}
 
@@ -125,7 +121,4 @@ func TestIndexHandlerWithDefaultConfig(t *testing.T) {
 			resp.Body.Close()
 		})
 	}
-
-	// Restore original config
-	config.Cfg = originalCfg
 }
