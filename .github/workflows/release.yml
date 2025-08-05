@@ -42,97 +42,57 @@ jobs:
       - name: Increment version 📈
         id: gen_tag
         run: |
-          # Setup Git
+          # setup git
           git config user.name "GitHub Action"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # Get the latest semver tag or fallback
-          tag=$(git describe --tags --match "v[0-9]*.[0-9]*.[0-9]*" --abbrev=0 || true)
-          if [[ -z "$tag" ]]; then
-            echo "No semver tag found, defaulting to v0.0.0"
+          # Get the latest tag that looks like a semver tag.
+          tag=$(git describe --tags --match "v[0-9]*.[0-9]*.[0-9]*" --abbrev=0)
+          echo "Latest tag: $tag"
+          if [[ $tag == "" ]]; then
+            echo "No semver tag found, use 0.0.0"
             tag="v0.0.0"
           fi
-          echo "Latest tag: $tag"
-
-          # Parse version
-          version_core="${tag#v}"
-          IFS='.' read -r major minor patch <<< "$version_core"
-
-          # Gather commit messages
-          commit_messages=$(git log "${tag}.." --pretty=%B || true)
-
-          # Determine version bump
-          if echo "$commit_messages" | grep -qi "BREAKING"; then
-            ((major++)); minor=0; patch=0
-          elif echo "$commit_messages" | grep -qiE "feat|compatibility|integration|upgrade"; then
-            ((minor++)); patch=0
+          # Get the major, minor and patch parts from the tag.
+          major_minor_patch=$(echo $tag | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")
+          echo "Major, minor and patch version: $major_minor_patch"
+          major=$(echo $major_minor_patch | grep -oE "^[0-9]+")
+          minor=$(echo $major_minor_patch | grep -oE "\.[0-9]+\." | grep -oE "[0-9]+")
+          patch=$(echo $major_minor_patch | grep -oE "[0-9]+$")
+          echo "Major version: $major"
+          echo "Minor version: $minor"
+          echo "Patch version: $patch"
+          commits=$(git rev-list $tag.. --count)
+          echo "Commits since last tag: $commits"
+          # If any of commit messages contains "BREAKING" string, increment major version.
+          breaking_changes=$(git log $tag.. --pretty=%B | grep -iE "BREAKING" | wc -l)
+          echo "Breaking changes: $breaking_changes"
+          if [[ $breaking_changes -gt 0 ]]; then
+            major=$((major + 1))
+            minor=0
+            patch=0
           else
-            ((patch++))
+            # Increment minor version.
+            features=$(git log $tag.. --pretty=%B | grep -iE "feat|compatibility|integration|upgrade" | wc -l)
+            echo "Features: $features"
+            if [[ $features -gt 0 ]]; then
+              minor=$((minor + 1))
+              patch=0
+            else
+              patch=$((patch + 1))
+            fi
           fi
-
-          # Compose new version
+          # Calculate the new version number.
           new_version="v${major}.${minor}.${patch}"
           echo "New version: $new_version"
-
-          # Output tag to GitHub Actions
+          # Update the version in VERSION file
+          echo $new_version > VERSION
+          git add VERSION && git commit -m "Bump version to $new_version" && git push origin HEAD:main
+          # Mirrors tags
+          git tag -fa v$major -m "Mirror tag $new_version"
+          git tag -fa v$major.$minor -m "Mirror tag $new_version"
+          git push --tags --force
+          # Set the new tag.
           echo "tag=$new_version" >> $GITHUB_OUTPUT
-          echo "major=$major" >> $GITHUB_OUTPUT
-          echo "minor=$minor" >> $GITHUB_OUTPUT
-
-      - name: Update VERSION file 📄
-        run: |
-          set -e  # Exit on any error
-
-          new_version="${{ steps.gen_tag.outputs.tag }}"
-          echo "Updating VERSION file with new version: $new_version"
-
-          # Write VERSION file
-          echo "$new_version" > VERSION
-
-          # Setup Git
-          git config user.name "GitHub Action"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
-          # Create and commit to temp branch from current HEAD
-          temp_branch="version-bump/$new_version"
-          git checkout -b "$temp_branch"
-          git add VERSION
-          git commit -m "Bump version to $new_version"
-
-          # Push temp branch (optional for visibility)
-          git push origin "$temp_branch"
-
-          # Merge into develop
-          git fetch origin develop
-          git checkout develop
-          git merge --ff-only "$temp_branch" || { echo "FF-only merge to develop failed"; exit 1; }
-          git push origin develop
-
-          # Merge into main
-          git fetch origin main
-          git checkout main
-          git merge --ff-only "$temp_branch" || { echo "FF-only merge to main failed"; exit 1; }
-          git push origin main
-
-          # Cleanup
-          git branch -d "$temp_branch"
-          git push origin --delete "$temp_branch" || true
-
-      - name: Update git tags 📌
-        run: |
-          set -e  # Exit on any error
-
-          new_version="${{ steps.gen_tag.outputs.tag }}"
-          major="${{ steps.gen_tag.outputs.major }}"
-          minor="${{ steps.gen_tag.outputs.minor }}"
-          echo "Creating git tag: $new_version"
-
-          # Tagging (mirror tags + full version)
-          git tag -fa "v${major}" -m "Mirror tag $new_version"
-          git tag -fa "v${major}.${minor}" -m "Mirror tag $new_version"
-          git tag -fa "$new_version" -m "Release $new_version"
-          git push origin --tags --force
-
 
       - name: Setup android NDK
         run: |
@@ -188,7 +148,7 @@ jobs:
                       ;;
               esac
           done
-
+          
           # Wait for all background jobs to finish
           wait
 
