@@ -57,7 +57,7 @@ The project is a monorepo containing a Go backend and a vanilla HTML/CSS/JS fron
 
 ### Building the Project
 - **Go Backend:** From the root directory, run `go build .`
-- **Frontend CSS:** Navigate to the `web/` directory and run `npm run build` to compile TailwindCSS..
+- **Frontend CSS:** Navigate to the `web/` directory and run `npm run build` to compile TailwindCSS.
 
 ### Running Tests
 - **Go Tests:** From the root directory, run `go test -v ./...`
