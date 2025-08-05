@@ -90,6 +90,17 @@ Please follow the conventional commit format. The issue templates (`.github/ISSU
 - Bugfix branches should be named `bugfix/<description>`.
 - Use `hotfix/<description>` for urgent fixes that need to go directly to `main`.
 
+## 7. GitHub Workflows
+
+The project uses several GitHub Actions workflows to automate tasks. Here's a summary of the key workflows:
+
+- **`build-doc.yml`**: This workflow builds the `mdbook` documentation and deploys it to GitHub Pages. It's triggered on pushes to the `main` branch that affect the `docs/` or `scripts/` directories.
+- **`dependabot_action.yml`**: This workflow automatically rebuilds the Tailwind CSS when a pull request modifies files in the `web/` directory.
+- **`docker.yml`**: This workflow builds and pushes Docker images to GitHub Container Registry. It's triggered on pushes to `main` and `develop` branches, as well as on new tags.
+- **`pr_tests.yml`**: This workflow runs tests for both the Go backend and the frontend. It's triggered on pull requests and pushes to `main` and `develop`.
+- **`pre-release.yml`**: This workflow creates a pre-release on every push to the `develop` branch. It builds the executables for all supported platforms and attaches them to the release.
+- **`release.yml`**: This workflow creates a new release on every push to the `main` branch. It automatically increments the version number, builds the executables, and creates a GitHub release.
+
 ### Code Style
 - **Go:** Follow standard Go conventions (`gofmt`). Code should be well-commented, especially public functions and complex logic.
 - **Frontend:** Adhere to the existing style. Use TailwindCSS utility classes for styling.
