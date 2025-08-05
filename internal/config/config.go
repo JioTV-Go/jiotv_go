@@ -36,6 +36,10 @@ type JioTVConfig struct {
 	LogToStdout bool `yaml:"log_to_stdout" env:"JIOTV_LOG_TO_STDOUT" json:"log_to_stdout" toml:"log_to_stdout"`
 	// CustomChannelsFile is the path to custom channels configuration file. Default: ""
 	CustomChannelsFile string `yaml:"custom_channels_file" env:"JIOTV_CUSTOM_CHANNELS_FILE" json:"custom_channels_file" toml:"custom_channels_file"`
+	// DefaultCategories is the list of category IDs to display on the default web page. Default: []
+	DefaultCategories []int `yaml:"default_categories" env:"JIOTV_DEFAULT_CATEGORIES" json:"default_categories" toml:"default_categories"`
+	// DefaultLanguages is the list of language IDs to display on the default web page. Default: []
+	DefaultLanguages []int `yaml:"default_languages" env:"JIOTV_DEFAULT_LANGUAGES" json:"default_languages" toml:"default_languages"`
 }
 
 // Cfg is the global config variable

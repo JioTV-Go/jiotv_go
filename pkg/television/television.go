@@ -502,6 +502,49 @@ func FilterChannels(channels []Channel, language, category int) []Channel {
 	return filteredChannels
 }
 
+// FilterChannelsByDefaults filters channels by arrays of default categories and languages
+// If both arrays are provided, channels must match at least one category AND one language
+// If only one array is provided, channels must match at least one item from that array
+// If both arrays are empty, all channels are returned
+func FilterChannelsByDefaults(channels []Channel, categories, languages []int) []Channel {
+	// If both arrays are empty, return all channels
+	if len(categories) == 0 && len(languages) == 0 {
+		return channels
+	}
+
+	var filteredChannels []Channel
+	for _, channel := range channels {
+		categoryMatch := len(categories) == 0 // If no categories specified, consider it a match
+		languageMatch := len(languages) == 0  // If no languages specified, consider it a match
+
+		// Check if channel category matches any of the default categories
+		if len(categories) > 0 {
+			for _, cat := range categories {
+				if channel.Category == cat {
+					categoryMatch = true
+					break
+				}
+			}
+		}
+
+		// Check if channel language matches any of the default languages
+		if len(languages) > 0 {
+			for _, lang := range languages {
+				if channel.Language == lang {
+					languageMatch = true
+					break
+				}
+			}
+		}
+
+		// Include channel if it matches both criteria (or if one criteria is not specified)
+		if categoryMatch && languageMatch {
+			filteredChannels = append(filteredChannels, channel)
+		}
+	}
+	return filteredChannels
+}
+
 func ReplaceM3U8(baseUrl, match []byte, params, channel_id string) []byte {
 	coded_url, err := secureurl.EncryptURL(string(baseUrl) + string(match) + "?" + params)
 	if err != nil {

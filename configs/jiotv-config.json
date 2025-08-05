@@ -10,5 +10,11 @@
     "proxy": "",
     "log_path": "",
     "log_to_stdout": false,
-    "custom_channels_file": ""
+    "custom_channels_file": "",
+    "_comment1": "Default categories to display on the web page without filters. Array of category IDs.",
+    "_comment2": "Example: [8, 5] for Entertainment, Movies",
+    "default_categories": [],
+    "_comment3": "Default languages to display on the web page without filters. Array of language IDs.",
+    "_comment4": "Example: [1, 6] for Hindi, English",
+    "default_languages": []
 }

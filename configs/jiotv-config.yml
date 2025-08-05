@@ -40,3 +40,11 @@ log_to_stdout: false
 # Supports JSON and YAML formats. Default: ""
 # Example: "./configs/custom-channels.json" or "./configs/custom-channels.yml"
 custom_channels_file: ""
+
+# Default categories to display on the web page without filters. Array of category IDs. Default: []
+# Example: [8, 5] # Entertainment, Movies
+default_categories: []
+
+# Default languages to display on the web page without filters. Array of language IDs. Default: []
+# Example: [1, 6] # Hindi, English
+default_languages: []
