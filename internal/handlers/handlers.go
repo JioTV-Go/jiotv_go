@@ -111,7 +111,7 @@ func IndexHandler(c *fiber.Ctx) error {
 		},
 	}
 
-	// Filter channels by language and category if provided via query params
+	// Filter channels by query params if provided
 	if language != "" || category != "" {
 		language_int, err := strconv.Atoi(language)
 		if err != nil {
