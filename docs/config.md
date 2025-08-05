@@ -126,6 +126,38 @@ Set to `true` to see logs in your terminal, or `false` to suppress console loggi
 This option specifies the path to a JSON or YAML file containing custom channel definitions that will be integrated with JioTV channels. Custom channels will appear in the web interface and IPTV playlists alongside standard JioTV channels. If the file is not found or contains errors, the server will continue to work with only JioTV channels.
 
 For detailed information about custom channels configuration, including file format, field descriptions, and usage examples, please see [Custom Channels Documentation](./CUSTOM_CHANNELS.md).
+
+### Language Filtering:
+
+| Purpose | Config Value | Environment Variable | Default |
+| ----- | ------------ | -------------------- | ------- |
+| List of language IDs to show by default. | `preferred_languages` | `JIOTV_PREFERRED_LANGUAGES` | `[]` (empty array) |
+
+This option allows you to configure permanent language preferences that will automatically filter channels by language in the web interface. When configured, only channels in the specified languages will be displayed by default. The single-selection dropdown in the web interface will still work to temporarily override these settings.
+
+**Available Language IDs:**
+- `0`: All Languages (shows all channels regardless of language)
+- `1`: Hindi
+- `2`: Marathi  
+- `3`: Punjabi
+- `4`: Urdu
+- `5`: Bengali
+- `6`: English
+- `7`: Malayalam
+- `8`: Tamil
+- `9`: Gujarati
+- `10`: Odia
+- `11`: Telugu
+- `12`: Bhojpuri
+- `13`: Kannada
+- `14`: Assamese
+- `15`: Nepali
+- `16`: French
+
+**Examples:**
+- `preferred_languages: [1, 6]` - Show only Hindi and English channels
+- `preferred_languages: [0]` - Show all channels (equivalent to empty array)
+- `preferred_languages: [8, 11]` - Show only Tamil and Telugu channels
 ## Example Configurations
 
 Below are example configuration file for JioTV Go. All fields are optional, and the values shown are the default settings:
@@ -180,6 +212,12 @@ log_to_stdout = false
 
 # CustomChannelsFile is the path to custom channels configuration file. Default: ""
 custom_channels_file = ""
+
+# PreferredLanguages is a list of language IDs to show by default. Default: empty (all languages)  
+# Available languages: 0: All, 1: Hindi, 2: Marathi, 3: Punjabi, 4: Urdu, 5: Bengali, 6: English, 
+# 7: Malayalam, 8: Tamil, 9: Gujarati, 10: Odia, 11: Telugu, 12: Bhojpuri, 13: Kannada, 14: Assamese, 15: Nepali, 16: French
+# Example: preferred_languages = [1, 6] to show Hindi and English channels by default
+preferred_languages = []
 ```
 
 This example demonstrates how to customize the configuration parameters using TOML syntax. Feel free to modify the values based on your preferences and requirements.
@@ -203,6 +241,7 @@ proxy: ""
 log_path: ""
 log_to_stdout: false
 custom_channels_file: ""
+preferred_languages: []
 ```
 
 ### Example JSON Configuration
@@ -224,6 +263,7 @@ The file is also available at [configs/jiotv_go-config.json](https://github.com/
     "proxy": "",
     "log_path": "",
     "log_to_stdout": false,
-    "custom_channels_file": ""
+    "custom_channels_file": "",
+    "preferred_languages": []
 }
 ```

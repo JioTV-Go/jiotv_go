@@ -11,6 +11,5 @@
     "log_path": "",
     "log_to_stdout": false,
     "custom_channels_file": "",
-    "preferred_categories": [],
     "preferred_languages": []
 }

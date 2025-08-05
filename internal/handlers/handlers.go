@@ -98,13 +98,12 @@ func IndexHandler(c *fiber.Ctx) error {
 
 	// Context data for index page
 	indexContext := fiber.Map{
-		"Title":                Title,
-		"Channels":             nil,
-		"IsNotLoggedIn":        !utils.CheckLoggedIn(),
-		"Categories":           television.CategoryMap,
-		"Languages":            television.LanguageMap,
-		"PreferredCategories":  config.Cfg.PreferredCategories,
-		"PreferredLanguages":   config.Cfg.PreferredLanguages,
+		"Title":               Title,
+		"Channels":            nil,
+		"IsNotLoggedIn":       !utils.CheckLoggedIn(),
+		"Categories":          television.CategoryMap,
+		"Languages":           television.LanguageMap,
+		"PreferredLanguages":  config.Cfg.PreferredLanguages,
 		"Qualities": map[string]string{
 			"auto":   "Quality (Auto)",
 			"high":   "High",
@@ -128,9 +127,9 @@ func IndexHandler(c *fiber.Ctx) error {
 		return c.Render("views/index", indexContext)
 	}
 
-	// Priority 2: Filter by configured preferences if no URL parameters provided
-	if len(config.Cfg.PreferredCategories) > 0 || len(config.Cfg.PreferredLanguages) > 0 {
-		channels_list := television.FilterChannelsMultiple(channels.Result, config.Cfg.PreferredLanguages, config.Cfg.PreferredCategories)
+	// Priority 2: Filter by configured language preferences if no URL parameters provided
+	if len(config.Cfg.PreferredLanguages) > 0 {
+		channels_list := television.FilterChannelsMultiple(channels.Result, config.Cfg.PreferredLanguages, []int{})
 		indexContext["Channels"] = channels_list
 		return c.Render("views/index", indexContext)
 	}

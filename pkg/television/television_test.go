@@ -309,29 +309,14 @@ func TestFilterChannelsMultiple(t *testing.T) {
 			},
 		},
 		{
-			name: "Filter by multiple categories (Movies and Sports)",
+			name: "Filter by single language (Tamil)",
 			args: args{
 				channels:   testChannels,
-				languages:  []int{},
-				categories: []int{6, 8}, // Movies, Sports
+				languages:  []int{8}, // Tamil
+				categories: []int{},
 			},
 			want: []Channel{
-				{ID: "2", Name: "English Movies", Language: 6, Category: 6},
-				{ID: "3", Name: "Hindi Movies", Language: 1, Category: 6},
-				{ID: "4", Name: "English Sports", Language: 6, Category: 8},
-				{ID: "6", Name: "Telugu Sports", Language: 11, Category: 8},
-			},
-		},
-		{
-			name: "Filter by multiple languages and categories",
-			args: args{
-				channels:   testChannels,
-				languages:  []int{1, 6}, // Hindi, English
-				categories: []int{6},    // Movies
-			},
-			want: []Channel{
-				{ID: "2", Name: "English Movies", Language: 6, Category: 6},
-				{ID: "3", Name: "Hindi Movies", Language: 1, Category: 6},
+				{ID: "5", Name: "Tamil Entertainment", Language: 8, Category: 5},
 			},
 		},
 		{
@@ -339,27 +324,12 @@ func TestFilterChannelsMultiple(t *testing.T) {
 			args: args{
 				channels:   testChannels,
 				languages:  []int{0}, // All Languages
-				categories: []int{6}, // Movies
+				categories: []int{},
 			},
-			want: []Channel{
-				{ID: "2", Name: "English Movies", Language: 6, Category: 6},
-				{ID: "3", Name: "Hindi Movies", Language: 1, Category: 6},
-			},
+			want: testChannels,
 		},
 		{
-			name: "Filter with 'All Categories' (0) should include all categories",
-			args: args{
-				channels:   testChannels,
-				languages:  []int{1}, // Hindi
-				categories: []int{0}, // All Categories
-			},
-			want: []Channel{
-				{ID: "1", Name: "Hindi Entertainment", Language: 1, Category: 5},
-				{ID: "3", Name: "Hindi Movies", Language: 1, Category: 6},
-			},
-		},
-		{
-			name: "Empty filters should return all channels",
+			name: "Empty languages filter should return all channels",
 			args: args{
 				channels:   testChannels,
 				languages:  []int{},

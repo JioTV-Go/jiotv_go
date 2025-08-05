@@ -181,7 +181,6 @@ func TestJioTVConfig_LoadMultipleSelection(t *testing.T) {
 	content := []byte(`epg: false
 debug: false
 title: "Test Multiple Selection"
-preferred_categories: [5, 6, 8]
 preferred_languages: [1, 6]
 `)
 	if _, err := tmpFile.Write(content); err != nil {
@@ -193,17 +192,15 @@ preferred_languages: [1, 6]
 		name string
 		c    *JioTVConfig
 		args struct{ filename string }
-		wantCategories []int
 		wantLanguages  []int
 		wantErr        bool
 	}{
 		{
-			name:           "Load multiple selection config",
-			c:              &JioTVConfig{},
-			args:           struct{ filename string }{filename: tmpFile.Name()},
-			wantCategories: []int{5, 6, 8},
-			wantLanguages:  []int{1, 6},
-			wantErr:        false,
+			name:          "Load multiple selection config",
+			c:             &JioTVConfig{},
+			args:          struct{ filename string }{filename: tmpFile.Name()},
+			wantLanguages: []int{1, 6},
+			wantErr:       false,
 		},
 	}
 
@@ -213,10 +210,6 @@ preferred_languages: [1, 6]
 			if (err != nil) != tt.wantErr {
 				t.Errorf("JioTVConfig.Load() error = %v, wantErr %v", err, tt.wantErr)
 				return
-			}
-			
-			if !reflect.DeepEqual(tt.c.PreferredCategories, tt.wantCategories) {
-				t.Errorf("JioTVConfig.Load() PreferredCategories = %v, want %v", tt.c.PreferredCategories, tt.wantCategories)
 			}
 			
 			if !reflect.DeepEqual(tt.c.PreferredLanguages, tt.wantLanguages) {

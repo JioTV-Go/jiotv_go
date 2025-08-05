@@ -22,7 +22,6 @@
     <select
       id="portexe-category-select"
       class="select select-primary select-sm sm:select-md w-full max-w-auto sm:max-w-xs sm:w-auto rounded-xl"
-      title="{{if .PreferredCategories}}Config: {{range $i, $cat := .PreferredCategories}}{{if $i}}, {{end}}{{index $.Categories $cat}}{{end}}{{else}}Single selection (override config){{end}}"
     >
       {{ range $key, $value := .Categories }}
       <option value="{{$key}}">{{$value}}</option>
@@ -45,29 +44,20 @@
     </button>
   </div>
   
-  {{if or .PreferredCategories .PreferredLanguages}}
+  {{if .PreferredLanguages}}
   <div class="bg-info text-info-content p-3 m-2 rounded-lg">
     <div class="flex items-center gap-2">
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5">
         <path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z" />
       </svg>
-      <span class="font-semibold">Multiple Selection Enabled:</span>
+      <span class="font-semibold">Language Filter Active:</span>
     </div>
     <div class="mt-2 text-sm">
-      {{if .PreferredCategories}}
-      <div><strong>Categories:</strong> 
-        {{range $i, $cat := .PreferredCategories}}
-        {{if $i}}, {{end}}{{index $.Categories $cat}}
-        {{end}}
-      </div>
-      {{end}}
-      {{if .PreferredLanguages}}
       <div><strong>Languages:</strong> 
         {{range $i, $lang := .PreferredLanguages}}
         {{if $i}}, {{end}}{{index $.Languages $lang}}
         {{end}}
       </div>
-      {{end}}
       <div class="mt-1 opacity-75">Configure these preferences in your config file. Use the dropdowns above to temporarily override these settings.</div>
     </div>
   </div>
