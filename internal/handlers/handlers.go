@@ -92,17 +92,19 @@ func IndexHandler(c *fiber.Ctx) error {
 	// Get all channels
 	channels := television.Channels()
 
-	// Get language and category from query params
+	// Get language and category from query params (for URL-based filtering)
 	language := c.Query("language")
 	category := c.Query("category")
 
 	// Context data for index page
 	indexContext := fiber.Map{
-		"Title":         Title,
-		"Channels":      nil,
-		"IsNotLoggedIn": !utils.CheckLoggedIn(),
-		"Categories":    television.CategoryMap,
-		"Languages":     television.LanguageMap,
+		"Title":                Title,
+		"Channels":             nil,
+		"IsNotLoggedIn":        !utils.CheckLoggedIn(),
+		"Categories":           television.CategoryMap,
+		"Languages":            television.LanguageMap,
+		"PreferredCategories":  config.Cfg.PreferredCategories,
+		"PreferredLanguages":   config.Cfg.PreferredLanguages,
 		"Qualities": map[string]string{
 			"auto":   "Quality (Auto)",
 			"high":   "High",
@@ -111,7 +113,7 @@ func IndexHandler(c *fiber.Ctx) error {
 		},
 	}
 
-	// Filter channels by language and category if provided
+	// Priority 1: Filter by URL parameters if provided (backward compatibility)
 	if language != "" || category != "" {
 		language_int, err := strconv.Atoi(language)
 		if err != nil {
@@ -125,7 +127,15 @@ func IndexHandler(c *fiber.Ctx) error {
 		indexContext["Channels"] = channels_list
 		return c.Render("views/index", indexContext)
 	}
-	// If language and category are not provided, return all channels
+
+	// Priority 2: Filter by configured preferences if no URL parameters provided
+	if len(config.Cfg.PreferredCategories) > 0 || len(config.Cfg.PreferredLanguages) > 0 {
+		channels_list := television.FilterChannelsMultiple(channels.Result, config.Cfg.PreferredLanguages, config.Cfg.PreferredCategories)
+		indexContext["Channels"] = channels_list
+		return c.Render("views/index", indexContext)
+	}
+
+	// Priority 3: If no filters are configured, return all channels
 	indexContext["Channels"] = channels.Result
 	return c.Render("views/index", indexContext)
 }

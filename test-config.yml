@@ -1,0 +1,17 @@
+# Test configuration with multiple categories and languages
+epg: false
+debug: false
+disable_ts_handler: false
+disable_logout: false
+drm: true
+title: "JioTV Go Test"
+disable_url_encryption: false
+path_prefix: ""
+proxy: ""
+log_path: ""
+log_to_stdout: false
+custom_channels_file: ""
+
+# Test multiple selection preferences
+preferred_categories: [5, 6, 8]  # Entertainment, Movies, Sports
+preferred_languages: [1, 6]      # Hindi, English

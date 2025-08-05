@@ -40,3 +40,15 @@ log_to_stdout: false
 # Supports JSON and YAML formats. Default: ""
 # Example: "./configs/custom-channels.json" or "./configs/custom-channels.yml"
 custom_channels_file: ""
+
+# PreferredCategories is a list of category IDs to show by default. Default: empty (all categories)
+# Available categories: 0: All, 5: Entertainment, 6: Movies, 7: Kids, 8: Sports, 9: Lifestyle, 
+# 10: Infotainment, 12: News, 13: Music, 15: Devotional, 16: Business, 17: Educational, 18: Shopping, 19: JioDarshan
+# Example: [5, 6, 8] to show Entertainment, Movies, and Sports channels by default
+preferred_categories: []
+
+# PreferredLanguages is a list of language IDs to show by default. Default: empty (all languages)  
+# Available languages: 0: All, 1: Hindi, 2: Marathi, 3: Punjabi, 4: Urdu, 5: Bengali, 6: English, 
+# 7: Malayalam, 8: Tamil, 9: Gujarati, 10: Odia, 11: Telugu, 12: Bhojpuri, 13: Kannada, 14: Assamese, 15: Nepali, 16: French
+# Example: [1, 6] to show Hindi and English channels by default
+preferred_languages: []

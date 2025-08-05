@@ -169,3 +169,63 @@ func Test_commonFileExists(t *testing.T) {
 		})
 	}
 }
+
+func TestJioTVConfig_LoadMultipleSelection(t *testing.T) {
+	// Create a temporary config file for testing multiple selection
+	tmpFile, err := os.CreateTemp("", "jiotv_go_multi_test_*.yml")
+	if err != nil {
+		t.Fatalf("failed to create temp file: %v", err)
+	}
+	defer os.Remove(tmpFile.Name())
+	
+	content := []byte(`epg: false
+debug: false
+title: "Test Multiple Selection"
+preferred_categories: [5, 6, 8]
+preferred_languages: [1, 6]
+`)
+	if _, err := tmpFile.Write(content); err != nil {
+		t.Fatalf("failed to write to temp file: %v", err)
+	}
+	tmpFile.Close()
+
+	tests := []struct {
+		name string
+		c    *JioTVConfig
+		args struct{ filename string }
+		wantCategories []int
+		wantLanguages  []int
+		wantErr        bool
+	}{
+		{
+			name:           "Load multiple selection config",
+			c:              &JioTVConfig{},
+			args:           struct{ filename string }{filename: tmpFile.Name()},
+			wantCategories: []int{5, 6, 8},
+			wantLanguages:  []int{1, 6},
+			wantErr:        false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := tt.c.Load(tt.args.filename)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("JioTVConfig.Load() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			
+			if !reflect.DeepEqual(tt.c.PreferredCategories, tt.wantCategories) {
+				t.Errorf("JioTVConfig.Load() PreferredCategories = %v, want %v", tt.c.PreferredCategories, tt.wantCategories)
+			}
+			
+			if !reflect.DeepEqual(tt.c.PreferredLanguages, tt.wantLanguages) {
+				t.Errorf("JioTVConfig.Load() PreferredLanguages = %v, want %v", tt.c.PreferredLanguages, tt.wantLanguages)
+			}
+			
+			if tt.c.Title != "Test Multiple Selection" {
+				t.Errorf("JioTVConfig.Load() Title = %v, want %v", tt.c.Title, "Test Multiple Selection")
+			}
+		})
+	}
+}

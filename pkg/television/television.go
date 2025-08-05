@@ -502,6 +502,49 @@ func FilterChannels(channels []Channel, language, category int) []Channel {
 	return filteredChannels
 }
 
+// FilterChannelsMultiple Function is used to filter channels by multiple languages and categories
+// If languages or categories are empty, all channels of that type are included
+func FilterChannelsMultiple(channels []Channel, languages, categories []int) []Channel {
+	var filteredChannels []Channel
+	
+	// If both arrays are empty, return all channels
+	if len(languages) == 0 && len(categories) == 0 {
+		return channels
+	}
+	
+	for _, channel := range channels {
+		languageMatch := len(languages) == 0 // If no languages specified, include all
+		categoryMatch := len(categories) == 0 // If no categories specified, include all
+		
+		// Check if language matches any of the preferred languages
+		if len(languages) > 0 {
+			for _, lang := range languages {
+				if channel.Language == lang || lang == 0 { // 0 means "All Languages"
+					languageMatch = true
+					break
+				}
+			}
+		}
+		
+		// Check if category matches any of the preferred categories
+		if len(categories) > 0 {
+			for _, cat := range categories {
+				if channel.Category == cat || cat == 0 { // 0 means "All Categories"
+					categoryMatch = true
+					break
+				}
+			}
+		}
+		
+		// Include channel if both language and category conditions are met
+		if languageMatch && categoryMatch {
+			filteredChannels = append(filteredChannels, channel)
+		}
+	}
+	
+	return filteredChannels
+}
+
 func ReplaceM3U8(baseUrl, match []byte, params, channel_id string) []byte {
 	coded_url, err := secureurl.EncryptURL(string(baseUrl) + string(match) + "?" + params)
 	if err != nil {

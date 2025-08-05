@@ -273,6 +273,127 @@ func TestFilterChannels(t *testing.T) {
 	}
 }
 
+func TestFilterChannelsMultiple(t *testing.T) {
+	// Create test data
+	testChannels := []Channel{
+		{ID: "1", Name: "Hindi Entertainment", Language: 1, Category: 5}, // Hindi Entertainment
+		{ID: "2", Name: "English Movies", Language: 6, Category: 6},      // English Movies
+		{ID: "3", Name: "Hindi Movies", Language: 1, Category: 6},        // Hindi Movies
+		{ID: "4", Name: "English Sports", Language: 6, Category: 8},      // English Sports
+		{ID: "5", Name: "Tamil Entertainment", Language: 8, Category: 5}, // Tamil Entertainment
+		{ID: "6", Name: "Telugu Sports", Language: 11, Category: 8},      // Telugu Sports
+	}
+
+	type args struct {
+		channels   []Channel
+		languages  []int
+		categories []int
+	}
+	tests := []struct {
+		name string
+		args args
+		want []Channel
+	}{
+		{
+			name: "Filter by multiple languages (Hindi and English)",
+			args: args{
+				channels:   testChannels,
+				languages:  []int{1, 6}, // Hindi, English
+				categories: []int{},
+			},
+			want: []Channel{
+				{ID: "1", Name: "Hindi Entertainment", Language: 1, Category: 5},
+				{ID: "2", Name: "English Movies", Language: 6, Category: 6},
+				{ID: "3", Name: "Hindi Movies", Language: 1, Category: 6},
+				{ID: "4", Name: "English Sports", Language: 6, Category: 8},
+			},
+		},
+		{
+			name: "Filter by multiple categories (Movies and Sports)",
+			args: args{
+				channels:   testChannels,
+				languages:  []int{},
+				categories: []int{6, 8}, // Movies, Sports
+			},
+			want: []Channel{
+				{ID: "2", Name: "English Movies", Language: 6, Category: 6},
+				{ID: "3", Name: "Hindi Movies", Language: 1, Category: 6},
+				{ID: "4", Name: "English Sports", Language: 6, Category: 8},
+				{ID: "6", Name: "Telugu Sports", Language: 11, Category: 8},
+			},
+		},
+		{
+			name: "Filter by multiple languages and categories",
+			args: args{
+				channels:   testChannels,
+				languages:  []int{1, 6}, // Hindi, English
+				categories: []int{6},    // Movies
+			},
+			want: []Channel{
+				{ID: "2", Name: "English Movies", Language: 6, Category: 6},
+				{ID: "3", Name: "Hindi Movies", Language: 1, Category: 6},
+			},
+		},
+		{
+			name: "Filter with 'All Languages' (0) should include all languages",
+			args: args{
+				channels:   testChannels,
+				languages:  []int{0}, // All Languages
+				categories: []int{6}, // Movies
+			},
+			want: []Channel{
+				{ID: "2", Name: "English Movies", Language: 6, Category: 6},
+				{ID: "3", Name: "Hindi Movies", Language: 1, Category: 6},
+			},
+		},
+		{
+			name: "Filter with 'All Categories' (0) should include all categories",
+			args: args{
+				channels:   testChannels,
+				languages:  []int{1}, // Hindi
+				categories: []int{0}, // All Categories
+			},
+			want: []Channel{
+				{ID: "1", Name: "Hindi Entertainment", Language: 1, Category: 5},
+				{ID: "3", Name: "Hindi Movies", Language: 1, Category: 6},
+			},
+		},
+		{
+			name: "Empty filters should return all channels",
+			args: args{
+				channels:   testChannels,
+				languages:  []int{},
+				categories: []int{},
+			},
+			want: testChannels,
+		},
+		{
+			name: "No matching channels",
+			args: args{
+				channels:   testChannels,
+				languages:  []int{99}, // Non-existent language
+				categories: []int{},
+			},
+			want: []Channel{},
+		},
+	}
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := FilterChannelsMultiple(tt.args.channels, tt.args.languages, tt.args.categories)
+			if len(got) != len(tt.want) {
+				t.Errorf("FilterChannelsMultiple() returned %d channels, want %d", len(got), len(tt.want))
+				return
+			}
+			for i, channel := range got {
+				if channel.ID != tt.want[i].ID {
+					t.Errorf("FilterChannelsMultiple() channel[%d].ID = %v, want %v", i, channel.ID, tt.want[i].ID)
+				}
+			}
+		})
+	}
+}
+
 func TestReplaceM3U8(t *testing.T) {
 	setupTest() // Initialize necessary components
 	type args struct {
