@@ -66,7 +66,7 @@ func TestFilterChannelsByDefaults(t *testing.T) {
 			name:       "Filter by multiple languages",
 			channels:   testChannels,
 			categories: []int{},
-			languages:  []int{1, 2}, // Hindi and English
+			languages:  []int{1, 2},  // Hindi and English
 			expected:   testChannels, // All channels match
 		},
 		{
@@ -100,12 +100,12 @@ func TestFilterChannelsByDefaults(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := FilterChannelsByDefaults(tt.channels, tt.categories, tt.languages)
-			
+
 			// Handle nil vs empty slice comparison
 			if len(result) == 0 && len(tt.expected) == 0 {
 				return // Both are empty, test passes
 			}
-			
+
 			if !reflect.DeepEqual(result, tt.expected) {
 				t.Errorf("FilterChannelsByDefaults() = %v, expected %v", result, tt.expected)
 			}

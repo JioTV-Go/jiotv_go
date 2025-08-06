@@ -95,10 +95,10 @@ func TestDefaultCategoriesAndLanguagesConfig(t *testing.T) {
 				t.Fatalf("Failed to load config: %v", err)
 			}
 
-            // Compare the entire loaded config with the expected config.
-            if !reflect.DeepEqual(config, tt.expected) {
-                t.Errorf("Config mismatch.\nGot:    %+v\nWanted: %+v", config, tt.expected)
-            }
+			// Compare the entire loaded config with the expected config.
+			if !reflect.DeepEqual(config, tt.expected) {
+				t.Errorf("Config mismatch.\nGot:    %+v\nWanted: %+v", config, tt.expected)
+			}
 		})
 	}
 }

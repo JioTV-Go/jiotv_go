@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"io"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
@@ -10,21 +9,6 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-// mockTemplateEngine implements a template engine that captures render data for testing
-type mockTemplateEngine struct {
-	lastTemplate string
-	lastData     interface{}
-}
-
-func (m *mockTemplateEngine) Load() error { return nil }
-
-func (m *mockTemplateEngine) Render(out io.Writer, name string, binding interface{}, layout ...string) error {
-	m.lastTemplate = name
-	m.lastData = binding
-	// Write minimal response to satisfy fiber
-	_, err := out.Write([]byte("mock template response"))
-	return err
-}
 
 // TestIndexHandlerActuallyCallsHandler verifies that we call the real IndexHandler function
 // rather than reimplementing its logic in the test. This addresses the code review feedback
@@ -37,7 +21,7 @@ func TestIndexHandlerActuallyCallsHandler(t *testing.T) {
 	// Save original config and TV instance
 	originalCfg := config.Cfg
 	originalTV := TV
-	t.Cleanup(func() { 
+	t.Cleanup(func() {
 		config.Cfg = originalCfg
 		TV = originalTV
 	})
@@ -58,13 +42,13 @@ func TestIndexHandlerActuallyCallsHandler(t *testing.T) {
 		{
 			name:         "With defaults, no query params - should use defaults",
 			defaultCats:  []int{5, 8}, // Entertainment, Sports
-			defaultLangs:  []int{1, 6}, // Hindi, English
+			defaultLangs: []int{1, 6}, // Hindi, English
 			queryParams:  map[string]string{},
 		},
 		{
 			name:         "With defaults, query params - should override defaults",
 			defaultCats:  []int{5, 8}, // Entertainment, Sports
-			defaultLangs:  []int{1, 6}, // Hindi, English
+			defaultLangs: []int{1, 6}, // Hindi, English
 			queryParams:  map[string]string{"language": "1", "category": "5"},
 		},
 	}
@@ -84,7 +68,7 @@ func TestIndexHandlerActuallyCallsHandler(t *testing.T) {
 			config.Cfg = config.JioTVConfig{
 				DefaultCategories: tc.defaultCats,
 				DefaultLanguages:  tc.defaultLangs,
-				Title:            "Test JioTV Go",
+				Title:             "Test JioTV Go",
 			}
 
 			TV = &television.Television{}
@@ -95,7 +79,7 @@ func TestIndexHandlerActuallyCallsHandler(t *testing.T) {
 			ctx := &fasthttp.RequestCtx{}
 			ctx.Request.Header.SetMethod("GET")
 			ctx.Request.SetRequestURI("/")
-			
+
 			// Add query parameters if any
 			if len(tc.queryParams) > 0 {
 				url := "/"
@@ -111,7 +95,7 @@ func TestIndexHandlerActuallyCallsHandler(t *testing.T) {
 				}
 				ctx.Request.SetRequestURI(url)
 			}
-			
+
 			fiberCtx := app.AcquireCtx(ctx)
 			defer app.ReleaseCtx(fiberCtx)
 
@@ -136,7 +120,7 @@ func TestIndexHandlerConfiguration(t *testing.T) {
 	// Save original config
 	originalCfg := config.Cfg
 	originalTitle := Title
-	t.Cleanup(func() { 
+	t.Cleanup(func() {
 		config.Cfg = originalCfg
 		Title = originalTitle
 	})
@@ -167,7 +151,7 @@ func TestIndexHandlerConfiguration(t *testing.T) {
 			config.Cfg = config.JioTVConfig{
 				DefaultCategories: tt.defaultCats,
 				DefaultLanguages:  tt.defaultLangs,
-				Title:            tt.configTitle,
+				Title:             tt.configTitle,
 			}
 			Title = tt.configTitle
 
