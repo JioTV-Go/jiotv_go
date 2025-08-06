@@ -523,7 +523,7 @@ func FilterChannelsByDefaults(channels []Channel, categories, languages []int) [
 		languageSet[lang] = struct{}{}
 	}
 
-	var filteredChannels []Channel
+	filteredChannels := make([]Channel, 0, len(channels))
 	for _, channel := range channels {
 		// If categories are specified, channel must match one of them
 		categoryMatch := len(categories) == 0
