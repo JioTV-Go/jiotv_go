@@ -97,7 +97,7 @@ func IndexHandler(c *fiber.Ctx) error {
 	category := c.Query("category")
 	
 	// Process logo URLs for all channels
-	hostURL := strings.ToLower(c.Protocol()) + "://" + c.Hostname()
+	hostURL := c.Protocol() + "://" + c.Hostname()
 	for i, channel := range channels.Result {
 		if strings.HasPrefix(channel.LogoURL, "http://") || strings.HasPrefix(channel.LogoURL, "https://") {
 			// Custom channel with full URL, use as-is
