@@ -99,5 +99,6 @@ func TestDefaultCategoriesAndLanguagesConfig(t *testing.T) {
             if !reflect.DeepEqual(config, tt.expected) {
                 t.Errorf("Config mismatch.\nGot:    %+v\nWanted: %+v", config, tt.expected)
             }
+		})
 	}
 }
