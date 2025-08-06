@@ -95,6 +95,18 @@ func IndexHandler(c *fiber.Ctx) error {
 	// Get language and category from query params
 	language := c.Query("language")
 	category := c.Query("category")
+	
+	// Process logo URLs for all channels
+	hostURL := strings.ToLower(c.Protocol()) + "://" + c.Hostname()
+	for i, channel := range channels.Result {
+		if strings.HasPrefix(channel.LogoURL, "http://") || strings.HasPrefix(channel.LogoURL, "https://") {
+			// Custom channel with full URL, use as-is
+			channels.Result[i].LogoURL = channel.LogoURL
+		} else {
+			// Regular channel with relative path, add proxy prefix
+			channels.Result[i].LogoURL = hostURL + "/jtvimage/" + channel.LogoURL
+		}
+	}
 
 	// Context data for index page
 	indexContext := fiber.Map{
@@ -433,7 +445,14 @@ func ChannelsHandler(c *fiber.Ctx) error {
 			} else {
 				channelURL = fmt.Sprintf("%s/live/%s.m3u8", hostURL, channel.ID)
 			}
-			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
+			var channelLogoURL string
+			if strings.HasPrefix(channel.LogoURL, "http://") || strings.HasPrefix(channel.LogoURL, "https://") {
+				// Custom channel with full URL
+				channelLogoURL = channel.LogoURL
+			} else {
+				// Regular channel with relative path
+				channelLogoURL = fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
+			}
 			var groupTitle string
 			switch splitCategory {
 			case "split":
