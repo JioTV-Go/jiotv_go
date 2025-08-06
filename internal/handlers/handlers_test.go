@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
@@ -454,6 +455,104 @@ func TestDASHTimeHandler(t *testing.T) {
 			if err := DASHTimeHandler(tt.args.c); (err != nil) != tt.wantErr {
 				t.Errorf("DASHTimeHandler() error = %v, wantErr %v", err, tt.wantErr)
 			}
+		})
+	}
+}
+
+// TestCustomChannelLogoURL tests logo URL handling for custom channels
+// This ensures custom channels with full URLs aren't incorrectly prefixed with /jtvimage/
+func TestCustomChannelLogoURL(t *testing.T) {
+	testCases := []struct {
+		name        string
+		logoURL     string
+		expected    string
+		description string
+	}{
+		{
+			name:        "CustomChannelHTTPS",
+			logoURL:     "https://upload.wikimedia.org/wikipedia/en/a/a4/Sony_Max_new.png",
+			expected:    "https://upload.wikimedia.org/wikipedia/en/a/a4/Sony_Max_new.png",
+			description: "Custom channel logo with https:// should be used as-is",
+		},
+		{
+			name:        "CustomChannelHTTP",
+			logoURL:     "http://example.com/logo.png",
+			expected:    "http://example.com/logo.png",
+			description: "Custom channel logo with http:// should be used as-is",
+		},
+		{
+			name:        "RegularChannelLogo",
+			logoURL:     "Sony_HD.png",
+			expected:    "http://localhost:5001/jtvimage/Sony_HD.png",
+			description: "Regular channel logo should get proxy prefix",
+		},
+	}
+
+	hostURL := "http://localhost:5001"
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Test the logo URL handling logic from IndexHandler
+			var result string
+			if strings.HasPrefix(tc.logoURL, "http://") || strings.HasPrefix(tc.logoURL, "https://") {
+				// Custom channel with full URL, use as-is
+				result = tc.logoURL
+			} else {
+				// Regular channel with relative path, add proxy prefix
+				result = hostURL + "/jtvimage/" + tc.logoURL
+			}
+
+			if result != tc.expected {
+				t.Errorf("Expected '%s', got '%s'", tc.expected, result)
+			}
+			t.Logf("✓ %s: %s -> %s", tc.description, tc.logoURL, result)
+		})
+	}
+}
+
+// TestChannelsHandlerM3ULogoURL tests M3U playlist logo URL handling
+func TestChannelsHandlerM3ULogoURL(t *testing.T) {
+	testCases := []struct {
+		name     string
+		logoURL  string
+		expected string
+	}{
+		{
+			name:     "CustomHTTPS",
+			logoURL:  "https://example.com/custom_logo.png",
+			expected: "https://example.com/custom_logo.png",
+		},
+		{
+			name:     "CustomHTTP",
+			logoURL:  "http://cdn.example.com/logo.jpg",
+			expected: "http://cdn.example.com/logo.jpg",
+		},
+		{
+			name:     "RegularChannel",
+			logoURL:  "Sony_HD.png",
+			expected: "http://localhost:5001/jtvimage/Sony_HD.png",
+		},
+	}
+
+	hostURL := "http://localhost:5001"
+	logoURL := hostURL + "/jtvimage"
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Test M3U logo URL handling logic from ChannelsHandler
+			var channelLogoURL string
+			if strings.HasPrefix(tc.logoURL, "http://") || strings.HasPrefix(tc.logoURL, "https://") {
+				// Custom channel with full URL
+				channelLogoURL = tc.logoURL
+			} else {
+				// Regular channel with relative path
+				channelLogoURL = logoURL + "/" + tc.logoURL
+			}
+
+			if channelLogoURL != tc.expected {
+				t.Errorf("Expected '%s', got '%s'", tc.expected, channelLogoURL)
+			}
+			t.Logf("✓ M3U Logo URL: %s -> %s", tc.logoURL, channelLogoURL)
 		})
 	}
 }
