@@ -120,7 +120,7 @@ func TestNewProgramme(t *testing.T) {
 	}
 }
 
-func Test_genXML(t *testing.T) {
+func TestGenXML(t *testing.T) {
 	
 	tests := []struct {
 		name    string
@@ -138,7 +138,7 @@ func Test_genXML(t *testing.T) {
 	}
 }
 
-func Test_formatTime(t *testing.T) {
+func TestFormatTime(t *testing.T) {
 	type args struct {
 		t time.Time
 	}

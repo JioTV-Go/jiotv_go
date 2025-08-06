@@ -481,7 +481,7 @@ func TestReplaceKey(t *testing.T) {
 	}
 }
 
-func Test_getSLChannel(t *testing.T) {
+func TestGetSLChannel(t *testing.T) {
 	type args struct {
 		channelID string
 	}

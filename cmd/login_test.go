@@ -116,7 +116,7 @@ func TestLoginPassword(t *testing.T) {
 	}
 }
 
-func Test_readPassword(t *testing.T) {
+func TestReadPassword(t *testing.T) {
 	type args struct {
 		prompt string
 	}

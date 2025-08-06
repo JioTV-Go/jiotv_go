@@ -7,7 +7,7 @@ import (
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 )
 
-func Test_getPIDPath(t *testing.T) {
+func TestGetPIDPath(t *testing.T) {
 	tests := []struct {
 		name string
 		want string

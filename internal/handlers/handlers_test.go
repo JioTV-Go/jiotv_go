@@ -117,7 +117,7 @@ func TestIndexHandler(t *testing.T) {
 	}
 }
 
-func Test_checkFieldExist(t *testing.T) {
+func TestCheckFieldExist(t *testing.T) {
 	type args struct {
 		field string
 		check bool
