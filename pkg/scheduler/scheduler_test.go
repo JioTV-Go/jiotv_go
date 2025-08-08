@@ -48,7 +48,7 @@ func TestStop(t *testing.T) {
 			if Scheduler == nil {
 				t.Fatal("Scheduler should be initialized")
 			}
-			
+
 			// Should not panic when stopping
 			Stop()
 		})
@@ -58,7 +58,7 @@ func TestStop(t *testing.T) {
 func TestAdd(t *testing.T) {
 	// Initialize scheduler first
 	Init()
-	
+
 	type args struct {
 		id       string
 		interval time.Duration
@@ -125,7 +125,7 @@ func TestAdd(t *testing.T) {
 			Add(tt.args.id, tt.args.interval, tt.args.task)
 		})
 	}
-	
+
 	// Test adding task with nil function
 	t.Run("Add task with nil function", func(t *testing.T) {
 		// This might trigger an error condition

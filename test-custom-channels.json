@@ -1,0 +1,13 @@
+{
+  "channels": [
+    {
+      "id": "custom1",
+      "name": "Sony MAX Custom",
+      "url": "https://sonylivproduction.akamaized.net/5024b2abea7a44e999e44be2ceaa9952.m3u8",
+      "logo_url": "https://upload.wikimedia.org/wikipedia/en/a/a4/Sony_Max_new.png",
+      "category": 6,
+      "language": 1,
+      "is_hd": true
+    }
+  ]
+}

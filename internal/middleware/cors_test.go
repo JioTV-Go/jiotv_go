@@ -16,31 +16,31 @@ func TestCORS(t *testing.T) {
 	})
 
 	tests := []struct {
-		name           string
-		method         string
-		path           string
-		wantStatus     int
+		name            string
+		method          string
+		path            string
+		wantStatus      int
 		wantAllowOrigin string
 	}{
 		{
-			name:           "GET request sets CORS headers",
-			method:         http.MethodGet,
-			path:           "/test",
-			wantStatus:     200,
+			name:            "GET request sets CORS headers",
+			method:          http.MethodGet,
+			path:            "/test",
+			wantStatus:      200,
 			wantAllowOrigin: "*",
 		},
 		{
-			name:           "OPTIONS preflight returns 204",
-			method:         http.MethodOptions,
-			path:           "/test",
-			wantStatus:     204,
+			name:            "OPTIONS preflight returns 204",
+			method:          http.MethodOptions,
+			path:            "/test",
+			wantStatus:      204,
 			wantAllowOrigin: "*",
 		},
 		{
-			name:           "Whitelist path skips CORS headers",
-			method:         http.MethodGet,
-			path:           "/render.ts",
-			wantStatus:     404, // No handler, so 404, but CORS header should be absent
+			name:            "Whitelist path skips CORS headers",
+			method:          http.MethodGet,
+			path:            "/render.ts",
+			wantStatus:      404, // No handler, so 404, but CORS header should be absent
 			wantAllowOrigin: "",
 		},
 	}

@@ -6,7 +6,7 @@ import (
 )
 
 func TestInit(t *testing.T) {
-	
+
 	tests := []struct {
 		name string
 	}{
@@ -120,8 +120,8 @@ func TestNewProgramme(t *testing.T) {
 	}
 }
 
-func Test_genXML(t *testing.T) {
-	
+func TestGenXML(t *testing.T) {
+
 	tests := []struct {
 		name    string
 		wantErr bool
@@ -138,7 +138,7 @@ func Test_genXML(t *testing.T) {
 	}
 }
 
-func Test_formatTime(t *testing.T) {
+func TestFormatTime(t *testing.T) {
 	type args struct {
 		t time.Time
 	}
@@ -173,7 +173,7 @@ func Test_formatTime(t *testing.T) {
 }
 
 func TestGenXMLGz(t *testing.T) {
-	
+
 	tests := []struct {
 		name     string
 		filename string
@@ -203,27 +203,27 @@ func TestEpochString_UnmarshalJSON(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Unmarshal from integer",
-			args: args{data: []byte("1609459200123")}, // 13-digit timestamp
-			want: EpochString("1609459200"),           // Should be truncated to 10 digits
+			name:    "Unmarshal from integer",
+			args:    args{data: []byte("1609459200123")}, // 13-digit timestamp
+			want:    EpochString("1609459200"),           // Should be truncated to 10 digits
 			wantErr: false,
 		},
 		{
-			name: "Unmarshal from string",
-			args: args{data: []byte(`"test_string"`)},
-			want: EpochString("test_string"),
+			name:    "Unmarshal from string",
+			args:    args{data: []byte(`"test_string"`)},
+			want:    EpochString("test_string"),
 			wantErr: false,
 		},
 		{
-			name: "Unmarshal from empty string",
-			args: args{data: []byte(`""`)},
-			want: EpochString(""),
+			name:    "Unmarshal from empty string",
+			args:    args{data: []byte(`""`)},
+			want:    EpochString(""),
 			wantErr: false,
 		},
 		{
-			name: "Unmarshal invalid JSON",
-			args: args{data: []byte("invalid json")},
-			want: EpochString(""),
+			name:    "Unmarshal invalid JSON",
+			args:    args{data: []byte("invalid json")},
+			want:    EpochString(""),
 			wantErr: true,
 		},
 	}
