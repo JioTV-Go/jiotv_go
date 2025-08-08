@@ -156,5 +156,5 @@ func TestAutoStart(t *testing.T) {}
 func TestGetConsentFromUser(t *testing.T) {}
 
 // The following tests are covered by Test_bashrcModifiers
-func TestAddToBashrc(t *testing.T) {}
+func TestAddToBashrc(t *testing.T)      {}
 func TestRemoveFromBashrc(t *testing.T) {}

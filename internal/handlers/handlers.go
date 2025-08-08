@@ -64,7 +64,7 @@ func Init() {
 		if credentials.AccessToken != "" && credentials.RefreshToken == "" {
 			utils.Log.Println("Warning: AccessToken present but RefreshToken is missing. Token refresh may fail.")
 		}
-		// If SsoToken is present, validate on first use  
+		// If SsoToken is present, validate on first use
 		if credentials.SSOToken != "" && credentials.UniqueID == "" {
 			utils.Log.Println("Warning: SSOToken present but UniqueID is missing. Token refresh may fail.")
 		}
@@ -95,7 +95,7 @@ func IndexHandler(c *fiber.Ctx) error {
 	// Get language and category from query params
 	language := c.Query("language")
 	category := c.Query("category")
-	
+
 	// Process logo URLs for all channels
 	hostURL := c.Protocol() + "://" + c.Hostname()
 	for i, channel := range channels.Result {
@@ -159,13 +159,13 @@ func LiveHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
-	
+
 	// Ensure tokens are fresh before making API call
 	if err := EnsureFreshTokens(); err != nil {
 		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
 		// Continue with the request - tokens might still work or it might be a custom channel
 	}
-	
+
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
@@ -201,13 +201,13 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
-	
+
 	// Ensure tokens are fresh before making API call
 	if err := EnsureFreshTokens(); err != nil {
 		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
 		// Continue with the request - tokens might still work or it might be a custom channel
 	}
-	
+
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
@@ -267,9 +267,9 @@ func RenderHandler(c *fiber.Ctx) error {
 		utils.Log.Println(err)
 		return err
 	}
-	
+
 	renderResult, statusCode := TV.Render(decoded_url)
-	
+
 	// If we get a 403 (Forbidden), try refreshing tokens and retry once
 	if statusCode == fiber.StatusForbidden {
 		if err := EnsureFreshTokens(); err != nil {

@@ -29,13 +29,13 @@ func TestUpdate(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Test update with mock server - newer version available",
-			args: args{currentVersion: "1.0.0", customVersion: "", baseURL: mockServer.URL},
+			name:    "Test update with mock server - newer version available",
+			args:    args{currentVersion: "1.0.0", customVersion: "", baseURL: mockServer.URL},
 			wantErr: false, // Update operation should succeed with mock data (no file operations in mock)
 		},
 		{
-			name: "Test update with custom version",
-			args: args{currentVersion: "1.0.0", customVersion: "v1.5.0", baseURL: mockServer.URL},
+			name:    "Test update with custom version",
+			args:    args{currentVersion: "1.0.0", customVersion: "v1.5.0", baseURL: mockServer.URL},
 			wantErr: false, // Update should succeed with mock data
 		},
 	}
@@ -52,7 +52,7 @@ func TestUpdate(t *testing.T) {
 func createMockGitHubServer() *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if strings.Contains(r.URL.Path, "/releases/latest") {
-			// Mock latest release response  
+			// Mock latest release response
 			release := Release{
 				TagName: "v2.1.0",
 				Assets: []Asset{
@@ -122,9 +122,9 @@ func TestGetLatestRelease(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name: "Test with non-existent version",
-			args: args{customVersion: "v0.0.0", baseURL: mockServer.URL},
-			want: nil,
+			name:    "Test with non-existent version",
+			args:    args{customVersion: "v0.0.0", baseURL: mockServer.URL},
+			want:    nil,
 			wantErr: true,
 		},
 	}
@@ -166,23 +166,23 @@ func TestDownloadBinary(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Download valid binary",
-			args: args{url: mockServer.URL + "/valid-binary", outputPath: "/tmp/test-binary"},
+			name:    "Download valid binary",
+			args:    args{url: mockServer.URL + "/valid-binary", outputPath: "/tmp/test-binary"},
 			wantErr: false,
 		},
 		{
-			name: "Download non-existent binary (404)",
-			args: args{url: mockServer.URL + "/not-found", outputPath: "/tmp/test-binary-404"},
+			name:    "Download non-existent binary (404)",
+			args:    args{url: mockServer.URL + "/not-found", outputPath: "/tmp/test-binary-404"},
 			wantErr: true,
 		},
 		{
-			name: "Download with server error (500)",
-			args: args{url: mockServer.URL + "/server-error", outputPath: "/tmp/test-binary-500"},
+			name:    "Download with server error (500)",
+			args:    args{url: mockServer.URL + "/server-error", outputPath: "/tmp/test-binary-500"},
 			wantErr: true,
 		},
 		{
-			name: "Invalid URL",
-			args: args{url: "invalid-url", outputPath: "/tmp/test-binary-invalid"},
+			name:    "Invalid URL",
+			args:    args{url: "invalid-url", outputPath: "/tmp/test-binary-invalid"},
 			wantErr: true,
 		},
 	}
@@ -205,13 +205,13 @@ func TestReplaceBinary(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Replace with non-existent file",
-			args: args{newBinaryPath: "/non/existent/file"},
+			name:    "Replace with non-existent file",
+			args:    args{newBinaryPath: "/non/existent/file"},
 			wantErr: true, // Should fail because file doesn't exist
 		},
 		{
-			name: "Replace with empty path",
-			args: args{newBinaryPath: ""},
+			name:    "Replace with empty path",
+			args:    args{newBinaryPath: ""},
 			wantErr: true, // Should fail with empty path
 		},
 	}

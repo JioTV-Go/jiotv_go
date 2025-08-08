@@ -27,8 +27,8 @@ import (
 
 const (
 	// JioTV API domain constants
-	JIOTV_API_DOMAIN = urls.JioTVAPIDomain
-	API_JIO_DOMAIN   = urls.APIJioDomain
+	JIOTV_API_DOMAIN  = urls.JioTVAPIDomain
+	API_JIO_DOMAIN    = urls.APIJioDomain
 	AUTH_MEDIA_DOMAIN = urls.AuthMediaDomain
 )
 
@@ -277,7 +277,7 @@ func Login(username, password string) (map[string]string, error) {
 
 	// Set headers
 	headerMap := map[string]string{
-		headers.XAPIKey:    headers.APIKeyJio,
+		headers.XAPIKey:     headers.APIKeyJio,
 		headers.ContentType: headers.ContentTypeJSON,
 	}
 

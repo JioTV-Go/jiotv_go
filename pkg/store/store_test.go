@@ -56,24 +56,24 @@ func TestGet(t *testing.T) {
 		setup   func() // Setup function to set values before testing
 	}{
 		{
-			name: "Get non-existent key",
-			args: args{key: "nonexistent_key"},
-			want: "",
+			name:    "Get non-existent key",
+			args:    args{key: "nonexistent_key"},
+			want:    "",
 			wantErr: true,
 		},
 		{
-			name: "Get existing key",
-			args: args{key: "test_key"},
-			want: "test_value",
+			name:    "Get existing key",
+			args:    args{key: "test_key"},
+			want:    "test_value",
 			wantErr: false,
 			setup: func() {
 				Set("test_key", "test_value")
 			},
 		},
 		{
-			name: "Get empty key",
-			args: args{key: ""},
-			want: "",
+			name:    "Get empty key",
+			args:    args{key: ""},
+			want:    "",
 			wantErr: true,
 		},
 	}
@@ -117,23 +117,23 @@ func TestSet(t *testing.T) {
 		wantErr bool
 	}{
 		{
-			name: "Set new key-value pair",
-			args: args{key: "new_key", value: "new_value"},
+			name:    "Set new key-value pair",
+			args:    args{key: "new_key", value: "new_value"},
 			wantErr: false,
 		},
 		{
-			name: "Set existing key with new value",
-			args: args{key: "existing_key", value: "updated_value"},
+			name:    "Set existing key with new value",
+			args:    args{key: "existing_key", value: "updated_value"},
 			wantErr: false,
 		},
 		{
-			name: "Set empty key",
-			args: args{key: "", value: "some_value"},
+			name:    "Set empty key",
+			args:    args{key: "", value: "some_value"},
 			wantErr: false, // Empty key should be allowed in this implementation
 		},
 		{
-			name: "Set empty value",
-			args: args{key: "key_with_empty_value", value: ""},
+			name:    "Set empty value",
+			args:    args{key: "key_with_empty_value", value: ""},
 			wantErr: false,
 		},
 	}
@@ -143,7 +143,7 @@ func TestSet(t *testing.T) {
 				t.Errorf("Set() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
+
 			// If set was successful, verify we can get the value back
 			if !tt.wantErr {
 				got, err := Get(tt.args.key)
@@ -182,21 +182,21 @@ func TestDelete(t *testing.T) {
 		setup   func() // Setup function to prepare test data
 	}{
 		{
-			name: "Delete existing key",
-			args: args{key: "delete_me"},
+			name:    "Delete existing key",
+			args:    args{key: "delete_me"},
 			wantErr: false,
 			setup: func() {
 				Set("delete_me", "value_to_delete")
 			},
 		},
 		{
-			name: "Delete non-existent key",
-			args: args{key: "non_existent"},
+			name:    "Delete non-existent key",
+			args:    args{key: "non_existent"},
 			wantErr: false, // Delete should not error even if key doesn't exist
 		},
 		{
-			name: "Delete empty key",
-			args: args{key: ""},
+			name:    "Delete empty key",
+			args:    args{key: ""},
 			wantErr: false,
 		},
 	}
@@ -205,12 +205,12 @@ func TestDelete(t *testing.T) {
 			if tt.setup != nil {
 				tt.setup()
 			}
-			
+
 			if err := Delete(tt.args.key); (err != nil) != tt.wantErr {
 				t.Errorf("Delete() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			
+
 			// Verify key is deleted by trying to get it
 			if !tt.wantErr && tt.args.key != "" {
 				_, err := Get(tt.args.key)
@@ -245,7 +245,7 @@ func TestSaveConfig(t *testing.T) {
 			if err := Init(); err != nil {
 				t.Fatalf("Failed to initialize store: %v", err)
 			}
-			
+
 			if err := saveConfig(); (err != nil) != tt.wantErr {
 				t.Errorf("saveConfig() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -264,17 +264,17 @@ func TestGetPathPrefix(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := GetPathPrefix()
-			
+
 			// Should return a non-empty string
 			if got == "" {
 				t.Errorf("GetPathPrefix() returned empty string")
 			}
-			
+
 			// Should end with a slash
 			if got[len(got)-1] != '/' {
 				t.Errorf("GetPathPrefix() should end with '/', got %s", got)
 			}
-			
+
 			// Should be a valid path (just basic check)
 			if len(got) < 2 {
 				t.Errorf("GetPathPrefix() returned suspiciously short path: %s", got)
