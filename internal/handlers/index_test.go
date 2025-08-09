@@ -9,7 +9,6 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-
 // TestIndexHandlerActuallyCallsHandler verifies that we call the real IndexHandler function
 // rather than reimplementing its logic in the test. This addresses the code review feedback
 // about testing the actual handler.

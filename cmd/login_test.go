@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"os"
 	"testing"
 	"time"
 )
@@ -30,21 +29,6 @@ func TestLogout(t *testing.T) {
 			}
 		})
 	}
-}
-
-// createMockInput creates a pipe to simulate user input for testing interactive functions
-func createMockInput(input string) (*os.File, *os.File, error) {
-	r, w, err := os.Pipe()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	go func() {
-		defer w.Close()
-		w.WriteString(input)
-	}()
-
-	return r, w, nil
 }
 
 func TestLoginOTP(t *testing.T) {
