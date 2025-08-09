@@ -44,7 +44,7 @@ func EncryptURL(inputURL string) (string, error) {
 		return "", err
 	}
 
-	stream := cipher.NewCFBEncrypter(block, iv)
+	stream := cipher.NewCTR(block, iv)
 	stream.XORKeyStream(ciphertext[aes.BlockSize:], []byte(inputURL))
 
 	encryptedURL := base64.URLEncoding.EncodeToString(ciphertext)
@@ -74,7 +74,7 @@ func DecryptURL(encryptedURL string) (string, error) {
 	iv := ciphertext[:aes.BlockSize]
 	ciphertext = ciphertext[aes.BlockSize:]
 
-	stream := cipher.NewCFBDecrypter(block, iv)
+	stream := cipher.NewCTR(block, iv)
 	stream.XORKeyStream(ciphertext, ciphertext)
 
 	decryptedURL := string(ciphertext)

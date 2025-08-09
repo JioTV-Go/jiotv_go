@@ -126,6 +126,30 @@ Set to `true` to see logs in your terminal, or `false` to suppress console loggi
 This option specifies the path to a JSON or YAML file containing custom channel definitions that will be integrated with JioTV channels. Custom channels will appear in the web interface and IPTV playlists alongside standard JioTV channels. If the file is not found or contains errors, the server will continue to work with only JioTV channels.
 
 For detailed information about custom channels configuration, including file format, field descriptions, and usage examples, please see [Custom Channels Documentation](./CUSTOM_CHANNELS.md).
+
+### Default Categories and Languages:
+
+| Purpose | Config Value | Environment Variable | Default |
+| ----- | ------------ | -------------------- | ------- |
+| Default categories to display on the web interface when no filters are applied. | `default_categories` | `JIOTV_DEFAULT_CATEGORIES` | `[]` (empty array) |
+| Default languages to display on the web interface when no filters are applied. | `default_languages` | `JIOTV_DEFAULT_LANGUAGES` | `[]` (empty array) |
+
+These options allow you to configure which categories and languages should be shown by default on the web interface when users haven't applied any filters. This provides a more curated experience while still allowing users to override these defaults through the filter interface.
+
+**Default Categories**: An array of category IDs to display by default. For example, `[8, 5]` would show only Sports and Entertainment channels by default.
+
+**Default Languages**: An array of language IDs to display by default. For example, `[1, 6]` would show only Hindi and English language channels by default.
+
+**Filtering Logic**: 
+- When both arrays are configured, channels must match at least one configured category AND one configured language
+- When only one array is configured, channels are filtered by that criteria only
+- When both arrays are empty or not configured, all channels are displayed (backward compatible behavior)
+- User interactions with filter dropdowns completely override the default configuration
+
+**Example Use Cases**:
+- Show only Entertainment and Movies channels in Hindi and English: `default_categories = [5, 6]`, `default_languages = [1, 6]`
+- Show all Sports channels regardless of language: `default_categories = [8]`, `default_languages = []`
+- Show all Hindi content regardless of category: `default_categories = []`, `default_languages = [1]`
 ## Example Configurations
 
 Below are example configuration file for JioTV Go. All fields are optional, and the values shown are the default settings:
@@ -180,6 +204,14 @@ log_to_stdout = false
 
 # CustomChannelsFile is the path to custom channels configuration file. Default: ""
 custom_channels_file = ""
+
+# Default categories to display on the web interface when no filters are applied. Array of category IDs. Default: []
+# Example: default_categories = [8, 5] # Sports, Entertainment
+default_categories = []
+
+# Default languages to display on the web interface when no filters are applied. Array of language IDs. Default: []
+# Example: default_languages = [1, 6] # Hindi, English
+default_languages = []
 ```
 
 This example demonstrates how to customize the configuration parameters using TOML syntax. Feel free to modify the values based on your preferences and requirements.
@@ -203,6 +235,8 @@ proxy: ""
 log_path: ""
 log_to_stdout: false
 custom_channels_file: ""
+default_categories: []
+default_languages: []
 ```
 
 ### Example JSON Configuration
@@ -224,6 +258,8 @@ The file is also available at [configs/jiotv_go-config.json](https://github.com/
     "proxy": "",
     "log_path": "",
     "log_to_stdout": false,
-    "custom_channels_file": ""
+    "custom_channels_file": "",
+    "default_categories": [],
+    "default_languages": []
 }
 ```

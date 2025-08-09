@@ -34,3 +34,11 @@ log_path = ""
 
 # LogToStdout controls logging to stdout/stderr. Default: false
 log_to_stdout = false
+
+# Default categories to display on the web page without filters. Array of category IDs. Default: []
+# Example: default_categories = [8, 5] # Entertainment, Movies
+default_categories = []
+
+# Default languages to display on the web page without filters. Array of language IDs. Default: []
+# Example: default_languages = [1, 6] # Hindi, English
+default_languages = []

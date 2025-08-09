@@ -105,8 +105,8 @@ func TestLoadCustomChannels(t *testing.T) {
 					Name:     "YAML Test Channel 1",
 					URL:      "https://example.com/yaml1.m3u8",
 					LogoURL:  "https://example.com/yaml_logo1.png",
-					Category: 8,  // Sports
-					Language: 1,  // Hindi
+					Category: 8, // Sports
+					Language: 1, // Hindi
 					IsHD:     true,
 				},
 			},
@@ -470,17 +470,17 @@ func TestExcessiveChannelsWarning(t *testing.T) {
 	// Test caching with excessive channels
 	config.Cfg.CustomChannelsFile = tempFile.Name()
 	ClearCustomChannelsCache()
-	
+
 	// This should trigger the warning in loadAndCacheCustomChannels
 	InitCustomChannels()
-	
+
 	// Verify channels are cached
 	cachedChannels := getCustomChannels()
 	if len(cachedChannels) != 1500 {
 		t.Errorf("Expected 1500 cached channels, got %d", len(cachedChannels))
 	}
 
-	// Test reload with excessive channels  
+	// Test reload with excessive channels
 	err = ReloadCustomChannels()
 	if err != nil {
 		t.Fatalf("Failed to reload custom channels: %v", err)

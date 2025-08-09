@@ -66,17 +66,17 @@ func TestJioTVConfig_Load(t *testing.T) {
 func TestJioTVConfig_Get(t *testing.T) {
 	// Set the global Cfg for Get to work as intended
 	Cfg = JioTVConfig{
-		EPG:                 true,
-		Debug:               false,
-		DisableTSHandler:    true,
-		DisableLogout:       false,
-		DRM:                 true,
-		Title:               "TestTitle",
+		EPG:                  true,
+		Debug:                false,
+		DisableTSHandler:     true,
+		DisableLogout:        false,
+		DRM:                  true,
+		Title:                "TestTitle",
 		DisableURLEncryption: false,
-		Proxy:               "http://proxy",
-		PathPrefix:          "/tmp/jiotv",
-		LogPath:             "/tmp/logs",
-		LogToStdout:         true,
+		Proxy:                "http://proxy",
+		PathPrefix:           "/tmp/jiotv",
+		LogPath:              "/tmp/logs",
+		LogToStdout:          true,
 	}
 
 	tests := []struct {

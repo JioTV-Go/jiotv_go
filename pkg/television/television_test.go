@@ -26,7 +26,7 @@ func setupTest() {
 			panic(fmt.Sprintf("Failed to setup test environment: %v", err))
 		}
 		// Note: cleanup is handled by the temp directory system cleanup
-		
+
 		// Initialize store for testing
 		store.Init()
 		// Initialize secureurl for URL encryption/decryption

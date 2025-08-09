@@ -45,7 +45,7 @@ func Test_getDrmMpd(t *testing.T) {
 					t.Logf("getDrmMpd() panicked as expected due to uninitialized dependencies: %v", r)
 				}
 			}()
-			
+
 			got, err := getDrmMpd(tt.args.channelID, tt.args.quality)
 			if (err != nil) != tt.wantErr {
 				t.Errorf("getDrmMpd() error = %v, wantErr %v", err, tt.wantErr)
@@ -91,24 +91,24 @@ func Test_generateDateTime(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := generateDateTime()
-			
+
 			// Validate that the result is not empty
 			if got == "" {
 				t.Errorf("generateDateTime() returned empty string")
 			}
-			
+
 			// Validate the format: should be 13 characters (YYMMDDHHMMMMS)
 			if len(got) != 13 {
 				t.Errorf("generateDateTime() length = %v, want 13", len(got))
 			}
-			
+
 			// All characters should be digits
 			for i, c := range got {
 				if c < '0' || c > '9' {
 					t.Errorf("generateDateTime() character at position %d should be digit, got %c", i, c)
 				}
 			}
-			
+
 			// Test that consecutive calls return different values (due to millisecond precision)
 			got2 := generateDateTime()
 			if got == got2 {

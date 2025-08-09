@@ -33,9 +33,9 @@ func TestInit(t *testing.T) {
 					t.Logf("Init() panicked as expected due to uninitialized dependencies: %v", r)
 				}
 			}()
-			
+
 			Init()
-			
+
 			// If we reach here, Init() succeeded
 			t.Log("Init() completed successfully")
 		})
@@ -108,7 +108,7 @@ func TestIndexHandler(t *testing.T) {
 					t.Logf("IndexHandler() panicked as expected due to uninitialized dependencies: %v", r)
 				}
 			}()
-			
+
 			if err := IndexHandler(tt.args.c); (err != nil) != tt.wantErr {
 				t.Errorf("IndexHandler() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -154,7 +154,7 @@ func Test_checkFieldExist(t *testing.T) {
 					t.Logf("checkFieldExist() panicked due to uninitialized logger: %v", r)
 				}
 			}()
-			
+
 			if err := checkFieldExist(tt.args.field, tt.args.check, tt.args.c); (err != nil) != tt.wantErr {
 				t.Errorf("checkFieldExist() error = %v, wantErr %v", err, tt.wantErr)
 			}
@@ -187,10 +187,10 @@ func TestLiveHandler(t *testing.T) {
 					t.Logf("LiveHandler() panicked as expected due to uninitialized dependencies: %v", r)
 				}
 			}()
-			
+
 			// Add channel ID parameter to the context
 			tt.args.c.Request().URI().SetPath("/live/123")
-			
+
 			if err := LiveHandler(tt.args.c); (err != nil) != tt.wantErr {
 				t.Errorf("LiveHandler() error = %v, wantErr %v", err, tt.wantErr)
 			}

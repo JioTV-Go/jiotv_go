@@ -64,7 +64,7 @@ func Init() {
 		if credentials.AccessToken != "" && credentials.RefreshToken == "" {
 			utils.Log.Println("Warning: AccessToken present but RefreshToken is missing. Token refresh may fail.")
 		}
-		// If SsoToken is present, validate on first use  
+		// If SsoToken is present, validate on first use
 		if credentials.SSOToken != "" && credentials.UniqueID == "" {
 			utils.Log.Println("Warning: SSOToken present but UniqueID is missing. Token refresh may fail.")
 		}
@@ -111,7 +111,7 @@ func IndexHandler(c *fiber.Ctx) error {
 		},
 	}
 
-	// Filter channels by language and category if provided
+	// Filter channels by query params if provided
 	if language != "" || category != "" {
 		language_int, err := strconv.Atoi(language)
 		if err != nil {
@@ -125,7 +125,15 @@ func IndexHandler(c *fiber.Ctx) error {
 		indexContext["Channels"] = channels_list
 		return c.Render("views/index", indexContext)
 	}
-	// If language and category are not provided, return all channels
+
+	// If no query parameters are provided, use default config filtering
+	if len(config.Cfg.DefaultCategories) > 0 || len(config.Cfg.DefaultLanguages) > 0 {
+		channels_list := television.FilterChannelsByDefaults(channels.Result, config.Cfg.DefaultCategories, config.Cfg.DefaultLanguages)
+		indexContext["Channels"] = channels_list
+		return c.Render("views/index", indexContext)
+	}
+
+	// If no query params and no default config, return all channels
 	indexContext["Channels"] = channels.Result
 	return c.Render("views/index", indexContext)
 }
@@ -147,13 +155,13 @@ func LiveHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
-	
+
 	// Ensure tokens are fresh before making API call
 	if err := EnsureFreshTokens(); err != nil {
 		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
 		// Continue with the request - tokens might still work or it might be a custom channel
 	}
-	
+
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
@@ -189,13 +197,13 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
-	
+
 	// Ensure tokens are fresh before making API call
 	if err := EnsureFreshTokens(); err != nil {
 		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
 		// Continue with the request - tokens might still work or it might be a custom channel
 	}
-	
+
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
@@ -255,9 +263,9 @@ func RenderHandler(c *fiber.Ctx) error {
 		utils.Log.Println(err)
 		return err
 	}
-	
+
 	renderResult, statusCode := TV.Render(decoded_url)
-	
+
 	// If we get a 403 (Forbidden), try refreshing tokens and retry once
 	if statusCode == fiber.StatusForbidden {
 		if err := EnsureFreshTokens(); err != nil {
