@@ -84,7 +84,7 @@ type LiveURLOutput struct {
 	VodStitch   bool     `json:"vodStitch"`
 	Mpd         MPD      `json:"mpd"`
 	IsDRM       bool     `json:"isDRM"`
-	ExtId       string   `json:"extId"`
+	ExtID       string   `json:"extId"`
 	AlgoName    string   `json:"algoName"`
 }
 
