@@ -136,6 +136,11 @@ For detailed information about custom channels configuration, including file for
 
 These options allow you to configure which categories and languages should be shown by default on the web interface when users haven't applied any filters. This provides a more curated experience while still allowing users to override these defaults through the filter interface.
 
+**Environment Variable Format**: When using environment variables for array values, specify them as comma-separated values without spaces. For example:
+```bash
+JIOTV_DEFAULT_CATEGORIES=5,6 JIOTV_DEFAULT_LANGUAGES=1,6
+```
+
 **Default Categories**: An array of category IDs to display by default. For example, `[8, 5]` would show only Sports and Entertainment channels by default.
 
 **Default Languages**: An array of language IDs to display by default. For example, `[1, 6]` would show only Hindi and English language channels by default.
