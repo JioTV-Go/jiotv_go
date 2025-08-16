@@ -82,7 +82,7 @@
               // add query params host and path
               const channelHost = "{{ .channel_host }}";
               const channelPath = "{{ .channel_path }}";
-              if (channelHost !== "" && channelPath != "") {
+              if (channelHost !== "" && channelPath !== "") {
                 newUrl.searchParams.append("host", channelHost);
                 newUrl.searchParams.append("path", channelPath);
               }
