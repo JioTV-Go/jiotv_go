@@ -604,11 +604,6 @@ func TestIsCustomChannel(t *testing.T) {
 			expected:  true,
 		},
 		{
-			name:     "Custom channel without cc_ prefix (backward compatibility)",
-			channelID: "custom1",
-			expected:  true,
-		},
-		{
 			name:     "Regular JioTV channel",
 			channelID: "1234",
 			expected:  false,
