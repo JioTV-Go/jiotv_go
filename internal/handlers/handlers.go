@@ -137,7 +137,7 @@ func IndexHandler(c *fiber.Ctx) error {
 		},
 	}
 
-	// Filter channels by language and category if provided
+	// Filter channels by query params if provided
 	if language != "" || category != "" {
 		language_int, err := strconv.Atoi(language)
 		if err != nil {
@@ -151,7 +151,15 @@ func IndexHandler(c *fiber.Ctx) error {
 		indexContext["Channels"] = channels_list
 		return c.Render("views/index", indexContext)
 	}
-	// If language and category are not provided, return all channels
+
+	// If no query parameters are provided, use default config filtering
+	if len(config.Cfg.DefaultCategories) > 0 || len(config.Cfg.DefaultLanguages) > 0 {
+		channels_list := television.FilterChannelsByDefaults(channels.Result, config.Cfg.DefaultCategories, config.Cfg.DefaultLanguages)
+		indexContext["Channels"] = channels_list
+		return c.Render("views/index", indexContext)
+	}
+
+	// If no query params and no default config, return all channels
 	indexContext["Channels"] = channels.Result
 	return c.Render("views/index", indexContext)
 }

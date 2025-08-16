@@ -433,6 +433,49 @@ func FilterChannels(channels []Channel, language, category int) []Channel {
 	return filteredChannels
 }
 
+// FilterChannelsByDefaults filters channels by arrays of default categories and languages
+// If both arrays are provided, channels must match at least one category AND one language
+// If only one array is provided, channels must match at least one item from that array
+// If both arrays are empty, all channels are returned
+func FilterChannelsByDefaults(channels []Channel, categories, languages []int) []Channel {
+	// If both arrays are empty, return all channels
+	if len(categories) == 0 && len(languages) == 0 {
+		return channels
+	}
+
+	// Use maps for efficient O(1) lookups
+	categorySet := make(map[int]struct{}, len(categories))
+	for _, cat := range categories {
+		categorySet[cat] = struct{}{}
+	}
+
+	languageSet := make(map[int]struct{}, len(languages))
+	for _, lang := range languages {
+		languageSet[lang] = struct{}{}
+	}
+
+	filteredChannels := make([]Channel, 0, len(channels))
+	for _, channel := range channels {
+		// If categories are specified, channel must match one of them
+		categoryMatch := len(categories) == 0
+		if !categoryMatch {
+			_, categoryMatch = categorySet[channel.Category]
+		}
+
+		// If languages are specified, channel must match one of them
+		languageMatch := len(languages) == 0
+		if !languageMatch {
+			_, languageMatch = languageSet[channel.Language]
+		}
+
+		// Include channel if it matches both criteria (or if a criterion is not specified)
+		if categoryMatch && languageMatch {
+			filteredChannels = append(filteredChannels, channel)
+		}
+	}
+	return filteredChannels
+}
+
 func ReplaceM3U8(baseUrl, match []byte, params, channel_id string) []byte {
 	coded_url, err := secureurl.EncryptURL(string(baseUrl) + string(match) + "?" + params)
 	if err != nil {
