@@ -47,6 +47,16 @@ func getDrmMpd(channelID, quality string) (*DrmMpdOutput, error) {
 		return nil, err
 	}
 
+	// Quick fix for timesplay channels.
+	if liveResult.AlgoName == "timesplay" {
+		return &DrmMpdOutput{
+			PlayUrl:     tv_url,
+			LicenseUrl:  "/drm?auth=" + enc_key + "&channel_id=" + channelID + "&channel=" + channel_enc_url,
+			Tv_url_host: "",
+			Tv_url_path: "",
+		}, nil
+	}
+
 	parsedTvUrl, err := url.Parse(tv_url)
 	if err != nil {
 		utils.Log.Panicln(err)

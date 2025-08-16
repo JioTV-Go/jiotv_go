@@ -168,7 +168,7 @@ func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
 
 	var url string
 	if tv.AccessToken != "" {
-		url = "https://" + JIOTV_API_DOMAIN + "/playback/apis/v1/geturl?langId=6"
+		url = "https://" + JIOTV_API_DOMAIN + "/playback/apis/v1.1/geturl?langId=6"
 		req.Header.Set(headers.AccessToken, tv.AccessToken)
 	} else {
 		req.Header.Set("osVersion", "8.1.0")
