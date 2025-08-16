@@ -64,8 +64,7 @@
             retryParameters: {
               maxAttempts: 3,
             },
-            startAtSegmentBoundary: true,
-            alwaysStreamFullSegments: true,
+            bufferingGoal: 5, // 5 seconds
           },
         });
 
@@ -81,8 +80,12 @@
             ) {
               const newUrl = new URL(request.uris[0]);
               // add query params host and path
-              newUrl.searchParams.append("host", "{{ .channel_host }}");
-              newUrl.searchParams.append("path", "{{ .channel_path }}");
+              const channelHost = "{{ .channel_host }}";
+              const channelPath = "{{ .channel_path }}";
+              if (channelHost !== "" && channelPath !== "") {
+                newUrl.searchParams.append("host", channelHost);
+                newUrl.searchParams.append("path", channelPath);
+              }
               request.uris = [newUrl.toString()];
             }
           });
