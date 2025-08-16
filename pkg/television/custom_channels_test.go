@@ -64,8 +64,8 @@ func TestLoadCustomChannels(t *testing.T) {
 		}
 
 		// Verify first channel
-		if channels[0].ID != "test_channel_1" {
-			t.Errorf("Expected channel ID 'test_channel_1', got '%s'", channels[0].ID)
+		if channels[0].ID != "cc_test_channel_1" {
+			t.Errorf("Expected channel ID 'cc_test_channel_1', got '%s'", channels[0].ID)
 		}
 		if channels[0].Name != "Test Channel 1" {
 			t.Errorf("Expected channel name 'Test Channel 1', got '%s'", channels[0].Name)
@@ -81,8 +81,8 @@ func TestLoadCustomChannels(t *testing.T) {
 		}
 
 		// Verify second channel
-		if channels[1].ID != "test_channel_2" {
-			t.Errorf("Expected channel ID 'test_channel_2', got '%s'", channels[1].ID)
+		if channels[1].ID != "cc_test_channel_2" {
+			t.Errorf("Expected channel ID 'cc_test_channel_2', got '%s'", channels[1].ID)
 		}
 		if channels[1].IsHD {
 			t.Error("Expected second channel to not be HD")
@@ -133,8 +133,8 @@ func TestLoadCustomChannels(t *testing.T) {
 		}
 
 		// Verify channel
-		if channels[0].ID != "yaml_test_channel_1" {
-			t.Errorf("Expected channel ID 'yaml_test_channel_1', got '%s'", channels[0].ID)
+		if channels[0].ID != "cc_yaml_test_channel_1" {
+			t.Errorf("Expected channel ID 'cc_yaml_test_channel_1', got '%s'", channels[0].ID)
 		}
 		if channels[0].Name != "YAML Test Channel 1" {
 			t.Errorf("Expected channel name 'YAML Test Channel 1', got '%s'", channels[0].Name)
@@ -284,8 +284,8 @@ func TestCustomChannelsCaching(t *testing.T) {
 	if len(channels1) != 1 {
 		t.Fatalf("Expected 1 channel, got %d", len(channels1))
 	}
-	if channels1[0].ID != "cache_test_channel" {
-		t.Errorf("Expected channel ID 'cache_test_channel', got '%s'", channels1[0].ID)
+	if channels1[0].ID != "cc_cache_test_channel" {
+		t.Errorf("Expected channel ID 'cc_cache_test_channel', got '%s'", channels1[0].ID)
 	}
 
 	// Call again to test cache usage
@@ -293,8 +293,8 @@ func TestCustomChannelsCaching(t *testing.T) {
 	if len(channels2) != 1 {
 		t.Fatalf("Expected 1 channel from cache, got %d", len(channels2))
 	}
-	if channels2[0].ID != "cache_test_channel" {
-		t.Errorf("Expected channel ID 'cache_test_channel' from cache, got '%s'", channels2[0].ID)
+	if channels2[0].ID != "cc_cache_test_channel" {
+		t.Errorf("Expected channel ID 'cc_cache_test_channel' from cache, got '%s'", channels2[0].ID)
 	}
 
 	// Test cache reload
@@ -308,8 +308,8 @@ func TestCustomChannelsCaching(t *testing.T) {
 	if len(channels3) != 1 {
 		t.Fatalf("Expected 1 channel after reload, got %d", len(channels3))
 	}
-	if channels3[0].ID != "cache_test_channel" {
-		t.Errorf("Expected channel ID 'cache_test_channel' after reload, got '%s'", channels3[0].ID)
+	if channels3[0].ID != "cc_cache_test_channel" {
+		t.Errorf("Expected channel ID 'cc_cache_test_channel' after reload, got '%s'", channels3[0].ID)
 	}
 
 	// Clear cache
@@ -321,8 +321,8 @@ func TestCustomChannelsCaching(t *testing.T) {
 	if len(channels4) != 1 {
 		t.Fatalf("Expected 1 channel after cache clear, got %d", len(channels4))
 	}
-	if channels4[0].ID != "cache_test_channel" {
-		t.Errorf("Expected channel ID 'cache_test_channel' after cache clear, got '%s'", channels4[0].ID)
+	if channels4[0].ID != "cc_cache_test_channel" {
+		t.Errorf("Expected channel ID 'cc_cache_test_channel' after cache clear, got '%s'", channels4[0].ID)
 	}
 }
 
@@ -383,27 +383,27 @@ func TestCustomChannelEfficientLookup(t *testing.T) {
 	InitCustomChannels()
 
 	// Test efficient lookup - channel exists
-	channel, exists := getCustomChannelByID("lookup_test_1")
+	channel, exists := getCustomChannelByID("cc_lookup_test_1")
 	if !exists {
-		t.Error("Expected channel 'lookup_test_1' to exist")
+		t.Error("Expected channel 'cc_lookup_test_1' to exist")
 	}
-	if channel.ID != "lookup_test_1" {
-		t.Errorf("Expected channel ID 'lookup_test_1', got '%s'", channel.ID)
+	if channel.ID != "cc_lookup_test_1" {
+		t.Errorf("Expected channel ID 'cc_lookup_test_1', got '%s'", channel.ID)
 	}
 	if channel.Name != "Lookup Test Channel 1" {
 		t.Errorf("Expected channel name 'Lookup Test Channel 1', got '%s'", channel.Name)
 	}
 
 	// Test efficient lookup - another channel exists
-	channel2, exists2 := getCustomChannelByID("lookup_test_2")
+	channel2, exists2 := getCustomChannelByID("cc_lookup_test_2")
 	if !exists2 {
-		t.Error("Expected channel 'lookup_test_2' to exist")
+		t.Error("Expected channel 'cc_lookup_test_2' to exist")
 	}
-	if channel2.ID != "lookup_test_2" {
-		t.Errorf("Expected channel ID 'lookup_test_2', got '%s'", channel2.ID)
+	if channel2.ID != "cc_lookup_test_2" {
+		t.Errorf("Expected channel ID 'cc_lookup_test_2', got '%s'", channel2.ID)
 	}
 	if channel2.IsHD {
-		t.Error("Expected channel 'lookup_test_2' to not be HD")
+		t.Error("Expected channel 'cc_lookup_test_2' to not be HD")
 	}
 
 	// Test efficient lookup - non-existent channel
@@ -414,7 +414,7 @@ func TestCustomChannelEfficientLookup(t *testing.T) {
 
 	// Test lookup with empty cache
 	ClearCustomChannelsCache()
-	_, exists4 := getCustomChannelByID("lookup_test_1")
+	_, exists4 := getCustomChannelByID("cc_lookup_test_1")
 	if exists4 {
 		t.Error("Expected no channel to exist after cache clear")
 	}
@@ -490,5 +490,97 @@ func TestExcessiveChannelsWarning(t *testing.T) {
 	reloadedChannels := getCustomChannels()
 	if len(reloadedChannels) != 1500 {
 		t.Errorf("Expected 1500 reloaded channels, got %d", len(reloadedChannels))
+	}
+}
+
+func TestCustomChannelPrefix(t *testing.T) {
+	// Save original config
+	originalCustomChannelsFile := config.Cfg.CustomChannelsFile
+	defer func() {
+		config.Cfg.CustomChannelsFile = originalCustomChannelsFile
+	}()
+
+	// Clear cache before test
+	ClearCustomChannelsCache()
+
+	// Create temporary JSON file
+	tempFile, err := os.CreateTemp("", "custom_channels_prefix_*.json")
+	if err != nil {
+		t.Fatalf("Failed to create temp file: %v", err)
+	}
+	defer os.Remove(tempFile.Name())
+
+	customConfig := CustomChannelsConfig{
+		Channels: []CustomChannel{
+			{
+				ID:       "test_prefix_channel",
+				Name:     "Test Prefix Channel",
+				URL:      "https://example.com/prefix_test.m3u8",
+				LogoURL:  "https://example.com/prefix_logo.png",
+				Category: 12,
+				Language: 6,
+				IsHD:     true,
+			},
+			{
+				ID:       "cc_already_prefixed",
+				Name:     "Already Prefixed Channel",
+				URL:      "https://example.com/already_prefixed.m3u8", 
+				LogoURL:  "https://example.com/already_logo.png",
+				Category: 5,
+				Language: 1,
+				IsHD:     false,
+			},
+		},
+	}
+
+	jsonData, err := json.Marshal(customConfig)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	if _, err := tempFile.Write(jsonData); err != nil {
+		t.Fatalf("Failed to write to temp file: %v", err)
+	}
+	tempFile.Close()
+
+	// Test loading custom channels with prefix logic
+	channels, err := LoadCustomChannels(tempFile.Name())
+	if err != nil {
+		t.Fatalf("Failed to load custom channels: %v", err)
+	}
+
+	if len(channels) != 2 {
+		t.Fatalf("Expected 2 channels, got %d", len(channels))
+	}
+
+	// First channel should be prefixed
+	if channels[0].ID != "cc_test_prefix_channel" {
+		t.Errorf("Expected channel ID 'cc_test_prefix_channel', got '%s'", channels[0].ID)
+	}
+
+	// Second channel should remain as-is since it's already prefixed
+	if channels[1].ID != "cc_already_prefixed" {
+		t.Errorf("Expected channel ID 'cc_already_prefixed', got '%s'", channels[1].ID)
+	}
+
+	// Set config to use the temp file and initialize cache
+	config.Cfg.CustomChannelsFile = tempFile.Name()
+	InitCustomChannels()
+
+	// Test that both channels can be found
+	channel1, exists1 := getCustomChannelByID("cc_test_prefix_channel")
+	if !exists1 {
+		t.Error("Expected channel 'cc_test_prefix_channel' to exist")
+	}
+	if channel1.Name != "Test Prefix Channel" {
+		t.Errorf("Expected channel name 'Test Prefix Channel', got '%s'", channel1.Name)
+	}
+
+	channel2, exists2 := getCustomChannelByID("cc_already_prefixed")
+	if !exists2 {
+		t.Error("Expected channel 'cc_already_prefixed' to exist")
+	}
+	if channel2.Name != "Already Prefixed Channel" {
+		t.Errorf("Expected channel name 'Already Prefixed Channel', got '%s'", channel2.Name)
 	}
 }

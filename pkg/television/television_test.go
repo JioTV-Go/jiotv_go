@@ -1,6 +1,7 @@
 package television
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/jiotv-go/jiotv_go/v3/internal/config"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/store"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
@@ -132,6 +134,141 @@ func TestTelevision_Live(t *testing.T) {
 			// TODO
 		})
 	}
+}
+
+func TestTelevision_LiveWithCustomChannels(t *testing.T) {
+	setupTest() // Initialize store and logger
+
+	// Save original config
+	originalCustomChannelsFile := config.Cfg.CustomChannelsFile
+	defer func() {
+		config.Cfg.CustomChannelsFile = originalCustomChannelsFile
+	}()
+
+	// Clear cache before test
+	ClearCustomChannelsCache()
+
+	// Create temporary JSON file with custom channels
+	tempFile, err := os.CreateTemp("", "live_custom_channels_*.json")
+	if err != nil {
+		t.Fatalf("Failed to create temp file: %v", err)
+	}
+	defer os.Remove(tempFile.Name())
+
+	customConfig := CustomChannelsConfig{
+		Channels: []CustomChannel{
+			{
+				ID:       "test_live_channel",
+				Name:     "Test Live Channel",
+				URL:      "https://example.com/live_test.m3u8",
+				LogoURL:  "https://example.com/live_logo.png",
+				Category: 12,
+				Language: 6,
+				IsHD:     true,
+			},
+			{
+				ID:       "cc_prefixed_live_channel",
+				Name:     "Prefixed Live Channel",
+				URL:      "https://example.com/prefixed_live.m3u8",
+				LogoURL:  "https://example.com/prefixed_logo.png",
+				Category: 5,
+				Language: 1,
+				IsHD:     false,
+			},
+		},
+	}
+
+	jsonData, err := json.Marshal(customConfig)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
+	}
+
+	if _, err := tempFile.Write(jsonData); err != nil {
+		t.Fatalf("Failed to write to temp file: %v", err)
+	}
+	tempFile.Close()
+
+	// Set config to use the temp file
+	config.Cfg.CustomChannelsFile = tempFile.Name()
+
+	// Initialize custom channels
+	InitCustomChannels()
+
+	// Create a TV instance
+	tv := New(&utils.JIOTV_CREDENTIALS{})
+
+	// Test 1: Live with prefixed custom channel ID
+	t.Run("Live with prefixed custom channel", func(t *testing.T) {
+		result, err := tv.Live("cc_test_live_channel")
+		if err != nil {
+			t.Fatalf("Expected no error for custom channel, got: %v", err)
+		}
+
+		expectedURL := "https://example.com/live_test.m3u8"
+		if result.Result != expectedURL {
+			t.Errorf("Expected result URL '%s', got '%s'", expectedURL, result.Result)
+		}
+
+		if result.Bitrates.Auto != expectedURL {
+			t.Errorf("Expected auto bitrate URL '%s', got '%s'", expectedURL, result.Bitrates.Auto)
+		}
+
+		if result.Bitrates.High != expectedURL {
+			t.Errorf("Expected high bitrate URL '%s', got '%s'", expectedURL, result.Bitrates.High)
+		}
+
+		if result.Code != 200 {
+			t.Errorf("Expected response code 200, got %d", result.Code)
+		}
+
+		if result.Message != "success" {
+			t.Errorf("Expected message 'success', got '%s'", result.Message)
+		}
+	})
+
+	// Test 2: Live with backward compatible channel ID (without prefix)
+	t.Run("Live with backward compatible channel ID", func(t *testing.T) {
+		result, err := tv.Live("test_live_channel")
+		if err != nil {
+			t.Fatalf("Expected no error for backward compatible custom channel, got: %v", err)
+		}
+
+		expectedURL := "https://example.com/live_test.m3u8"
+		if result.Result != expectedURL {
+			t.Errorf("Expected result URL '%s', got '%s'", expectedURL, result.Result)
+		}
+	})
+
+	// Test 3: Live with channel that already has prefix
+	t.Run("Live with already prefixed custom channel", func(t *testing.T) {
+		result, err := tv.Live("cc_prefixed_live_channel")
+		if err != nil {
+			t.Fatalf("Expected no error for already prefixed custom channel, got: %v", err)
+		}
+
+		expectedURL := "https://example.com/prefixed_live.m3u8"
+		if result.Result != expectedURL {
+			t.Errorf("Expected result URL '%s', got '%s'", expectedURL, result.Result)
+		}
+	})
+
+	// Test 4: Live with non-existent custom channel
+	t.Run("Live with non-existent custom channel", func(t *testing.T) {
+		// This should proceed to normal JioTV API handling (which will likely fail in test environment)
+		// but shouldn't crash
+		defer func() {
+			if r := recover(); r != nil {
+				// API call failed as expected in test environment
+				t.Logf("Non-existent custom channel proceeded to JioTV API call and failed as expected: %v", r)
+			}
+		}()
+		
+		_, err := tv.Live("cc_nonexistent_channel")
+		// We expect an error since this will try to call JioTV API
+		if err != nil {
+			t.Logf("Non-existent custom channel proceeded to JioTV API call and failed as expected: %v", err)
+		}
+	})
 }
 
 func TestTelevision_Render(t *testing.T) {

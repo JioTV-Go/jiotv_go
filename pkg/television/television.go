@@ -211,9 +211,10 @@ func ClearCustomChannelsCache() {
 // Live method generates m3u8 link from JioTV API with the provided channel ID
 func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
 	// Check if this is a custom channel by looking it up efficiently
+	// Custom channels are identified by the "cc_" prefix or by checking the custom channels cache
 	if config.Cfg.CustomChannelsFile != "" {
 		if channel, exists := getCustomChannelByID(channelID); exists {
-			// For custom channels, return the URL directly
+			// For custom channels, return the URL directly (always m3u8 HLS)
 			result := &LiveURLOutput{
 				Result: channel.URL,
 				Bitrates: Bitrates{
@@ -226,6 +227,25 @@ func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
 				Message: "success",
 			}
 			return result, nil
+		}
+		
+		// Also check for custom channels without "cc_" prefix for backward compatibility
+		if !strings.HasPrefix(channelID, "cc_") {
+			if channel, exists := getCustomChannelByID("cc_" + channelID); exists {
+				// For custom channels, return the URL directly (always m3u8 HLS)
+				result := &LiveURLOutput{
+					Result: channel.URL,
+					Bitrates: Bitrates{
+						Auto:   channel.URL,
+						High:   channel.URL,
+						Medium: channel.URL,
+						Low:    channel.URL,
+					},
+					Code:    200,
+					Message: "success",
+				}
+				return result, nil
+			}
 		}
 	}
 
@@ -403,8 +423,14 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 	// Convert CustomChannel to Channel
 	var channels []Channel
 	for _, customChannel := range customConfig.Channels {
+		// Prefix custom channel ID with "cc_" if not already prefixed
+		channelID := customChannel.ID
+		if !strings.HasPrefix(channelID, "cc_") {
+			channelID = "cc_" + channelID
+		}
+		
 		channel := Channel{
-			ID:       customChannel.ID,
+			ID:       channelID,
 			Name:     customChannel.Name,
 			URL:      customChannel.URL,
 			LogoURL:  customChannel.LogoURL,
