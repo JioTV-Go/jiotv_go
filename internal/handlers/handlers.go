@@ -92,19 +92,12 @@ func isCustomChannel(channelID string) bool {
 	if config.Cfg.CustomChannelsFile == "" {
 		return false
 	}
-	
+
 	// Check direct lookup with the provided ID
 	if _, exists := television.GetCustomChannelByID(channelID); exists {
 		return true
 	}
-	
-	// Check backward compatibility: if the ID doesn't have cc_ prefix, try with cc_ prefix
-	if !strings.HasPrefix(channelID, "cc_") {
-		if _, exists := television.GetCustomChannelByID("cc_" + channelID); exists {
-			return true
-		}
-	}
-	
+
 	return false
 }
 
@@ -183,15 +176,15 @@ func LiveHandler(c *fiber.Ctx) error {
 
 	// Check if this is a custom channel - serve directly for custom channels
 	if isCustomChannel(id) {
-		liveResult, err := TV.Live(id)
-		if err != nil {
-			utils.Log.Println(err)
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": err,
+		channel, exists := television.GetCustomChannelByID(id)
+		if !exists {
+			utils.Log.Printf("Custom channel with ID %s not found", id)
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"message": fmt.Sprintf("Custom channel with ID %s not found", id),
 			})
 		}
 		// For custom channels, redirect directly to the m3u8 URL (no render pipeline needed)
-		return c.Redirect(liveResult.Bitrates.Auto, fiber.StatusFound)
+		return c.Redirect(channel.URL, fiber.StatusFound)
 	}
 
 	// For regular JioTV channels, ensure tokens are fresh before making API call
@@ -238,15 +231,15 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 
 	// Check if this is a custom channel - serve directly for custom channels
 	if isCustomChannel(id) {
-		liveResult, err := TV.Live(id)
-		if err != nil {
-			utils.Log.Println(err)
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": err,
+		channel, exists := television.GetCustomChannelByID(id)
+		if !exists {
+			utils.Log.Printf("Custom channel with ID %s not found", id)
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"message": fmt.Sprintf("Custom channel with ID %s not found", id),
 			})
 		}
-		// For custom channels, all qualities point to the same m3u8 URL (redirect directly)
-		return c.Redirect(liveResult.Bitrates.Auto, fiber.StatusFound)
+		// For custom channels, redirect directly to the m3u8 URL (no render pipeline needed)
+		return c.Redirect(channel.URL, fiber.StatusFound)
 	}
 
 	// For regular JioTV channels, ensure tokens are fresh before making API call
@@ -558,6 +551,8 @@ func PlayHandler(c *fiber.Ctx) error {
 				// if not, use HLS player
 				player_url = "/player/" + id + "?q=" + quality
 			}
+		} else if isCustomChannel(id) {
+			player_url = "/player/" + id + "?q=" + quality
 		} else {
 			player_url = "/mpd/" + id + "?q=" + quality
 		}
