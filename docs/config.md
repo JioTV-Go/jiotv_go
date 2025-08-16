@@ -160,7 +160,7 @@ You can also specify the path to the configuration file using the `--config` fla
 
 You can save the following configuration in a file named `jiotv_go.toml`. JioTV Go will automatically load the configuration from this file if it is present in the same directory as the binary.
 
-The file is also available at [configs/jiotv_go-config.toml](https://github.com/jiotv-go/jiotv_go/blob/main/configs/jiotv_go-config.toml).
+The file is also available at [configs/jiotv-config.toml](https://github.com/jiotv-go/jiotv_go/blob/main/configs/jiotv-config.toml).
 
 Omit the lines with `#` as they are comments. They are only for explanation purposes.
 
@@ -220,7 +220,7 @@ This example demonstrates how to customize the configuration parameters using TO
 
 You can save the following configuration in a file named `jiotv_go.yaml`. 
 
-The file is also available at [configs/jiotv_go-config.yaml](https://github.com/jiotv-go/jiotv_go/blob/main/configs/jiotv_go-config.yaml).
+The file is also available at [configs/jiotv-config.yml](https://github.com/jiotv-go/jiotv_go/blob/main/configs/jiotv-config.yml).
 
 ```yaml
 epg: false
@@ -243,7 +243,7 @@ default_languages: []
 
 You can save the following configuration in a file named `jiotv_go.json`.
 
-The file is also available at [configs/jiotv_go-config.json](https://github.com/jiotv-go/jiotv_go/blob/main/configs/jiotv_go-config.json).
+The file is also available at [configs/jiotv-config.json](https://github.com/jiotv-go/jiotv_go/blob/main/configs/jiotv-config.json).
 
 ```json
 {
