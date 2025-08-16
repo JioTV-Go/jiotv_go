@@ -3,10 +3,10 @@ package television
 import (
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
-	"sync"
 
 	"github.com/valyala/fasthttp"
 	"gopkg.in/yaml.v3"
@@ -38,7 +38,7 @@ func logExcessiveChannelsWarning(channelCount int, context string) {
 	if channelCount <= maxRecommendedChannels || utils.Log == nil {
 		return
 	}
-	
+
 	utils.Log.Printf("WARNING: %s %d custom channels, which exceeds the recommended limit of %d channels.", context, channelCount, maxRecommendedChannels)
 	utils.Log.Printf("WARNING: Large numbers of custom channels may impact performance:")
 	utils.Log.Printf("  - Slower channel listing and filtering operations")
@@ -49,14 +49,8 @@ func logExcessiveChannelsWarning(channelCount int, context string) {
 }
 
 var (
-	// customChannelsCache holds cached custom channels
-	customChannelsCache []Channel
 	// customChannelsCacheMap holds cached custom channels indexed by ID for efficient lookups
 	customChannelsCacheMap map[string]Channel
-	// customChannelsCacheMutex protects the cache from concurrent access
-	customChannelsCacheMutex sync.RWMutex
-	// customChannelsCacheLoaded indicates if cache has been loaded
-	customChannelsCacheLoaded bool
 )
 
 // New function creates a new Television instance with the provided credentials
@@ -72,23 +66,23 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 		}
 	}
 	headers := map[string]string{
-		"Content-type": "application/x-www-form-urlencoded",
-		"appkey":       "NzNiMDhlYzQyNjJm",
-		"channel_id":   "",
-		"crmid":        credentials.CRM,
-		"userId":       credentials.CRM,
-		"deviceId":     utils.GetDeviceID(),
-		"devicetype":   "phone",
-		"isott":        "false",
-		"languageId":   "6",
-		"lbcookie":     "1",
-		"os":           "android",
-		"osVersion":    "13",
-		"subscriberId": credentials.CRM,
-		"uniqueId":     credentials.UniqueID,
-		headers.UserAgent:   headers.UserAgentOkHttp,
-		"usergroup":    "tvYR7NSNn7rymo3F",
-		"versionCode":  "330",
+		"Content-type":    "application/x-www-form-urlencoded",
+		"appkey":          "NzNiMDhlYzQyNjJm",
+		"channel_id":      "",
+		"crmid":           credentials.CRM,
+		"userId":          credentials.CRM,
+		"deviceId":        utils.GetDeviceID(),
+		"devicetype":      "phone",
+		"isott":           "false",
+		"languageId":      "6",
+		"lbcookie":        "1",
+		"os":              "android",
+		"osVersion":       "13",
+		"subscriberId":    credentials.CRM,
+		"uniqueId":        credentials.UniqueID,
+		headers.UserAgent: headers.UserAgentOkHttp,
+		"usergroup":       "tvYR7NSNn7rymo3F",
+		"versionCode":     "330",
 	}
 
 	// Create a fasthttp.Client
@@ -112,35 +106,23 @@ func InitCustomChannels() {
 	}
 }
 
-// getCustomChannels returns cached custom channels
-func getCustomChannels() []Channel {
-	customChannelsCacheMutex.RLock()
-	defer customChannelsCacheMutex.RUnlock()
-	
-	// Return a copy to prevent external modifications
-	channels := make([]Channel, len(customChannelsCache))
-	copy(channels, customChannelsCache)
-	return channels
-}
-
 // getCustomChannelByID efficiently looks up a custom channel by ID
 func getCustomChannelByID(channelID string) (Channel, bool) {
-	customChannelsCacheMutex.RLock()
-	defer customChannelsCacheMutex.RUnlock()
-	
 	if customChannelsCacheMap == nil {
 		return Channel{}, false
 	}
-	
+
 	channel, exists := customChannelsCacheMap[channelID]
 	return channel, exists
 }
 
-// loadAndCacheCustomChannels loads custom channels from file and caches them
-func loadAndCacheCustomChannels() []Channel {
-	customChannelsCacheMutex.Lock()
-	defer customChannelsCacheMutex.Unlock()
+// GetCustomChannelByID efficiently looks up a custom channel by ID (public version)
+func GetCustomChannelByID(channelID string) (Channel, bool) {
+	return getCustomChannelByID(channelID)
+}
 
+// loadAndCacheCustomChannels loads custom channels from file and caches them
+func loadAndCacheCustomChannels() {
 	// Load channels from file
 	channels, err := LoadCustomChannels(config.Cfg.CustomChannelsFile)
 	if err != nil {
@@ -148,87 +130,21 @@ func loadAndCacheCustomChannels() []Channel {
 			utils.Log.Printf("Error loading custom channels: %v", err)
 		}
 		// Cache empty result to avoid repeated file I/O errors
-		customChannelsCache = []Channel{}
 		customChannelsCacheMap = make(map[string]Channel)
 	} else {
-		customChannelsCache = channels
 		// Populate the map for efficient lookups
 		customChannelsCacheMap = make(map[string]Channel)
 		for _, channel := range channels {
 			customChannelsCacheMap[channel.ID] = channel
 		}
-		
+
 		// Warn user about performance implications if too many channels
 		logExcessiveChannelsWarning(len(channels), "Cached")
 	}
-	
-	customChannelsCacheLoaded = true
-	
-	// Return a copy to prevent external modifications
-	result := make([]Channel, len(customChannelsCache))
-	copy(result, customChannelsCache)
-	return result
-}
-
-// ReloadCustomChannels reloads custom channels from file and updates cache
-func ReloadCustomChannels() error {
-	customChannelsCacheMutex.Lock()
-	defer customChannelsCacheMutex.Unlock()
-
-	channels, err := LoadCustomChannels(config.Cfg.CustomChannelsFile)
-	if err != nil {
-		return err
-	}
-
-	customChannelsCache = channels
-	// Update the map for efficient lookups
-	customChannelsCacheMap = make(map[string]Channel)
-	for _, channel := range channels {
-		customChannelsCacheMap[channel.ID] = channel
-	}
-	customChannelsCacheLoaded = true
-	
-	if utils.Log != nil {
-		utils.Log.Printf("Reloaded %d custom channels", len(channels))
-		
-		// Warn user about performance implications if too many channels
-		logExcessiveChannelsWarning(len(channels), "Reloaded")
-	}
-	
-	return nil
-}
-
-// ClearCustomChannelsCache clears the custom channels cache
-func ClearCustomChannelsCache() {
-	customChannelsCacheMutex.Lock()
-	defer customChannelsCacheMutex.Unlock()
-	
-	customChannelsCache = nil
-	customChannelsCacheMap = nil
-	customChannelsCacheLoaded = false
 }
 
 // Live method generates m3u8 link from JioTV API with the provided channel ID
 func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
-	// Check if this is a custom channel by looking it up efficiently
-	if config.Cfg.CustomChannelsFile != "" {
-		if channel, exists := getCustomChannelByID(channelID); exists {
-			// For custom channels, return the URL directly
-			result := &LiveURLOutput{
-				Result: channel.URL,
-				Bitrates: Bitrates{
-					Auto:   channel.URL,
-					High:   channel.URL,
-					Medium: channel.URL,
-					Low:    channel.URL,
-				},
-				Code:    200,
-				Message: "success",
-			}
-			return result, nil
-		}
-	}
-
 	// If channelID starts with sl, then it is a Sony Channel
 	if len(channelID) >= 2 && channelID[:2] == "sl" {
 		return getSLChannel(channelID)
@@ -332,26 +248,26 @@ func (tv *Television) Render(url string) ([]byte, int) {
 // detectAndParseFormat attempts to detect the format of custom channels data and parse it
 func detectAndParseFormat(data []byte, filePath string) (CustomChannelsConfig, error) {
 	var customConfig CustomChannelsConfig
-	
+
 	// Determine file format by extension and parse accordingly, fallback to content-based detection
 	if strings.HasSuffix(filePath, ".json") {
 		err := json.Unmarshal(data, &customConfig)
 		return customConfig, err
 	}
-	
+
 	if strings.HasSuffix(filePath, ".yml") || strings.HasSuffix(filePath, ".yaml") {
 		err := yaml.Unmarshal(data, &customConfig)
 		return customConfig, err
 	}
-	
+
 	// Fallback: try to detect format by content for unknown extensions
 	trimmed := strings.TrimSpace(string(data))
-	
+
 	// For unsupported extensions, require non-empty content
 	if trimmed == "" {
-		return customConfig, fmt.Errorf(errUnsupportedChannelsFormat)
+		return customConfig, errors.New(errUnsupportedChannelsFormat)
 	}
-	
+
 	// Try JSON if content starts with '{' or '['
 	if strings.HasPrefix(trimmed, "{") || strings.HasPrefix(trimmed, "[") {
 		err := json.Unmarshal(data, &customConfig)
@@ -361,15 +277,15 @@ func detectAndParseFormat(data []byte, filePath string) (CustomChannelsConfig, e
 		// If JSON parsing failed, try YAML as fallback
 		err = yaml.Unmarshal(data, &customConfig)
 		if err != nil {
-			return customConfig, fmt.Errorf(errUnsupportedChannelsFormat)
+			return customConfig, errors.New(errUnsupportedChannelsFormat)
 		}
 		return customConfig, nil
 	}
-	
+
 	// Try YAML for other content
 	err := yaml.Unmarshal(data, &customConfig)
 	if err != nil {
-		return customConfig, fmt.Errorf(errUnsupportedChannelsFormat)
+		return customConfig, errors.New(errUnsupportedChannelsFormat)
 	}
 	return customConfig, nil
 }
@@ -403,8 +319,14 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 	// Convert CustomChannel to Channel
 	var channels []Channel
 	for _, customChannel := range customConfig.Channels {
+		// Prefix custom channel ID with "cc_" if not already prefixed
+		channelID := customChannel.ID
+		if !strings.HasPrefix(channelID, "cc_") {
+			channelID = "cc_" + channelID
+		}
+		
 		channel := Channel{
-			ID:       customChannel.ID,
+			ID:       channelID,
 			Name:     customChannel.Name,
 			URL:      customChannel.URL,
 			LogoURL:  customChannel.LogoURL,
@@ -417,11 +339,20 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 
 	if utils.Log != nil {
 		utils.Log.Printf("Loaded %d custom channels from %s", len(channels), filePath)
-		
+
 		// Warn user about performance implications if too many channels
 		logExcessiveChannelsWarning(len(channels), "You have loaded")
 	}
 	return channels, nil
+}
+
+func getCustomChannels() []Channel {
+	// Iterate over the custom channels cache map and collect the channels
+	var customChannels []Channel
+	for _, channel := range customChannelsCacheMap {
+		customChannels = append(customChannels, channel)
+	}
+	return customChannels
 }
 
 // Channels fetch channels from JioTV API and merge with custom channels

@@ -1,0 +1,3 @@
+CustomChannelsFile = "test-custom-channels.json"
+Host = "localhost"
+Port = 5001
