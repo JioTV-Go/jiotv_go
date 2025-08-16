@@ -1,11 +1,16 @@
 package handlers
 
 import (
+	"encoding/json"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/valyala/fasthttp"
+	"github.com/jiotv-go/jiotv_go/v3/internal/config"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/television"
 )
 
 // createMockFiberContext creates a mock Fiber context for testing
@@ -555,4 +560,76 @@ func TestChannelsHandlerM3ULogoURL(t *testing.T) {
 			t.Logf("✓ M3U Logo URL: %s -> %s", tc.logoURL, channelLogoURL)
 		})
 	}
+}
+
+// TestIsCustomChannel tests the isCustomChannel helper function
+func TestIsCustomChannel(t *testing.T) {
+	// Setup test config with custom channels file
+	tempDir := t.TempDir()
+	customChannelsFile := filepath.Join(tempDir, "test_custom_channels.json")
+	
+	// Create a test custom channels file
+	customChannelsData := map[string]interface{}{
+		"channels": []map[string]interface{}{
+			{
+				"id":       "custom1",
+				"name":     "Test Custom Channel",
+				"url":      "https://example.com/stream.m3u8",
+				"logo_url": "https://example.com/logo.png",
+				"category": 6,
+				"language": 1,
+				"is_hd":    true,
+			},
+		},
+	}
+	
+	jsonData, _ := json.Marshal(customChannelsData)
+	err := os.WriteFile(customChannelsFile, jsonData, 0644)
+	if err != nil {
+		t.Fatalf("Failed to create test custom channels file: %v", err)
+	}
+	
+	// Initialize config
+	config.Cfg.CustomChannelsFile = customChannelsFile
+	television.InitCustomChannels()
+	
+	tests := []struct {
+		name     string
+		channelID string
+		expected  bool
+	}{
+		{
+			name:     "Custom channel with cc_ prefix",
+			channelID: "cc_custom1",
+			expected:  true,
+		},
+		{
+			name:     "Custom channel without cc_ prefix (backward compatibility)",
+			channelID: "custom1",
+			expected:  true,
+		},
+		{
+			name:     "Regular JioTV channel",
+			channelID: "1234",
+			expected:  false,
+		},
+		{
+			name:     "Non-existent custom channel",
+			channelID: "cc_nonexistent",
+			expected:  false,
+		},
+	}
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := isCustomChannel(tt.channelID)
+			if result != tt.expected {
+				t.Errorf("isCustomChannel(%s) = %v, expected %v", tt.channelID, result, tt.expected)
+			}
+		})
+	}
+	
+	// Clean up
+	config.Cfg.CustomChannelsFile = ""
+	television.ClearCustomChannelsCache()
 }

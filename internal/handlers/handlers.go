@@ -87,6 +87,27 @@ func ErrorMessageHandler(c *fiber.Ctx, err error) error {
 	return nil
 }
 
+// isCustomChannel checks if a given channel ID is a custom channel
+func isCustomChannel(channelID string) bool {
+	if config.Cfg.CustomChannelsFile == "" {
+		return false
+	}
+	
+	// Check direct lookup with the provided ID
+	if _, exists := television.GetCustomChannelByID(channelID); exists {
+		return true
+	}
+	
+	// Check backward compatibility: if the ID doesn't have cc_ prefix, try with cc_ prefix
+	if !strings.HasPrefix(channelID, "cc_") {
+		if _, exists := television.GetCustomChannelByID("cc_" + channelID); exists {
+			return true
+		}
+	}
+	
+	return false
+}
+
 // IndexHandler handles the index page for `/` route
 func IndexHandler(c *fiber.Ctx) error {
 	// Get all channels
@@ -160,10 +181,23 @@ func LiveHandler(c *fiber.Ctx) error {
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
 
-	// Ensure tokens are fresh before making API call
+	// Check if this is a custom channel - serve directly for custom channels
+	if isCustomChannel(id) {
+		liveResult, err := TV.Live(id)
+		if err != nil {
+			utils.Log.Println(err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": err,
+			})
+		}
+		// For custom channels, redirect directly to the m3u8 URL (no render pipeline needed)
+		return c.Redirect(liveResult.Bitrates.Auto, fiber.StatusFound)
+	}
+
+	// For regular JioTV channels, ensure tokens are fresh before making API call
 	if err := EnsureFreshTokens(); err != nil {
 		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
-		// Continue with the request - tokens might still work or it might be a custom channel
+		// Continue with the request - tokens might still work
 	}
 
 	liveResult, err := TV.Live(id)
@@ -202,10 +236,23 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
 
-	// Ensure tokens are fresh before making API call
+	// Check if this is a custom channel - serve directly for custom channels
+	if isCustomChannel(id) {
+		liveResult, err := TV.Live(id)
+		if err != nil {
+			utils.Log.Println(err)
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"message": err,
+			})
+		}
+		// For custom channels, all qualities point to the same m3u8 URL (redirect directly)
+		return c.Redirect(liveResult.Bitrates.Auto, fiber.StatusFound)
+	}
+
+	// For regular JioTV channels, ensure tokens are fresh before making API call
 	if err := EnsureFreshTokens(); err != nil {
 		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
-		// Continue with the request - tokens might still work or it might be a custom channel
+		// Continue with the request - tokens might still work
 	}
 
 	liveResult, err := TV.Live(id)

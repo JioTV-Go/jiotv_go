@@ -136,6 +136,11 @@ func getCustomChannelByID(channelID string) (Channel, bool) {
 	return channel, exists
 }
 
+// GetCustomChannelByID efficiently looks up a custom channel by ID (public version)
+func GetCustomChannelByID(channelID string) (Channel, bool) {
+	return getCustomChannelByID(channelID)
+}
+
 // loadAndCacheCustomChannels loads custom channels from file and caches them
 func loadAndCacheCustomChannels() []Channel {
 	customChannelsCacheMutex.Lock()
