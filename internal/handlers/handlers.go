@@ -98,6 +98,13 @@ func isCustomChannel(channelID string) bool {
 		return true
 	}
 
+	// Check backward compatibility: if channelID doesn't have cc_ prefix, try with prefix
+	if !strings.HasPrefix(channelID, "cc_") {
+		if _, exists := television.GetCustomChannelByID("cc_" + channelID); exists {
+			return true
+		}
+	}
+
 	return false
 }
 

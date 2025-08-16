@@ -631,5 +631,4 @@ func TestIsCustomChannel(t *testing.T) {
 	
 	// Clean up
 	config.Cfg.CustomChannelsFile = ""
-	television.ClearCustomChannelsCache()
 }

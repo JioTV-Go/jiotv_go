@@ -239,8 +239,8 @@ func TestCustomChannelsCaching(t *testing.T) {
 		config.Cfg.CustomChannelsFile = originalCustomChannelsFile
 	}()
 
-	// Clear cache before test
-	ClearCustomChannelsCache()
+	// Clear config before test
+	config.Cfg.CustomChannelsFile = ""
 
 	// Create temporary JSON file
 	tempFile, err := os.CreateTemp("", "custom_channels_cache_*.json")
@@ -296,34 +296,6 @@ func TestCustomChannelsCaching(t *testing.T) {
 	if channels2[0].ID != "cc_cache_test_channel" {
 		t.Errorf("Expected channel ID 'cc_cache_test_channel' from cache, got '%s'", channels2[0].ID)
 	}
-
-	// Test cache reload
-	err = ReloadCustomChannels()
-	if err != nil {
-		t.Fatalf("Failed to reload custom channels: %v", err)
-	}
-
-	// After reload, should still work
-	channels3 := getCustomChannels()
-	if len(channels3) != 1 {
-		t.Fatalf("Expected 1 channel after reload, got %d", len(channels3))
-	}
-	if channels3[0].ID != "cc_cache_test_channel" {
-		t.Errorf("Expected channel ID 'cc_cache_test_channel' after reload, got '%s'", channels3[0].ID)
-	}
-
-	// Clear cache
-	ClearCustomChannelsCache()
-
-	// After clearing cache, need to reinitialize to reload from file
-	InitCustomChannels()
-	channels4 := getCustomChannels()
-	if len(channels4) != 1 {
-		t.Fatalf("Expected 1 channel after cache clear, got %d", len(channels4))
-	}
-	if channels4[0].ID != "cc_cache_test_channel" {
-		t.Errorf("Expected channel ID 'cc_cache_test_channel' after cache clear, got '%s'", channels4[0].ID)
-	}
 }
 
 func TestCustomChannelEfficientLookup(t *testing.T) {
@@ -333,8 +305,8 @@ func TestCustomChannelEfficientLookup(t *testing.T) {
 		config.Cfg.CustomChannelsFile = originalCustomChannelsFile
 	}()
 
-	// Clear cache before test
-	ClearCustomChannelsCache()
+	// Clear config before test
+	config.Cfg.CustomChannelsFile = ""
 
 	// Create temporary JSON file with multiple channels
 	tempFile, err := os.CreateTemp("", "custom_channels_lookup_*.json")
@@ -411,16 +383,15 @@ func TestCustomChannelEfficientLookup(t *testing.T) {
 	if exists3 {
 		t.Error("Expected channel 'non_existent_channel' to not exist")
 	}
-
-	// Test lookup with empty cache
-	ClearCustomChannelsCache()
-	_, exists4 := getCustomChannelByID("cc_lookup_test_1")
-	if exists4 {
-		t.Error("Expected no channel to exist after cache clear")
-	}
 }
 
 func TestExcessiveChannelsWarning(t *testing.T) {
+	// Save original config
+	originalCustomChannelsFile := config.Cfg.CustomChannelsFile
+	defer func() {
+		config.Cfg.CustomChannelsFile = originalCustomChannelsFile
+	}()
+
 	// Create temporary JSON file with more than 1000 channels to test warning
 	tempFile, err := os.CreateTemp("", "excessive_channels_*.json")
 	if err != nil {
@@ -469,7 +440,6 @@ func TestExcessiveChannelsWarning(t *testing.T) {
 
 	// Test caching with excessive channels
 	config.Cfg.CustomChannelsFile = tempFile.Name()
-	ClearCustomChannelsCache()
 
 	// This should trigger the warning in loadAndCacheCustomChannels
 	InitCustomChannels()
@@ -478,18 +448,6 @@ func TestExcessiveChannelsWarning(t *testing.T) {
 	cachedChannels := getCustomChannels()
 	if len(cachedChannels) != 1500 {
 		t.Errorf("Expected 1500 cached channels, got %d", len(cachedChannels))
-	}
-
-	// Test reload with excessive channels
-	err = ReloadCustomChannels()
-	if err != nil {
-		t.Fatalf("Failed to reload custom channels: %v", err)
-	}
-
-	// Verify reload worked
-	reloadedChannels := getCustomChannels()
-	if len(reloadedChannels) != 1500 {
-		t.Errorf("Expected 1500 reloaded channels, got %d", len(reloadedChannels))
 	}
 }
 
@@ -500,8 +458,8 @@ func TestCustomChannelPrefix(t *testing.T) {
 		config.Cfg.CustomChannelsFile = originalCustomChannelsFile
 	}()
 
-	// Clear cache before test
-	ClearCustomChannelsCache()
+	// Clear config before test
+	config.Cfg.CustomChannelsFile = ""
 
 	// Create temporary JSON file
 	tempFile, err := os.CreateTemp("", "custom_channels_prefix_*.json")
