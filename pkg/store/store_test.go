@@ -222,7 +222,7 @@ func TestDelete(t *testing.T) {
 	}
 }
 
-func Test_saveConfig(t *testing.T) {
+func TestSaveConfig(t *testing.T) {
 	tests := []struct {
 		name    string
 		wantErr bool

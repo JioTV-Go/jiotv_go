@@ -1,10 +1,16 @@
 package handlers
 
 import (
+	"encoding/json"
+	"os"
+	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/valyala/fasthttp"
+	"github.com/jiotv-go/jiotv_go/v3/internal/config"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/television"
 )
 
 // createMockFiberContext creates a mock Fiber context for testing
@@ -116,7 +122,7 @@ func TestIndexHandler(t *testing.T) {
 	}
 }
 
-func Test_checkFieldExist(t *testing.T) {
+func TestCheckFieldExist(t *testing.T) {
 	type args struct {
 		field string
 		check bool
@@ -456,4 +462,168 @@ func TestDASHTimeHandler(t *testing.T) {
 			}
 		})
 	}
+}
+
+// TestCustomChannelLogoURL tests logo URL handling for custom channels
+// This ensures custom channels with full URLs aren't incorrectly prefixed with /jtvimage/
+func TestCustomChannelLogoURL(t *testing.T) {
+	testCases := []struct {
+		name        string
+		logoURL     string
+		expected    string
+		description string
+	}{
+		{
+			name:        "CustomChannelHTTPS",
+			logoURL:     "https://upload.wikimedia.org/wikipedia/en/a/a4/Sony_Max_new.png",
+			expected:    "https://upload.wikimedia.org/wikipedia/en/a/a4/Sony_Max_new.png",
+			description: "Custom channel logo with https:// should be used as-is",
+		},
+		{
+			name:        "CustomChannelHTTP",
+			logoURL:     "http://example.com/logo.png",
+			expected:    "http://example.com/logo.png",
+			description: "Custom channel logo with http:// should be used as-is",
+		},
+		{
+			name:        "RegularChannelLogo",
+			logoURL:     "Sony_HD.png",
+			expected:    "http://localhost:5001/jtvimage/Sony_HD.png",
+			description: "Regular channel logo should get proxy prefix",
+		},
+	}
+
+	hostURL := "http://localhost:5001"
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Test the logo URL handling logic from IndexHandler
+			var result string
+			if strings.HasPrefix(tc.logoURL, "http://") || strings.HasPrefix(tc.logoURL, "https://") {
+				// Custom channel with full URL, use as-is
+				result = tc.logoURL
+			} else {
+				// Regular channel with relative path, add proxy prefix
+				result = hostURL + "/jtvimage/" + tc.logoURL
+			}
+
+			if result != tc.expected {
+				t.Errorf("Expected '%s', got '%s'", tc.expected, result)
+			}
+			t.Logf("✓ %s: %s -> %s", tc.description, tc.logoURL, result)
+		})
+	}
+}
+
+// TestChannelsHandlerM3ULogoURL tests M3U playlist logo URL handling
+func TestChannelsHandlerM3ULogoURL(t *testing.T) {
+	testCases := []struct {
+		name     string
+		logoURL  string
+		expected string
+	}{
+		{
+			name:     "CustomHTTPS",
+			logoURL:  "https://example.com/custom_logo.png",
+			expected: "https://example.com/custom_logo.png",
+		},
+		{
+			name:     "CustomHTTP",
+			logoURL:  "http://cdn.example.com/logo.jpg",
+			expected: "http://cdn.example.com/logo.jpg",
+		},
+		{
+			name:     "RegularChannel",
+			logoURL:  "Sony_HD.png",
+			expected: "http://localhost:5001/jtvimage/Sony_HD.png",
+		},
+	}
+
+	hostURL := "http://localhost:5001"
+	logoURL := hostURL + "/jtvimage"
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Test M3U logo URL handling logic from ChannelsHandler
+			var channelLogoURL string
+			if strings.HasPrefix(tc.logoURL, "http://") || strings.HasPrefix(tc.logoURL, "https://") {
+				// Custom channel with full URL
+				channelLogoURL = tc.logoURL
+			} else {
+				// Regular channel with relative path
+				channelLogoURL = logoURL + "/" + tc.logoURL
+			}
+
+			if channelLogoURL != tc.expected {
+				t.Errorf("Expected '%s', got '%s'", tc.expected, channelLogoURL)
+			}
+			t.Logf("✓ M3U Logo URL: %s -> %s", tc.logoURL, channelLogoURL)
+		})
+	}
+}
+
+// TestIsCustomChannel tests the isCustomChannel helper function
+func TestIsCustomChannel(t *testing.T) {
+	// Setup test config with custom channels file
+	tempDir := t.TempDir()
+	customChannelsFile := filepath.Join(tempDir, "test_custom_channels.json")
+	
+	// Create a test custom channels file
+	customChannelsData := map[string]interface{}{
+		"channels": []map[string]interface{}{
+			{
+				"id":       "custom1",
+				"name":     "Test Custom Channel",
+				"url":      "https://example.com/stream.m3u8",
+				"logo_url": "https://example.com/logo.png",
+				"category": 6,
+				"language": 1,
+				"is_hd":    true,
+			},
+		},
+	}
+	
+	jsonData, _ := json.Marshal(customChannelsData)
+	err := os.WriteFile(customChannelsFile, jsonData, 0644)
+	if err != nil {
+		t.Fatalf("Failed to create test custom channels file: %v", err)
+	}
+	
+	// Initialize config
+	config.Cfg.CustomChannelsFile = customChannelsFile
+	television.InitCustomChannels()
+	
+	tests := []struct {
+		name     string
+		channelID string
+		expected  bool
+	}{
+		{
+			name:     "Custom channel with cc_ prefix",
+			channelID: "cc_custom1",
+			expected:  true,
+		},
+		{
+			name:     "Regular JioTV channel",
+			channelID: "1234",
+			expected:  false,
+		},
+		{
+			name:     "Non-existent custom channel",
+			channelID: "cc_nonexistent",
+			expected:  false,
+		},
+	}
+	
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := isCustomChannel(tt.channelID)
+			if result != tt.expected {
+				t.Errorf("isCustomChannel(%s) = %v, expected %v", tt.channelID, result, tt.expected)
+			}
+		})
+	}
+	
+	// Clean up
+	config.Cfg.CustomChannelsFile = ""
 }

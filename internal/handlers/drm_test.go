@@ -7,7 +7,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 )
 
-func Test_getDrmMpd(t *testing.T) {
+func TestGetDrmMpd(t *testing.T) {
 	type args struct {
 		channelID string
 		quality   string
@@ -78,7 +78,7 @@ func TestLiveMpdHandler(t *testing.T) {
 	}
 }
 
-func Test_generateDateTime(t *testing.T) {
+func TestGenerateDateTime(t *testing.T) {
 	tests := []struct {
 		name string
 		want string

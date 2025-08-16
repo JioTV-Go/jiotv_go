@@ -82,7 +82,7 @@ func createMockGitHubServer() *httptest.Server {
 	}))
 }
 
-func Test_getLatestRelease(t *testing.T) {
+func TestGetLatestRelease(t *testing.T) {
 	// Create mock server
 	mockServer := createMockGitHubServer()
 	defer mockServer.Close()
@@ -142,7 +142,7 @@ func Test_getLatestRelease(t *testing.T) {
 	}
 }
 
-func Test_downloadBinary(t *testing.T) {
+func TestDownloadBinary(t *testing.T) {
 	// Create a simple mock HTTP server for binary downloads
 	mockServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/valid-binary" {
@@ -195,7 +195,7 @@ func Test_downloadBinary(t *testing.T) {
 	}
 }
 
-func Test_replaceBinary(t *testing.T) {
+func TestReplaceBinary(t *testing.T) {
 	type args struct {
 		newBinaryPath string
 	}
@@ -224,7 +224,7 @@ func Test_replaceBinary(t *testing.T) {
 	}
 }
 
-func Test_compareVersions(t *testing.T) {
+func TestCompareVersions(t *testing.T) {
 	type args struct {
 		currentVersion string
 		latestVersion  string
@@ -294,7 +294,7 @@ func Test_compareVersions(t *testing.T) {
 	}
 }
 
-func Test_atoiOrZero(t *testing.T) {
+func TestAtoiOrZero(t *testing.T) {
 	type args struct {
 		s string
 	}

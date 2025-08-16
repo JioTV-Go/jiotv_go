@@ -87,6 +87,20 @@ func ErrorMessageHandler(c *fiber.Ctx, err error) error {
 	return nil
 }
 
+// isCustomChannel checks if a given channel ID is a custom channel
+func isCustomChannel(channelID string) bool {
+	if config.Cfg.CustomChannelsFile == "" {
+		return false
+	}
+
+	// Check direct lookup with the provided ID
+	if _, exists := television.GetCustomChannelByID(channelID); exists {
+		return true
+	}
+
+	return false
+}
+
 // IndexHandler handles the index page for `/` route
 func IndexHandler(c *fiber.Ctx) error {
 	// Get all channels
@@ -95,6 +109,18 @@ func IndexHandler(c *fiber.Ctx) error {
 	// Get language and category from query params
 	language := c.Query("language")
 	category := c.Query("category")
+
+	// Process logo URLs for all channels
+	hostURL := c.Protocol() + "://" + c.Hostname()
+	for i, channel := range channels.Result {
+		if strings.HasPrefix(channel.LogoURL, "http://") || strings.HasPrefix(channel.LogoURL, "https://") {
+			// Custom channel with full URL, use as-is
+			channels.Result[i].LogoURL = channel.LogoURL
+		} else {
+			// Regular channel with relative path, add proxy prefix
+			channels.Result[i].LogoURL = hostURL + "/jtvimage/" + channel.LogoURL
+		}
+	}
 
 	// Context data for index page
 	indexContext := fiber.Map{
@@ -156,10 +182,23 @@ func LiveHandler(c *fiber.Ctx) error {
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
 
-	// Ensure tokens are fresh before making API call
+	// Check if this is a custom channel - serve directly for custom channels
+	if isCustomChannel(id) {
+		channel, exists := television.GetCustomChannelByID(id)
+		if !exists {
+			utils.Log.Printf("Custom channel with ID %s not found", id)
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"message": fmt.Sprintf("Custom channel with ID %s not found", id),
+			})
+		}
+		// For custom channels, redirect directly to the m3u8 URL (no render pipeline needed)
+		return c.Redirect(channel.URL, fiber.StatusFound)
+	}
+
+	// For regular JioTV channels, ensure tokens are fresh before making API call
 	if err := EnsureFreshTokens(); err != nil {
 		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
-		// Continue with the request - tokens might still work or it might be a custom channel
+		// Continue with the request - tokens might still work
 	}
 
 	liveResult, err := TV.Live(id)
@@ -198,10 +237,23 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
 
-	// Ensure tokens are fresh before making API call
+	// Check if this is a custom channel - serve directly for custom channels
+	if isCustomChannel(id) {
+		channel, exists := television.GetCustomChannelByID(id)
+		if !exists {
+			utils.Log.Printf("Custom channel with ID %s not found", id)
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"message": fmt.Sprintf("Custom channel with ID %s not found", id),
+			})
+		}
+		// For custom channels, redirect directly to the m3u8 URL (no render pipeline needed)
+		return c.Redirect(channel.URL, fiber.StatusFound)
+	}
+
+	// For regular JioTV channels, ensure tokens are fresh before making API call
 	if err := EnsureFreshTokens(); err != nil {
 		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
-		// Continue with the request - tokens might still work or it might be a custom channel
+		// Continue with the request - tokens might still work
 	}
 
 	liveResult, err := TV.Live(id)
@@ -441,7 +493,14 @@ func ChannelsHandler(c *fiber.Ctx) error {
 			} else {
 				channelURL = fmt.Sprintf("%s/live/%s.m3u8", hostURL, channel.ID)
 			}
-			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
+			var channelLogoURL string
+			if strings.HasPrefix(channel.LogoURL, "http://") || strings.HasPrefix(channel.LogoURL, "https://") {
+				// Custom channel with full URL
+				channelLogoURL = channel.LogoURL
+			} else {
+				// Regular channel with relative path
+				channelLogoURL = fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
+			}
 			var groupTitle string
 			switch splitCategory {
 			case "split":
@@ -500,6 +559,8 @@ func PlayHandler(c *fiber.Ctx) error {
 				// if not, use HLS player
 				player_url = "/player/" + id + "?q=" + quality
 			}
+		} else if isCustomChannel(id) {
+			player_url = "/player/" + id + "?q=" + quality
 		} else {
 			player_url = "/mpd/" + id + "?q=" + quality
 		}

@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func Test_isTermux(t *testing.T) {
+func TestIsTermux(t *testing.T) {
 	originalPrefix, present := os.LookupEnv("PREFIX")
 	defer func() {
 		if present {
@@ -54,7 +54,7 @@ func Test_isTermux(t *testing.T) {
 	}
 }
 
-func Test_grep(t *testing.T) {
+func TestGrep(t *testing.T) {
 	content := "hello world\nfind me\nanother line"
 	tmpfile, err := os.CreateTemp("", "testgrep")
 	if err != nil {
@@ -98,7 +98,7 @@ func Test_grep(t *testing.T) {
 }
 
 // Test_bashrcModifiers tests both addToBashrc and removeFromBashrc.
-func Test_bashrcModifiers(t *testing.T) {
+func TestBashrcModifiers(t *testing.T) {
 	tmpfile, err := os.CreateTemp("", "testbashrc")
 	if err != nil {
 		t.Fatal(err)
@@ -153,8 +153,8 @@ func Test_bashrcModifiers(t *testing.T) {
 
 func TestAutoStart(t *testing.T) {}
 
-func Test_getConsentFromUser(t *testing.T) {}
+func TestGetConsentFromUser(t *testing.T) {}
 
 // The following tests are covered by Test_bashrcModifiers
-func Test_addToBashrc(t *testing.T)      {}
-func Test_removeFromBashrc(t *testing.T) {}
+func TestAddToBashrc(t *testing.T)      {}
+func TestRemoveFromBashrc(t *testing.T) {}

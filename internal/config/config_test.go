@@ -125,7 +125,7 @@ func TestJioTVConfig_Get(t *testing.T) {
 	}
 }
 
-func Test_commonFileExists(t *testing.T) {
+func TestCommonFileExists(t *testing.T) {
 	// Create a temp file to simulate a config file
 	tmpFile, err := os.CreateTemp("", "jiotv_go.yml")
 	if err != nil {

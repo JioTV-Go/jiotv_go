@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func Test_generateKey(t *testing.T) {
+func TestGenerateKey(t *testing.T) {
 	tests := []struct {
 		name string
 	}{
