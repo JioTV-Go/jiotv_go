@@ -74,33 +74,33 @@ async function getCachedChannels() {
 function getCurrentChannelInfo(channelsData, currentChannelID) {
     if (!channelsData || !channelsData.result) return null;
     
-    return channelsData.result.find(channel => channel.id === currentChannelID);
+    return channelsData.result.find(channel => channel.channel_id === currentChannelID);
 }
 
 // Function to get similar channels based on category and language
 function getSimilarChannels(channelsData, currentChannel, maxChannels = 6) {
     if (!channelsData || !channelsData.result || !currentChannel) return [];
     
-    const currentChannelID = currentChannel.id;
-    const currentCategory = currentChannel.category;
-    const currentLanguage = currentChannel.language;
+    const currentChannelID = currentChannel.channel_id;
+    const currentCategory = currentChannel.channelCategoryId;
+    const currentLanguage = currentChannel.channelLanguageId;
     
     // Filter channels by same category and language, excluding current channel
     let similarChannels = channelsData.result.filter(channel => {
-        return channel.id !== currentChannelID && 
-               (channel.category === currentCategory || channel.language === currentLanguage);
+        return channel.channel_id !== currentChannelID && 
+               (channel.channelCategoryId === currentCategory || channel.channelLanguageId === currentLanguage);
     });
     
     // Sort by exact matches first (same category AND language), then by category match
     similarChannels.sort((a, b) => {
-        const aExactMatch = a.category === currentCategory && a.language === currentLanguage;
-        const bExactMatch = b.category === currentCategory && b.language === currentLanguage;
+        const aExactMatch = a.channelCategoryId === currentCategory && a.channelLanguageId === currentLanguage;
+        const bExactMatch = b.channelCategoryId === currentCategory && b.channelLanguageId === currentLanguage;
         
         if (aExactMatch && !bExactMatch) return -1;
         if (!aExactMatch && bExactMatch) return 1;
         
-        const aCategoryMatch = a.category === currentCategory;
-        const bCategoryMatch = b.category === currentCategory;
+        const aCategoryMatch = a.channelCategoryId === currentCategory;
+        const bCategoryMatch = b.channelCategoryId === currentCategory;
         
         if (aCategoryMatch && !bCategoryMatch) return -1;
         if (!aCategoryMatch && bCategoryMatch) return 1;
@@ -129,26 +129,26 @@ function renderSimilarChannels(similarChannels) {
     // Create channel cards
     similarChannels.forEach(channel => {
         const channelCard = document.createElement('a');
-        channelCard.href = `/play/${channel.id}`;
+        channelCard.href = `/play/${channel.channel_id}`;
         channelCard.className = 'card relative border border-primary shadow-lg hover:shadow-xl hover:bg-base-300 transition-all duration-200 ease-in-out scale-100 hover:scale-105 group';
-        channelCard.setAttribute('data-channel-id', channel.id);
+        channelCard.setAttribute('data-channel-id', channel.channel_id);
         channelCard.setAttribute('tabindex', '0');
         
         // Determine logo URL (handle both custom and regular channels)
-        const logoURL = (channel.logoURL && (channel.logoURL.startsWith('http://') || channel.logoURL.startsWith('https://'))) 
-            ? channel.logoURL 
-            : `/jtvimage/${channel.logoURL}`;
+        const logoURL = (channel.logoUrl && (channel.logoUrl.startsWith('http://') || channel.logoUrl.startsWith('https://'))) 
+            ? channel.logoUrl 
+            : `/jtvimage/${channel.logoUrl}`;
         
         channelCard.innerHTML = `
             <div class="flex flex-col items-center p-2">
                 <img
                     src="${logoURL}"
                     loading="lazy"
-                    alt="${channel.name}"
+                    alt="${channel.channel_name}"
                     class="h-12 w-12 rounded-full bg-gray-200"
                     onerror="this.style.display='none'"
                 />
-                <span class="text-sm font-bold mt-1 text-center line-clamp-2">${channel.name}</span>
+                <span class="text-sm font-bold mt-1 text-center line-clamp-2">${channel.channel_name}</span>
             </div>
         `;
         
