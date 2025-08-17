@@ -115,12 +115,12 @@ func LiveMpdHandler(c *fiber.Ctx) error {
 			play_url = fmt.Sprintf("/live/%s.m3u8", channelID)
 		}
 		c.Response().Header.Set("Cache-Control", "public, max-age=3600")
-		return c.Render("views/flow_player", fiber.Map{
+		return c.Render("views/player_hls", fiber.Map{
 			"play_url": play_url,
 		})
 	}
 
-	return c.Render("views/flow_player_drm", fiber.Map{
+	return c.Render("views/player_drm", fiber.Map{
 		"play_url":     drmMpdOutput.PlayUrl,
 		"license_url":  drmMpdOutput.LicenseUrl,
 		"channel_host": drmMpdOutput.Tv_url_host,

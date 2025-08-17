@@ -586,7 +586,7 @@ func PlayerHandler(c *fiber.Ctx) error {
 		play_url = fmt.Sprintf("/live/%s.m3u8", id)
 	}
 	c.Response().Header.Set("Cache-Control", "public, max-age=3600")
-	return c.Render("views/flow_player", fiber.Map{
+	return c.Render("views/player_hls", fiber.Map{
 		"play_url": play_url,
 	})
 }
