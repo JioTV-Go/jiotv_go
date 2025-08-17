@@ -705,3 +705,10 @@ func GenerateRandomString() error {
 	}
 	return nil
 }
+
+func BuildHLSPlayURL(quality, channelID string) string {
+    if quality != "" {
+        return fmt.Sprintf("/live/%s/%s.m3u8", quality, channelID)
+    }
+    return fmt.Sprintf("/live/%s.m3u8", channelID)
+}

@@ -579,12 +579,7 @@ func PlayHandler(c *fiber.Ctx) error {
 func PlayerHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	quality := c.Query("q")
-	var play_url string
-	if quality != "" {
-		play_url = fmt.Sprintf("/live/%s/%s.m3u8", quality, id)
-	} else {
-		play_url = fmt.Sprintf("/live/%s.m3u8", id)
-	}
+	play_url := utils.BuildHLSPlayURL(quality, id)
 	c.Response().Header.Set("Cache-Control", "public, max-age=3600")
 	return c.Render("views/player_hls", fiber.Map{
 		"play_url": play_url,
