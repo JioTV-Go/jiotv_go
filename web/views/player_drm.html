@@ -144,6 +144,9 @@
           await player.load("{{ .play_url }}");
           console.log("The video has now been loaded!");
           
+          // Wait for the player to be ready before attempting autoplay
+          await new Promise(resolve => setTimeout(resolve, 100));
+          
           // Smart autoplay: try unmuted first, fall back to muted if needed
           await trySmartAutoplay(video);
         } catch (e) {
@@ -158,9 +161,10 @@
               );
               break;
             default:
+              const errorCode = e.code !== undefined ? e.code : "unknown";
               alert(
                 "An error occurred. Please try again later. Shaka Error code: " +
-                  e.code
+                  errorCode
               );
           }
         }
@@ -175,7 +179,7 @@
             // Hide unmute button since audio is already enabled
             updateUnmuteButton();
           } catch (e) {
-            console.log("Unmuted autoplay blocked, falling back to muted autoplay:", e.message);
+            console.log("Unmuted autoplay blocked, falling back to muted autoplay:", e.message || e);
             // Fall back to muted autoplay
             video.muted = true;
             try {
@@ -184,9 +188,10 @@
               // Show unmute button for muted playback
               updateUnmuteButton();
             } catch (e2) {
-              console.error("Both unmuted and muted autoplay failed:", e2.message);
+              console.error("Both unmuted and muted autoplay failed:", e2.message || e2);
               // Show unmute button anyway in case user interaction can start playback
               updateUnmuteButton();
+              // Don't throw the error as this is expected behavior in some browsers
             }
           }
         }
