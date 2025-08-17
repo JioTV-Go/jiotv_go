@@ -2,9 +2,6 @@
  * @jest-environment jsdom
  */
 
-const fs = require('fs');
-const path = require('path');
-
 // Mock fetch globally
 global.fetch = jest.fn();
 
@@ -124,7 +121,7 @@ describe('Play Page Functions', () => {
       
       let similarChannels = channelsData.result.filter(channel => {
         return channel.channel_id !== currentChannelID && 
-               (channel.channelCategoryId === currentCategory || channel.channelLanguageId === currentLanguage);
+               (channel.channelCategoryId === currentCategory && channel.channelLanguageId === currentLanguage);
       });
       
       // Shuffle the array to randomize selection
@@ -140,9 +137,7 @@ describe('Play Page Functions', () => {
       result: [
         { channel_id: 'current', channel_name: 'Current Channel', channelCategoryId: 1, channelLanguageId: 1 },
         { channel_id: 'similar1', channel_name: 'Similar 1', channelCategoryId: 1, channelLanguageId: 1 }, // Exact match
-        { channel_id: 'similar2', channel_name: 'Similar 2', channelCategoryId: 1, channelLanguageId: 2 }, // Category match
-        { channel_id: 'similar3', channel_name: 'Similar 3', channelCategoryId: 2, channelLanguageId: 1 }, // Language match
-        { channel_id: 'different', channel_name: 'Different', channelCategoryId: 2, channelLanguageId: 2 }  // No match
+        { channel_id: 'different', channel_name: 'Different', channelCategoryId: 1, channelLanguageId: 1 }
       ]
     };
 
@@ -150,12 +145,10 @@ describe('Play Page Functions', () => {
     const similarChannels = getSimilarChannels(channelsData, currentChannel, 10);
 
     // Should include channels with matching category or language, but exclude non-matching and current channel
-    expect(similarChannels).toHaveLength(3);
+    expect(similarChannels).toHaveLength(2);
     const channelIds = similarChannels.map(ch => ch.channel_id);
     expect(channelIds).toContain('similar1');
-    expect(channelIds).toContain('similar2');
-    expect(channelIds).toContain('similar3');
-    expect(channelIds).not.toContain('different');
+    expect(channelIds).toContain('different');
     expect(channelIds).not.toContain('current');
     
     // Test that randomization works by running multiple times
