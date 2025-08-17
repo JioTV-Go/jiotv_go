@@ -13,8 +13,8 @@ function simpleUpdateEPG(epgData, baseUrl = 'http://localhost:3000/play/test-cha
     
     if (shows.length === 0) return;
     
-    if (shownameElement) shownameElement.innerText = shows[0].showname;
-    if (descriptionElement) descriptionElement.innerText = shows[0].description;
+    if (shownameElement) shownameElement.textContent = shows[0].showname;
+    if (descriptionElement) descriptionElement.textContent = shows[0].description;
     
     if (episodePosterElement) {
         episodePosterElement.src = `${baseUrl}/jtvposter/${shows[0].episodePoster}`;
@@ -28,7 +28,7 @@ function simpleUpdateEPG(epgData, baseUrl = 'http://localhost:3000/play/test-cha
         shows[0].keywords.forEach((keyword) => {
             const keywordElement = document.createElement('div');
             keywordElement.className = 'badge badge-outline';
-            keywordElement.innerText = keyword;
+            keywordElement.textContent = keyword;
             keywordsElement.appendChild(keywordElement);
         });
     }
@@ -74,8 +74,8 @@ function updateEPG(epgData) {
     
     if (shows.length === 0) return;
     
-    if (shownameElement) shownameElement.innerText = shows[0].showname;
-    if (descriptionElement) descriptionElement.innerText = shows[0].description;
+    if (shownameElement) shownameElement.textContent = shows[0].showname;
+    if (descriptionElement) descriptionElement.textContent = shows[0].description;
     
     if (episodePosterElement) {
         const posterUrl = new URL("/jtvposter/", window.location.href);
@@ -91,7 +91,7 @@ function updateEPG(epgData) {
         shows[0].keywords.forEach((keyword) => {
             const keywordElement = document.createElement('div');
             keywordElement.className = 'badge badge-outline';
-            keywordElement.innerText = keyword;
+            keywordElement.textContent = keyword;
             keywordsElement.appendChild(keywordElement);
         });
     }
@@ -279,8 +279,8 @@ describe('EPG (Electronic Program Guide) Functionality', () => {
       const shownameElement = document.getElementById('showname');
       const descriptionElement = document.getElementById('description');
       
-      expect(shownameElement.innerText).toBe("Test Show");
-      expect(descriptionElement.innerText).toBe("A test show description");
+      expect(shownameElement.textContent).toBe("Test Show");
+      expect(descriptionElement.textContent).toBe("A test show description");
     });
 
     it('should update episode poster with correct URL', () => {
@@ -298,9 +298,9 @@ describe('EPG (Electronic Program Guide) Functionality', () => {
       const badges = keywordsElement.querySelectorAll('.badge.badge-outline');
       
       expect(badges).toHaveLength(3);
-      expect(badges[0].innerText).toBe("test");
-      expect(badges[1].innerText).toBe("demo");
-      expect(badges[2].innerText).toBe("sample");
+      expect(badges[0].textContent).toBe("test");
+      expect(badges[1].textContent).toBe("demo");
+      expect(badges[2].textContent).toBe("sample");
     });
 
     it('should clear existing keywords before adding new ones', () => {
@@ -325,7 +325,7 @@ describe('EPG (Electronic Program Guide) Functionality', () => {
       
       // Elements that still exist should be updated
       const descriptionElement = document.getElementById('description');
-      expect(descriptionElement.innerText).toBe("A test show description");
+      expect(descriptionElement.textContent).toBe("A test show description");
     });
 
     it('should handle EPG data with no current shows', () => {
@@ -344,12 +344,12 @@ describe('EPG (Electronic Program Guide) Functionality', () => {
       
       // Ensure elements start with some content
       const shownameElement = document.getElementById('showname');
-      shownameElement.innerText = "Initial content";
+      shownameElement.textContent = "Initial content";
       
       expect(() => simpleUpdateEPG(noCurrentShowData)).not.toThrow();
       
       // Elements should remain unchanged since no current show is found
-      expect(shownameElement.innerText).toBe("Initial content");
+      expect(shownameElement.textContent).toBe("Initial content");
     });
 
     it('should handle shows without keywords', () => {

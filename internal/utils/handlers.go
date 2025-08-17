@@ -61,9 +61,7 @@ func DecryptURLParam(paramName, encryptedURL string) (string, error) {
 	
 	decoded, err := secureurl.DecryptURL(encryptedURL)
 	if err != nil {
-		if utils.Log != nil {
-			utils.Log.Printf("Error decrypting %s: %v", paramName, err)
-		}
+		utils.SafeLogf("Error decrypting %s: %v", paramName, err)
 		return "", err
 	}
 	
@@ -87,9 +85,7 @@ func ProxyRequest(c *fiber.Ctx, url string, client *fasthttp.Client, userAgent s
 // ValidateRequiredParam checks if a required parameter is provided
 func ValidateRequiredParam(paramName, paramValue string) error {
 	if paramValue == "" {
-		if utils.Log != nil {
-			utils.Log.Printf("%s not provided", paramName)
-		}
+		utils.SafeLogf("%s not provided", paramName)
 		return fmt.Errorf("%s not provided", paramName)
 	}
 	return nil
@@ -98,9 +94,7 @@ func ValidateRequiredParam(paramName, paramValue string) error {
 // CheckFieldExist validates field existence and sends error response if missing
 func CheckFieldExist(c *fiber.Ctx, field string, condition bool) error {
 	if !condition {
-		if utils.Log != nil {
-			utils.Log.Printf("%s not provided", field)
-		}
+		utils.SafeLogf("%s not provided", field)
 		return BadRequestError(c, field+" not provided")
 	}
 	return nil

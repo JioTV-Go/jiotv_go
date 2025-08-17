@@ -187,6 +187,34 @@ func TestLogAndReturnError(t *testing.T) {
 	}
 }
 
+func TestSafeLogf(t *testing.T) {
+	// Test with nil logger (should not crash)
+	originalLog := Log
+	Log = nil
+	
+	// This should not panic
+	SafeLogf("test message %s", "value")
+	
+	// Test with valid logger
+	// Note: We can't easily test log output without capturing it,
+	// but we can at least verify it doesn't crash
+	Log = originalLog
+	SafeLogf("test message %s", "value")
+}
+
+func TestSafeLog(t *testing.T) {
+	// Test with nil logger (should not crash)
+	originalLog := Log
+	Log = nil
+	
+	// This should not panic
+	SafeLog("test message")
+	
+	// Test with valid logger
+	Log = originalLog
+	SafeLog("test message")
+}
+
 // Helper function since strings.Contains might not be available in test context
 func contains(s, substr string) bool {
 	for i := 0; i <= len(s)-len(substr); i++ {

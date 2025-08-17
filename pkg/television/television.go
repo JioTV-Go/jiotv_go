@@ -33,17 +33,17 @@ const (
 
 // logExcessiveChannelsWarning logs a comprehensive warning when the number of custom channels exceeds the recommended limit
 func logExcessiveChannelsWarning(channelCount int, context string) {
-	if channelCount <= maxRecommendedChannels || utils.Log == nil {
+	if channelCount <= maxRecommendedChannels {
 		return
 	}
 
-	utils.Log.Printf("WARNING: %s %d custom channels, which exceeds the recommended limit of %d channels.", context, channelCount, maxRecommendedChannels)
-	utils.Log.Printf("WARNING: Large numbers of custom channels may impact performance:")
-	utils.Log.Printf("  - Slower channel listing and filtering operations")
-	utils.Log.Printf("  - Increased memory usage")
-	utils.Log.Printf("  - Longer startup times")
-	utils.Log.Printf("  - Potential UI responsiveness issues")
-	utils.Log.Printf("Consider splitting channels into multiple configuration files or reducing the total number.")
+	utils.SafeLogf("WARNING: %s %d custom channels, which exceeds the recommended limit of %d channels.", context, channelCount, maxRecommendedChannels)
+	utils.SafeLog("WARNING: Large numbers of custom channels may impact performance:")
+	utils.SafeLog("  - Slower channel listing and filtering operations")
+	utils.SafeLog("  - Increased memory usage")
+	utils.SafeLog("  - Longer startup times")
+	utils.SafeLog("  - Potential UI responsiveness issues")
+	utils.SafeLog("Consider splitting channels into multiple configuration files or reducing the total number.")
 }
 
 var (
@@ -124,9 +124,7 @@ func loadAndCacheCustomChannels() {
 	// Load channels from file
 	channels, err := LoadCustomChannels(config.Cfg.CustomChannelsFile)
 	if err != nil {
-		if utils.Log != nil {
-			utils.Log.Printf("Error loading custom channels: %v", err)
-		}
+		utils.SafeLogf("Error loading custom channels: %v", err)
 		// Cache empty result to avoid repeated file I/O errors
 		customChannelsCacheMap = make(map[string]Channel)
 	} else {
@@ -296,9 +294,7 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 	// Check if file exists and read it
 	fileResult := utils.CheckAndReadFile(filePath)
 	if !fileResult.Exists {
-		if utils.Log != nil {
-			utils.Log.Printf("Custom channels file not found: %s", filePath)
-		}
+		utils.SafeLogf("Custom channels file not found: %s", filePath)
 		return []Channel{}, nil
 	}
 	
@@ -333,12 +329,10 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 		channels = append(channels, channel)
 	}
 
-	if utils.Log != nil {
-		utils.Log.Printf("Loaded %d custom channels from %s", len(channels), filePath)
+	utils.SafeLogf("Loaded %d custom channels from %s", len(channels), filePath)
 
-		// Warn user about performance implications if too many channels
-		logExcessiveChannelsWarning(len(channels), "You have loaded")
-	}
+	// Warn user about performance implications if too many channels
+	logExcessiveChannelsWarning(len(channels), "You have loaded")
 	return channels, nil
 }
 

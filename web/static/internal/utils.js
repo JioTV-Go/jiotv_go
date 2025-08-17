@@ -55,7 +55,7 @@ function createElement(tagName, attributes = {}, content = '', innerHTML = '') {
   if (innerHTML) {
     element.innerHTML = innerHTML;
   } else if (content) {
-    element.innerText = content;
+    element.textContent = content;
   }
   
   return element;

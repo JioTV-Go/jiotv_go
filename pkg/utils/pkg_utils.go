@@ -174,8 +174,20 @@ func ParseJSONResponse(resp *fasthttp.Response, target interface{}) error {
 
 // LogAndReturnError logs an error and returns it (utility for consistent error handling)
 func LogAndReturnError(err error, context string) error {
-	if Log != nil {
-		Log.Printf("%s: %v", context, err)
-	}
+	SafeLogf("%s: %v", context, err)
 	return fmt.Errorf("%s: %w", context, err)
+}
+
+// SafeLogf safely logs a formatted message, handling nil logger cases
+func SafeLogf(format string, args ...interface{}) {
+	if Log != nil {
+		Log.Printf(format, args...)
+	}
+}
+
+// SafeLog safely logs a message, handling nil logger cases
+func SafeLog(message string) {
+	if Log != nil {
+		Log.Println(message)
+	}
 }
