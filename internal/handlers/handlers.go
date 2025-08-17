@@ -44,7 +44,7 @@ func Init() {
 	}
 	DisableTSHandler = config.Cfg.DisableTSHandler
 	isLogoutDisabled = config.Cfg.DisableLogout
-	EnableDRM = config.Cfg.DRM
+	EnableDRM = true // DRM is enabled by default, only channels that support DRM will use it
 	if DisableTSHandler {
 		utils.Log.Println("TS Handler disabled!. All TS video requests will be served directly from JioTV servers.")
 	}
