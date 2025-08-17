@@ -14,6 +14,7 @@ describe('Unmute Button', () => {
       <div data-shaka-player-container>
         <video
           autoplay
+          muted
           data-shaka-player
           id="jiotv_go_player"
           style="width: 100%; height: 100%"
@@ -106,69 +107,10 @@ describe('Unmute Button', () => {
     expect(video.volume).toBe(0.8);
   });
 
-  test('video element should have required attributes for smart autoplay', () => {
+  test('video element should have required attributes', () => {
     expect(video.hasAttribute('autoplay')).toBe(true);
-    expect(video.hasAttribute('muted')).toBe(false); // No longer muted by default with smart autoplay
+    expect(video.hasAttribute('muted')).toBe(true);
     expect(video.hasAttribute('data-shaka-player')).toBe(true);
     expect(video.id).toBe('jiotv_go_player');
-  });
-
-  test('smart autoplay should work with trySmartAutoplay function', async () => {
-    // Mock video.play() method
-    let playCallCount = 0;
-    let playRejected = false;
-    
-    video.play = jest.fn(() => {
-      playCallCount++;
-      if (playCallCount === 1 && playRejected) {
-        // First call (unmuted) fails
-        return Promise.reject(new Error('Autoplay was prevented'));
-      }
-      // Second call (muted) or first call (if not rejected) succeeds
-      return Promise.resolve();
-    });
-
-    // Mock updateUnmuteButton function
-    const updateUnmuteButton = jest.fn();
-
-    // Mock trySmartAutoplay function from the actual implementation
-    const trySmartAutoplay = async (video) => {
-      try {
-        video.muted = false;
-        await video.play();
-        console.log("Unmuted autoplay successful");
-        updateUnmuteButton();
-      } catch (e) {
-        console.log("Unmuted autoplay blocked, falling back to muted autoplay:", e.message);
-        video.muted = true;
-        try {
-          await video.play();
-          console.log("Muted autoplay successful");
-          updateUnmuteButton();
-        } catch (e2) {
-          console.error("Both unmuted and muted autoplay failed:", e2.message);
-          updateUnmuteButton();
-        }
-      }
-    };
-
-    // Test case 1: Unmuted autoplay succeeds
-    playRejected = false;
-    playCallCount = 0;
-    await trySmartAutoplay(video);
-    expect(video.muted).toBe(false);
-    expect(video.play).toHaveBeenCalledTimes(1);
-    expect(updateUnmuteButton).toHaveBeenCalled();
-
-    // Test case 2: Unmuted autoplay fails, muted succeeds
-    playRejected = true;
-    playCallCount = 0;
-    updateUnmuteButton.mockClear();
-    video.play.mockClear();
-    
-    await trySmartAutoplay(video);
-    expect(video.play).toHaveBeenCalledTimes(2); // First call fails, second succeeds
-    expect(video.muted).toBe(true);
-    expect(updateUnmuteButton).toHaveBeenCalled();
   });
 });

@@ -66,6 +66,7 @@
             If no video is provided, the UI will automatically make one inside the container div. -->
       <video
         autoplay
+        muted
         data-shaka-player
         id="jiotv_go_player"
         style="width: 100%; height: 100%"
@@ -110,9 +111,6 @@
         try {
           await player.load("{{ .play_url }}");
           console.log("The video has now been loaded!");
-          
-          // Smart autoplay: try unmuted first, fall back to muted if needed
-          await trySmartAutoplay(video);
         } catch (e) {
           console.error("Error loading video", e);
           switch (e.code) {
@@ -124,32 +122,6 @@
                 "An error occurred. Please try again later. Shaka Error code: " +
                   e.code
               );
-          }
-        }
-
-        // Smart autoplay function
-        async function trySmartAutoplay(video) {
-          try {
-            // First try to play unmuted
-            video.muted = false;
-            await video.play();
-            console.log("Unmuted autoplay successful");
-            // Hide unmute button since audio is already enabled
-            updateUnmuteButton();
-          } catch (e) {
-            console.log("Unmuted autoplay blocked, falling back to muted autoplay:", e.message);
-            // Fall back to muted autoplay
-            video.muted = true;
-            try {
-              await video.play();
-              console.log("Muted autoplay successful");
-              // Show unmute button for muted playback
-              updateUnmuteButton();
-            } catch (e2) {
-              console.error("Both unmuted and muted autoplay failed:", e2.message);
-              // Show unmute button anyway in case user interaction can start playback
-              updateUnmuteButton();
-            }
           }
         }
 
