@@ -23,6 +23,15 @@ func getDrmMpd(channelID, quality string) (*DrmMpdOutput, error) {
 	if err != nil {
 		return nil, err
 	}
+	if !liveResult.IsDRM {
+		return &DrmMpdOutput{
+			IsDRM:       false,
+			PlayUrl:     liveResult.Mpd.Bitrates.Auto,
+			LicenseUrl:  "",
+			Tv_url_host: "",
+			Tv_url_path: "",
+		}, nil
+	}
 	enc_key, err := secureurl.EncryptURL(liveResult.Mpd.Key)
 	if err != nil {
 		utils.Log.Panicln(err)
@@ -50,6 +59,7 @@ func getDrmMpd(channelID, quality string) (*DrmMpdOutput, error) {
 	// Quick fix for timesplay channels.
 	if liveResult.AlgoName == "timesplay" {
 		return &DrmMpdOutput{
+			IsDRM:       liveResult.IsDRM,
 			PlayUrl:     tv_url,
 			LicenseUrl:  "/drm?auth=" + enc_key + "&channel_id=" + channelID + "&channel=" + channel_enc_url,
 			Tv_url_host: "",
@@ -76,6 +86,7 @@ func getDrmMpd(channelID, quality string) (*DrmMpdOutput, error) {
 	}
 
 	return &DrmMpdOutput{
+		IsDRM:       liveResult.IsDRM,
 		PlayUrl:     "/render.mpd?auth=" + channel_enc_url,
 		LicenseUrl:  "/drm?auth=" + enc_key + "&channel_id=" + channelID + "&channel=" + channel_enc_url,
 		Tv_url_host: tv_url_host,
@@ -96,8 +107,15 @@ func LiveMpdHandler(c *fiber.Ctx) error {
 			"message": err,
 		})
 	}
+	if !drmMpdOutput.IsDRM {
+		play_url := utils.BuildHLSPlayURL(quality, channelID)
+		c.Response().Header.Set("Cache-Control", "public, max-age=3600")
+		return c.Render("views/player_hls", fiber.Map{
+			"play_url": play_url,
+		})
+	}
 
-	return c.Render("views/flow_player_drm", fiber.Map{
+	return c.Render("views/player_drm", fiber.Map{
 		"play_url":     drmMpdOutput.PlayUrl,
 		"license_url":  drmMpdOutput.LicenseUrl,
 		"channel_host": drmMpdOutput.Tv_url_host,

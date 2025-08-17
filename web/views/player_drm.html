@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JioTV Go</title>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background-color: black;
+        overflow-y: hidden;
+      }
+    </style>
+    <script src="/static/external/shaka-player.ui.js"></script>
+    <!-- Shaka Player UI compiled library default CSS: -->
+    <link rel="stylesheet" href="/static/external/shaka-player-controls.css" />
+  </head>
+
+  <body>
+    <div data-shaka-player-container>
+      <!-- The data-shaka-player tag will make the UI library use this video element.
+            If no video is provided, the UI will automatically make one inside the container div. -->
+      <video
+        autoplay
+        muted
+        data-shaka-player
+        id="jiotv_go_player"
+        style="width: 100%; height: 100%"
+      ></video>
+    </div>
+    <script>
+      document.addEventListener("shaka-ui-loaded", async () => {
+        const video = document.getElementById("jiotv_go_player");
+        const ui = video["ui"];
+        const config = {
+          seekBarColors: {
+            base: "rgba(234, 67, 53, 0.5)",
+            buffered: "rgba(234, 67, 53, 0.7)",
+            played: "rgb(234, 67, 53)",
+          },
+          volumeBarColors: {
+            base: "rgba(234, 67, 53, 0.5)",
+            level: "rgb(234, 67, 53)",
+          },
+        };
+        ui.configure(config);
+
+        const controls = ui.getControls();
+        const player = controls.getPlayer();
+
+        player.configure({
+          drm: {
+            servers: {
+              "com.widevine.alpha": "{{ .license_url }}",
+            },
+            advanced: {
+              "com.widevine.alpha": {
+                videoRobustness: "SW_SECURE_CRYPTO",
+                audioRobustness: "SW_SECURE_CRYPTO",
+              },
+            },
+          },
+          streaming: {
+            retryParameters: {
+              maxAttempts: 3,
+            },
+            bufferingGoal: 5, // 5 seconds
+          },
+        });
+
+        const RequestType = shaka.net.NetworkingEngine.RequestType;
+
+        player
+          .getNetworkingEngine()
+          .registerRequestFilter(function (type, request, context) {
+            // Only add headers to license requests:
+            if (
+              type == shaka.net.NetworkingEngine.RequestType.SEGMENT &&
+              request.uris[0].includes("/render.dash")
+            ) {
+              const newUrl = new URL(request.uris[0]);
+              // add query params host and path
+              const channelHost = "{{ .channel_host }}";
+              const channelPath = "{{ .channel_path }}";
+              if (channelHost !== "" && channelPath !== "") {
+                newUrl.searchParams.append("host", channelHost);
+                newUrl.searchParams.append("path", channelPath);
+              }
+              request.uris = [newUrl.toString()];
+            }
+          });
+
+        try {
+          await player.load("{{ .play_url }}");
+          console.log("The video has now been loaded!");
+        } catch (e) {
+          console.error("Error loading video", e);
+          switch (e.code) {
+            case 1001:
+              alert("The channel is not available.");
+              break;
+            case 6001:
+              alert(
+                "Widevine DRM content can't be played in http (except localhost). Please enable https in server."
+              );
+              break;
+            default:
+              alert(
+                "An error occurred. Please try again later. Shaka Error code: " +
+                  e.code
+              );
+          }
+        }
+
+        // Rotate to landscape on fullscreen enter
+        video.addEventListener("fullscreenchange", () => {
+          if (document.fullscreenElement) {
+            if (screen.orientation) {
+              screen.orientation.lock("landscape").catch((e) => {
+                if (e.name !== "NotSupportedError") {
+                  console.error(e);
+                }
+              });
+            }
+          } else {
+            if (screen.orientation) {
+              screen.orientation.unlock();
+            }
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

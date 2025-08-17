@@ -610,3 +610,55 @@ func TestGenerateRandomString(t *testing.T) {
 		})
 	}
 }
+
+func TestBuildHLSPlayURL(t *testing.T) {
+	type args struct {
+		quality   string
+		channelID string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "With quality",
+			args: args{
+				quality:   "high",
+				channelID: "123",
+			},
+			want: "/live/high/123.m3u8",
+		},
+		{
+			name: "Without quality",
+			args: args{
+				quality:   "",
+				channelID: "456",
+			},
+			want: "/live/456.m3u8",
+		},
+		{
+			name: "Empty channel ID with quality",
+			args: args{
+				quality:   "low",
+				channelID: "",
+			},
+			want: "/live/low/.m3u8",
+		},
+		{
+			name: "Empty channel ID without quality",
+			args: args{
+				quality:   "",
+				channelID: "",
+			},
+			want: "/live/.m3u8",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := BuildHLSPlayURL(tt.args.quality, tt.args.channelID); got != tt.want {
+				t.Errorf("BuildHLSPlayURL() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

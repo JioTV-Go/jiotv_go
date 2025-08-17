@@ -35,6 +35,7 @@ type RefreshSSOTokenResponse struct {
 }
 
 type DrmMpdOutput struct {
+	IsDRM       bool
 	LicenseUrl  string
 	PlayUrl     string
 	Tv_url_host string
