@@ -5,12 +5,12 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
-	"github.com/jiotv-go/jiotv_go/v3/pkg/epg"
-	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
-
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/proxy"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
+	internalUtils "github.com/jiotv-go/jiotv_go/v3/internal/utils"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/epg"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 )
 
 const (
@@ -26,7 +26,7 @@ func EPGHandler(c *fiber.Ctx) error {
 	} else {
 		err_message := "EPG not found. Please restart the server after setting the environment variable JIOTV_EPG to true."
 		utils.Log.Println(err_message) // Changed from fmt.Println
-		return c.Status(fiber.StatusNotFound).SendString(err_message)
+		return internalUtils.NotFoundError(c, err_message)
 	}
 }
 
@@ -63,9 +63,5 @@ func WebEPGHandler(c *fiber.Ctx) error {
 func PosterHandler(c *fiber.Ctx) error {
 	// catch all params
 	url := EPG_POSTER_URL + c.Params("date") + "/" + c.Params("file")
-	if err := proxy.Do(c, url, TV.Client); err != nil {
-		return err
-	}
-	c.Response().Header.Del(fiber.HeaderServer)
-	return nil
+	return internalUtils.ProxyRequest(c, url, TV.Client, "")
 }

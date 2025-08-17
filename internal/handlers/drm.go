@@ -8,12 +8,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/proxy"
+	internalUtils "github.com/jiotv-go/jiotv_go/v3/internal/utils"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 	"github.com/valyala/fasthttp"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/proxy"
 )
 
 // getDrmMpd returns required properties for rendering DRM MPD
@@ -38,17 +38,7 @@ func getDrmMpd(channelID, quality string) (*DrmMpdOutput, error) {
 		return nil, err
 	}
 
-	var tv_url string
-	switch quality {
-	case "high", "h":
-		tv_url = liveResult.Mpd.Bitrates.High
-	case "medium", "med", "m":
-		tv_url = liveResult.Mpd.Bitrates.Medium
-	case "low", "l":
-		tv_url = liveResult.Mpd.Bitrates.Low
-	default:
-		tv_url = liveResult.Mpd.Bitrates.Auto
-	}
+	tv_url := internalUtils.SelectQuality(quality, liveResult.Mpd.Bitrates.Auto, liveResult.Mpd.Bitrates.High, liveResult.Mpd.Bitrates.Medium, liveResult.Mpd.Bitrates.Low)
 
 	channel_enc_url, err := secureurl.EncryptURL(tv_url)
 	if err != nil {
@@ -103,13 +93,11 @@ func LiveMpdHandler(c *fiber.Ctx) error {
 	drmMpdOutput, err := getDrmMpd(channelID, quality)
 	if err != nil {
 		utils.Log.Panicln(err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err,
-		})
+		return internalUtils.InternalServerError(c, err)
 	}
 	if !drmMpdOutput.IsDRM {
 		play_url := utils.BuildHLSPlayURL(quality, channelID)
-		c.Response().Header.Set("Cache-Control", "public, max-age=3600")
+		internalUtils.SetCacheHeader(c, 3600)
 		return c.Render("views/player_hls", fiber.Map{
 			"play_url": play_url,
 		})
@@ -139,12 +127,10 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 	channel := c.Query("channel")
 	channel_id := c.Query("channel_id")
 
-	decoded_channel, err := secureurl.DecryptURL(channel)
+	decoded_channel, err := internalUtils.DecryptURLParam("channel", channel)
 	if err != nil {
 		utils.Log.Panicln(err)
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"message": err,
-		})
+		return internalUtils.ForbiddenError(c, err)
 	}
 
 	// Make a HEAD request to the decoded_channel to get the cookies
@@ -169,12 +155,10 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 	// Set the cookies in the request
 	c.Request().Header.Set("Cookie", string(cookies))
 
-	decoded_url, err := secureurl.DecryptURL(auth)
+	decoded_url, err := internalUtils.DecryptURLParam("auth", auth)
 	if err != nil {
 		utils.Log.Panicln(err)
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"message": err,
-		})
+		return internalUtils.ForbiddenError(c, err)
 	}
 
 	// Add headers to the request
