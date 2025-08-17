@@ -51,13 +51,8 @@ async function getCachedChannels() {
     }
 
     try {
-        const response = await fetch('/channels');
-        if (!response.ok) {
-            throw new Error('Failed to fetch channels');
-        }
-
-        const channelsData = await response.json();
-
+        const channelsData = await getJSON('/channels');
+        
         // Update cache
         channelsCache.data = channelsData;
         channelsCache.timestamp = now;
@@ -102,8 +97,8 @@ function getSimilarChannels(channelsData, currentChannel, maxChannels = 12) {
 
 // Function to render similar channels
 function renderSimilarChannels(similarChannels) {
-    const similarChannelsContainer = document.getElementById('similar_channels');
-    const similarChannelsParent = document.getElementById('similar_channels_parent');
+    const elements = safeGetElementsById(['similar_channels', 'similar_channels_parent']);
+    const { similar_channels: similarChannelsContainer, similar_channels_parent: similarChannelsParent } = elements;
 
     if (!similarChannelsContainer || !similarChannelsParent) return;
 
@@ -117,18 +112,17 @@ function renderSimilarChannels(similarChannels) {
 
     // Create channel cards
     similarChannels.forEach(channel => {
-        const channelCard = document.createElement('a');
-        channelCard.href = `/play/${channel.channel_id}`;
-        channelCard.className = 'card relative border border-primary shadow-lg hover:shadow-xl hover:bg-base-300 transition-all duration-200 ease-in-out scale-100 hover:scale-105 group';
-        channelCard.setAttribute('data-channel-id', channel.channel_id);
-        channelCard.setAttribute('tabindex', '0');
-
         // Determine logo URL (handle both custom and regular channels)
         const logoURL = (channel.logoUrl && (channel.logoUrl.startsWith('http://') || channel.logoUrl.startsWith('https://')))
             ? channel.logoUrl
             : `/jtvimage/${channel.logoUrl}`;
 
-        channelCard.innerHTML = `
+        const channelCard = createElement('a', {
+            href: `/play/${channel.channel_id}`,
+            className: 'card relative border border-primary shadow-lg hover:shadow-xl hover:bg-base-300 transition-all duration-200 ease-in-out scale-100 hover:scale-105 group',
+            'data-channel-id': channel.channel_id,
+            tabindex: '0'
+        }, '', `
             <div class="flex flex-col items-center p-2">
                 <img
                     src="${logoURL}"
@@ -139,7 +133,7 @@ function renderSimilarChannels(similarChannels) {
                 />
                 <span class="text-sm font-bold mt-1 text-center line-clamp-2">${channel.channel_name}</span>
             </div>
-        `;
+        `);
 
         similarChannelsContainer.appendChild(channelCard);
     });
@@ -166,27 +160,34 @@ async function loadSimilarChannels() {
 
 function updateEPG(epgData) {
     const shows = getCurrentAndNextTwoShows(epgData);
-    const shownameElement = document.getElementById('showname');
-    const descriptionElement = document.getElementById('description');
-    const episodePosterElement = document.getElementById('episodePoster');
-    shownameElement.innerText = shows[0].showname;
-    descriptionElement.innerText = shows[0].description;
-    const posterUrl = new URL("/jtvposter/", window.location.href);
-    posterUrl.pathname += shows[0].episodePoster;
-    episodePosterElement.src = posterUrl.href;
+    const elements = safeGetElementsById(['showname', 'description', 'episodePoster', 'keywords']);
+    const { showname: shownameElement, description: descriptionElement, episodePoster: episodePosterElement, keywords: keywordsElement } = elements;
+    
+    if (shows.length === 0) return;
+    
+    if (shownameElement) shownameElement.innerText = shows[0].showname;
+    if (descriptionElement) descriptionElement.innerText = shows[0].description;
+    
+    if (episodePosterElement) {
+        const posterUrl = new URL("/jtvposter/", window.location.href);
+        posterUrl.pathname += shows[0].episodePoster;
+        episodePosterElement.src = posterUrl.href;
+    }
 
-    const keywordsElement = document.getElementById('keywords');
-    const keywords = shows[0].keywords;
-    keywords.forEach((keyword) => {
-        const keywordElement = document.createElement('div');
-        keywordElement.className = 'badge badge-outline';
-        keywordElement.innerText = keyword;
-        keywordsElement.appendChild(keywordElement);
-    });
+    if (keywordsElement && shows[0].keywords) {
+        // Clear existing keywords
+        keywordsElement.innerHTML = '';
+        
+        shows[0].keywords.forEach((keyword) => {
+            const keywordElement = createElement('div', {
+                className: 'badge badge-outline'
+            }, keyword);
+            keywordsElement.appendChild(keywordElement);
+        });
+    }
 
-    const e_hour = document.getElementById('e_hour');
-    const e_minute = document.getElementById('e_minute');
-    const e_second = document.getElementById('e_second');
+    const timerElements = safeGetElementsById(['e_hour', 'e_minute', 'e_second']);
+    const { e_hour, e_minute, e_second } = timerElements;
 
     const endEpochTime = shows[0].endEpoch;
     function updateTimer() {
@@ -195,8 +196,11 @@ function updateEPG(epgData) {
 
         if (difference <= 0) {
             clearInterval(timerInterval);
-            document.getElementById('countdown_hour').style.removeProperty('display');
-            document.getElementById('countdown_minute').style.removeProperty('display');
+            const countdownElements = safeGetElementsById(['countdown_hour', 'countdown_minute']);
+            const { countdown_hour, countdown_minute } = countdownElements;
+            
+            if (countdown_hour) countdown_hour.style.removeProperty('display');
+            if (countdown_minute) countdown_minute.style.removeProperty('display');
             updateEPG(epgData);
             return;
         }
@@ -206,18 +210,21 @@ function updateEPG(epgData) {
         const minutes = differenceDate.getUTCMinutes();
         const seconds = differenceDate.getUTCSeconds();
 
-
         if (hours === 0) {
-            document.getElementById('countdown_hour').style.display = 'none';
+            const countdownHour = safeGetElementById('countdown_hour');
+            if (countdownHour) countdownHour.style.display = 'none';
         } else {
-            e_hour.setAttribute('style', `--value:${hours.toString().padStart(2, '0')};`);
+            if (e_hour) e_hour.setAttribute('style', `--value:${hours.toString().padStart(2, '0')};`);
         }
+        
         if (hours === 0 && minutes === 0) {
-            document.getElementById('countdown_minute').style.display = 'none';
+            const countdownMinute = safeGetElementById('countdown_minute');
+            if (countdownMinute) countdownMinute.style.display = 'none';
         } else {
-            e_minute.setAttribute('style', `--value:${minutes.toString().padStart(2, '0')};`);
+            if (e_minute) e_minute.setAttribute('style', `--value:${minutes.toString().padStart(2, '0')};`);
         }
-        e_second.setAttribute('style', `--value:${seconds.toString().padStart(2, '0')};`);
+        
+        if (e_second) e_second.setAttribute('style', `--value:${seconds.toString().padStart(2, '0')};`);
     }
 
     // Initial call to update the timer
@@ -227,22 +234,19 @@ function updateEPG(epgData) {
     const timerInterval = setInterval(updateTimer, 1000);
 }
 
-const epgParent = document.getElementById('epg_parent');
-epgParent.style.display = 'none';
+const epgParent = safeGetElementById('epg_parent');
+if (epgParent) epgParent.style.display = 'none';
 
 (async () => {
     // Load EPG data
-    const epgResponse = await fetch(`/epg/${channelID}/${offset}`);
+    try {
+        const epgData = await getJSON(`/epg/${channelID}/${offset}`);
+        if (epgParent) epgParent.style.display = 'block';
+        updateEPG(epgData);
 
-    if (!epgResponse.ok) {
-        console.error('Failed to fetch EPG data');
-        return;
+        // Load similar channels
+        await loadSimilarChannels();
+    } catch (error) {
+        console.error('Failed to fetch EPG data:', error);
     }
-
-    const epgData = await epgResponse.json();
-    epgParent.style.display = 'block';
-    updateEPG(epgData);
-
-    // Load similar channels
-    await loadSimilarChannels();
 })();
