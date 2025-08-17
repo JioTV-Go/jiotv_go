@@ -581,9 +581,9 @@ func PlayerHandler(c *fiber.Ctx) error {
 	quality := c.Query("q")
 	var play_url string
 	if quality != "" {
-		play_url = "/live/" + quality + "/" + id + ".m3u8"
+		play_url = fmt.Sprintf("/live/%s/%s.m3u8", quality, id)
 	} else {
-		play_url = "/live/" + id + ".m3u8"
+		play_url = fmt.Sprintf("/live/%s.m3u8", id)
 	}
 	c.Response().Header.Set("Cache-Control", "public, max-age=3600")
 	return c.Render("views/flow_player", fiber.Map{

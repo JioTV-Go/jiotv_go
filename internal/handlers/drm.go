@@ -110,9 +110,9 @@ func LiveMpdHandler(c *fiber.Ctx) error {
 	if !drmMpdOutput.IsDRM {
 		var play_url string
 		if quality != "" {
-			play_url = "/live/" + quality + "/" + channelID + ".m3u8"
+			play_url = fmt.Sprintf("/live/%s/%s.m3u8", quality, channelID)
 		} else {
-			play_url = "/live/" + channelID + ".m3u8"
+			play_url = fmt.Sprintf("/live/%s.m3u8", channelID)
 		}
 		c.Response().Header.Set("Cache-Control", "public, max-age=3600")
 		return c.Render("views/flow_player", fiber.Map{
