@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/valyala/fasthttp"
@@ -15,7 +14,6 @@ import (
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
-	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 )
 
@@ -295,22 +293,21 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 		return []Channel{}, nil
 	}
 
-	// Check if file exists
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
+	// Check if file exists and read it
+	fileResult := utils.CheckAndReadFile(filePath)
+	if !fileResult.Exists {
 		if utils.Log != nil {
 			utils.Log.Printf("Custom channels file not found: %s", filePath)
 		}
 		return []Channel{}, nil
 	}
-
-	// Read file content
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read custom channels file: %w", err)
+	
+	if fileResult.Error != nil {
+		return nil, fileResult.Error
 	}
 
 	// Parse the file using format detection
-	customConfig, err := detectAndParseFormat(data, filePath)
+	customConfig, err := detectAndParseFormat(fileResult.Data, filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse custom channels file: %w", err)
 	}
@@ -356,43 +353,35 @@ func getCustomChannels() []Channel {
 
 // Channels fetch channels from JioTV API and merge with custom channels
 func Channels() ChannelsResponse {
-
 	// Create a fasthttp.Client
 	client := utils.GetRequestClient()
 
-	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
+	// Set up request headers
+	requestHeaders := map[string]string{
+		headers.UserAgent:   headers.UserAgentOkHttp,
+		headers.Accept:      headers.AcceptJSON,
+		headers.DeviceType:  headers.DeviceTypePhone,
+		headers.OS:          headers.OSAndroid,
+		"appkey":            "NzNiMDhlYzQyNjJm",
+		"lbcookie":          "1",
+		"usertype":          "JIO",
+	}
 
-	req.SetRequestURI(CHANNELS_API_URL)
-
-	req.Header.SetMethod("GET")
-	req.Header.Add(headers.UserAgent, headers.UserAgentOkHttp)
-	req.Header.Add(headers.Accept, headers.AcceptJSON)
-	req.Header.Add(headers.DeviceType, headers.DeviceTypePhone)
-	req.Header.Add(headers.OS, headers.OSAndroid)
-	req.Header.Add("appkey", "NzNiMDhlYzQyNjJm")
-	req.Header.Add("lbcookie", "1")
-	req.Header.Add("usertype", "JIO")
-
-	resp := fasthttp.AcquireResponse()
-	defer fasthttp.ReleaseResponse(resp)
-
-	// Perform the HTTP GET request
-	if err := client.Do(req, resp); err != nil {
+	// Make the HTTP request
+	resp, err := utils.MakeHTTPRequest(utils.HTTPRequestConfig{
+		URL:     CHANNELS_API_URL,
+		Method:  "GET",
+		Headers: requestHeaders,
+	}, client)
+	if err != nil {
 		utils.Log.Panic(err)
 	}
+	defer fasthttp.ReleaseResponse(resp)
 
 	var apiResponse ChannelsResponse
 
-	// Check the response status code
-	if resp.StatusCode() != fasthttp.StatusOK {
-		utils.Log.Panicf("Request failed with status code: %d", resp.StatusCode())
-	}
-
-	resp_body := resp.Body()
-
-	// Parse the JSON response
-	if err := json.Unmarshal(resp_body, &apiResponse); err != nil {
+	// Parse JSON response
+	if err := utils.ParseJSONResponse(resp, &apiResponse); err != nil {
 		utils.Log.Panic(err)
 	}
 
@@ -476,45 +465,73 @@ func FilterChannelsByDefaults(channels []Channel, categories, languages []int) [
 }
 
 func ReplaceM3U8(baseUrl, match []byte, params, channel_id string) []byte {
-	coded_url, err := secureurl.EncryptURL(string(baseUrl) + string(match) + "?" + params)
+	config := EncryptedURLConfig{
+		BaseURL:     string(baseUrl),
+		Match:       string(match),
+		Params:      params,
+		ChannelID:   channel_id,
+		EndpointURL: "/render.m3u8",
+	}
+	
+	result, err := CreateEncryptedURL(config)
 	if err != nil {
-		utils.Log.Println(err)
 		return nil
 	}
-	return []byte("/render.m3u8?auth=" + coded_url + "&channel_key_id=" + channel_id)
+	return result
 }
 
 func ReplaceTS(baseUrl, match []byte, params string) []byte {
 	if config.Cfg.DisableTSHandler {
 		return []byte(string(baseUrl) + string(match) + "?" + params)
 	}
-	coded_url, err := secureurl.EncryptURL(string(baseUrl) + string(match) + "?" + params)
+	
+	config := EncryptedURLConfig{
+		BaseURL:     string(baseUrl),
+		Match:       string(match),
+		Params:      params,
+		EndpointURL: "/render.ts",
+	}
+	
+	result, err := CreateEncryptedURL(config)
 	if err != nil {
-		utils.Log.Println(err)
 		return nil
 	}
-	return []byte("/render.ts?auth=" + coded_url)
+	return result
 }
 
 func ReplaceAAC(baseUrl, match []byte, params string) []byte {
 	if config.Cfg.DisableTSHandler {
 		return []byte(string(baseUrl) + string(match) + "?" + params)
 	}
-	coded_url, err := secureurl.EncryptURL(string(baseUrl) + string(match) + "?" + params)
+	
+	config := EncryptedURLConfig{
+		BaseURL:     string(baseUrl),
+		Match:       string(match),
+		Params:      params,
+		EndpointURL: "/render.ts",
+	}
+	
+	result, err := CreateEncryptedURL(config)
 	if err != nil {
-		utils.Log.Println(err)
 		return nil
 	}
-	return []byte("/render.ts?auth=" + coded_url)
+	return result
 }
 
 func ReplaceKey(match []byte, params, channel_id string) []byte {
-	coded_url, err := secureurl.EncryptURL(string(match) + "?" + params)
+	config := EncryptedURLConfig{
+		BaseURL:     "",
+		Match:       string(match),
+		Params:      params,
+		ChannelID:   channel_id,
+		EndpointURL: "/render.key",
+	}
+	
+	result, err := CreateEncryptedURL(config)
 	if err != nil {
-		utils.Log.Println(err)
 		return nil
 	}
-	return []byte("/render.key?auth=" + coded_url + "&channel_key_id=" + channel_id)
+	return result
 }
 
 func getSLChannel(channelID string) (*LiveURLOutput, error) {

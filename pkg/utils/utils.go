@@ -114,39 +114,21 @@ func LoginSendOTP(number string) (bool, error) {
 		"number": postData["number"],
 	}
 
-	// Convert payload to JSON
-	payloadJSON, err := json.Marshal(payload)
+	// Make the request
+	url := "https://" + JIOTV_API_DOMAIN + "/userservice/apis/v1/loginotp/send"
+	
+	requestHeaders := map[string]string{
+		"appname":    "RJIL_JioTV",
+		"os":         "android",
+		"devicetype": "phone",
+	}
+
+	client := GetRequestClient()
+	resp, err := MakeJSONRequest(url, "POST", payload, requestHeaders, client)
 	if err != nil {
 		return false, err
 	}
-
-	// Make the request
-	url := "https://" + JIOTV_API_DOMAIN + "/userservice/apis/v1/loginotp/send"
-
-	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
-
-	req.SetRequestURI(url)
-
-	req.Header.SetContentType(headers.ContentTypeJSON)
-	req.Header.SetMethod("POST")
-	req.Header.SetUserAgent(headers.UserAgentOkHttp)
-	// Set headers
-	req.Header.Add("appname", "RJIL_JioTV")
-	req.Header.Add("os", "android")
-	req.Header.Add("devicetype", "phone")
-
-	req.SetBody(payloadJSON)
-
-	client := GetRequestClient()
-
-	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
-
-	// Perform the HTTP POST request
-	if err := client.Do(req, resp); err != nil {
-		return false, err
-	}
 
 	// Check the response status code
 	if resp.StatusCode() != fasthttp.StatusNoContent {
@@ -177,51 +159,29 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 		},
 	}
 
-	// Convert payload to JSON
-	payloadJSON, err := json.Marshal(payload)
+	// Make the request
+	url := "https://" + JIOTV_API_DOMAIN + "/userservice/apis/v1/loginotp/verify"
+	
+	requestHeaders := map[string]string{
+		"appname":    "RJIL_JioTV",
+		"os":         "android",
+		"devicetype": "phone",
+	}
+
+	client := GetRequestClient()
+	resp, err := MakeJSONRequest(url, "POST", payload, requestHeaders, client)
 	if err != nil {
 		return nil, err
 	}
-
-	// Make the request
-	url := "https://" + JIOTV_API_DOMAIN + "/userservice/apis/v1/loginotp/verify"
-
-	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
-
-	req.SetRequestURI(url)
-
-	req.Header.SetContentType(headers.ContentTypeJSON)
-	req.Header.SetMethod("POST")
-	req.Header.SetUserAgent(headers.UserAgentOkHttp)
-	// Set headers
-	req.Header.Add("appname", "RJIL_JioTV")
-	req.Header.Add("os", "android")
-	req.Header.Add("devicetype", "phone")
-
-	req.SetBody(payloadJSON)
-
-	client := GetRequestClient()
-
-	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
-
-	// Perform the HTTP POST request
-	if err := client.Do(req, resp); err != nil {
-		return nil, err
-	}
 
 	// Check the response status code
 	if resp.StatusCode() != fasthttp.StatusOK {
 		return nil, fmt.Errorf("request failed with status code: %d", resp.StatusCode())
 	}
 
-	// Read response body
-	body := resp.Body()
-
 	var result LoginResponse
-
-	if err := json.Unmarshal(body, &result); err != nil {
+	if err := json.Unmarshal(resp.Body(), &result); err != nil {
 		return nil, err
 	}
 
@@ -301,44 +261,23 @@ func Login(username, password string) (map[string]string, error) {
 		},
 	}
 
-	// Convert payload to JSON
-	payloadJSON, err := json.Marshal(payload)
+	// Make the request
+	url := "https://" + API_JIO_DOMAIN + "/v3/dip/user/unpw/verify"
+	
+	client := &fasthttp.Client{}
+	resp, err := MakeJSONRequest(url, "POST", payload, headerMap, client)
 	if err != nil {
 		return nil, err
 	}
-
-	// Make the request
-	url := "https://" + API_JIO_DOMAIN + "/v3/dip/user/unpw/verify"
-	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
-
-	req.SetRequestURI(url)
-	req.Header.SetContentType(headers.ContentTypeJSON)
-	req.Header.SetMethod("POST")
-	for key, value := range headerMap {
-		req.Header.Set(key, value)
-	}
-	req.SetBody(payloadJSON)
-
-	client := &fasthttp.Client{}
-	resp := fasthttp.AcquireResponse()
 	defer fasthttp.ReleaseResponse(resp)
-
-	// Perform the HTTP POST request
-	if err := client.Do(req, resp); err != nil {
-		return nil, err
-	}
 
 	// Check the response status code
 	if resp.StatusCode() != fasthttp.StatusOK {
 		return nil, fmt.Errorf("request failed with status code: %d", resp.StatusCode())
 	}
 
-	// Read response body
-	body := resp.Body()
-
 	var result LoginResponse
-	if err := json.Unmarshal(body, &result); err != nil {
+	if err := json.Unmarshal(resp.Body(), &result); err != nil {
 		return nil, err
 	}
 
@@ -449,47 +388,32 @@ func GetJIOTVCredentials() (*JIOTV_CREDENTIALS, error) {
 
 // WriteJIOTVCredentials writes credentials data to file
 func WriteJIOTVCredentials(credentials *JIOTV_CREDENTIALS) error {
-	if err := store.Set("ssoToken", credentials.SSOToken); err != nil {
-		return err
+	// Prepare batch operations
+	sets := map[string]string{
+		"ssoToken":     credentials.SSOToken,
+		"crm":          credentials.CRM,
+		"uniqueId":     credentials.UniqueID,
+		"accessToken":  credentials.AccessToken,
+		"refreshToken": credentials.RefreshToken,
 	}
 
-	if err := store.Set("crm", credentials.CRM); err != nil {
-		return err
-	}
-
-	if err := store.Set("uniqueId", credentials.UniqueID); err != nil {
-		return err
-	}
-
-	if err := store.Set("accessToken", credentials.AccessToken); err != nil {
-		return err
-	}
-
-	if err := store.Set("refreshToken", credentials.RefreshToken); err != nil {
-		return err
-	}
-
+	// Handle timestamp fields
 	if credentials.LastTokenRefreshTime != "" {
-		if err := store.Set("lastTokenRefreshTime", credentials.LastTokenRefreshTime); err != nil {
-			return err
-		}
+		sets["lastTokenRefreshTime"] = credentials.LastTokenRefreshTime
 	} else {
-		if err := store.Set("lastTokenRefreshTime", strconv.FormatInt(time.Now().Unix(), 10)); err != nil {
-			return err
-		}
+		sets["lastTokenRefreshTime"] = strconv.FormatInt(time.Now().Unix(), 10)
 	}
 
 	if credentials.LastSSOTokenRefreshTime != "" {
-		if err := store.Set("lastSSOTokenRefreshTime", credentials.LastSSOTokenRefreshTime); err != nil {
-			return err
-		}
+		sets["lastSSOTokenRefreshTime"] = credentials.LastSSOTokenRefreshTime
 	} else {
-		if err := store.Set("lastSSOTokenRefreshTime", strconv.FormatInt(time.Now().Unix(), 10)); err != nil {
-			return err
-		}
+		sets["lastSSOTokenRefreshTime"] = strconv.FormatInt(time.Now().Unix(), 10)
 	}
 
-	return nil
+	// Execute batch operations
+	return ExecuteBatchStoreOperations(BatchStoreOperations{
+		Sets: sets,
+	})
 }
 
 // CheckLoggedIn function checks if user is logged in
@@ -512,36 +436,18 @@ func Logout() error {
 		Log.Printf("PerformServerLogout failed: %v", err)
 	}
 
-	// Delete all key-value pairs from the store
-	if err := store.Delete("ssoToken"); err != nil {
-		return err
-	}
-
-	if err := store.Delete("crm"); err != nil {
-		return err
-	}
-
-	if err := store.Delete("uniqueId"); err != nil {
-		return err
-	}
-
-	if err := store.Delete("accessToken"); err != nil {
-		return err
-	}
-
-	if err := store.Delete("refreshToken"); err != nil {
-		return err
-	}
-
-	if err := store.Delete("lastTokenRefreshTime"); err != nil {
-		return err
-	}
-
-	if err := store.Delete("lastSSOTokenRefreshTime"); err != nil {
-		return err
-	}
-
-	return nil
+	// Delete all key-value pairs from the store using batch operations
+	return ExecuteBatchStoreOperations(BatchStoreOperations{
+		Deletes: []string{
+			"ssoToken",
+			"crm",
+			"uniqueId",
+			"accessToken",
+			"refreshToken",
+			"lastTokenRefreshTime",
+			"lastSSOTokenRefreshTime",
+		},
+	})
 }
 
 // PerformServerLogout attempts to log out the user from the JioTV servers.
@@ -577,47 +483,36 @@ func PerformServerLogout() error {
 		"refreshToken": creds.RefreshToken,
 	}
 
-	requestBodyJSON, err := json.Marshal(requestBodyMap)
-	if err != nil {
-		Log.Printf("Error marshalling server logout request body: %v", err)
-		return fmt.Errorf("failed to marshal request body: %w", err)
+	// Set up request headers
+	requestHeaders := map[string]string{
+		headers.AcceptEncoding: headers.AcceptEncodingGzip,
+		headers.DeviceType:     headers.DeviceTypePhone,
+		"versioncode":          "371", // As per new requirement
+		headers.OS:             headers.OSAndroid,
+		headers.ContentType:    headers.ContentTypeJSONCharsetUTF8,
 	}
 
-	// Construct the request
-	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
-
-	req.SetRequestURI("https://" + AUTH_MEDIA_DOMAIN + "/tokenservice/apis/v1/logout?langId=6")
-	req.Header.SetMethod("POST")
-	req.Header.SetUserAgent(headers.UserAgentOkHttp)
-	req.Header.Set(headers.AcceptEncoding, headers.AcceptEncodingGzip)
 	if creds.AccessToken != "" {
-		req.Header.Set(headers.AccessToken, creds.AccessToken)
+		requestHeaders[headers.AccessToken] = creds.AccessToken
 	} else {
 		Log.Println("AccessToken is missing, proceeding without it for server logout.")
 	}
-	req.Header.Set(headers.DeviceType, headers.DeviceTypePhone)
-	req.Header.Set("versioncode", "371") // As per new requirement
-	req.Header.Set(headers.OS, headers.OSAndroid)
+
 	if creds.UniqueID != "" {
-		req.Header.Set("uniqueid", creds.UniqueID)
+		requestHeaders["uniqueid"] = creds.UniqueID
 	} else {
 		Log.Println("UniqueID is missing, proceeding without it for server logout.")
 	}
-	req.Header.Set(headers.ContentType, headers.ContentTypeJSONCharsetUTF8)
-	req.SetBody(requestBodyJSON)
 
 	// Get the HTTP client
 	client := GetRequestClient()
 
 	// Perform the HTTP POST request
-	resp := fasthttp.AcquireResponse()
-	defer fasthttp.ReleaseResponse(resp)
-
-	if err := client.Do(req, resp); err != nil {
-		Log.Printf("Error performing server logout request: %v\n", err)
-		return fmt.Errorf("http request failed: %w", err)
+	resp, err := MakeJSONRequest("https://"+AUTH_MEDIA_DOMAIN+"/tokenservice/apis/v1/logout?langId=6", "POST", requestBodyMap, requestHeaders, client)
+	if err != nil {
+		return LogAndReturnError(err, "HTTP request failed")
 	}
+	defer fasthttp.ReleaseResponse(resp)
 
 	// Log the response status code
 	Log.Printf("Server logout API response status code: %d", resp.StatusCode())
