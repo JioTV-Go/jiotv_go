@@ -77,7 +77,7 @@ function getCurrentChannelInfo(channelsData, currentChannelID) {
     return channelsData.result.find(channel => channel.channel_id === currentChannelID);
 }
 
-// Function to get similar channels based on category and language
+// Function to get random similar channels based on category and language
 function getSimilarChannels(channelsData, currentChannel, maxChannels = 6) {
     if (!channelsData || !channelsData.result || !currentChannel) return [];
     
@@ -91,22 +91,11 @@ function getSimilarChannels(channelsData, currentChannel, maxChannels = 6) {
                (channel.channelCategoryId === currentCategory || channel.channelLanguageId === currentLanguage);
     });
     
-    // Sort by exact matches first (same category AND language), then by category match
-    similarChannels.sort((a, b) => {
-        const aExactMatch = a.channelCategoryId === currentCategory && a.channelLanguageId === currentLanguage;
-        const bExactMatch = b.channelCategoryId === currentCategory && b.channelLanguageId === currentLanguage;
-        
-        if (aExactMatch && !bExactMatch) return -1;
-        if (!aExactMatch && bExactMatch) return 1;
-        
-        const aCategoryMatch = a.channelCategoryId === currentCategory;
-        const bCategoryMatch = b.channelCategoryId === currentCategory;
-        
-        if (aCategoryMatch && !bCategoryMatch) return -1;
-        if (!aCategoryMatch && bCategoryMatch) return 1;
-        
-        return 0;
-    });
+    // Shuffle the array to randomize selection
+    for (let i = similarChannels.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [similarChannels[i], similarChannels[j]] = [similarChannels[j], similarChannels[i]];
+    }
     
     return similarChannels.slice(0, maxChannels);
 }

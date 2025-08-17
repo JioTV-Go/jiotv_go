@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Player Layout Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {}
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-100">
+    <!-- Desktop Layout Demo -->
+    <div class="p-1 sm:p-2 md:p-4 lg:p-8">
+        <h1 class="text-2xl font-bold mb-4 text-center">New Desktop Layout: EPG on right, Similar channels below</h1>
+        
+        <!-- Desktop grid layout: player left, EPG right. Mobile: stacked -->
+        <div class="lg:grid lg:grid-cols-12 lg:gap-8 lg:mx-8 xl:mx-52">
+            <!-- Player section -->
+            <div class="lg:col-span-8">
+                <div class="relative overflow-hidden w-full rounded-xl bg-black" style="aspect-ratio: 16/9; min-height: 200px">
+                    <div class="absolute top-0 left-0 bottom-0 right-0 w-full h-full bg-gray-800 flex items-center justify-center text-white text-2xl">
+                        Video Player Area
+                    </div>
+                </div>
+                <div class="mt-2 flex justify-center">
+                    <button class="btn bg-blue-500 text-white px-4 py-2 rounded">Aspect Ratio Toggle</button>
+                </div>
+            </div>
+            
+            <!-- Sidebar section (Now Playing EPG only) -->
+            <div class="lg:col-span-4 mt-4 lg:mt-0">
+                <!-- Now Playing Section (EPG) -->
+                <div class="">
+                    <h2 class="mb-3 text-lg font-bold text-center lg:text-left">Now Playing</h2>
+                    <div class="w-full">
+                        <div class="bg-white rounded-lg shadow-xl">
+                            <figure><img src="https://via.placeholder.com/300x200/4F46E5/FFFFFF?text=Episode+Poster" alt="Episode Poster" class="w-full rounded-t-lg"/></figure>
+                            <div class="p-4">
+                                <h2 class="text-base font-bold">Sample TV Show</h2>
+                                <div class="flex flex-row gap-2 items-center justify-between mt-2">
+                                    <div class="bg-red-100 text-red-800 px-2 py-1 rounded text-xs">Live</div>
+                                    <div class="text-sm">
+                                        <span>Ends in 25m 30s</span>
+                                    </div>
+                                </div>
+                                <p class="text-sm mt-2">This is a sample show description that demonstrates how the EPG content appears in the sidebar.</p>
+                                <div class="flex flex-wrap gap-1 mt-2">
+                                    <div class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">Drama</div>
+                                    <div class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs">Family</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Similar Channels Section - Below main grid on desktop, part of stack on mobile -->
+        <div class="mt-6 lg:mx-8 xl:mx-52">
+            <h2 class="mb-3 text-lg font-bold text-center lg:text-left">Similar Channels</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                <!-- Sample similar channels -->
+                <a href="#" class="bg-white border border-blue-500 rounded-lg shadow-lg hover:shadow-xl hover:bg-gray-50 transition-all duration-200 ease-in-out scale-100 hover:scale-105 group">
+                    <div class="flex flex-col items-center p-2">
+                        <img src="https://via.placeholder.com/48x48/10B981/FFFFFF?text=CH1" alt="Channel 1" class="h-12 w-12 rounded-full bg-gray-200"/>
+                        <span class="text-sm font-bold mt-1 text-center">Channel 1</span>
+                    </div>
+                </a>
+                <a href="#" class="bg-white border border-blue-500 rounded-lg shadow-lg hover:shadow-xl hover:bg-gray-50 transition-all duration-200 ease-in-out scale-100 hover:scale-105 group">
+                    <div class="flex flex-col items-center p-2">
+                        <img src="https://via.placeholder.com/48x48/F59E0B/FFFFFF?text=CH2" alt="Channel 2" class="h-12 w-12 rounded-full bg-gray-200"/>
+                        <span class="text-sm font-bold mt-1 text-center">Channel 2</span>
+                    </div>
+                </a>
+                <a href="#" class="bg-white border border-blue-500 rounded-lg shadow-lg hover:shadow-xl hover:bg-gray-50 transition-all duration-200 ease-in-out scale-100 hover:scale-105 group">
+                    <div class="flex flex-col items-center p-2">
+                        <img src="https://via.placeholder.com/48x48/EF4444/FFFFFF?text=CH3" alt="Channel 3" class="h-12 w-12 rounded-full bg-gray-200"/>
+                        <span class="text-sm font-bold mt-1 text-center">Channel 3</span>
+                    </div>
+                </a>
+                <a href="#" class="bg-white border border-blue-500 rounded-lg shadow-lg hover:shadow-xl hover:bg-gray-50 transition-all duration-200 ease-in-out scale-100 hover:scale-105 group">
+                    <div class="flex flex-col items-center p-2">
+                        <img src="https://via.placeholder.com/48x48/8B5CF6/FFFFFF?text=CH4" alt="Channel 4" class="h-12 w-12 rounded-full bg-gray-200"/>
+                        <span class="text-sm font-bold mt-1 text-center">Channel 4</span>
+                    </div>
+                </a>
+                <a href="#" class="bg-white border border-blue-500 rounded-lg shadow-lg hover:shadow-xl hover:bg-gray-50 transition-all duration-200 ease-in-out scale-100 hover:scale-105 group">
+                    <div class="flex flex-col items-center p-2">
+                        <img src="https://via.placeholder.com/48x48/06B6D4/FFFFFF?text=CH5" alt="Channel 5" class="h-12 w-12 rounded-full bg-gray-200"/>
+                        <span class="text-sm font-bold mt-1 text-center">Channel 5</span>
+                    </div>
+                </a>
+                <a href="#" class="bg-white border border-blue-500 rounded-lg shadow-lg hover:shadow-xl hover:bg-gray-50 transition-all duration-200 ease-in-out scale-100 hover:scale-105 group">
+                    <div class="flex flex-col items-center p-2">
+                        <img src="https://via.placeholder.com/48x48/EC4899/FFFFFF?text=CH6" alt="Channel 6" class="h-12 w-12 rounded-full bg-gray-200"/>
+                        <span class="text-sm font-bold mt-1 text-center">Channel 6</span>
+                    </div>
+                </a>
+            </div>
+        </div>
+        
+        <div class="mt-8 p-4 bg-blue-50 rounded-lg">
+            <h3 class="font-bold text-lg mb-2">Changes Made:</h3>
+            <ul class="list-disc pl-5 space-y-1">
+                <li><strong>Desktop Layout:</strong> EPG moved to right sidebar (4/12 columns), Similar channels moved below the main grid</li>
+                <li><strong>Mobile Layout:</strong> Unchanged - vertical stacking maintained</li>
+                <li><strong>Similar Channels:</strong> Now randomized selection of 6 channels instead of sorted</li>
+                <li><strong>Responsive Grid:</strong> Similar channels use responsive grid (2 cols mobile → 6 cols desktop)</li>
+                <li><strong>Performance:</strong> 1-hour client-side caching maintained</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

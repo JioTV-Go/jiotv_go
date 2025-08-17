@@ -114,7 +114,7 @@ describe('Play Page Functions', () => {
     expect(currentChannel.channel_name).toBe('Test Channel');
   });
 
-  test('getSimilarChannels filters correctly', () => {
+  test('getSimilarChannels filters and randomizes correctly', () => {
     function getSimilarChannels(channelsData, currentChannel, maxChannels = 6) {
       if (!channelsData || !channelsData.result || !currentChannel) return [];
       
@@ -127,21 +127,11 @@ describe('Play Page Functions', () => {
                (channel.channelCategoryId === currentCategory || channel.channelLanguageId === currentLanguage);
       });
       
-      similarChannels.sort((a, b) => {
-        const aExactMatch = a.channelCategoryId === currentCategory && a.channelLanguageId === currentLanguage;
-        const bExactMatch = b.channelCategoryId === currentCategory && b.channelLanguageId === currentLanguage;
-        
-        if (aExactMatch && !bExactMatch) return -1;
-        if (!aExactMatch && bExactMatch) return 1;
-        
-        const aCategoryMatch = a.channelCategoryId === currentCategory;
-        const bCategoryMatch = b.channelCategoryId === currentCategory;
-        
-        if (aCategoryMatch && !bCategoryMatch) return -1;
-        if (!aCategoryMatch && bCategoryMatch) return 1;
-        
-        return 0;
-      });
+      // Shuffle the array to randomize selection
+      for (let i = similarChannels.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [similarChannels[i], similarChannels[j]] = [similarChannels[j], similarChannels[i]];
+      }
       
       return similarChannels.slice(0, maxChannels);
     }
@@ -151,6 +141,7 @@ describe('Play Page Functions', () => {
         { channel_id: 'current', channel_name: 'Current Channel', channelCategoryId: 1, channelLanguageId: 1 },
         { channel_id: 'similar1', channel_name: 'Similar 1', channelCategoryId: 1, channelLanguageId: 1 }, // Exact match
         { channel_id: 'similar2', channel_name: 'Similar 2', channelCategoryId: 1, channelLanguageId: 2 }, // Category match
+        { channel_id: 'similar3', channel_name: 'Similar 3', channelCategoryId: 2, channelLanguageId: 1 }, // Language match
         { channel_id: 'different', channel_name: 'Different', channelCategoryId: 2, channelLanguageId: 2 }  // No match
       ]
     };
@@ -158,10 +149,24 @@ describe('Play Page Functions', () => {
     const currentChannel = { channel_id: 'current', channelCategoryId: 1, channelLanguageId: 1 };
     const similarChannels = getSimilarChannels(channelsData, currentChannel, 10);
 
-    expect(similarChannels).toHaveLength(2);
-    expect(similarChannels[0].channel_id).toBe('similar1'); // Exact match first
-    expect(similarChannels.map(ch => ch.channel_id)).toContain('similar2');
-    expect(similarChannels.map(ch => ch.channel_id)).not.toContain('different');
+    // Should include channels with matching category or language, but exclude non-matching and current channel
+    expect(similarChannels).toHaveLength(3);
+    const channelIds = similarChannels.map(ch => ch.channel_id);
+    expect(channelIds).toContain('similar1');
+    expect(channelIds).toContain('similar2');
+    expect(channelIds).toContain('similar3');
+    expect(channelIds).not.toContain('different');
+    expect(channelIds).not.toContain('current');
+    
+    // Test that randomization works by running multiple times
+    // (This is probabilistic, but with Fisher-Yates shuffle, order should vary)
+    const orders = new Set();
+    for (let i = 0; i < 10; i++) {
+      const result = getSimilarChannels(channelsData, currentChannel, 10);
+      orders.add(result.map(ch => ch.channel_id).join(','));
+    }
+    // With 3 items and 10 runs, we should get at least 2 different orders (highly likely)
+    expect(orders.size).toBeGreaterThan(1);
   });
 
   test('renderSimilarChannels creates correct DOM structure', () => {

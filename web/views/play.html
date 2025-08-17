@@ -11,7 +11,7 @@
     {{ template "navbar" . }}
     <!-- Main container with responsive layout -->
     <div class="p-1 sm:p-2 md:p-4 lg:p-8">
-      <!-- Desktop grid layout: player left, sidebar right. Mobile: stacked -->
+      <!-- Desktop grid layout: player left, EPG right. Mobile: stacked -->
       <div class="lg:grid lg:grid-cols-12 lg:gap-8 lg:mx-8 xl:mx-52">
         <!-- Player section -->
         <div class="lg:col-span-8">
@@ -50,7 +50,7 @@
           </div>
         </div>
         
-        <!-- Sidebar section (Now Playing + Similar Channels) -->
+        <!-- Sidebar section (Now Playing EPG only) -->
         <div class="lg:col-span-4 mt-4 lg:mt-0">
           <!-- Now Playing Section (EPG) -->
           <div id="epg_parent" class="">
@@ -85,16 +85,16 @@
               </div>
             </div>
           </div>
-          
-          <!-- Similar Channels Section -->
-          <div id="similar_channels_parent" class="mt-6" style="display: none;">
-            <h2 class="mb-3 text-lg font-bold text-center lg:text-left">
-              Similar Channels
-            </h2>
-            <div id="similar_channels" class="grid grid-cols-2 gap-3">
-              <!-- Similar channels will be populated by JavaScript -->
-            </div>
-          </div>
+        </div>
+      </div>
+      
+      <!-- Similar Channels Section - Below main grid on desktop, part of stack on mobile -->
+      <div id="similar_channels_parent" class="mt-6 lg:mx-8 xl:mx-52" style="display: none;">
+        <h2 class="mb-3 text-lg font-bold text-center lg:text-left">
+          Similar Channels
+        </h2>
+        <div id="similar_channels" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <!-- Similar channels will be populated by JavaScript -->
         </div>
       </div>
     </div>
