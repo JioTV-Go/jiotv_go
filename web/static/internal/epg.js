@@ -34,6 +34,146 @@ const url = new URL(window.location.href);
 const channelID = url.pathname.match(/\/play\/(.*)/)[1];
 const offset = 0;
 
+// Cache for channels data with 1-hour expiry
+let channelsCache = {
+    data: null,
+    timestamp: 0,
+    expiryTime: 60 * 60 * 1000 // 1 hour in milliseconds
+};
+
+// Function to get cached channels or fetch new ones
+async function getCachedChannels() {
+    const now = Date.now();
+    
+    // Check if cache is valid
+    if (channelsCache.data && (now - channelsCache.timestamp < channelsCache.expiryTime)) {
+        return channelsCache.data;
+    }
+    
+    try {
+        const response = await fetch('/channels');
+        if (!response.ok) {
+            throw new Error('Failed to fetch channels');
+        }
+        
+        const channelsData = await response.json();
+        
+        // Update cache
+        channelsCache.data = channelsData;
+        channelsCache.timestamp = now;
+        
+        return channelsData;
+    } catch (error) {
+        console.error('Error fetching channels:', error);
+        // Return cached data if available, even if expired
+        return channelsCache.data || null;
+    }
+}
+
+// Function to get current channel info from channels list
+function getCurrentChannelInfo(channelsData, currentChannelID) {
+    if (!channelsData || !channelsData.result) return null;
+    
+    return channelsData.result.find(channel => channel.id === currentChannelID);
+}
+
+// Function to get similar channels based on category and language
+function getSimilarChannels(channelsData, currentChannel, maxChannels = 6) {
+    if (!channelsData || !channelsData.result || !currentChannel) return [];
+    
+    const currentChannelID = currentChannel.id;
+    const currentCategory = currentChannel.category;
+    const currentLanguage = currentChannel.language;
+    
+    // Filter channels by same category and language, excluding current channel
+    let similarChannels = channelsData.result.filter(channel => {
+        return channel.id !== currentChannelID && 
+               (channel.category === currentCategory || channel.language === currentLanguage);
+    });
+    
+    // Sort by exact matches first (same category AND language), then by category match
+    similarChannels.sort((a, b) => {
+        const aExactMatch = a.category === currentCategory && a.language === currentLanguage;
+        const bExactMatch = b.category === currentCategory && b.language === currentLanguage;
+        
+        if (aExactMatch && !bExactMatch) return -1;
+        if (!aExactMatch && bExactMatch) return 1;
+        
+        const aCategoryMatch = a.category === currentCategory;
+        const bCategoryMatch = b.category === currentCategory;
+        
+        if (aCategoryMatch && !bCategoryMatch) return -1;
+        if (!aCategoryMatch && bCategoryMatch) return 1;
+        
+        return 0;
+    });
+    
+    return similarChannels.slice(0, maxChannels);
+}
+
+// Function to render similar channels
+function renderSimilarChannels(similarChannels) {
+    const similarChannelsContainer = document.getElementById('similar_channels');
+    const similarChannelsParent = document.getElementById('similar_channels_parent');
+    
+    if (!similarChannelsContainer || !similarChannelsParent) return;
+    
+    // Clear existing content
+    similarChannelsContainer.innerHTML = '';
+    
+    if (!similarChannels || similarChannels.length === 0) {
+        similarChannelsParent.style.display = 'none';
+        return;
+    }
+    
+    // Create channel cards
+    similarChannels.forEach(channel => {
+        const channelCard = document.createElement('a');
+        channelCard.href = `/play/${channel.id}`;
+        channelCard.className = 'card relative border border-primary shadow-lg hover:shadow-xl hover:bg-base-300 transition-all duration-200 ease-in-out scale-100 hover:scale-105 group';
+        channelCard.setAttribute('data-channel-id', channel.id);
+        channelCard.setAttribute('tabindex', '0');
+        
+        // Determine logo URL (handle both custom and regular channels)
+        const logoURL = (channel.logoURL && (channel.logoURL.startsWith('http://') || channel.logoURL.startsWith('https://'))) 
+            ? channel.logoURL 
+            : `/jtvimage/${channel.logoURL}`;
+        
+        channelCard.innerHTML = `
+            <div class="flex flex-col items-center p-2">
+                <img
+                    src="${logoURL}"
+                    loading="lazy"
+                    alt="${channel.name}"
+                    class="h-12 w-12 rounded-full bg-gray-200"
+                    onerror="this.style.display='none'"
+                />
+                <span class="text-sm font-bold mt-1 text-center line-clamp-2">${channel.name}</span>
+            </div>
+        `;
+        
+        similarChannelsContainer.appendChild(channelCard);
+    });
+    
+    similarChannelsParent.style.display = 'block';
+}
+
+// Function to load similar channels
+async function loadSimilarChannels() {
+    try {
+        const channelsData = await getCachedChannels();
+        if (!channelsData) return;
+        
+        const currentChannel = getCurrentChannelInfo(channelsData, channelID);
+        if (!currentChannel) return;
+        
+        const similarChannels = getSimilarChannels(channelsData, currentChannel);
+        renderSimilarChannels(similarChannels);
+    } catch (error) {
+        console.error('Error loading similar channels:', error);
+    }
+}
+
 
 function updateEPG(epgData) {
     const shows = getCurrentAndNextTwoShows(epgData);
@@ -102,6 +242,7 @@ const epgParent = document.getElementById('epg_parent');
 epgParent.style.display = 'none';
 
 (async () => {
+    // Load EPG data
     const epgResponse = await fetch(`/epg/${channelID}/${offset}`);
 
     if (!epgResponse.ok) {
@@ -112,4 +253,7 @@ epgParent.style.display = 'none';
     const epgData = await epgResponse.json();
     epgParent.style.display = 'block';
     updateEPG(epgData);
+    
+    // Load similar channels
+    await loadSimilarChannels();
 })();
