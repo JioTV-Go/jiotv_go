@@ -197,7 +197,6 @@ func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
 		utils.Log.Panic(err)
 		return nil, err
 	}
-	utils.Log.Println(resp.String())
 	if resp.StatusCode() != fasthttp.StatusOK {
 		// Store the response body as a string
 		response := string(resp.Body())
