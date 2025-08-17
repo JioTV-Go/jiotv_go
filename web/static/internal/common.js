@@ -1,45 +1,45 @@
 const htmlTag = document.getElementsByTagName("html")[0];
 
 const getCurrentTheme = () => {
-  if (localStorage.getItem("theme")) {
-    // return local storage theme
-    return localStorage.getItem("theme");
-  } else if (htmlTag.hasAttribute("data-theme")) {
-    // return data-theme attribute
-    localStorage.setItem("theme", htmlTag.getAttribute("data-theme"));
-    return htmlTag.getAttribute("data-theme");
-  } else {
-    // return system theme
-    if (
-      window.matchMedia &&
-      window.matchMedia("(prefers-color-scheme: dark)").matches
-    ) {
-      localStorage.setItem("theme", "dark");
-      return "dark";
-    }
-    localStorage.setItem("theme", "light");
-    return "light";
+  const storedTheme = getLocalStorageItem("theme");
+  if (storedTheme) {
+    return storedTheme;
   }
+  
+  const htmlTag = document.getElementsByTagName("html")[0];
+  if (htmlTag.hasAttribute("data-theme")) {
+    const themeAttr = htmlTag.getAttribute("data-theme");
+    setLocalStorageItem("theme", themeAttr);
+    return themeAttr;
+  }
+  
+  // Return system theme preference
+  const prefersDark = window.matchMedia && 
+    window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const systemTheme = prefersDark ? "dark" : "light";
+  setLocalStorageItem("theme", systemTheme);
+  return systemTheme;
 };
 
 const toggleTheme = () => {
-  // toggle or add attribute "data-theme" to html tag
-  if (getCurrentTheme() == "dark") {
-    localStorage.setItem("theme", "light");
-    htmlTag.setAttribute("data-theme", "light");
-  } else {
-    localStorage.setItem("theme", "dark");
-    htmlTag.setAttribute("data-theme", "dark");
-  }
+  const htmlTag = document.getElementsByTagName("html")[0];
+  const newTheme = getCurrentTheme() === "dark" ? "light" : "dark";
+  
+  setLocalStorageItem("theme", newTheme);
+  htmlTag.setAttribute("data-theme", newTheme);
 };
 
 const initializeTheme = () => {
-  const sunIcon = document.getElementById("sunIcon");
-  const moonIcon = document.getElementById("moonIcon");
+  const elements = safeGetElementsById(["sunIcon", "moonIcon"]);
+  const { sunIcon, moonIcon } = elements;
 
-  if (getCurrentTheme() == "light") {
-    sunIcon.classList.replace("swap-on", "swap-off");
-    moonIcon.classList.replace("swap-off", "swap-on");
+  if (getCurrentTheme() === "light") {
+    const htmlTag = document.getElementsByTagName("html")[0];
+    
+    if (sunIcon && moonIcon) {
+      sunIcon.classList.replace("swap-on", "swap-off");
+      moonIcon.classList.replace("swap-off", "swap-on");
+    }
     htmlTag.setAttribute("data-theme", "light");
   }
 };

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/valyala/fasthttp"
@@ -15,7 +14,6 @@ import (
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
-	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 )
 
@@ -35,17 +33,17 @@ const (
 
 // logExcessiveChannelsWarning logs a comprehensive warning when the number of custom channels exceeds the recommended limit
 func logExcessiveChannelsWarning(channelCount int, context string) {
-	if channelCount <= maxRecommendedChannels || utils.Log == nil {
+	if channelCount <= maxRecommendedChannels {
 		return
 	}
 
-	utils.Log.Printf("WARNING: %s %d custom channels, which exceeds the recommended limit of %d channels.", context, channelCount, maxRecommendedChannels)
-	utils.Log.Printf("WARNING: Large numbers of custom channels may impact performance:")
-	utils.Log.Printf("  - Slower channel listing and filtering operations")
-	utils.Log.Printf("  - Increased memory usage")
-	utils.Log.Printf("  - Longer startup times")
-	utils.Log.Printf("  - Potential UI responsiveness issues")
-	utils.Log.Printf("Consider splitting channels into multiple configuration files or reducing the total number.")
+	utils.SafeLogf("WARNING: %s %d custom channels, which exceeds the recommended limit of %d channels.", context, channelCount, maxRecommendedChannels)
+	utils.SafeLog("WARNING: Large numbers of custom channels may impact performance:")
+	utils.SafeLog("  - Slower channel listing and filtering operations")
+	utils.SafeLog("  - Increased memory usage")
+	utils.SafeLog("  - Longer startup times")
+	utils.SafeLog("  - Potential UI responsiveness issues")
+	utils.SafeLog("Consider splitting channels into multiple configuration files or reducing the total number.")
 }
 
 var (
@@ -126,9 +124,7 @@ func loadAndCacheCustomChannels() {
 	// Load channels from file
 	channels, err := LoadCustomChannels(config.Cfg.CustomChannelsFile)
 	if err != nil {
-		if utils.Log != nil {
-			utils.Log.Printf("Error loading custom channels: %v", err)
-		}
+		utils.SafeLogf("Error loading custom channels: %v", err)
 		// Cache empty result to avoid repeated file I/O errors
 		customChannelsCacheMap = make(map[string]Channel)
 	} else {
@@ -295,22 +291,19 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 		return []Channel{}, nil
 	}
 
-	// Check if file exists
-	if _, err := os.Stat(filePath); os.IsNotExist(err) {
-		if utils.Log != nil {
-			utils.Log.Printf("Custom channels file not found: %s", filePath)
-		}
+	// Check if file exists and read it
+	fileResult := utils.CheckAndReadFile(filePath)
+	if !fileResult.Exists {
+		utils.SafeLogf("Custom channels file not found: %s", filePath)
 		return []Channel{}, nil
 	}
-
-	// Read file content
-	data, err := os.ReadFile(filePath)
-	if err != nil {
-		return nil, fmt.Errorf("failed to read custom channels file: %w", err)
+	
+	if fileResult.Error != nil {
+		return nil, fileResult.Error
 	}
 
 	// Parse the file using format detection
-	customConfig, err := detectAndParseFormat(data, filePath)
+	customConfig, err := detectAndParseFormat(fileResult.Data, filePath)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse custom channels file: %w", err)
 	}
@@ -336,12 +329,10 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 		channels = append(channels, channel)
 	}
 
-	if utils.Log != nil {
-		utils.Log.Printf("Loaded %d custom channels from %s", len(channels), filePath)
+	utils.SafeLogf("Loaded %d custom channels from %s", len(channels), filePath)
 
-		// Warn user about performance implications if too many channels
-		logExcessiveChannelsWarning(len(channels), "You have loaded")
-	}
+	// Warn user about performance implications if too many channels
+	logExcessiveChannelsWarning(len(channels), "You have loaded")
 	return channels, nil
 }
 
@@ -356,43 +347,35 @@ func getCustomChannels() []Channel {
 
 // Channels fetch channels from JioTV API and merge with custom channels
 func Channels() ChannelsResponse {
-
 	// Create a fasthttp.Client
 	client := utils.GetRequestClient()
 
-	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
+	// Set up request headers
+	requestHeaders := map[string]string{
+		headers.UserAgent:   headers.UserAgentOkHttp,
+		headers.Accept:      headers.AcceptJSON,
+		headers.DeviceType:  headers.DeviceTypePhone,
+		headers.OS:          headers.OSAndroid,
+		"appkey":            "NzNiMDhlYzQyNjJm",
+		"lbcookie":          "1",
+		"usertype":          "JIO",
+	}
 
-	req.SetRequestURI(CHANNELS_API_URL)
-
-	req.Header.SetMethod("GET")
-	req.Header.Add(headers.UserAgent, headers.UserAgentOkHttp)
-	req.Header.Add(headers.Accept, headers.AcceptJSON)
-	req.Header.Add(headers.DeviceType, headers.DeviceTypePhone)
-	req.Header.Add(headers.OS, headers.OSAndroid)
-	req.Header.Add("appkey", "NzNiMDhlYzQyNjJm")
-	req.Header.Add("lbcookie", "1")
-	req.Header.Add("usertype", "JIO")
-
-	resp := fasthttp.AcquireResponse()
-	defer fasthttp.ReleaseResponse(resp)
-
-	// Perform the HTTP GET request
-	if err := client.Do(req, resp); err != nil {
+	// Make the HTTP request
+	resp, err := utils.MakeHTTPRequest(utils.HTTPRequestConfig{
+		URL:     CHANNELS_API_URL,
+		Method:  "GET",
+		Headers: requestHeaders,
+	}, client)
+	if err != nil {
 		utils.Log.Panic(err)
 	}
+	defer fasthttp.ReleaseResponse(resp)
 
 	var apiResponse ChannelsResponse
 
-	// Check the response status code
-	if resp.StatusCode() != fasthttp.StatusOK {
-		utils.Log.Panicf("Request failed with status code: %d", resp.StatusCode())
-	}
-
-	resp_body := resp.Body()
-
-	// Parse the JSON response
-	if err := json.Unmarshal(resp_body, &apiResponse); err != nil {
+	// Parse JSON response
+	if err := utils.ParseJSONResponse(resp, &apiResponse); err != nil {
 		utils.Log.Panic(err)
 	}
 
@@ -476,45 +459,73 @@ func FilterChannelsByDefaults(channels []Channel, categories, languages []int) [
 }
 
 func ReplaceM3U8(baseUrl, match []byte, params, channel_id string) []byte {
-	coded_url, err := secureurl.EncryptURL(string(baseUrl) + string(match) + "?" + params)
+	config := EncryptedURLConfig{
+		BaseURL:     string(baseUrl),
+		Match:       string(match),
+		Params:      params,
+		ChannelID:   channel_id,
+		EndpointURL: "/render.m3u8",
+	}
+	
+	result, err := CreateEncryptedURL(config)
 	if err != nil {
-		utils.Log.Println(err)
 		return nil
 	}
-	return []byte("/render.m3u8?auth=" + coded_url + "&channel_key_id=" + channel_id)
+	return result
 }
 
 func ReplaceTS(baseUrl, match []byte, params string) []byte {
 	if config.Cfg.DisableTSHandler {
 		return []byte(string(baseUrl) + string(match) + "?" + params)
 	}
-	coded_url, err := secureurl.EncryptURL(string(baseUrl) + string(match) + "?" + params)
+	
+	config := EncryptedURLConfig{
+		BaseURL:     string(baseUrl),
+		Match:       string(match),
+		Params:      params,
+		EndpointURL: "/render.ts",
+	}
+	
+	result, err := CreateEncryptedURL(config)
 	if err != nil {
-		utils.Log.Println(err)
 		return nil
 	}
-	return []byte("/render.ts?auth=" + coded_url)
+	return result
 }
 
 func ReplaceAAC(baseUrl, match []byte, params string) []byte {
 	if config.Cfg.DisableTSHandler {
 		return []byte(string(baseUrl) + string(match) + "?" + params)
 	}
-	coded_url, err := secureurl.EncryptURL(string(baseUrl) + string(match) + "?" + params)
+	
+	config := EncryptedURLConfig{
+		BaseURL:     string(baseUrl),
+		Match:       string(match),
+		Params:      params,
+		EndpointURL: "/render.ts",
+	}
+	
+	result, err := CreateEncryptedURL(config)
 	if err != nil {
-		utils.Log.Println(err)
 		return nil
 	}
-	return []byte("/render.ts?auth=" + coded_url)
+	return result
 }
 
 func ReplaceKey(match []byte, params, channel_id string) []byte {
-	coded_url, err := secureurl.EncryptURL(string(match) + "?" + params)
+	config := EncryptedURLConfig{
+		BaseURL:     "",
+		Match:       string(match),
+		Params:      params,
+		ChannelID:   channel_id,
+		EndpointURL: "/render.key",
+	}
+	
+	result, err := CreateEncryptedURL(config)
 	if err != nil {
-		utils.Log.Println(err)
 		return nil
 	}
-	return []byte("/render.key?auth=" + coded_url + "&channel_key_id=" + channel_id)
+	return result
 }
 
 func getSLChannel(channelID string) (*LiveURLOutput, error) {

@@ -1,62 +1,72 @@
-const languageElement = document.getElementById("portexe-language-select");
-const categoryElement = document.getElementById("portexe-category-select");
-const catLangApplyButton = document.getElementById("portexe-search-button");
-const qualityElement = document.getElementById("portexe-quality-select");
+const elements = safeGetElementsById([
+  "portexe-language-select",
+  "portexe-category-select", 
+  "portexe-search-button",
+  "portexe-quality-select"
+]);
+
+const {
+  "portexe-language-select": languageElement,
+  "portexe-category-select": categoryElement,
+  "portexe-search-button": catLangApplyButton,
+  "portexe-quality-select": qualityElement
+} = elements;
 
 catLangApplyButton.addEventListener("click", () => {
-  // apply to current url as query params and reload
-  const url = new URL(window.location.href);
-  url.searchParams.set("language", languageElement.value);
-  url.searchParams.set("category", categoryElement.value);
-  url.searchParams.set("q", qualityElement.value);
+  // Apply URL parameters and reload
+  updateUrlParameters({
+    language: languageElement.value,
+    category: categoryElement.value,
+    q: qualityElement.value
+  });
 
-  // reload
-  document.location.href = url.href;
+  // Reload the page
+  document.location.href = window.location.href;
 });
 
-// on page load, if either language or category is present in query params, set the value of the select element
-const url = new URL(window.location.href);
-const language = url.searchParams.get("language");
-const category = url.searchParams.get("category");
+// On page load, set values from URL parameters
+const urlParams = getCurrentUrlParams();
+const language = urlParams.get("language");
+const category = urlParams.get("category");
 
-if (language) {
+if (language && languageElement) {
   languageElement.value = language;
 }
 
-if (category) {
+if (category && categoryElement) {
   categoryElement.value = category;
 }
 
 const onQualityChange = (elem) => {
   const quality = elem.value;
-  const currentUrl = new URL(window.location.href); // Use a fresh URL object
+  
   if (quality === "auto") {
-    // remove quality from url
-    currentUrl.searchParams.delete("q");
-    // remove quality from local storage
-    localStorage.removeItem("quality");
+    updateUrlParameter("q", "");
+    removeLocalStorageItem("quality");
   } else {
-    // set quality in url
-    currentUrl.searchParams.set("q", quality);
-    // set quality in local storage
-    localStorage.setItem("quality", quality);
+    updateUrlParameter("q", quality);
+    setLocalStorageItem("quality", quality);
   }
-  history.pushState({}, "", currentUrl.href); // Update history with the modified URL
+  
+  // Update all card href attributes with new query parameter
   const playElems = document.getElementsByClassName("card");
+  const currentParams = getCurrentUrlParams();
+  
   for (let i = 0; i < playElems.length; i++) {
-    const cardElem = playElems[i]; // Renamed to avoid confusion with the 'elem' parameter
+    const cardElem = playElems[i];
     const href = cardElem.getAttribute("href");
-    cardElem.setAttribute("href", href.split("?")[0] + currentUrl.search);
+    cardElem.setAttribute("href", href.split("?")[0] + "?" + currentParams.toString());
   }
 };
 
-const storedQuality = localStorage.getItem("quality"); // Renamed to avoid conflict
-if (storedQuality) {
+const storedQuality = getLocalStorageItem("quality");
+if (storedQuality && qualityElement) {
   qualityElement.value = storedQuality;
 }
 
-if (url.searchParams.get("q")) {
-  qualityElement.value = url.searchParams.get("q");
+const urlParams2 = getCurrentUrlParams();
+if (urlParams2.get("q") && qualityElement) {
+  qualityElement.value = urlParams2.get("q");
   onQualityChange(qualityElement); 
 }
 
@@ -72,28 +82,26 @@ const scrollToTop = () => {
 const FAVORITES_STORAGE_KEY = "favoriteChannels";
 
 function getFavoriteChannels() {
-  const storedFavorites = localStorage.getItem(FAVORITES_STORAGE_KEY);
-  if (!storedFavorites) {
-    return [];
-  }
-  try {
-    const parsedFavorites = JSON.parse(storedFavorites);
-    return Array.isArray(parsedFavorites) ? parsedFavorites : [];
-  } catch (e) {
-    console.error("Error parsing favorite channels from localStorage:", e);
-    return [];
-  }
+  return getLocalStorageItem(FAVORITES_STORAGE_KEY, []);
 }
 
 function saveFavoriteChannels(favoriteIds) {
-  localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favoriteIds));
+  setLocalStorageItem(FAVORITES_STORAGE_KEY, favoriteIds);
 }
 
 function displayFavoriteChannels() {
   const favoriteIds = getFavoriteChannels();
-  const favoriteChannelsSection = document.getElementById("favorite-channels-section");
-  const favoriteChannelsContainer = document.getElementById("favorite-channels-container");
-  const originalChannelsGrid = document.getElementById("original-channels-grid");
+  const elements = safeGetElementsById([
+    "favorite-channels-section",
+    "favorite-channels-container", 
+    "original-channels-grid"
+  ]);
+  
+  const { 
+    "favorite-channels-section": favoriteChannelsSection,
+    "favorite-channels-container": favoriteChannelsContainer,
+    "original-channels-grid": originalChannelsGrid 
+  } = elements;
 
   if (!favoriteChannelsSection || !favoriteChannelsContainer || !originalChannelsGrid) {
     console.error("One or more channel container elements not found.");
@@ -140,30 +148,16 @@ function displayFavoriteChannels() {
 
 function toggleFavorite(channelId) {
   const favoriteIds = getFavoriteChannels();
-  const button = document.getElementById(`favorite-btn-${channelId}`);
-  const starIcon = document.getElementById(`star-icon-${channelId}`);
-  const xIcon = document.getElementById(`x-icon-${channelId}`);
   const index = favoriteIds.indexOf(channelId);
 
   if (index > -1) { // Channel was a favorite, removing it
     favoriteIds.splice(index, 1);
-    if (button) {
-      button.classList.remove("favorited"); // Existing class toggle
-      if (starIcon && xIcon) {
-        starIcon.classList.remove('hidden');
-        xIcon.classList.add('hidden');
-      }
-    }
+    updateFavoriteButtonState(channelId, false);
   } else { // Channel was not a favorite, adding it
     favoriteIds.push(channelId);
-    if (button) {
-      button.classList.add("favorited"); // Existing class toggle
-      if (starIcon && xIcon) {
-        starIcon.classList.add('hidden');
-        xIcon.classList.remove('hidden');
-      }
-    }
+    updateFavoriteButtonState(channelId, true);
   }
+  
   saveFavoriteChannels(favoriteIds);
   displayFavoriteChannels(); // Refresh the channel lists
 }
@@ -174,20 +168,7 @@ function updateFavoriteButtonStates() {
 
   favoriteButtons.forEach(button => {
     const channelId = button.id.replace("favorite-btn-", "");
-    const starIcon = document.getElementById(`star-icon-${channelId}`);
-    const xIcon = document.getElementById(`x-icon-${channelId}`);
-
-    if (starIcon && xIcon) { // Ensure icons exist
-      if (favoriteIds.includes(channelId)) {
-        button.classList.add("favorited"); // Existing class toggle
-        starIcon.classList.add('hidden');
-        xIcon.classList.remove('hidden');
-      } else {
-        button.classList.remove("favorited"); // Existing class toggle
-        starIcon.classList.remove('hidden');
-        xIcon.classList.add('hidden');
-      }
-    }
+    updateFavoriteButtonState(channelId, favoriteIds.includes(channelId));
   });
 }
 

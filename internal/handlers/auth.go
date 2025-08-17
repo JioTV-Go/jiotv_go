@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
+	internalUtils "github.com/jiotv-go/jiotv_go/v3/internal/utils"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/television"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 	"github.com/valyala/fasthttp"
@@ -118,19 +119,17 @@ func LoginSendOTPHandler(c *fiber.Ctx) error {
 	err := c.BodyParser(&formBody)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid JSON",
-		})
+		return internalUtils.BadRequestError(c, "Invalid JSON")
 	}
 	mobileNumber := formBody.MobileNumber
-	checkFieldExist("Mobile Number", mobileNumber != "", c)
+	if err := internalUtils.CheckFieldExist(c, "Mobile Number", mobileNumber != ""); err != nil {
+		return err
+	}
 
 	result, err := utils.LoginSendOTP(mobileNumber)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err,
-		})
+		return internalUtils.InternalServerError(c, err)
 	}
 	return c.JSON(fiber.Map{
 		"status": result,
@@ -144,21 +143,21 @@ func LoginVerifyOTPHandler(c *fiber.Ctx) error {
 	err := c.BodyParser(&formBody)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid JSON",
-		})
+		return internalUtils.BadRequestError(c, "Invalid JSON")
 	}
 	mobileNumber := formBody.MobileNumber
-	checkFieldExist("Mobile Number", mobileNumber != "", c)
+	if err := internalUtils.CheckFieldExist(c, "Mobile Number", mobileNumber != ""); err != nil {
+		return err
+	}
 	otp := formBody.OTP
-	checkFieldExist("OTP", otp != "", c)
+	if err := internalUtils.CheckFieldExist(c, "OTP", otp != ""); err != nil {
+		return err
+	}
 
 	result, err := utils.LoginVerifyOTP(mobileNumber, otp)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Internal server error",
-		})
+		return internalUtils.InternalServerError(c, "Internal server error")
 	}
 	Init()
 	return c.JSON(result)
@@ -169,30 +168,34 @@ func LoginPasswordHandler(c *fiber.Ctx) error {
 	var username, password string
 	if c.Method() == "GET" {
 		username = c.Query("username")
-		checkFieldExist("Username", username != "", c)
+		if err := internalUtils.CheckFieldExist(c, "Username", username != ""); err != nil {
+			return err
+		}
 		password = c.Query("password")
-		checkFieldExist("Password", password != "", c)
+		if err := internalUtils.CheckFieldExist(c, "Password", password != ""); err != nil {
+			return err
+		}
 	} else if c.Method() == "POST" {
 		formBody := new(LoginRequestBodyData)
 		err := c.BodyParser(&formBody)
 		if err != nil {
 			utils.Log.Println(err)
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"message": "Invalid JSON",
-			})
+			return internalUtils.BadRequestError(c, "Invalid JSON")
 		}
 		username = formBody.Username
-		checkFieldExist("Username", username != "", c)
+		if err := internalUtils.CheckFieldExist(c, "Username", username != ""); err != nil {
+			return err
+		}
 		password = formBody.Password
-		checkFieldExist("Password", password != "", c)
+		if err := internalUtils.CheckFieldExist(c, "Password", password != ""); err != nil {
+			return err
+		}
 	}
 
 	result, err := utils.Login(username, password)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Internal server error",
-		})
+		return internalUtils.InternalServerError(c, "Internal server error")
 	}
 	Init()
 	return c.JSON(result)
@@ -204,9 +207,7 @@ func LogoutHandler(c *fiber.Ctx) error {
 		err := utils.Logout()
 		if err != nil {
 			utils.Log.Println(err)
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Internal server error",
-			})
+			return internalUtils.InternalServerError(c, "Internal server error")
 		}
 		Init()
 	}
