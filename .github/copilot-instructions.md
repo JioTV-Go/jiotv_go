@@ -1,8 +1,6 @@
 # JioTV Go - Copilot Instructions
 
-This document provides instructions for GitHub Copilot to better understand the JioTV Go project and provide more relevant assistance.
-
-## 1. Project Overview
+**ALWAYS follow these instructions first and fallback to search or additional context gathering ONLY when the information here is incomplete or found to be in error.**
 
 JioTV Go is a web application that allows users to stream Live TV channels from JioTV on the web and IPTV clients. It acts as a web wrapper around the JioTV Android app, using the same APIs.
 
@@ -14,101 +12,222 @@ The key features include:
 - Authentication via Jio ID/Number (OTP or password)
 - A command-line interface (CLI) for server management.
 
-## 2. Tech Stack
+## Working Effectively
 
-The project is a monorepo containing a Go backend and a vanilla HTML/CSS/JS frontend.
+### Bootstrap and Build Repository
+Run these commands in order. **NEVER CANCEL** any of these commands - wait for completion:
+
+1. **Install Dependencies:**
+   ```bash
+   go mod tidy
+   ```
+   Takes ~15 seconds. NEVER CANCEL. Set timeout to 60+ seconds.
+
+2. **Build Go Application:**
+   ```bash
+   go build -o build/jiotv_go .
+   ```
+   Takes ~25 seconds. NEVER CANCEL. Set timeout to 90+ seconds.
+
+3. **Install Frontend Dependencies:**
+   ```bash
+   cd web && npm ci
+   ```
+   Takes ~50 seconds. NEVER CANCEL. Set timeout to 120+ seconds.
+
+4. **Build Frontend (TailwindCSS):**
+   ```bash
+   cd web && npm run build
+   ```
+   Takes ~2 seconds. NEVER CANCEL. Set timeout to 30+ seconds.
+
+### Run Tests
+**CRITICAL**: Always run tests to verify your changes work correctly:
+
+1. **Go Tests:**
+   ```bash
+   go test -v ./...
+   ```
+   Takes ~10 seconds. NEVER CANCEL. Set timeout to 60+ seconds.
+   All tests should pass. Tests cover CLI utilities, handlers, and core functionality.
+
+2. **Frontend Tests:**
+   ```bash
+   cd web && npm test -- --watchAll=false --ci
+   ```
+   Takes ~5 seconds. NEVER CANCEL. Set timeout to 30+ seconds.
+   Tests use Jest with jsdom for JavaScript functionality.
+
+### Run the Application
+
+1. **Development Server (Manual Restart Required):**
+   ```bash
+   go run main.go serve --host 127.0.0.1 --port 5001
+   ```
+   Takes ~5 seconds to start. Server runs on http://127.0.0.1:5001
+
+2. **Production Build:**
+   ```bash
+   ./build/jiotv_go serve --host 127.0.0.1 --port 5001
+   ```
+
+3. **Development with Auto-Reload (Docker):**
+   ```bash
+   docker compose up
+   ```
+   **NOTE**: May fail in some environments due to certificate issues. Use local development instead.
+
+4. **Enable Debug Mode:**
+   Set `JIOTV_DEBUG=true` environment variable for auto-reloading of templates and debug logs.
+
+## Validation Scenarios
+
+**ALWAYS test these scenarios after making changes to ensure the application works correctly:**
+
+### CLI Validation
+Test the main CLI commands work:
+```bash
+./build/jiotv_go --help
+./build/jiotv_go serve --help  
+./build/jiotv_go login --help
+./build/jiotv_go epg --help
+```
+
+### Server Functionality  
+1. Start the server: `./build/jiotv_go serve --host 127.0.0.1 --port 5001`
+2. Verify server starts without critical errors (500 errors on main page are expected without authentication)
+3. Test server responds: `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:5001/` should return HTTP status code
+4. Stop server with Ctrl+C
+
+### Frontend Validation
+After frontend changes:
+1. Rebuild CSS: `cd web && npm run build`
+2. Run frontend tests: `cd web && npm test -- --watchAll=false --ci`
+3. Start server and verify web interface loads
+
+## Tech Stack and Architecture
 
 ### Backend
-- **Language:** Go
+- **Language:** Go 1.25 (REQUIRED - specified in go.mod)
 - **Web Framework:** [Fiber](https://gofiber.io/) (`github.com/gofiber/fiber/v2`)
 - **CLI Framework:** [urfave/cli](https://cli.urfave.org/) (`github.com/urfave/cli/v2`)
-- **Configuration:** [cleanenv](https://github.com/ilyakaznacheev/cleanenv) is used for loading configurations from files (TOML, YAML, JSON) or environment variables.
+- **Configuration:** [cleanenv](https://github.com/ilyakaznacheev/cleanenv) loads from TOML, YAML, JSON or environment variables
+- **Testing:** Standard Go testing (`go test`)
 
 ### Frontend
-- **Styling:** [TailwindCSS](https://tailwindcss.com/) with the [DaisyUI](https://daisyui.com/) component library.
-- **JavaScript:** Vanilla JavaScript. No major frameworks like React or Vue are used.
-- **Video Players:**
-    - [Flowplayer](https://flowplayer.com/) for HLS streaming.
-    - [Shaka Player](https://shaka-player-demo.appspot.com/) for DRM-protected DASH streaming.
+- **Styling:** [TailwindCSS](https://tailwindcss.com/) with [DaisyUI](https://daisyui.com/) component library
+- **JavaScript:** Vanilla JavaScript (no major frameworks)
+- **Video Players:** Flowplayer for HLS, Shaka Player for DRM-protected DASH
+- **Testing:** [Jest](https://jestjs.io/) with `jsdom`
+
+## Project Structure
+
+### Key Directories
+- `main.go`: Main entry point for the application
+- `cmd/`: CLI command definitions and logic (serve, login, update, etc.)
+- `internal/`: Core application logic split into sub-packages:
+  - `config/`: Configuration management
+  - `constants/`: Project-wide constants  
+  - `handlers/`: HTTP handlers for Fiber web server
+  - `middleware/`: Custom Fiber middleware
+- `pkg/`: Reusable packages (EPG generation, scheduling, utilities)
+- `web/`: All frontend assets
+  - `static/`: CSS, JavaScript, icons, external libraries
+  - `views/`: Go HTML templates
+  - `package.json`: Frontend dependencies and build scripts
+- `docs/`: Project documentation (built with mdbook)
+- `.github/`: GitHub workflows, issue templates, and these instructions
+
+### Build Artifacts
+- `build/`: Contains compiled Go binary
+- `web/static/internal/tailwind.css`: Generated TailwindCSS file
+
+## Common Commands Reference
+
+### Building
+```bash
+# Full build process
+go mod tidy && go build -o build/jiotv_go . && cd web && npm ci && npm run build && cd ..
+
+# Go only
+go build -o build/jiotv_go .
+
+# Frontend only  
+cd web && npm run build
+```
 
 ### Testing
-- **Backend:** Standard Go testing (`go test`).
-- **Frontend:** [Jest](https://jestjs.io/) with `jsdom`.
+```bash
+# All tests
+go test -v ./... && cd web && npm test -- --watchAll=false --ci
 
-## 3. Project Structure
+# Go tests only
+go test -v ./...
 
-- `main.go`: Main entry point for the application.
-- `cmd/`: Contains the CLI command definitions and their logic (e.g., `serve`, `login`, `update`).
-- `internal/`: Houses all the core application logic, split into sub-packages:
-    - `config/`: Configuration management.
-    - `constants/`: Project-wide constants.
-    - `handlers/`: HTTP handlers for the Fiber web server.
-    - `middleware/`: Custom Fiber middleware.
-- `pkg/`: Contains reusable packages like EPG generation, scheduling, and utilities.
-- `web/`: All frontend assets.
-    - `static/`: CSS, JavaScript, icons, and external libraries.
-    - `views/`: Go HTML templates.
-- `docs/`: Project documentation, built using `mdbook`.
-- `.github/`: Contains GitHub-specific files like workflows, issue templates, and these instructions.
-- `Dockerfile`: Defines the production Docker image.
-- `docker-compose.yml` & `dev.Dockerfile`: For development using Docker Compose.
+# Frontend tests only
+cd web && npm test -- --watchAll=false --ci
+```
 
-## 4. Development Workflow
+### Development
+```bash
+# Run server in development mode
+JIOTV_DEBUG=true go run main.go serve --host 127.0.0.1 --port 5001
 
-### Building the Project
-- **Go Backend:** From the root directory, run `go build .`
-- **Frontend CSS:** Navigate to the `web/` directory and run `npm run build` to compile TailwindCSS.
+# Watch TailwindCSS changes
+cd web && npm run watch
 
-### Running Tests
-- **Go Tests:** From the root directory, run `go test -v ./...`
-- **Frontend Tests:** Navigate to the `web/` directory and run `npm test`.
+# Background server operations
+./build/jiotv_go background start --args="serve --host 127.0.0.1 --port 5001"
+./build/jiotv_go background stop
+```
 
-### Running the Application
-- **Locally:** `go run main.go serve`
-- **With Docker (for development):** `docker-compose up`
+## GitHub Workflows
 
-### Documentation
-The documentation in the `docs/` directory is built using `mdbook`.
-- To build the book: `mdbook build docs`
+The project uses several GitHub Actions workflows:
+- **`pr_tests.yml`**: Runs Go and frontend tests on PRs
+- **`build-doc.yml`**: Builds mdbook documentation and deploys to GitHub Pages  
+- **`docker.yml`**: Builds and pushes Docker images
+- **`dependabot_action.yml`**: Rebuilds TailwindCSS when dependencies change
+- **`release.yml`**: Creates releases with cross-platform binaries
 
-## 5. Conventions and Standards
+## Development Notes
 
-### Commit Messages
-Please follow the conventional commit format. The issue templates (`.github/ISSUE_TEMPLATE/`) provide prefixes like:
-- `feat:` for new features.
-- `bug:` for bug fixes.
-- `security:` for security-related changes.
-- `chore:` for maintenance tasks.
-- `docs:` for documentation updates.
-- `test:` for test-related changes.
-- `refactor:` for code refactoring.
-
-### Branching Strategy
-- Use `main` for production-ready code.
-- Use `develop` for ongoing development.
-- Feature branches should be named `feature/<description>`.
-- Bugfix branches should be named `bugfix/<description>`.
-- Use `hotfix/<description>` for urgent fixes that need to go directly to `main`.
-
-## 7. GitHub Workflows
-
-The project uses several GitHub Actions workflows to automate tasks. Here's a summary of the key workflows:
-
-- **`build-doc.yml`**: This workflow builds the `mdbook` documentation and deploys it to GitHub Pages. It's triggered on pushes to the `main` branch that affect the `docs/` or `scripts/` directories.
-- **`dependabot_action.yml`**: This workflow automatically rebuilds the Tailwind CSS when a pull request modifies files in the `web/` directory.
-- **`docker.yml`**: This workflow builds and pushes Docker images to GitHub Container Registry. It's triggered on pushes to `main` and `develop` branches, as well as on new tags.
-- **`pr_tests.yml`**: This workflow runs tests for both the Go backend and the frontend. It's triggered on pull requests and pushes to `main` and `develop`.
-- **`pre-release.yml`**: This workflow creates a pre-release on every push to the `develop` branch. It builds the executables for all supported platforms and attaches them to the release.
-- **`release.yml`**: This workflow creates a new release on every push to the `main` branch. It automatically increments the version number, builds the executables, and creates a GitHub release.
-
-### Code Style
-- **Go:** Follow standard Go conventions (`gofmt`). Code should be well-commented, especially public functions and complex logic.
-- **Frontend:** Adhere to the existing style. Use TailwindCSS utility classes for styling.
+### Making Changes
+- **Backend changes**: Modify Go files, run `go test ./...`, then test with `go run main.go serve`
+- **Frontend changes**: Modify files in `web/`, run `cd web && npm run build`, then test server
+- **Template changes**: Modify files in `web/views/`, enable `JIOTV_DEBUG=true` for auto-reload
+- **CSS changes**: Modify `web/static/internal/input.css`, run `cd web && npm run build`
 
 ### Dependencies
-- **Go:** Manage with `go.mod`. Run `go mod tidy` after changing dependencies.
-- **Frontend:** Manage with `npm` in the `web/` directory. Use `package.json` and `package-lock.json`.
+- **Go**: Managed with `go.mod`, run `go mod tidy` after changes
+- **Frontend**: Managed with `npm` in `web/` directory, use `npm ci` for clean installs
 
-## 6. License
+### Configuration
+- Configuration loaded from files (TOML, YAML, JSON) or environment variables
+- Default config files in `configs/` directory
+- Runtime config path: `~/.jiotv_go/` or `JIOTV_PATH_PREFIX` environment variable
 
-The project is licensed under the **Creative Commons Attribution 4.0 International** license. See the `LICENSE` file for details.
+### Error Handling
+- 500 errors on main page without authentication are expected behavior
+- Use `JIOTV_DEBUG=true` for detailed logging
+- Check logs for authentication and API connectivity issues
+
+### Conventions and Standards
+
+#### Commit Messages
+Follow conventional commit format:
+- `feat:` for new features
+- `bug:` for bug fixes
+- `security:` for security-related changes
+- `chore:` for maintenance tasks
+- `docs:` for documentation updates
+- `test:` for test-related changes
+- `refactor:` for code refactoring
+
+#### Code Style
+- **Go:** Follow standard Go conventions (`gofmt`). Code should be well-commented
+- **Frontend:** Use TailwindCSS utility classes for styling
+
+## License
+
+The project is licensed under **Creative Commons Attribution 4.0 International**. See the `LICENSE` file for details.
