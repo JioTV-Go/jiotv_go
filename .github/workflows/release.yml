@@ -192,5 +192,3 @@ jobs:
           else
             echo "VERSION file is already up to date in develop branch"
           fi
-        env:
-          GITHUB_TOKEN: ${{ secrets.PAT }}
