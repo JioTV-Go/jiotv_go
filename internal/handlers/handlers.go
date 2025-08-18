@@ -29,6 +29,24 @@ var (
 	SONY_LIST        = []string{"154", "155", "162", "289", "291", "471", "474", "476", "483", "514", "524", "525", "697", "872", "873", "874", "891", "892", "1146", "1393", "1772", "1773", "1774", "1775"}
 )
 
+// isDRMChannel determines if a channel should use DRM-based URLs for IPTV
+func isDRMChannel(channelID string) bool {
+	// DRM is only supported when enabled
+	if !EnableDRM {
+		return false
+	}
+	
+	// Check if this is a known SONY channel that requires DRM
+	if utils.ContainsString(channelID, SONY_LIST) {
+		return true
+	}
+	
+	// Add other known DRM channel detection logic here if needed
+	// For now, we'll primarily rely on the SONY_LIST for known DRM channels
+	
+	return false
+}
+
 const (
 	REFRESH_TOKEN_URL     = urls.RefreshTokenURL
 	REFRESH_SSO_TOKEN_URL = urls.RefreshSSOTokenURL
@@ -446,10 +464,21 @@ func ChannelsHandler(c *fiber.Ctx) error {
 			}
 
 			var channelURL string
-			if quality != "" {
-				channelURL = fmt.Sprintf("%s/live/%s/%s.m3u8", hostURL, quality, channel.ID)
+			// Check if this channel requires DRM and use appropriate URL format
+			if isDRMChannel(channel.ID) {
+				// For DRM channels, use DASH/MPD format that IPTV clients can understand
+				if quality != "" {
+					channelURL = fmt.Sprintf("%s/mpd/%s?q=%s", hostURL, channel.ID, quality)
+				} else {
+					channelURL = fmt.Sprintf("%s/mpd/%s", hostURL, channel.ID)
+				}
 			} else {
-				channelURL = fmt.Sprintf("%s/live/%s.m3u8", hostURL, channel.ID)
+				// For non-DRM channels, use standard HLS format
+				if quality != "" {
+					channelURL = fmt.Sprintf("%s/live/%s/%s.m3u8", hostURL, quality, channel.ID)
+				} else {
+					channelURL = fmt.Sprintf("%s/live/%s.m3u8", hostURL, channel.ID)
+				}
 			}
 			var channelLogoURL string
 			if strings.HasPrefix(channel.LogoURL, "http://") || strings.HasPrefix(channel.LogoURL, "https://") {
@@ -468,8 +497,19 @@ func ChannelsHandler(c *fiber.Ctx) error {
 			default:
 				groupTitle = television.CategoryMap[channel.Category]
 			}
-			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-id=%q tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
-				channel.ID, channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], groupTitle, channel.Name, channelURL)
+			var m3uEntry string
+			if isDRMChannel(channel.ID) {
+				// For DRM channels, include DRM license URL as a custom property
+				// Some IPTV clients can use this information for DRM license acquisition
+				licenseURL := fmt.Sprintf("%s/drm", hostURL)
+				m3uEntry = fmt.Sprintf("#EXTINF:-1 tvg-id=%q tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q tvg-drm=%q, %s\n%s\n",
+					channel.ID, channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], groupTitle, licenseURL, channel.Name, channelURL)
+			} else {
+				// Standard M3U entry for non-DRM channels
+				m3uEntry = fmt.Sprintf("#EXTINF:-1 tvg-id=%q tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
+					channel.ID, channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], groupTitle, channel.Name, channelURL)
+			}
+			m3uContent += m3uEntry
 		}
 
 		// Set the Content-Disposition header for file download

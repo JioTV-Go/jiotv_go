@@ -8,6 +8,38 @@ For Windows, see [Windows](./windows.md).
 
 Explore the possibilities of integrating JioTV Go into your IPTV setup with these simple steps. Whether you're interested in generating playlists, setting up an Electronic Program Guide (EPG), or exploring catch-up options, we've got you covered.
 
+## DRM Support for IPTV
+
+**New Feature:** JioTV Go now supports DRM-protected channels in IPTV playlists! This enables access to premium content like SONY channels that require DRM protection.
+
+### How DRM Works in IPTV
+
+- **DRM-protected channels** (like SONY channels) use MPEG-DASH format with license URLs instead of standard HLS
+- **Non-DRM channels** continue to use the standard HLS format as before
+- **IPTV Client Requirements**: Your IPTV client must support MPEG-DASH and Widevine L3 DRM to play DRM-protected content
+- **Automatic Detection**: JioTV Go automatically detects which channels require DRM and generates appropriate URLs
+
+### Supported DRM Channels
+
+Currently supported DRM-protected channels include:
+- Sony HD, Sony SAB HD, Sony PAL
+- Sony PIX HD, Sony MAX HD, Sony MAX 2
+- Sony TEN 1-5 HD (Sports channels)
+- Sony BBC Earth HD
+- And other SONY network channels
+
+### IPTV Client Compatibility
+
+**Compatible Clients** (support DASH + DRM):
+- Kodi with InputStream Adaptive addon
+- VLC Player (latest versions)
+- ExoPlayer-based Android apps
+- Some modern Smart TV IPTV apps
+
+**Limited Clients** (HLS only):
+- Basic IPTV players that only support HLS will show DRM channels but may not be able to play them
+- These clients can still access all non-DRM content normally
+
 ## Generate M3U Playlist
 
 JioTV Go offers a convenient M3U playlist endpoint to enhance your IPTV experience. Simply follow these steps:
