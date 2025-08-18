@@ -13,9 +13,7 @@ fi
 major_minor_patch=$(echo "$tag" | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")
 echo "Major, minor and patch version: $major_minor_patch"
 
-major=$(echo "$major_minor_patch" | cut -d. -f1)
-minor=$(echo "$major_minor_patch" | cut -d. -f2)
-patch=$(echo "$major_minor_patch" | cut -d. -f3)
+IFS='.' read -r major minor patch <<< "$major_minor_patch"
 echo "Major version: $major"
 echo "Minor version: $minor"
 echo "Patch version: $patch"
