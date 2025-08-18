@@ -78,7 +78,7 @@ Run these commands in order. **NEVER CANCEL** any of these commands - wait for c
    **NOTE**: May fail in some environments due to certificate issues. Use local development instead.
 
 4. **Enable Debug Mode:**
-   Set `JIOTV_DEBUG=true` environment variable for auto-reloading of templates and debug logs.
+   Set `JIOTV_DEBUG=true` and `JIOTV_LOG_TO_STDOUT=true` environment variable for auto-reloading of templates and debug logs.
 
 ## Validation Scenarios
 
@@ -108,7 +108,7 @@ After frontend changes:
 ## Tech Stack and Architecture
 
 ### Backend
-- **Language:** Go 1.25 (REQUIRED - specified in go.mod)
+- **Language:** Go (REQUIRED version is specified in go.mod)
 - **Web Framework:** [Fiber](https://gofiber.io/) (`github.com/gofiber/fiber/v2`)
 - **CLI Framework:** [urfave/cli](https://cli.urfave.org/) (`github.com/urfave/cli/v2`)
 - **Configuration:** [cleanenv](https://github.com/ilyakaznacheev/cleanenv) loads from TOML, YAML, JSON or environment variables
@@ -117,7 +117,7 @@ After frontend changes:
 ### Frontend
 - **Styling:** [TailwindCSS v3](https://tailwindcss.com/) with [DaisyUI v4](https://daisyui.com/) component library
 - **JavaScript:** Vanilla JavaScript (no major frameworks)
-- **Video Players:** Flowplayer for HLS, Shaka Player for DRM-protected DASH
+- **Video Players:** Shaka Player for HLS and DRM-protected DASH
 - **Testing:** [Jest](https://jestjs.io/) with `jsdom`
 
 ## Project Structure
@@ -171,7 +171,7 @@ cd web && npm test -- --watchAll=false --ci
 ### Development
 ```bash
 # Run server in development mode
-JIOTV_DEBUG=true go run main.go serve --host 127.0.0.1 --port 5001
+JIOTV_DEBUG=true JIOTV_LOG_TO_STDOUT=true go run main.go serve --host 127.0.0.1 --port 5001
 
 # Watch TailwindCSS changes
 cd web && npm run watch
