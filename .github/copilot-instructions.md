@@ -12,6 +12,33 @@ The key features include:
 - Authentication via Jio ID/Number (OTP or password)
 - A command-line interface (CLI) for server management.
 
+## Project Overview
+
+The project is a monorepo containing a Go backend and a vanilla HTML/CSS/JS frontend.
+
+### Directory Structure
+- `main.go`: Main entry point for the application.
+- `cmd/`: Contains the CLI command definitions and their logic (e.g., `serve`, `login`, `update`).
+- `internal/`: Houses all the core application logic, split into sub-packages:
+    - `config/`: Configuration management.
+    - `constants/`: Project-wide constants.
+    - `handlers/`: HTTP handlers for the Fiber web server.
+    - `middleware/`: Custom Fiber middleware.
+- `pkg/`: Contains reusable packages like EPG generation, scheduling, and utilities.
+- `web/`: All frontend assets.
+    - `static/`: CSS, JavaScript, icons, and external libraries.
+    - `views/`: Go HTML templates.
+- `docs/`: Project documentation, built using `mdbook`.
+- `.github/`: Contains GitHub-specific files like workflows, issue templates, and these instructions.
+- `Dockerfile`: Defines the production Docker image.
+- `docker-compose.yml` & `dev.Dockerfile`: For development using Docker Compose.
+
+### Development Workflow
+- **Go Backend:** From the root directory, run `go build .`
+- **Frontend CSS:** Navigate to the `web/` directory and run `npm run build` to compile TailwindCSS.
+- **Running Tests:** Go tests with `go test -v ./...`, Frontend tests with `cd web && npm test`.
+- **Running Locally:** `go run main.go serve` or with Docker: `docker-compose up`
+
 ## Working Effectively
 
 ### Bootstrap and Build Repository
@@ -78,7 +105,7 @@ Run these commands in order. **NEVER CANCEL** any of these commands - wait for c
    **NOTE**: May fail in some environments due to certificate issues. Use local development instead.
 
 4. **Enable Debug Mode:**
-   Set `JIOTV_DEBUG=true` environment variable for auto-reloading of templates and debug logs.
+   Set `JIOTV_DEBUG=true` and `JIOTV_LOG_TO_STDOUT=true` environment variable for auto-reloading of templates and debug logs.
 
 ## Validation Scenarios
 
@@ -108,16 +135,16 @@ After frontend changes:
 ## Tech Stack and Architecture
 
 ### Backend
-- **Language:** Go 1.25 (REQUIRED - specified in go.mod)
+- **Language:** Go (REQUIRED version specified in go.mod)
 - **Web Framework:** [Fiber](https://gofiber.io/) (`github.com/gofiber/fiber/v2`)
 - **CLI Framework:** [urfave/cli](https://cli.urfave.org/) (`github.com/urfave/cli/v2`)
 - **Configuration:** [cleanenv](https://github.com/ilyakaznacheev/cleanenv) loads from TOML, YAML, JSON or environment variables
 - **Testing:** Standard Go testing (`go test`)
 
 ### Frontend
-- **Styling:** [TailwindCSS](https://tailwindcss.com/) with [DaisyUI](https://daisyui.com/) component library
+- **Styling:** [TailwindCSS v3](https://tailwindcss.com/) with [DaisyUI v4](https://daisyui.com/) component library
 - **JavaScript:** Vanilla JavaScript (no major frameworks)
-- **Video Players:** Flowplayer for HLS, Shaka Player for DRM-protected DASH
+- **Video Players:** Shaka Player for HLS and DRM-protected DASH
 - **Testing:** [Jest](https://jestjs.io/) with `jsdom`
 
 ## Project Structure
@@ -171,7 +198,7 @@ cd web && npm test -- --watchAll=false --ci
 ### Development
 ```bash
 # Run server in development mode
-JIOTV_DEBUG=true go run main.go serve --host 127.0.0.1 --port 5001
+JIOTV_DEBUG=true JIOTV_LOG_TO_STDOUT=true go run main.go serve --host 127.0.0.1 --port 5001
 
 # Watch TailwindCSS changes
 cd web && npm run watch
@@ -223,6 +250,13 @@ Follow conventional commit format:
 - `docs:` for documentation updates
 - `test:` for test-related changes
 - `refactor:` for code refactoring
+
+#### Branching Strategy
+- Use `main` for production-ready code.
+- Use `develop` for ongoing development.
+- Feature branches should be named `feature/<description>`.
+- Bugfix branches should be named `bugfix/<description>`.
+- Use `hotfix/<description>` for urgent fixes that need to go directly to `main`.
 
 #### Code Style
 - **Go:** Follow standard Go conventions (`gofmt`). Code should be well-commented
