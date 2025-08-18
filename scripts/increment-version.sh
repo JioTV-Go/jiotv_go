@@ -24,8 +24,8 @@ commits=$(git rev-list $tag.. --count)
 echo "Commits since last tag: $commits"
 
 # If any of commit messages contains "BREAKING" string, increment major version.
-breaking_changes=$(git log $tag.. --pretty=%B | grep -iE "BREAKING" | wc -l)
-echo "Breaking changes: $breaking_changes"
+breaking_changes=$(git log --grep="BREAKING" -i "$tag.." --oneline | wc -l)
+echo "Breaking changes (commits): $breaking_changes"
 
 if [[ $breaking_changes -gt 0 ]]; then
     major=$((major + 1))
