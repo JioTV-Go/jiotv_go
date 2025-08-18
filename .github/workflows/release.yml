@@ -172,7 +172,7 @@ jobs:
       - name: Sync VERSION file to develop branch 🔄
         run: |
           # Fetch the develop branch
-          git fetch origin develop:develop
+          git fetch origin develop:develop || true
           # Switch to develop branch
           git checkout develop
           # Get the VERSION content from main and develop branches
