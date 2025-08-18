@@ -82,3 +82,21 @@ jobs:
           generate_release_notes: true
           discussion_category_name: releases
           token: ${{ secrets.PAT }}
+
+      - name: Sync VERSION file to develop branch 🔄
+        shell: bash
+        run: |
+          # Fetch the latest develop branch
+          git fetch origin develop
+
+          # Checkout develop branch
+          git checkout develop
+
+          # Update VERSION file with the new version
+          echo "${{ steps.gen_tag.outputs.tag }}" > VERSION
+
+          # Commit and push the VERSION file sync to develop
+          git add VERSION
+          version_tag="${{ steps.gen_tag.outputs.tag }}"
+          git commit -m "Sync VERSION file from main: $version_tag"
+          git push origin develop
