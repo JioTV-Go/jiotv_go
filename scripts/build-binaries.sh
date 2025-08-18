@@ -58,7 +58,9 @@ for var in $(go tool dist list); do
 done
 
 # Wait for all background jobs to finish
-wait
+for job in $(jobs -p); do
+    wait "$job"
+done
 
 # Build for android5 arm with CC=armv7a-linux-androideabi21-clang
 echo "Building android5 arm"
