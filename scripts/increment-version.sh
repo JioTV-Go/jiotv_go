@@ -10,7 +10,7 @@ if [[ -z "$tag" ]]; then
 fi
 
 # Get the major, minor and patch parts from the tag.
-major_minor_patch=$(echo "$tag" | grep -oE "[0-9]+\.[0-9]+\.[0-9]+")
+major_minor_patch=${tag#v}
 echo "Major, minor and patch version: $major_minor_patch"
 
 IFS='.' read -r major minor patch <<< "$major_minor_patch"
