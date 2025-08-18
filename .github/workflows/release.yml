@@ -175,20 +175,33 @@ jobs:
           git fetch origin develop:develop || true
           # Switch to develop branch
           git checkout develop
-          # Get the VERSION content from main and develop branches
+          # Use git to check for differences in VERSION file between branches
+          echo "Checking VERSION file differences between main and develop..."
           main_version=$(git show main:VERSION)
           develop_version=$(cat VERSION)
           echo "Main branch VERSION: $main_version"
           echo "Develop branch VERSION: $develop_version"
-          # Check if versions are different
-          if [[ "$main_version" != "$develop_version" ]]; then
-            echo "Syncing VERSION file from main to develop"
-            echo "$main_version" > VERSION
-            git config user.name "GitHub Action"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add VERSION
-            git commit -m "Sync VERSION file from release ${{ steps.gen_tag.outputs.tag }}"
-            git push origin develop
-          else
+
+          # Let git check for differences and handle accordingly
+          if git diff --exit-code main:VERSION develop:VERSION \
+              > /dev/null 2>&1; then
             echo "VERSION file is already up to date in develop branch"
+          else
+            echo "VERSION files differ, syncing from main to develop"
+            git show main:VERSION > VERSION || {
+              echo "Failed to copy VERSION from main"; exit 1;
+            }
+            git config user.name "GitHub Action"
+            git config user.email \
+              "41898282+github-actions[bot]@users.noreply.github.com"
+            git add VERSION
+            # Commit the VERSION file sync
+            tag="${{ steps.gen_tag.outputs.tag }}"
+            git commit -m "Sync VERSION file from release $tag" || {
+              echo "Failed to commit VERSION sync"; exit 1;
+            }
+            git push origin develop || {
+              echo "Failed to push VERSION sync to develop"; exit 1;
+            }
+            echo "Successfully synced VERSION file to develop branch"
           fi
