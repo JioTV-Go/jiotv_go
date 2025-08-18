@@ -29,20 +29,27 @@ for var in $(go tool dist list); do
         ;;
         "android")
             echo "Building $var"
+            cc=""
+            cxx=""
             case "$arch" in
                 "arm")
-                    CGO_ENABLED=1 GOOS="$os" GOARCH="$arch" CC="armv7a-linux-androideabi28-clang" CXX="armv7a-linux-androideabi28-clang++" go build -o "bin/${file_name}" -trimpath -ldflags="-s -w" . &
-                ;;
+                    cc="armv7a-linux-androideabi28-clang"
+                    cxx="armv7a-linux-androideabi28-clang++"
+                    ;;
                 "arm64")
-                    CGO_ENABLED=1 GOOS="$os" GOARCH="$arch" CC="aarch64-linux-android32-clang" CXX="aarch64-linux-android32-clang++" go build -o "bin/${file_name}" -trimpath -ldflags="-s -w" . &
-                ;;
+                    cc="aarch64-linux-android32-clang"
+                    cxx="aarch64-linux-android32-clang++"
+                    ;;
                 "amd64")
-                    CGO_ENABLED=1 GOOS="$os" GOARCH="$arch" CC="x86_64-linux-android32-clang" CXX="x86_64-linux-android32-clang++" go build -o "bin/${file_name}" -trimpath -ldflags="-s -w" . &
-                ;;
+                    cc="x86_64-linux-android32-clang"
+                    cxx="x86_64-linux-android32-clang++"
+                    ;;
                 *)
                     echo "Skipping: $var"
-                ;;
+                    continue
+                    ;;
             esac
+            CGO_ENABLED=1 GOOS="$os" GOARCH="$arch" CC="$cc" CXX="$cxx" go build -o "bin/${file_name}" -trimpath -ldflags="-s -w" . &
         ;;
         *)
             echo "Skipping: $var"
