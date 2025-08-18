@@ -31,13 +31,13 @@ for var in $(go tool dist list); do
             echo "Building $var"
             case "$arch" in
                 "arm")
-                    CGO_ENABLED=1 GOOS="$os" GOARCH="$arch" CC="armv7a-linux-androideabi28-clang" CXX="armv7a-linux-androideabi28-clang++" go build -o "bin/jiotv_go-${os}-${arch}" -trimpath -ldflags="-s -w" .
+                    CGO_ENABLED=1 GOOS="$os" GOARCH="$arch" CC="armv7a-linux-androideabi28-clang" CXX="armv7a-linux-androideabi28-clang++" go build -o "bin/${file_name}" -trimpath -ldflags="-s -w" . &
                 ;;
                 "arm64")
-                    CGO_ENABLED=1 GOOS="$os" GOARCH="$arch" CC="aarch64-linux-android32-clang" CXX="aarch64-linux-android32-clang++" go build -o "bin/jiotv_go-${os}-${arch}" -trimpath -ldflags="-s -w" .
+                    CGO_ENABLED=1 GOOS="$os" GOARCH="$arch" CC="aarch64-linux-android32-clang" CXX="aarch64-linux-android32-clang++" go build -o "bin/${file_name}" -trimpath -ldflags="-s -w" . &
                 ;;
                 "amd64")
-                    CGO_ENABLED=1 GOOS="$os" GOARCH="$arch" CC="x86_64-linux-android32-clang" CXX="x86_64-linux-android32-clang++" go build -o "bin/jiotv_go-${os}-${arch}" -trimpath -ldflags="-s -w" .
+                    CGO_ENABLED=1 GOOS="$os" GOARCH="$arch" CC="x86_64-linux-android32-clang" CXX="x86_64-linux-android32-clang++" go build -o "bin/${file_name}" -trimpath -ldflags="-s -w" . &
                 ;;
                 *)
                     echo "Skipping: $var"
