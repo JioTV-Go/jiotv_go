@@ -33,8 +33,8 @@ if [[ $breaking_changes -gt 0 ]]; then
     patch=0
 else
     # Increment minor version.
-    features=$(git log $tag.. --pretty=%B | grep -iE "feat|compatibility|integration|upgrade" | wc -l)
-    echo "Features: $features"
+    features=$(git log --grep="feat" -i "$tag.." --oneline | wc -l)
+    echo "Features (commits): $features"
     if [[ $features -gt 0 ]]; then
         minor=$((minor + 1))
         patch=0
