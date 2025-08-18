@@ -23,7 +23,7 @@ echo "Commits since last tag: $commits"
 
 # If any of commit messages contains "BREAKING" string, increment major version.
 commit_messages=$(git log --oneline "$tag..")
-breaking_changes=$(echo "$commit_messages" | grep -i "BREAKING" | wc -l)
+breaking_changes=$(grep -ic "^[^ ]* BREAKING:" <<< "$commit_messages")
 echo "Breaking changes (commits): $breaking_changes"
 
 if [[ $breaking_changes -gt 0 ]]; then
@@ -32,7 +32,7 @@ if [[ $breaking_changes -gt 0 ]]; then
     patch=0
 else
     # Increment minor version.
-    features=$(echo "$commit_messages" | grep -i "feat" | wc -l)
+    features=$(grep -ic "^[^ ]* feat:" <<< "$commit_messages")
     echo "Features (commits): $features"
     if [[ $features -gt 0 ]]; then
         minor=$((minor + 1))
