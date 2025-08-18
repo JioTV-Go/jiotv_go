@@ -115,7 +115,7 @@ After frontend changes:
 - **Testing:** Standard Go testing (`go test`)
 
 ### Frontend
-- **Styling:** [TailwindCSS](https://tailwindcss.com/) with [DaisyUI](https://daisyui.com/) component library
+- **Styling:** [TailwindCSS v3](https://tailwindcss.com/) with [DaisyUI v4](https://daisyui.com/) component library
 - **JavaScript:** Vanilla JavaScript (no major frameworks)
 - **Video Players:** Flowplayer for HLS, Shaka Player for DRM-protected DASH
 - **Testing:** [Jest](https://jestjs.io/) with `jsdom`
