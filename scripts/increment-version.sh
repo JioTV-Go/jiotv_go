@@ -2,9 +2,9 @@
 set -euo pipefail
 
 # Get the latest tag that looks like a semver tag.
-tag=$(git describe --tags --match "v[0-9]*.[0-9]*.[0-9]*" --abbrev=0)
+tag=$(git describe --tags --match "v[0-9]*.[0-9]*.[0-9]*" --abbrev=0 || true)
 echo "Latest tag: $tag"
-if [[ $tag == "" ]]; then
+if [[ -z "$tag" || "$tag" == "true" ]]; then
     echo "No semver tag found, use 0.0.0"
     tag="v0.0.0"
 fi
