@@ -168,3 +168,29 @@ jobs:
           discussion_category_name: releases
         env:
           GITHUB_TOKEN: ${{ secrets.PAT }}
+
+      - name: Sync VERSION file to develop branch 🔄
+        run: |
+          # Fetch the develop branch
+          git fetch origin develop:develop
+          # Switch to develop branch
+          git checkout develop
+          # Get the VERSION content from main and develop branches
+          main_version=$(git show main:VERSION)
+          develop_version=$(cat VERSION)
+          echo "Main branch VERSION: $main_version"
+          echo "Develop branch VERSION: $develop_version"
+          # Check if versions are different
+          if [[ "$main_version" != "$develop_version" ]]; then
+            echo "Syncing VERSION file from main to develop"
+            echo "$main_version" > VERSION
+            git config user.name "GitHub Action"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add VERSION
+            git commit -m "Sync VERSION file from release ${{ steps.gen_tag.outputs.tag }}"
+            git push origin develop
+          else
+            echo "VERSION file is already up to date in develop branch"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.PAT }}
