@@ -19,13 +19,13 @@ for var in $(go tool dist list); do
     
     file_name="jiotv_go-${os}-${arch}"
     case "$os" in
-        "windows")
+        "windows" | "linux" | "darwin")
+            output_name="bin/${file_name}"
+            if [[ "$os" == "windows" ]]; then
+                output_name+=".exe"
+            fi
             echo "Building $var"
-            CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -o "bin/${file_name}.exe" -trimpath -ldflags="-s -w" . &
-        ;;
-        "linux" | "darwin")
-            echo "Building $var"
-            CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -o "bin/${file_name}" -trimpath -ldflags="-s -w" . &
+            CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -o "${output_name}" -trimpath -ldflags="-s -w" . &
         ;;
         "android")
             echo "Building $var"
