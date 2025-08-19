@@ -44,11 +44,23 @@ jobs:
         id: gen_tag
         shell: bash
         run: |
+          # Fetch the latest develop branch
+          git fetch origin develop
+
+          # Checkout develop branch
+          git checkout develop
+
+          # Run increment version script to update VERSION file
           chmod +x ./scripts/increment-version.sh
           ./scripts/increment-version.sh
 
-          # update the VERSION file on the main branch
-          git add VERSION && git commit -m "Bump version to $new_version" && git push origin HEAD:main
+          # Commit and push the VERSION file update to develop
+          git add VERSION && git commit -m "Bump version to $new_version" && git push origin develop
+
+          # Switch back to main and merge the VERSION update from develop
+          git checkout main
+          git merge develop --no-ff -m "Merge version bump from develop"
+          git push origin main
 
           # Mirrors tags
           git tag -fa v$major -m "Mirror tag $new_version"
@@ -82,21 +94,3 @@ jobs:
           generate_release_notes: true
           discussion_category_name: releases
           token: ${{ secrets.PAT }}
-
-      - name: Sync VERSION file to develop branch 🔄
-        shell: bash
-        run: |
-          # Fetch the latest develop branch
-          git fetch origin develop
-
-          # Checkout develop branch
-          git checkout develop
-
-          # Update VERSION file with the new version
-          echo "${{ steps.gen_tag.outputs.tag }}" > VERSION
-
-          # Commit and push the VERSION file sync to develop
-          git add VERSION
-          version_tag="${{ steps.gen_tag.outputs.tag }}"
-          git commit -m "Sync VERSION file from main: $version_tag"
-          git push origin develop
