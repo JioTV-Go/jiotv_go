@@ -66,7 +66,6 @@ jobs:
           git tag -fa v$major -m "Mirror tag $new_version"
           git tag -fa v$major.$minor -m "Mirror tag $new_version"
           git push --tags --force
-
           # Set the new tag.
           echo "tag=$new_version" >> $GITHUB_OUTPUT
 
