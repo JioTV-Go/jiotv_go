@@ -54,6 +54,8 @@ jobs:
           chmod +x ./scripts/increment-version.sh
           ./scripts/increment-version.sh
 
+          new_version=$(cat VERSION)
+
           # Commit and push the VERSION file update to develop
           git add VERSION && git commit -m "Bump version to $new_version" && git push origin develop
 
@@ -61,6 +63,8 @@ jobs:
           git checkout main
           git merge develop --no-ff -m "Merge version bump from develop"
           git push origin main
+
+          IFS='.' read -r major minor patch <<< "$new_version"
 
           # Mirrors tags
           git tag -fa v$major -m "Mirror tag $new_version"
