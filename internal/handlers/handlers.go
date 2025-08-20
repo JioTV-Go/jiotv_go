@@ -11,6 +11,7 @@ import (
 	"github.com/jiotv-go/jiotv_go/v3/internal/config"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
+	internalUtils "github.com/jiotv-go/jiotv_go/v3/internal/utils"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/television"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
@@ -44,7 +45,7 @@ func Init() {
 	}
 	DisableTSHandler = config.Cfg.DisableTSHandler
 	isLogoutDisabled = config.Cfg.DisableLogout
-	EnableDRM = config.Cfg.DRM
+	EnableDRM = true // DRM is enabled by default, only channels that support DRM will use it
 	if DisableTSHandler {
 		utils.Log.Println("TS Handler disabled!. All TS video requests will be served directly from JioTV servers.")
 	}
@@ -64,7 +65,7 @@ func Init() {
 		if credentials.AccessToken != "" && credentials.RefreshToken == "" {
 			utils.Log.Println("Warning: AccessToken present but RefreshToken is missing. Token refresh may fail.")
 		}
-		// If SsoToken is present, validate on first use  
+		// If SsoToken is present, validate on first use
 		if credentials.SSOToken != "" && credentials.UniqueID == "" {
 			utils.Log.Println("Warning: SSOToken present but UniqueID is missing. Token refresh may fail.")
 		}
@@ -80,11 +81,23 @@ func Init() {
 // Responds with 500 status code and error message
 func ErrorMessageHandler(c *fiber.Ctx, err error) error {
 	if err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err.Error(),
-		})
+		return internalUtils.InternalServerError(c, err.Error())
 	}
 	return nil
+}
+
+// isCustomChannel checks if a given channel ID is a custom channel
+func isCustomChannel(channelID string) bool {
+	if config.Cfg.CustomChannelsFile == "" {
+		return false
+	}
+
+	// Check direct lookup with the provided ID
+	if _, exists := television.GetCustomChannelByID(channelID); exists {
+		return true
+	}
+
+	return false
 }
 
 // IndexHandler handles the index page for `/` route
@@ -95,6 +108,18 @@ func IndexHandler(c *fiber.Ctx) error {
 	// Get language and category from query params
 	language := c.Query("language")
 	category := c.Query("category")
+
+	// Process logo URLs for all channels
+	hostURL := c.Protocol() + "://" + c.Hostname()
+	for i, channel := range channels.Result {
+		if strings.HasPrefix(channel.LogoURL, "http://") || strings.HasPrefix(channel.LogoURL, "https://") {
+			// Custom channel with full URL, use as-is
+			channels.Result[i].LogoURL = channel.LogoURL
+		} else {
+			// Regular channel with relative path, add proxy prefix
+			channels.Result[i].LogoURL = hostURL + "/jtvimage/" + channel.LogoURL
+		}
+	}
 
 	// Context data for index page
 	indexContext := fiber.Map{
@@ -111,7 +136,7 @@ func IndexHandler(c *fiber.Ctx) error {
 		},
 	}
 
-	// Filter channels by language and category if provided
+	// Filter channels by query params if provided
 	if language != "" || category != "" {
 		language_int, err := strconv.Atoi(language)
 		if err != nil {
@@ -125,7 +150,15 @@ func IndexHandler(c *fiber.Ctx) error {
 		indexContext["Channels"] = channels_list
 		return c.Render("views/index", indexContext)
 	}
-	// If language and category are not provided, return all channels
+
+	// If no query parameters are provided, use default config filtering
+	if len(config.Cfg.DefaultCategories) > 0 || len(config.Cfg.DefaultLanguages) > 0 {
+		channels_list := television.FilterChannelsByDefaults(channels.Result, config.Cfg.DefaultCategories, config.Cfg.DefaultLanguages)
+		indexContext["Channels"] = channels_list
+		return c.Render("views/index", indexContext)
+	}
+
+	// If no query params and no default config, return all channels
 	indexContext["Channels"] = channels.Result
 	return c.Render("views/index", indexContext)
 }
@@ -133,13 +166,7 @@ func IndexHandler(c *fiber.Ctx) error {
 // checkFieldExist checks if the field is provided in the request.
 // If not, send a bad request response
 func checkFieldExist(field string, check bool, c *fiber.Ctx) error {
-	if !check {
-		utils.Log.Println(field + " not provided")
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": field + " not provided",
-		})
-	}
-	return nil
+	return internalUtils.CheckFieldExist(c, field, check)
 }
 
 // LiveHandler handles the live channel stream route `/live/:id.m3u8`.
@@ -147,19 +174,28 @@ func LiveHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
-	
-	// Ensure tokens are fresh before making API call
+
+	// Check if this is a custom channel - serve directly for custom channels
+	if isCustomChannel(id) {
+		channel, exists := television.GetCustomChannelByID(id)
+		if !exists {
+			utils.Log.Printf("Custom channel with ID %s not found", id)
+			return internalUtils.NotFoundError(c, fmt.Sprintf("Custom channel with ID %s not found", id))
+		}
+		// For custom channels, redirect directly to the m3u8 URL (no render pipeline needed)
+		return c.Redirect(channel.URL, fiber.StatusFound)
+	}
+
+	// For regular JioTV channels, ensure tokens are fresh before making API call
 	if err := EnsureFreshTokens(); err != nil {
 		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
-		// Continue with the request - tokens might still work or it might be a custom channel
+		// Continue with the request - tokens might still work
 	}
-	
+
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err,
-		})
+		return internalUtils.InternalServerError(c, err)
 	}
 
 	// Check if liveResult.Bitrates.Auto is empty
@@ -167,18 +203,14 @@ func LiveHandler(c *fiber.Ctx) error {
 		error_message := "No stream found for channel id: " + id + "Status: " + liveResult.Message
 		utils.Log.Println(error_message)
 		utils.Log.Println(liveResult)
-		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
-			"message": error_message,
-		})
+		return internalUtils.NotFoundError(c, error_message)
 	}
 	// quote url as it will be passed as a query parameter
 	// It is required to quote the url as it may contain special characters like ? and &
 	coded_url, err := secureurl.EncryptURL(liveResult.Bitrates.Auto)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"message": err,
-		})
+		return internalUtils.ForbiddenError(c, err)
 	}
 	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
 }
@@ -189,19 +221,28 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	// remove suffix .m3u8 if exists
 	id = strings.Replace(id, ".m3u8", "", 1)
-	
-	// Ensure tokens are fresh before making API call
+
+	// Check if this is a custom channel - serve directly for custom channels
+	if isCustomChannel(id) {
+		channel, exists := television.GetCustomChannelByID(id)
+		if !exists {
+			utils.Log.Printf("Custom channel with ID %s not found", id)
+			return internalUtils.NotFoundError(c, fmt.Sprintf("Custom channel with ID %s not found", id))
+		}
+		// For custom channels, redirect directly to the m3u8 URL (no render pipeline needed)
+		return c.Redirect(channel.URL, fiber.StatusFound)
+	}
+
+	// For regular JioTV channels, ensure tokens are fresh before making API call
 	if err := EnsureFreshTokens(); err != nil {
 		utils.Log.Printf("Failed to ensure fresh tokens: %v", err)
-		// Continue with the request - tokens might still work or it might be a custom channel
+		// Continue with the request - tokens might still work
 	}
-	
+
 	liveResult, err := TV.Live(id)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err,
-		})
+		return internalUtils.InternalServerError(c, err)
 	}
 	Bitrates := liveResult.Bitrates
 	// if id[:2] == "sl" {
@@ -211,25 +252,15 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 	if id == "1349" || id == "1322" {
 		quality = "auto"
 	}
-	var liveURL string
+	
 	// select quality level based on query parameter
-	switch quality {
-	case "high", "h":
-		liveURL = Bitrates.High
-	case "medium", "med", "m":
-		liveURL = Bitrates.Medium
-	case "low", "l":
-		liveURL = Bitrates.Low
-	default:
-		liveURL = Bitrates.Auto
-	}
+	liveURL := internalUtils.SelectQuality(quality, Bitrates.Auto, Bitrates.High, Bitrates.Medium, Bitrates.Low)
+	
 	// quote url as it will be passed as a query parameter
 	coded_url, err := secureurl.EncryptURL(liveURL)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
-			"message": err,
-		})
+		return internalUtils.ForbiddenError(c, err)
 	}
 	return c.Redirect("/render.m3u8?auth="+coded_url+"&channel_key_id="+id, fiber.StatusFound)
 }
@@ -239,15 +270,13 @@ func LiveQualityHandler(c *fiber.Ctx) error {
 func RenderHandler(c *fiber.Ctx) error {
 	// URL to be rendered
 	auth := c.Query("auth")
-	if auth == "" {
-		utils.Log.Println("Auth not provided")
-		return fmt.Errorf("auth not provided")
+	if err := internalUtils.ValidateRequiredParam("auth", auth); err != nil {
+		return err
 	}
 	// Channel ID to be used for key rendering
 	channel_id := c.Query("channel_key_id")
-	if channel_id == "" {
-		utils.Log.Println("Channel ID not provided")
-		return fmt.Errorf("channel ID not provided")
+	if err := internalUtils.ValidateRequiredParam("channel_key_id", channel_id); err != nil {
+		return err
 	}
 	// decrypt url
 	decoded_url, err := secureurl.DecryptURL(auth)
@@ -255,9 +284,9 @@ func RenderHandler(c *fiber.Ctx) error {
 		utils.Log.Println(err)
 		return err
 	}
-	
+
 	renderResult, statusCode := TV.Render(decoded_url)
-	
+
 	// If we get a 403 (Forbidden), try refreshing tokens and retry once
 	if statusCode == fiber.StatusForbidden {
 		if err := EnsureFreshTokens(); err != nil {
@@ -320,7 +349,7 @@ func RenderHandler(c *fiber.Ctx) error {
 		utils.Log.Println("Error rendering M3U8 file")
 		utils.Log.Println(string(renderResult))
 	}
-	c.Response().Header.Set("Cache-Control", "public, must-revalidate, max-age=3")
+	internalUtils.SetMustRevalidateHeader(c, 3)
 	return c.Status(statusCode).Send(renderResult)
 }
 
@@ -332,12 +361,7 @@ func SLHandler(c *fiber.Ctx) error {
 		url = url[:len(url)-1]
 	}
 	// Delete all browser headers
-	c.Request().Header.Del("Accept")
-	c.Request().Header.Del("Accept-Encoding")
-	c.Request().Header.Del("Accept-Language")
-	c.Request().Header.Del("Origin")
-	c.Request().Header.Del("Referer")
-	c.Request().Header.Set("User-Agent", PLAYER_USER_AGENT)
+	internalUtils.SetPlayerHeaders(c, PLAYER_USER_AGENT)
 	if err := proxy.Do(c, url, TV.Client); err != nil {
 		return err
 	}
@@ -352,9 +376,8 @@ func RenderKeyHandler(c *fiber.Ctx) error {
 	channel_id := c.Query("channel_key_id")
 	auth := c.Query("auth")
 	// decode url
-	decoded_url, err := secureurl.DecryptURL(auth)
+	decoded_url, err := internalUtils.DecryptURLParam("auth", auth)
 	if err != nil {
-		utils.Log.Println(err)
 		return err
 	}
 
@@ -387,17 +410,12 @@ func RenderKeyHandler(c *fiber.Ctx) error {
 func RenderTSHandler(c *fiber.Ctx) error {
 	auth := c.Query("auth")
 	// decode url
-	decoded_url, err := secureurl.DecryptURL(auth)
+	decoded_url, err := internalUtils.DecryptURLParam("auth", auth)
 	if err != nil {
 		utils.Log.Panicln(err)
 		return err
 	}
-	c.Request().Header.Set("User-Agent", PLAYER_USER_AGENT)
-	if err := proxy.Do(c, decoded_url, TV.Client); err != nil {
-		return err
-	}
-	c.Response().Header.Del(fiber.HeaderServer)
-	return nil
+	return internalUtils.ProxyRequest(c, decoded_url, TV.Client, PLAYER_USER_AGENT)
 }
 
 // ChannelsHandler fetch all channels from JioTV API
@@ -433,7 +451,14 @@ func ChannelsHandler(c *fiber.Ctx) error {
 			} else {
 				channelURL = fmt.Sprintf("%s/live/%s.m3u8", hostURL, channel.ID)
 			}
-			channelLogoURL := fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
+			var channelLogoURL string
+			if strings.HasPrefix(channel.LogoURL, "http://") || strings.HasPrefix(channel.LogoURL, "https://") {
+				// Custom channel with full URL
+				channelLogoURL = channel.LogoURL
+			} else {
+				// Regular channel with relative path
+				channelLogoURL = fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
+			}
 			var groupTitle string
 			switch splitCategory {
 			case "split":
@@ -481,9 +506,7 @@ func PlayHandler(c *fiber.Ctx) error {
 			liveResult, err := TV.Live(id)
 			if err != nil {
 				utils.Log.Println(err)
-				return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-					"message": err,
-				})
+				return internalUtils.InternalServerError(c, err)
 			}
 			// if drm is available, use DRM player
 			if liveResult.IsDRM {
@@ -492,13 +515,15 @@ func PlayHandler(c *fiber.Ctx) error {
 				// if not, use HLS player
 				player_url = "/player/" + id + "?q=" + quality
 			}
+		} else if isCustomChannel(id) {
+			player_url = "/player/" + id + "?q=" + quality
 		} else {
 			player_url = "/mpd/" + id + "?q=" + quality
 		}
 	} else {
 		player_url = "/player/" + id + "?q=" + quality
 	}
-	c.Response().Header.Set("Cache-Control", "public, max-age=3600")
+	internalUtils.SetCacheHeader(c, 3600)
 	return c.Render("views/play", fiber.Map{
 		"Title":      Title,
 		"player_url": player_url,
@@ -510,14 +535,9 @@ func PlayHandler(c *fiber.Ctx) error {
 func PlayerHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	quality := c.Query("q")
-	var play_url string
-	if quality != "" {
-		play_url = "/live/" + quality + "/" + id + ".m3u8"
-	} else {
-		play_url = "/live/" + id + ".m3u8"
-	}
-	c.Response().Header.Set("Cache-Control", "public, max-age=3600")
-	return c.Render("views/flow_player", fiber.Map{
+	play_url := utils.BuildHLSPlayURL(quality, id)
+	internalUtils.SetCacheHeader(c, 3600)
+	return c.Render("views/player_hls", fiber.Map{
 		"play_url": play_url,
 	})
 }
@@ -540,12 +560,7 @@ func PlaylistHandler(c *fiber.Ctx) error {
 // ImageHandler loads image from JioTV server
 func ImageHandler(c *fiber.Ctx) error {
 	url := "https://jiotv.catchup.cdn.jio.com/dare_images/images/" + c.Params("file")
-	c.Request().Header.Set("User-Agent", REQUEST_USER_AGENT)
-	if err := proxy.Do(c, url, TV.Client); err != nil {
-		return err
-	}
-	c.Response().Header.Del(fiber.HeaderServer)
-	return nil
+	return internalUtils.ProxyRequest(c, url, TV.Client, REQUEST_USER_AGENT)
 }
 
 func DASHTimeHandler(c *fiber.Ctx) error {

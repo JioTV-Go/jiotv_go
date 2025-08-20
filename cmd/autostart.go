@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
 	"runtime"
+	"strings"
 )
 
 // AutoStart adds or updates an auto start command for the current

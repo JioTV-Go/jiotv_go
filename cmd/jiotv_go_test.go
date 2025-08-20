@@ -47,7 +47,7 @@ func TestInitializeLogger(t *testing.T) {
 			// This function initializes a global logger
 			// It should complete without error
 			InitializeLogger()
-			
+
 			// Verify that the Logger() function returns a non-nil logger after initialization
 			if Logger() == nil {
 				t.Error("InitializeLogger() should result in a non-nil logger")
@@ -70,12 +70,12 @@ func TestLogger(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			// First initialize the logger
 			InitializeLogger()
-			
+
 			got := Logger()
 			if got == nil {
 				t.Errorf("Logger() returned nil, expected a valid logger instance")
 			}
-			
+
 			// Test that we can use the logger
 			if got != nil {
 				got.Println("Test log message")
@@ -110,7 +110,7 @@ func TestJioTVServer(t *testing.T) {
 					t.Logf("JioTVServer() panicked as expected due to uninitialized dependencies: %v", r)
 				}
 			}()
-			
+
 			if err := JioTVServer(tt.args.jiotvServerConfig); (err != nil) != tt.wantErr {
 				t.Errorf("JioTVServer() error = %v, wantErr %v", err, tt.wantErr)
 			}

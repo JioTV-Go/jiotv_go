@@ -9,40 +9,95 @@
 
   <body>
     {{ template "navbar" . }}
-    <div class="p-1 sm:p-2 md:p-4 md:mx-8 lg:p-8 lg:mx-52">
-      <div
-        id="player"
-        class="relative overflow-hidden w-full rounded-xl bg-black"
-        style="aspect-ratio: 16/9; min-height: 200px"
-      >
-        <iframe
-          id="playerIframe"
-          class="absolute top-0 left-0 bottom-0 right-0 w-full h-full"
-          src="{{ .player_url }}"
-          width="100%"
-          height="100%"
-          webkitAllowFullScreen
-          mozallowfullscreen
-          allowfullscreen
-          allow="autoplay"
-        ></iframe>
-      </div>
-      <div class="mt-2 flex justify-center">
-        <button id="aspect-43-toggle" class="btn" onclick="toggleAspectRatio()">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            class="size-6"
+    <!-- Main container with responsive layout -->
+    <div class="p-1 sm:p-2 md:p-4 lg:p-8">
+      <!-- Desktop grid layout: player left, EPG right. Mobile: stacked -->
+      <div class="lg:grid lg:grid-cols-12 lg:gap-8 lg:mx-8 xl:mx-52">
+        <!-- Player section -->
+        <div class="lg:col-span-8">
+          <div
+            id="player"
+            class="relative overflow-hidden w-full rounded-xl bg-black"
+            style="aspect-ratio: 16/9; min-height: 200px"
           >
-            <path
-              fill-rule="evenodd"
-              d="M12 2.25a.75.75 0 0 1 .75.75v16.19l6.22-6.22a.75.75 0 1 1 1.06 1.06l-7.5 7.5a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 1 1 1.06-1.06l6.22 6.22V3a.75.75 0 0 1 .75-.75Z"
-              clip-rule="evenodd"
-            />
-          </svg>
-        </button>
+            <iframe
+              id="playerIframe"
+              class="absolute top-0 left-0 bottom-0 right-0 w-full h-full"
+              src="{{ .player_url }}"
+              width="100%"
+              height="100%"
+              webkitAllowFullScreen
+              mozallowfullscreen
+              allowfullscreen
+              allow="autoplay"
+            ></iframe>
+          </div>
+          <div class="mt-2 flex justify-center">
+            <button id="aspect-43-toggle" class="btn" onclick="toggleAspectRatio()">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                class="size-6"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M12 2.25a.75.75 0 0 1 .75.75v16.19l6.22-6.22a.75.75 0 1 1 1.06 1.06l-7.5 7.5a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 1 1 1.06-1.06l6.22 6.22V3a.75.75 0 0 1 .75-.75Z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        <!-- Sidebar section (Now Playing EPG only) -->
+        <div class="lg:col-span-4 mt-4 lg:mt-0">
+          <!-- Now Playing Section (EPG) -->
+          <div id="epg_parent" class="">
+            <h2 class="mb-3 text-lg font-bold text-center lg:text-left">
+              Now Playing
+            </h2>
+            <div id="epg" class="w-full">
+              <div class="card w-full bg-base-200 shadow-xl">
+                <figure><img id="episodePoster" alt="Episode Poster" /></figure>
+                <div class="card-body p-4">
+                  <h2 id="showname" class="card-title text-base"></h2>
+                  <div class="flex flex-row gap-2 items-center justify-between">
+                    <div class="badge badge-error badge-outline">Live</div>
+                    <div class="text-sm">
+                      <span>Ends in </span>
+                      <span id="countdown_hour" class="countdown">
+                        <span id="e_hour" style="--value:0;"></span>h
+                      </span>
+                      <span id="countdown_minute" class="countdown">
+                        <span id="e_minute" style="--value:0;"></span>m
+                      </span>
+                      <span id="countdown_second" class="countdown">
+                        <span id="e_second" style="--value:0;"></span>s
+                      </span>
+                    </div>
+                  </div>
+                  <p id="description" class="text-sm"></p>
+                  <div id="keywords" class="card-actions justify-end">
+                    <div class="hidden badge badge-outline"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+      
+      <!-- Similar Channels Section - Below main grid on desktop, part of stack on mobile -->
+      <div id="similar_channels_parent" class="mt-6 lg:mx-8 xl:mx-52" style="display: none;">
+        <h2 class="mb-3 text-lg font-bold text-center lg:text-left">
+          Similar Channels
+        </h2>
+        <div id="similar_channels" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          <!-- Similar channels will be populated by JavaScript -->
+        </div>
+      </div>
+    </div>
       <script>
         const channelId = {{ printf "%q" .ChannelID }};
         let current43Mode = false;
@@ -90,40 +145,7 @@
         });
       </script>
     </div>
-    <div id="epg_parent" class="p-1 sm:p-2 md:p-4 md:mx-8 lg:p-8 lg:mx-52">
-      <h2
-        class="mt-4 sm:mt-0 mb-2 text-lg sm:text-xl font-bold text-center sm:text-left"
-      >
-        Now Playing
-      </h2>
-      <div id="epg" class="w-full">
-        <div class="card w-full sm:w-96 bg-base-200 shadow-xl">
-          <figure><img id="episodePoster" alt="Episode Poster" /></figure>
-          <div class="card-body">
-            <h2 id="showname" class="card-title"></h2>
-            <div class="flex flex-row gap-2 items-center justify-between">
-              <div class="badge badge-error badge-outline">Live</div>
-              <div>
-                <span>Ends in </span>
-                <span id="countdown_hour" class="countdown">
-                  <span id="e_hour" style="--value:0;"></span>h
-                </span>
-                <span id="countdown_minute" class="countdown">
-                  <span id="e_minute" style="--value:0;"></span>m
-                </span>
-                <span id="countdown_second" class="countdown">
-                  <span id="e_second" style="--value:0;"></span>s
-                </span>
-              </div>
-            </div>
-            <p id="description"></p>
-            <div id="keywords" class="card-actions justify-end">
-              <div class="hidden badge badge-outline"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+    <script src="/static/internal/utils.js"></script>
     <script src="/static/internal/common.js"></script>
     <script src="/static/internal/epg.js"></script>
     {{ template "footer" . }}

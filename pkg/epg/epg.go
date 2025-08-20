@@ -38,17 +38,22 @@ func Init() {
 	var lastModTime time.Time
 	flag := false
 	utils.Log.Println("Checking EPG file")
-	if stat, err := os.Stat(epgFile); err == nil {
+	
+	// Check file existence and get file info
+	fileResult := utils.CheckAndReadFile(epgFile)
+	if fileResult.Exists {
 		// If file was modified today, don't generate new EPG
 		// Else generate new EPG
-		lastModTime = stat.ModTime()
-		fileDate := lastModTime.Format("2006-01-02")
-		todayDate := time.Now().Format("2006-01-02")
-		if fileDate == todayDate {
-			utils.Log.Println("EPG file is up to date.")
-		} else {
-			utils.Log.Println("EPG file is old.")
-			flag = true
+		if stat, err := os.Stat(epgFile); err == nil {
+			lastModTime = stat.ModTime()
+			fileDate := lastModTime.Format("2006-01-02")
+			todayDate := time.Now().Format("2006-01-02")
+			if fileDate == todayDate {
+				utils.Log.Println("EPG file is up to date.")
+			} else {
+				utils.Log.Println("EPG file is old.")
+				flag = true
+			}
 		}
 	} else {
 		utils.Log.Println("EPG file doesn't exist")
@@ -156,23 +161,19 @@ func genXML() ([]byte, error) {
 	}
 
 	// Fetch channels data
-	req := fasthttp.AcquireRequest()
-	defer fasthttp.ReleaseRequest(req)
-
-	req.SetRequestURI(CHANNEL_URL)
-	resp := fasthttp.AcquireResponse()
-
 	utils.Log.Println("Fetching channels")
-	if err := client.Do(req, resp); err != nil {
-		utils.Log.Fatal(err)
-		return nil, err
+	resp, err := utils.MakeHTTPRequest(utils.HTTPRequestConfig{
+		URL:    CHANNEL_URL,
+		Method: "GET",
+	}, client)
+	if err != nil {
+		return nil, utils.LogAndReturnError(err, "Failed to fetch channels")
 	}
 	defer fasthttp.ReleaseResponse(resp)
 
 	var channelsResponse ChannelsResponse
-	if err := json.Unmarshal(resp.Body(), &channelsResponse); err != nil {
-		utils.Log.Fatal(err)
-		return nil, err
+	if err := utils.ParseJSONResponse(resp, &channelsResponse); err != nil {
+		return nil, utils.LogAndReturnError(err, "Failed to parse channels response")
 	}
 
 	for _, channel := range channelsResponse.Channels {

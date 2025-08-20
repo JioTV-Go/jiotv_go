@@ -1,66 +1,56 @@
 const search = (searchTerm) => {
   const channels = document.querySelectorAll('.card');
-  const urlParams = new URLSearchParams(window.location.search);
-
+  
   // Update URL search parameter
-  if (searchTerm.trim() !== '') {
-    urlParams.set('search', searchTerm);
-  } else {
-    urlParams.delete('search');
-  }
-
-  // Update the URL without reloading the page
-  window.history.replaceState({}, '', `${window.location.pathname}?${urlParams}`);
+  updateUrlParameter('search', searchTerm);
 
   channels.forEach((channel) => {
-    const name = channel.querySelector('.font-bold').textContent.toLowerCase();
-    if (name.includes(searchTerm.toLowerCase())) {
-      channel.style.display = 'block';
-    } else {
-      channel.style.display = 'none';
+    const nameElement = channel.querySelector('.font-bold');
+    if (nameElement) {
+      const name = nameElement.textContent.toLowerCase();
+      channel.style.display = name.includes(searchTerm.toLowerCase()) ? 'block' : 'none';
     }
   });
 };
 
 const init = () => {
-  const searchInput = document.getElementById('portexe-search-input');
+  const searchInput = safeGetElementById('portexe-search-input');
 
   // Check for search parameter on page load
-  const urlParams = new URLSearchParams(window.location.search);
+  const urlParams = getCurrentUrlParams();
   const searchParam = urlParams.get('search');
 
-  if (searchParam) {
+  if (searchParam && searchInput) {
     search(searchParam);
-    searchInput.value = searchParam; // Set input value to the search parameter
+    searchInput.value = searchParam;
   }
 
-  searchInput.addEventListener('keyup', (e) => {
-    search(e.target.value);
-  });
+  if (searchInput) {
+    searchInput.addEventListener('keyup', (e) => {
+      search(e.target.value);
+    });
+  }
 };
 
 // Call the init function to start the process
 init();
 
 const loginClick = () => {
-  // create a popup to enter username and password
-  // then redirect to /login?username=xxx&password=xxx
-  const username = document.getElementById("username").value;
-  const password = document.getElementById("password").value;
+  const elements = safeGetElementsById(["username", "password"]);
+  const { username: usernameElement, password: passwordElement } = elements;
+  
+  if (!usernameElement || !passwordElement) {
+    return;
+  }
+
+  const username = usernameElement.value;
+  const password = passwordElement.value;
+  
   if (!username || !password) {
     return;
   }
 
-  const url = "/login";
-
-  fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ username, password }),
-  })
-    .then((res) => res.json())
+  postJSON("/login", { username, password })
     .then((data) => {
       if (data.status === "success") {
         alert("Login success. Enjoy!");
@@ -76,23 +66,17 @@ const loginClick = () => {
 };
 
 const loginOTPClick = () => {
-  // Fetch number from input
-  const number = document.getElementById("number").value;
+  const numberElement = safeGetElementById("number");
+  if (!numberElement) {
+    return;
+  }
+
+  const number = numberElement.value;
   if (!number) {
     return;
   }
 
-
-  const url = "/login/sendOTP";
-
-  fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ number: `+91${number}` }),
-  })
-    .then((res) => res.json())
+  postJSON("/login/sendOTP", { number: `+91${number}` })
     .then((data) => {
       if (data.status) {
         verify_otp_modal.showModal(); // skipcq: JS-0125
@@ -107,23 +91,21 @@ const loginOTPClick = () => {
 };
 
 const loginOTPVerifyClick = () => {
-  // Fetch number and OTP from input
-  const number = document.getElementById("number").value;
-  const otp = document.getElementById("otp").value;
+  const elements = safeGetElementsById(["number", "otp"]);
+  const { number: numberElement, otp: otpElement } = elements;
+  
+  if (!numberElement || !otpElement) {
+    return;
+  }
+
+  const number = numberElement.value;
+  const otp = otpElement.value;
+  
   if (!number || !otp) {
     return;
   }
 
-  const url = "/login/verifyOTP";
-
-  fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ number: `+91${number}`, otp }),
-  })
-    .then((res) => res.json())
+  postJSON("/login/verifyOTP", { number: `+91${number}`, otp })
     .then((data) => {
       if (data.status) {
         alert("OTP verification success. Enjoy!");

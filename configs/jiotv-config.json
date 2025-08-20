@@ -10,5 +10,7 @@
     "proxy": "",
     "log_path": "",
     "log_to_stdout": false,
-    "custom_channels_file": ""
+    "custom_channels_file": "",
+    "default_categories": [],
+    "default_languages": []
 }

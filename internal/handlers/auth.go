@@ -10,6 +10,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants/urls"
+	internalUtils "github.com/jiotv-go/jiotv_go/v3/internal/utils"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/television"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 	"github.com/valyala/fasthttp"
@@ -26,17 +27,17 @@ func IsAccessTokenExpired(credentials *utils.JIOTV_CREDENTIALS) bool {
 	if credentials.LastTokenRefreshTime == "" {
 		return true // No refresh time recorded, assume expired
 	}
-	
+
 	lastTokenRefreshTime, err := strconv.ParseInt(credentials.LastTokenRefreshTime, 10, 64)
 	if err != nil {
 		utils.Log.Printf("Error parsing LastTokenRefreshTime: %v", err)
 		return true // Error parsing, assume expired
 	}
-	
+
 	lastRefreshTime := time.Unix(lastTokenRefreshTime, 0)
 	// AccessToken expires after 2 hours, refresh 10 minutes early
 	thresholdTime := lastRefreshTime.Add(1*time.Hour + 50*time.Minute)
-	
+
 	return thresholdTime.Before(time.Now())
 }
 
@@ -46,17 +47,17 @@ func IsSSOTokenExpired(credentials *utils.JIOTV_CREDENTIALS) bool {
 	if credentials.LastSSOTokenRefreshTime == "" {
 		return true // No refresh time recorded, assume expired
 	}
-	
+
 	lastTokenRefreshTime, err := strconv.ParseInt(credentials.LastSSOTokenRefreshTime, 10, 64)
 	if err != nil {
 		utils.Log.Printf("Error parsing LastSSOTokenRefreshTime: %v", err)
 		return true // Error parsing, assume expired
 	}
-	
+
 	lastRefreshTime := time.Unix(lastTokenRefreshTime, 0)
 	// SSOToken expires after 24 hours, refresh 1 hour early
 	thresholdTime := lastRefreshTime.Add(23 * time.Hour)
-	
+
 	return thresholdTime.Before(time.Now())
 }
 
@@ -65,14 +66,14 @@ func IsSSOTokenExpired(credentials *utils.JIOTV_CREDENTIALS) bool {
 func EnsureFreshTokens() error {
 	tokenRefreshMutex.Lock()
 	defer tokenRefreshMutex.Unlock()
-	
+
 	credentials, err := utils.GetJIOTVCredentials()
 	if err != nil {
 		return fmt.Errorf("failed to get credentials: %v", err)
 	}
-	
+
 	var refreshed bool
-	
+
 	// Check and refresh AccessToken if needed
 	if credentials.AccessToken != "" && credentials.RefreshToken != "" {
 		if IsAccessTokenExpired(credentials) {
@@ -85,8 +86,8 @@ func EnsureFreshTokens() error {
 			refreshed = true
 		}
 	}
-	
-	// Check and refresh SSOToken if needed  
+
+	// Check and refresh SSOToken if needed
 	if credentials.SSOToken != "" && credentials.UniqueID != "" {
 		if IsSSOTokenExpired(credentials) {
 			utils.Log.Println("SSOToken is expired, refreshing...")
@@ -98,7 +99,7 @@ func EnsureFreshTokens() error {
 			refreshed = true
 		}
 	}
-	
+
 	if refreshed {
 		// Update the TV object with fresh credentials
 		freshCreds, err := utils.GetJIOTVCredentials()
@@ -107,7 +108,7 @@ func EnsureFreshTokens() error {
 		}
 		TV = television.New(freshCreds)
 	}
-	
+
 	return nil
 }
 
@@ -118,19 +119,17 @@ func LoginSendOTPHandler(c *fiber.Ctx) error {
 	err := c.BodyParser(&formBody)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid JSON",
-		})
+		return internalUtils.BadRequestError(c, "Invalid JSON")
 	}
 	mobileNumber := formBody.MobileNumber
-	checkFieldExist("Mobile Number", mobileNumber != "", c)
+	if err := internalUtils.CheckFieldExist(c, "Mobile Number", mobileNumber != ""); err != nil {
+		return err
+	}
 
 	result, err := utils.LoginSendOTP(mobileNumber)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": err,
-		})
+		return internalUtils.InternalServerError(c, err)
 	}
 	return c.JSON(fiber.Map{
 		"status": result,
@@ -144,21 +143,21 @@ func LoginVerifyOTPHandler(c *fiber.Ctx) error {
 	err := c.BodyParser(&formBody)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-			"message": "Invalid JSON",
-		})
+		return internalUtils.BadRequestError(c, "Invalid JSON")
 	}
 	mobileNumber := formBody.MobileNumber
-	checkFieldExist("Mobile Number", mobileNumber != "", c)
+	if err := internalUtils.CheckFieldExist(c, "Mobile Number", mobileNumber != ""); err != nil {
+		return err
+	}
 	otp := formBody.OTP
-	checkFieldExist("OTP", otp != "", c)
+	if err := internalUtils.CheckFieldExist(c, "OTP", otp != ""); err != nil {
+		return err
+	}
 
 	result, err := utils.LoginVerifyOTP(mobileNumber, otp)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Internal server error",
-		})
+		return internalUtils.InternalServerError(c, "Internal server error")
 	}
 	Init()
 	return c.JSON(result)
@@ -169,30 +168,34 @@ func LoginPasswordHandler(c *fiber.Ctx) error {
 	var username, password string
 	if c.Method() == "GET" {
 		username = c.Query("username")
-		checkFieldExist("Username", username != "", c)
+		if err := internalUtils.CheckFieldExist(c, "Username", username != ""); err != nil {
+			return err
+		}
 		password = c.Query("password")
-		checkFieldExist("Password", password != "", c)
+		if err := internalUtils.CheckFieldExist(c, "Password", password != ""); err != nil {
+			return err
+		}
 	} else if c.Method() == "POST" {
 		formBody := new(LoginRequestBodyData)
 		err := c.BodyParser(&formBody)
 		if err != nil {
 			utils.Log.Println(err)
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"message": "Invalid JSON",
-			})
+			return internalUtils.BadRequestError(c, "Invalid JSON")
 		}
 		username = formBody.Username
-		checkFieldExist("Username", username != "", c)
+		if err := internalUtils.CheckFieldExist(c, "Username", username != ""); err != nil {
+			return err
+		}
 		password = formBody.Password
-		checkFieldExist("Password", password != "", c)
+		if err := internalUtils.CheckFieldExist(c, "Password", password != ""); err != nil {
+			return err
+		}
 	}
 
 	result, err := utils.Login(username, password)
 	if err != nil {
 		utils.Log.Println(err)
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"message": "Internal server error",
-		})
+		return internalUtils.InternalServerError(c, "Internal server error")
 	}
 	Init()
 	return c.JSON(result)
@@ -204,9 +207,7 @@ func LogoutHandler(c *fiber.Ctx) error {
 		err := utils.Logout()
 		if err != nil {
 			utils.Log.Println(err)
-			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-				"message": "Internal server error",
-			})
+			return internalUtils.InternalServerError(c, "Internal server error")
 		}
 		Init()
 	}
@@ -390,11 +391,11 @@ func LoginRefreshSSOToken() error {
 // This function is now simplified for on-demand use only
 func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
 	utils.Log.Println("Checking if AccessToken is expired...")
-	
+
 	if IsAccessTokenExpired(credentials) {
 		return LoginRefreshAccessToken()
 	}
-	
+
 	utils.Log.Println("AccessToken is still valid")
 	return nil
 }
@@ -403,13 +404,11 @@ func RefreshTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
 // This function is now simplified for on-demand use only
 func RefreshSSOTokenIfExpired(credentials *utils.JIOTV_CREDENTIALS) error {
 	utils.Log.Println("Checking if SSOToken is expired...")
-	
+
 	if IsSSOTokenExpired(credentials) {
 		return LoginRefreshSSOToken()
 	}
-	
+
 	utils.Log.Println("SSOToken is still valid")
 	return nil
 }
-
-

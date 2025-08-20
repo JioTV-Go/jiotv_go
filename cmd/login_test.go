@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"os"
 	"testing"
 	"time"
 )
@@ -24,27 +23,12 @@ func TestLogout(t *testing.T) {
 					t.Logf("Logout() panicked as expected due to uninitialized dependencies: %v", r)
 				}
 			}()
-			
+
 			if err := Logout(); (err != nil) != tt.wantErr {
 				t.Errorf("Logout() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
 	}
-}
-
-// createMockInput creates a pipe to simulate user input for testing interactive functions
-func createMockInput(input string) (*os.File, *os.File, error) {
-	r, w, err := os.Pipe()
-	if err != nil {
-		return nil, nil, err
-	}
-	
-	go func() {
-		defer w.Close()
-		w.WriteString(input)
-	}()
-	
-	return r, w, nil
 }
 
 func TestLoginOTP(t *testing.T) {
@@ -64,13 +48,13 @@ func TestLoginOTP(t *testing.T) {
 			// We can't easily mock stdin for this interactive function
 			// The function will fail when it tries to call external APIs
 			// Let's test that it handles the error gracefully
-			
+
 			// Set a timeout to prevent hanging if user input is expected
 			done := make(chan error, 1)
 			go func() {
 				done <- LoginOTP()
 			}()
-			
+
 			select {
 			case err := <-done:
 				if (err != nil) != tt.wantErr {
@@ -103,7 +87,7 @@ func TestLoginPassword(t *testing.T) {
 			go func() {
 				done <- LoginPassword()
 			}()
-			
+
 			select {
 			case err := <-done:
 				// If it completes (either success or failure), that's fine
@@ -116,7 +100,7 @@ func TestLoginPassword(t *testing.T) {
 	}
 }
 
-func Test_readPassword(t *testing.T) {
+func TestReadPassword(t *testing.T) {
 	type args struct {
 		prompt string
 	}

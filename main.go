@@ -10,6 +10,7 @@ import (
 	"github.com/jiotv-go/jiotv_go/v3/internal/constants"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/store"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 
 	"github.com/urfave/cli/v2"
 )
@@ -30,17 +31,8 @@ func main() {
 		Compiled:  time.Now(),
 		Suggest:   true,
 		Flags: []cli.Flag{
-			&cli.StringFlag{
-				Name:    "config",
-				Aliases: []string{"c"},
-				Value:   "",
-				Usage:   "Path to config file",
-			},
-			&cli.BoolFlag{
-				Name:    "skip-update-check",
-				Aliases: []string{"skip-update"},
-				Usage:   "Skip checking for update on startup",
-			},
+			utils.ConfigFlag(),
+			utils.BoolFlag("skip-update-check", "Skip checking for update on startup", "skip-update"),
 		},
 		Before: func(c *cli.Context) error {
 			configPath := c.String("config")
@@ -68,7 +60,7 @@ func main() {
 			return nil
 		},
 		Commands: []*cli.Command{
-			{
+			utils.NewCommand(utils.CommandConfig{
 				Name:        "serve",
 				Aliases:     []string{"run", "start"},
 				Usage:       "Start JioTV Go server",
@@ -94,44 +86,9 @@ func main() {
 						TLSKeyPath:  tlsKeyPath,
 					})
 				},
-				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:    "host",
-						Aliases: []string{"H"},
-						Value:   "localhost",
-						Usage:   "Host to listen on",
-					},
-					&cli.StringFlag{
-						Name:    "port",
-						Aliases: []string{"p"},
-						Value:   "5001",
-						Usage:   "Port to listen on",
-					},
-					&cli.BoolFlag{
-						Name:    "public",
-						Aliases: []string{"P"},
-						Usage:   "Open server to public. This will expose your server outside your local network. Equivalent to passing --host [::]",
-					},
-					&cli.BoolFlag{
-						Name:    "tls",
-						Aliases: []string{"https"},
-						Usage:   "Enable TLS. This will enable HTTPS for the server.",
-					},
-					&cli.StringFlag{
-						Name:    "tls-cert",
-						Aliases: []string{"cert"},
-						Value:   "",
-						Usage:   "Path to TLS certificate file",
-					},
-					&cli.StringFlag{
-						Name:    "tls-key",
-						Aliases: []string{"cert-key"},
-						Value:   "",
-						Usage:   "Path to TLS key file",
-					},
-				},
-			},
-			{
+				Flags: utils.CommonServerFlags(),
+			}),
+			utils.NewCommand(utils.CommandConfig{
 				Name:        "update",
 				Aliases:     []string{"upgrade", "u"},
 				Usage:       "Update JioTV Go to latest version",
@@ -140,21 +97,16 @@ func main() {
 					return cmd.Update(c.App.Version, c.String("version"))
 				},
 				Flags: []cli.Flag{
-					&cli.StringFlag{
-						Name:    "version",
-						Aliases: []string{"v"},
-						Value:   "",
-						Usage:   "Update to a custom specific version that is not latest",
-					},
+					utils.VersionFlag(),
 				},
-			},
-			{
+			}),
+			utils.NewCommand(utils.CommandConfig{
 				Name:        "epg",
 				Aliases:     []string{"e"},
 				Usage:       "Manage EPG",
 				Description: "The epg command manages EPG. It can be used to generate EPG, regenerate EPG, and delete EPG.",
 				Subcommands: []*cli.Command{
-					{
+					utils.NewCommand(utils.CommandConfig{
 						Name:        "generate",
 						Aliases:     []string{"gen", "g"},
 						Usage:       "Generate EPG",
@@ -162,8 +114,8 @@ func main() {
 						Action: func(c *cli.Context) error {
 							return cmd.GenEPG()
 						},
-					},
-					{
+					}),
+					utils.NewCommand(utils.CommandConfig{
 						Name:        "delete",
 						Aliases:     []string{"del", "d"},
 						Usage:       "Delete EPG",
@@ -171,9 +123,9 @@ func main() {
 						Action: func(c *cli.Context) error {
 							return cmd.DeleteEPG()
 						},
-					},
+					}),
 				},
-			},
+			}),
 			{
 				Name:        "login",
 				Aliases:     []string{"l"},
