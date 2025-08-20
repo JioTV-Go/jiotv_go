@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-set -euo pipefail
 
 mkdir -p bin
 allowed_archs="amd64 arm arm64 386"
