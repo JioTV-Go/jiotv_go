@@ -1,18 +1,13 @@
 #!/usr/bin/env bash
 
 mkdir -p bin
-allowed_archs="amd64 arm arm64 386"
+allowed_archs="amd64 arm arm64 386 riscv64"
 echo "Building binaries for allowed architectures: $allowed_archs"
 for var in $(go tool dist list); do
     IFS='/' read -r os arch <<< "$var"
     # skip disallowed archs
     if [[ ! " $allowed_archs " =~ " $arch " ]]; then
         echo "Skipping: $var"
-        continue
-    fi
-    # skip arm for windows
-    if [[ "$os" == "windows" && "$arch" == "arm" ]]; then
-        echo "Skipping: $var (windows/arm)"
         continue
     fi
     
@@ -24,7 +19,7 @@ for var in $(go tool dist list); do
                 output_name+=".exe"
             fi
             echo "Building $var"
-            CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -o "${output_name}" -trimpath -ldflags="-s -w" . &
+            CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -o "${output_name}" -trimpath -ldflags="-s -w" .
         ;;
         "android")
             echo "Building $var"
@@ -48,17 +43,12 @@ for var in $(go tool dist list); do
                     continue
                     ;;
             esac
-            CGO_ENABLED=1 GOOS="$os" GOARCH="$arch" CC="$cc" CXX="$cxx" go build -o "bin/${file_name}" -trimpath -ldflags="-s -w" . &
+            CGO_ENABLED=1 GOOS="$os" GOARCH="$arch" CC="$cc" CXX="$cxx" go build -o "bin/${file_name}" -trimpath -ldflags="-s -w" .
         ;;
         *)
             echo "Skipping: $var"
         ;;
     esac
-done
-
-# Wait for all background jobs to finish
-for job in $(jobs -p); do
-    wait "$job"
 done
 
 # Build for android5 arm with CC=armv7a-linux-androideabi21-clang
