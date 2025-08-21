@@ -64,7 +64,8 @@ func Init() {
 		fmt.Println("\tGenerating new EPG file... Please wait.")
 		err := GenXMLGz(epgFile)
 		if err != nil {
-			utils.Log.Fatal(err)
+			utils.Log.Printf("ERROR: Failed to generate EPG file: %v", err)
+			fmt.Println("\tEPG file generation failed. Server will continue running without EPG.")
 		}
 		return err
 	}
@@ -75,11 +76,15 @@ func Init() {
 	// setup random time to avoid server load
 	random_hour_bigint, err := rand.Int(rand.Reader, big.NewInt(3))
 	if err != nil {
-		panic(err)
+		utils.Log.Printf("ERROR: Failed to generate random hour: %v", err)
+		// Use default values if random generation fails
+		random_hour_bigint = big.NewInt(2) // default to 2
 	}
 	random_min_bigint, err := rand.Int(rand.Reader, big.NewInt(60))
 	if err != nil {
-		panic(err)
+		utils.Log.Printf("ERROR: Failed to generate random minute: %v", err)
+		// Use default values if random generation fails
+		random_min_bigint = big.NewInt(30) // default to 30
 	}
 	random_hour := int(-5 + random_hour_bigint.Int64()) // random number between 1 and 5
 	random_min := int(-30 + random_min_bigint.Int64())  // random number between 0 and 59
