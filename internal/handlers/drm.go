@@ -10,6 +10,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/proxy"
+	"github.com/jiotv-go/jiotv_go/v3/internal/constants/headers"
 	internalUtils "github.com/jiotv-go/jiotv_go/v3/internal/utils"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
@@ -174,7 +175,7 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 	c.Request().Header.Set("crmid", TV.Crm)
 	c.Request().Header.Set("channelid", channel_id)
 	c.Request().Header.Set("uniqueId", TV.UniqueID)
-	c.Request().Header.Set("versionCode", "330")
+	c.Request().Header.Set("versionCode", headers.VersionCode389)
 	c.Request().Header.Set("usergroup", "tvYR7NSNn7rymo3F")
 	c.Request().Header.Set("devicetype", "phone")
 	c.Request().Header.Set("Accept-Encoding", "gzip, deflate")
@@ -218,13 +219,10 @@ func MpdHandler(c *fiber.Ctx) error {
 	// proxyQuery := parsedUrl.RawQuery
 
 	c.Request().Header.Set("Host", proxyHost)
-	c.Request().Header.Set("User-Agent", "plaYtv/7.1.3 (Linux;Android 13) ExoPlayerLib/2.11.7")
+	c.Request().Header.Set("User-Agent", PLAYER_USER_AGENT)
 
 	// Request path with query params
 	requestUrl := decryptedUrl
-	// if requestUrl[len(requestUrl)-1:] == "?" {
-	// 	requestUrl = requestUrl[:len(requestUrl)-1]
-	// }
 
 	c.Request().Header.Set("User-Agent", PLAYER_USER_AGENT)
 	// remove Accept-Encoding header

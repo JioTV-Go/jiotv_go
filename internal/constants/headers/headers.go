@@ -35,7 +35,8 @@ const (
 	// Device info
 	DeviceTypePhone = "phone"
 	OSAndroid       = "android"
-	VersionCode315  = "389"
+	VersionCode315  = "315"
+ 	VersionCode389  = "389"
 
 	// API Key
 	APIKeyJio = "l7xx75e822925f184370b2e25170c5d5820a"
