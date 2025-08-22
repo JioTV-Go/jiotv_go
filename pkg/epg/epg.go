@@ -30,6 +30,9 @@ const (
 	EPG_POSTER_URL = urls.EPGPosterURL
 	// EPG_TASK_ID is the ID of the EPG generation task
 	EPG_TASK_ID = tasks.EPGTaskID
+	// Default values for random scheduling when crypto/rand fails
+	defaultRandomHour   = 2
+	defaultRandomMinute = 30
 )
 
 // Init initializes EPG generation and schedules it for the next day.
@@ -64,9 +67,11 @@ func Init() {
 		fmt.Println("\tGenerating new EPG file... Please wait.")
 		err := GenXMLGz(epgFile)
 		if err != nil {
-			utils.Log.Fatal(err)
+			utils.Log.Printf("ERROR: Failed to generate EPG file: %v", err)
+			fmt.Println("\tEPG file generation failed. Server will continue running without EPG.")
+			return nil
 		}
-		return err
+		return nil
 	}
 
 	if flag {
@@ -75,11 +80,15 @@ func Init() {
 	// setup random time to avoid server load
 	random_hour_bigint, err := rand.Int(rand.Reader, big.NewInt(3))
 	if err != nil {
-		panic(err)
+		utils.Log.Printf("ERROR: Failed to generate random hour: %v", err)
+		// Use default values if random generation fails
+		random_hour_bigint = big.NewInt(defaultRandomHour)
 	}
 	random_min_bigint, err := rand.Int(rand.Reader, big.NewInt(60))
 	if err != nil {
-		panic(err)
+		utils.Log.Printf("ERROR: Failed to generate random minute: %v", err)
+		// Use default values if random generation fails
+		random_min_bigint = big.NewInt(defaultRandomMinute)
 	}
 	random_hour := int(-5 + random_hour_bigint.Int64()) // random number between 1 and 5
 	random_min := int(-30 + random_min_bigint.Int64())  // random number between 0 and 59
