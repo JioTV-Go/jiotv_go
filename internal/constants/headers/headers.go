@@ -30,12 +30,12 @@ const (
 
 	// User agents
 	UserAgentOkHttp = "okhttp/4.2.2"
-	UserAgentPlayTV = "plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7"
+	UserAgentPlayTV = "plaYtv/7.1.7 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7"
 
 	// Device info
 	DeviceTypePhone = "phone"
 	OSAndroid       = "android"
-	VersionCode315  = "315"
+	VersionCode315  = "389"
 
 	// API Key
 	APIKeyJio = "l7xx75e822925f184370b2e25170c5d5820a"
