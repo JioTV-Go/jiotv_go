@@ -487,7 +487,7 @@ func PerformServerLogout() error {
 	requestHeaders := map[string]string{
 		headers.AcceptEncoding: headers.AcceptEncodingGzip,
 		headers.DeviceType:     headers.DeviceTypePhone,
-		"versioncode":          "371", // As per new requirement
+		"versioncode":          headers.VersionCode389,
 		headers.OS:             headers.OSAndroid,
 		headers.ContentType:    headers.ContentTypeJSONCharsetUTF8,
 	}

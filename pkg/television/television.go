@@ -80,7 +80,7 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 		"uniqueId":        credentials.UniqueID,
 		headers.UserAgent: headers.UserAgentOkHttp,
 		"usergroup":       "tvYR7NSNn7rymo3F",
-		"versionCode":     "330",
+		"versionCode":     headers.VersionCode389,
 	}
 
 	// Create a fasthttp.Client
@@ -169,9 +169,9 @@ func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
 	} else {
 		req.Header.Set("osVersion", "8.1.0")
 		req.Header.Set("ssotoken", tv.SsoToken)
-		req.Header.Set("versionCode", "277")
+		req.Header.Set("versionCode", headers.VersionCode389)
 		url = "https://" + TV_MEDIA_DOMAIN + "/apis/v2.2/getchannelurl/getchannelurl"
-		req.Header.SetUserAgent("plaYtv/7.0.5 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7")
+		req.Header.SetUserAgent(headers.UserAgentPlayTV)
 	}
 	req.SetRequestURI(url)
 	req.Header.SetMethod("POST")

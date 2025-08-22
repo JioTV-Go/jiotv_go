@@ -156,7 +156,7 @@ func SetCommonJioTVHeaders(req *fasthttp.Request, deviceID, crmID, uniqueID stri
 	req.Header.Set("uniqueId", uniqueID)
 	req.Header.SetUserAgent(headers.UserAgentOkHttp)
 	req.Header.Set("usergroup", "tvYR7NSNn7rymo3F")
-	req.Header.Set("versionCode", "330")
+	req.Header.Set("versionCode", headers.VersionCode389)
 }
 
 // ParseJSONResponse parses JSON response body into the provided interface
