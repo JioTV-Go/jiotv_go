@@ -1,6 +1,7 @@
 FROM golang:1.25-alpine
 
 ENV GO111MODULE=on \
+    GOEXPERIMENT=jsonv2,greenteagc \
     JIOTV_DEBUG=true \
     JIOTV_PATH_PREFIX="/app/.jiotv_go"
 

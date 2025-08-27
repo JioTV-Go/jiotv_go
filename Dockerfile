@@ -3,6 +3,9 @@ FROM golang:1.25-alpine AS builder
 # Set the working directory inside the container
 WORKDIR /app
 
+# Enable Go 1.25 experiments for json v2 and the new GC during build
+ENV GOEXPERIMENT=jsonv2,greenteagc
+
 # Copy source files from the host computer to the container
 COPY go.mod ./
 COPY go.sum ./
@@ -14,7 +17,7 @@ COPY main.go ./main.go
 COPY VERSION ./VERSION
 
 # Build the Go app with optimizations
-RUN go build -ldflags="-s -w" -trimpath -o /app/jiotv_go .
+RUN go build -buildvcs=false -ldflags="-s -w" -trimpath -o /app/jiotv_go .
 
 # Stage 2: Create the final minimal image
 # skipcq: DOK-DL3007
