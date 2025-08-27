@@ -44,7 +44,7 @@ jobs:
 
       - name: Build binary for ${{ matrix.goos }}/${{ matrix.goarch }}
         run: |
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o ./bin/jiotv_go-${{ matrix.goos }}-${{ matrix.goarch }} -ldflags "-s -w" .
+          GOEXPERIMENT=jsonv2,greenteagc GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -buildvcs=false -o ./bin/jiotv_go-${{ matrix.goos }}-${{ matrix.goarch }} -ldflags "-s -w" .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
