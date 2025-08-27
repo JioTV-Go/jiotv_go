@@ -13,7 +13,7 @@ on:
       - "**.md"
       - "scripts/**"
 
-  push: 
+  push:
     branches:
       - "main"
       - "develop"
@@ -44,7 +44,7 @@ jobs:
 
       - name: Build binary for ${{ matrix.goos }}/${{ matrix.goarch }}
         run: |
-          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o ./bin/jiotv_go-${{ matrix.goos }}-${{ matrix.goarch }} -ldflags "-s -w" .
+          GOEXPERIMENT=jsonv2,greenteagc GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o ./bin/jiotv_go-${{ matrix.goos }}-${{ matrix.goarch }} -ldflags "-s -w" .
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -57,43 +57,43 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
-      with:
-        fetch-depth: 0
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-    - name: Set up Go
-      uses: actions/setup-go@v5
-      with:
-        go-version-file: "go.mod"
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
 
-    - name: Install Dependencies
-      run: go mod tidy
+      - name: Install Dependencies
+        run: go mod tidy
 
-    - name: Run Tests
-      run: go test -v ./...
-  
+      - name: Run Tests
+        run: go test -v ./...
+
   web-tests:
     name: Run Web Tests
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Code
-      uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: lts/*
-        cache: 'npm'
-        cache-dependency-path: "web/package-lock.json"
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: "npm"
+          cache-dependency-path: "web/package-lock.json"
 
-    - name: Install Dependencies
-      run: |
-        cd web
-        npm ci
+      - name: Install Dependencies
+        run: |
+          cd web
+          npm ci
 
-    - name: Run Tests
-      run: |
-        cd web
-        npm test -- --watchAll=false --ci
+      - name: Run Tests
+        run: |
+          cd web
+          npm test -- --watchAll=false --ci

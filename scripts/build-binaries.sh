@@ -19,7 +19,7 @@ for var in $(go tool dist list); do
                 output_name+=".exe"
             fi
             echo "Building $var"
-            CGO_ENABLED=0 GOOS="$os" GOARCH="$arch" go build -o "${output_name}" -trimpath -ldflags="-s -w" .
+            CGO_ENABLED=0 GOEXPERIMENT=jsonv2,greenteagc GOOS="$os" GOARCH="$arch" go build -o "${output_name}" -trimpath -ldflags="-s -w" .
         ;;
         "android")
             echo "Building $var"
@@ -43,7 +43,7 @@ for var in $(go tool dist list); do
                     continue
                     ;;
             esac
-            CGO_ENABLED=1 GOOS="$os" GOARCH="$arch" CC="$cc" CXX="$cxx" go build -o "bin/${file_name}" -trimpath -ldflags="-s -w" .
+            CGO_ENABLED=1 GOEXPERIMENT=jsonv2,greenteagc GOOS="$os" GOARCH="$arch" CC="$cc" CXX="$cxx" go build -o "bin/${file_name}" -trimpath -ldflags="-s -w" .
         ;;
         *)
             echo "Skipping: $var"
@@ -53,4 +53,4 @@ done
 
 # Build for android5 arm with CC=armv7a-linux-androideabi21-clang
 echo "Building android5 arm"
-CGO_ENABLED=1 GOOS=android GOARCH=arm GOARM=7 CC="armv7a-linux-androideabi21-clang" CXX="armv7a-linux-androideabi21-clang++" go build -o bin/jiotv_go-android5-armv7 -trimpath -ldflags="-s -w" .
+CGO_ENABLED=1 GOEXPERIMENT=jsonv2,greenteagc GOOS=android GOARCH=arm GOARM=7 CC="armv7a-linux-androideabi21-clang" CXX="armv7a-linux-androideabi21-clang++" go build -o bin/jiotv_go-android5-armv7 -trimpath -ldflags="-s -w" .

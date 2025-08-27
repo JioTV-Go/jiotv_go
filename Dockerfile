@@ -3,6 +3,9 @@ FROM golang:1.25-alpine AS builder
 # Set the working directory inside the container
 WORKDIR /app
 
+# Enable Go 1.25 experiments for json v2 and the new GC during build
+ENV GOEXPERIMENT=jsonv2,greenteagc
+
 # Copy source files from the host computer to the container
 COPY go.mod ./
 COPY go.sum ./
