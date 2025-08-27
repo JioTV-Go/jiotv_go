@@ -301,7 +301,7 @@ func RenderHandler(c *fiber.Ctx) error {
 	split_url_by_params := strings.Split(decoded_url, "?")
 	baseStringUrl := split_url_by_params[0]
 	// Pattern to match file names ending with .m3u8
-	pattern := `[a-z0-9=\_\-A-Z]*\.m3u8`
+	pattern := `[a-z0-9=\_\-A-Z\.]*\.m3u8`
 	re := regexp.MustCompile(pattern)
 	// Add baseUrl to all the file names ending with .m3u8
 	baseUrl := []byte(re.ReplaceAllString(baseStringUrl, ""))
@@ -323,7 +323,7 @@ func RenderHandler(c *fiber.Ctx) error {
 	}
 
 	// Pattern to match file names ending with .m3u8 and .ts
-	pattern = `[a-z0-9=\_\-A-Z\/]*\.(m3u8|ts|aac)`
+	pattern = `[a-z0-9=\_\-A-Z\/\.]*\.(m3u8|ts|aac)`
 	re = regexp.MustCompile(pattern)
 	// Execute replacer function on renderResult
 	renderResult = re.ReplaceAllFunc(renderResult, replacer)
