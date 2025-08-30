@@ -6,7 +6,7 @@ require (
 	github.com/BurntSushi/toml v1.5.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
 	github.com/madflojo/tasks v1.2.1
-	github.com/stretchr/testify v1.11.0
+	github.com/stretchr/testify v1.11.1
 	github.com/urfave/cli/v2 v2.27.7
 	golang.org/x/term v0.34.0
 	gopkg.in/yaml.v3 v3.0.1
