@@ -286,3 +286,63 @@ func TestCreateEncryptedURL_Integration(t *testing.T) {
 		}
 	})
 }
+
+func TestCreateEncryptedURL_QueryJoinBehavior(t *testing.T) {
+	setupURLUtilsTest()
+
+	tests := []struct {
+		name          string
+		config        EncryptedURLConfig
+		wantPlainAuth string
+	}{
+		{
+			name: "No trailing question mark when params empty",
+			config: EncryptedURLConfig{
+				BaseURL:     "https://example.com",
+				Match:       "/segment.m3u8",
+				Params:      "",
+				EndpointURL: "/render.m3u8",
+			},
+			wantPlainAuth: "https://example.com/segment.m3u8",
+		},
+		{
+			name: "Append parent params when match already has query",
+			config: EncryptedURLConfig{
+				BaseURL:     "https://example.com",
+				Match:       "/segment.m3u8?foo=1",
+				Params:      "bar=2",
+				EndpointURL: "/render.m3u8",
+			},
+			wantPlainAuth: "https://example.com/segment.m3u8?foo=1&bar=2",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := CreateEncryptedURL(tt.config)
+			if err != nil {
+				t.Fatalf("CreateEncryptedURL() failed: %v", err)
+			}
+
+			gotStr := string(got)
+			authStart := strings.Index(gotStr, "auth=")
+			if authStart == -1 {
+				t.Fatalf("auth param missing in result: %s", gotStr)
+			}
+
+			authValue := gotStr[authStart+5:]
+			if amp := strings.Index(authValue, "&"); amp != -1 {
+				authValue = authValue[:amp]
+			}
+
+			plain, err := secureurl.DecryptURL(authValue)
+			if err != nil {
+				t.Fatalf("DecryptURL() failed: %v", err)
+			}
+
+			if plain != tt.wantPlainAuth {
+				t.Fatalf("decrypted auth URL mismatch: got %q want %q", plain, tt.wantPlainAuth)
+			}
+		})
+	}
+}
