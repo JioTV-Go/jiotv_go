@@ -628,7 +628,7 @@ func ReplaceM3U8(baseUrl, match []byte, params, channel_id string, quality strin
 	return result
 }
 
-func ReplaceTS(baseUrl, match []byte, params string) []byte {
+func ReplaceTS(baseUrl, match []byte, params, channelID string) []byte {
 	if config.Cfg.DisableTSHandler {
 		return []byte(string(baseUrl) + string(match) + "?" + params)
 	}
@@ -637,6 +637,7 @@ func ReplaceTS(baseUrl, match []byte, params string) []byte {
 		BaseURL:     string(baseUrl),
 		Match:       string(match),
 		Params:      params,
+		ChannelID:   channelID,
 		EndpointURL: "/render.ts",
 	}
 
@@ -647,7 +648,7 @@ func ReplaceTS(baseUrl, match []byte, params string) []byte {
 	return result
 }
 
-func ReplaceAAC(baseUrl, match []byte, params string) []byte {
+func ReplaceAAC(baseUrl, match []byte, params, channelID string) []byte {
 	if config.Cfg.DisableTSHandler {
 		return []byte(string(baseUrl) + string(match) + "?" + params)
 	}
@@ -656,6 +657,7 @@ func ReplaceAAC(baseUrl, match []byte, params string) []byte {
 		BaseURL:     string(baseUrl),
 		Match:       string(match),
 		Params:      params,
+		ChannelID:   channelID,
 		EndpointURL: "/render.ts",
 	}
 

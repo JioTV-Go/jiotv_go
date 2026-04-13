@@ -608,9 +608,9 @@ func RenderHandler(c *fiber.Ctx) error {
 		case bytes.HasSuffix(match, []byte(".m3u8")):
 			return television.ReplaceM3U8(baseUrl, match, params, channel_id, c.Query("q"))
 		case bytes.HasSuffix(match, []byte(".ts")):
-			return television.ReplaceTS(baseUrl, match, params)
+			return television.ReplaceTS(baseUrl, match, params, channel_id)
 		case bytes.HasSuffix(match, []byte(".aac")):
-			return television.ReplaceAAC(baseUrl, match, params)
+			return television.ReplaceAAC(baseUrl, match, params, channel_id)
 		default:
 			return match
 		}
@@ -711,6 +711,11 @@ func RenderKeyHandler(c *fiber.Ctx) error {
 
 // RenderTSHandler loads TS file from JioTV server
 func RenderTSHandler(c *fiber.Ctx) error {
+	// Ensure tokens are fresh before proxying TS segments
+	EnsureFreshCredentials()
+
+	channelID := c.Query("channel_key_id")
+	quality := c.Query("q")
 	auth := c.Query("auth")
 	// parse incoming hdnea query and set as request cookie only for upstream call (no client cookie)
 	if hdnea := c.Query("hdnea"); hdnea != "" {
@@ -722,7 +727,58 @@ func RenderTSHandler(c *fiber.Ctx) error {
 		utils.Log.Panicln(err)
 		return err
 	}
-	return internalUtils.ProxyRequest(c, decoded_url, TV.Client, PLAYER_USER_AGENT)
+
+	// Check if decoded_url has hdnea or __hdnea__ and set cookie if not already set
+	// This is crucial when hdnea is embedded in the encrypted auth URL but not in the request query params
+	if len(c.Request().Header.Cookie("__hdnea__")) == 0 && strings.Contains(decoded_url, "hdnea=") {
+		qIdx := strings.Index(decoded_url, "?")
+		if qIdx != -1 {
+			params := decoded_url[qIdx+1:]
+			for _, p := range strings.Split(params, "&") {
+				if strings.HasPrefix(p, "hdnea=") {
+					c.Request().Header.SetCookie("__hdnea__", strings.TrimPrefix(p, "hdnea="))
+					break
+				}
+				if strings.HasPrefix(p, "__hdnea__=") {
+					c.Request().Header.SetCookie("__hdnea__", strings.TrimPrefix(p, "__hdnea__="))
+					break
+				}
+			}
+		}
+	}
+
+	if err := internalUtils.ProxyRequest(c, decoded_url, TV.Client, PLAYER_USER_AGENT); err != nil {
+		return err
+	}
+
+	statusCode := c.Response().StatusCode()
+	if statusCode == fiber.StatusForbidden || statusCode == fiber.StatusUnauthorized {
+		if os.Getenv("JIOTV_DEBUG") == "true" {
+			utils.Log.Printf("[DEBUG] RenderTSHandler got %d response - forcing refresh and retrying", statusCode)
+		}
+
+		c.Response().Reset()
+		c.Request().Header.DelCookie("__hdnea__")
+		ForceRefreshCredentials()
+
+		retryUrl := stripHDNEAFromURL(decoded_url)
+		if channelID != "" {
+			if refreshedResult, refreshErr := TV.Live(channelID); refreshErr == nil && refreshedResult != nil {
+				if refreshedURL := selectBestLiveHLSURL(refreshedResult, quality); refreshedURL != "" {
+					retryUrl = toAbsoluteStreamURL(refreshedURL, refreshedResult)
+					if refreshedHDNEA := extractLiveResultHDNEA(refreshedResult); refreshedHDNEA != "" {
+						setCachedHDNEA(channelID, refreshedHDNEA)
+					}
+				}
+			}
+		}
+
+		if err := internalUtils.ProxyRequest(c, retryUrl, TV.Client, PLAYER_USER_AGENT); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 // ChannelsHandler fetch all channels from JioTV API
