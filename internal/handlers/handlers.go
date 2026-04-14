@@ -494,18 +494,18 @@ func RenderHandler(c *fiber.Ctx) error {
 	}
 
 	decoded_url = toAbsoluteStreamURL(decoded_url, nil)
-	
+
 	// Extract fresh token from URL if present (primary source, always fresh)
 	urlToken := extractHDNEAFromURL(decoded_url)
 	var cachedHDNEA string
-	
+
 	// AGGRESSIVE REFRESH: Always prefer fresh URL token over cache to prevent 403 errors from stale tokens
 	if urlToken != "" {
 		cachedHDNEA = urlToken
 	} else {
 		cachedHDNEA = getCachedHDNEA(channel_id)
 	}
-	
+
 	// DEBUG: Log token selection
 	if os.Getenv("JIOTV_DEBUG") == "true" {
 		sourceStr := "URL"
@@ -515,33 +515,33 @@ func RenderHandler(c *fiber.Ctx) error {
 		if urlToken == "" && cachedHDNEA == "" {
 			sourceStr = "none"
 		}
-		utils.Log.Printf("[DEBUG] Token selection - URL token: %s | Cached token: %s | Using: %s (source: %s)", 
+		utils.Log.Printf("[DEBUG] Token selection - URL token: %s | Cached token: %s | Using: %s (source: %s)",
 			truncateToken(urlToken), truncateToken(getCachedHDNEA(channel_id)), truncateToken(cachedHDNEA), sourceStr)
 	}
-	
+
 	renderURL := decoded_url
 	renderResult, statusCode, newHdnea := TV.Render(renderURL, cachedHDNEA)
-	
+
 	// DEBUG: Log token extraction and response
 	if os.Getenv("JIOTV_DEBUG") == "true" {
 		utils.Log.Printf("[DEBUG] Render response - Status: %d | Token from response: %s", statusCode, truncateToken(newHdnea))
 	}
-	
+
 	// Always cache fresh token from response for fallback on next request
 	if newHdnea != "" {
 		setCachedHDNEA(channel_id, newHdnea)
 		cachedHDNEA = newHdnea
 	}
-	
+
 	// On authentication failure, retry without any cached token
 	if statusCode == fiber.StatusForbidden || statusCode == fiber.StatusUnauthorized {
 		// Clear the stale cached token and force fresh token extraction
 		renderHDNEACache.Delete(channel_id)
-		
+
 		if os.Getenv("JIOTV_DEBUG") == "true" {
 			utils.Log.Printf("[DEBUG] Auth failure (Status %d) - clearing cache and retrying with fresh auth", statusCode)
 		}
-		
+
 		// Always retry on 403/401, regardless of whether HDNEA is in URL
 		// Some URLs have HDNEA embedded, others don't - but CDN always needs fresh tokens
 		strippedURL := stripHDNEAFromURL(decoded_url)
@@ -551,7 +551,7 @@ func RenderHandler(c *fiber.Ctx) error {
 				utils.Log.Printf("[DEBUG] Stripped HDNEA from URL for retry")
 			}
 		}
-		
+
 		// Retry without any cached HDNEA token - let CDN provide fresh auth
 		renderResult, statusCode, newHdnea = TV.Render(renderURL, "")
 		if newHdnea != "" {
@@ -679,7 +679,7 @@ func RenderKeyHandler(c *fiber.Ctx) error {
 		return err
 	}
 
-	parsedURL, parseErr := neturl.Parse(decoded_url)
+	parsedURL, parseErr := url.Parse(decoded_url)
 	if parseErr == nil {
 		queryValues := parsedURL.Query()
 		for key, values := range queryValues {
@@ -712,7 +712,9 @@ func RenderKeyHandler(c *fiber.Ctx) error {
 // RenderTSHandler loads TS file from JioTV server
 func RenderTSHandler(c *fiber.Ctx) error {
 	// Ensure tokens are fresh before proxying TS segments
-	EnsureFreshCredentials()
+	if err := EnsureFreshTokens(); err != nil {
+		utils.Log.Printf("Failed to ensure fresh tokens before TS proxy: %v", err)
+	}
 
 	channelID := c.Query("channel_key_id")
 	quality := c.Query("q")
@@ -759,14 +761,18 @@ func RenderTSHandler(c *fiber.Ctx) error {
 
 		c.Response().Reset()
 		c.Request().Header.DelCookie("__hdnea__")
-		ForceRefreshCredentials()
+		_ = LoginRefreshAccessToken()
+		_ = LoginRefreshSSOToken()
+		if freshCreds, credErr := utils.GetJIOTVCredentials(); credErr == nil {
+			TV = television.New(freshCreds)
+		}
 
 		retryUrl := stripHDNEAFromURL(decoded_url)
 		if channelID != "" {
 			if refreshedResult, refreshErr := TV.Live(channelID); refreshErr == nil && refreshedResult != nil {
 				if refreshedURL := selectBestLiveHLSURL(refreshedResult, quality); refreshedURL != "" {
 					retryUrl = toAbsoluteStreamURL(refreshedURL, refreshedResult)
-					if refreshedHDNEA := extractLiveResultHDNEA(refreshedResult); refreshedHDNEA != "" {
+					if refreshedHDNEA := refreshedResult.Hdnea; refreshedHDNEA != "" {
 						setCachedHDNEA(channelID, refreshedHDNEA)
 					}
 				}
