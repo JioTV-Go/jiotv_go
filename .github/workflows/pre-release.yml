@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - "develop"
-      - "new-channels"
     paths-ignore:
       - "README.md"
       - "LICENSE"
