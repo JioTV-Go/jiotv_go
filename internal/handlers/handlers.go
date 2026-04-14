@@ -39,6 +39,7 @@ const (
 	PLAYER_USER_AGENT     = headers.UserAgentPlayTV
 	REQUEST_USER_AGENT    = headers.UserAgentOkHttp
 	hdneaCacheTTL         = 60 * time.Second // Aggressive TTL: 60 seconds (tokens expire ~90-120s, keep cache short)
+	hdneaRefreshLeadTime  = 20 * time.Second
 )
 
 type hdneaCacheEntry struct {
@@ -306,6 +307,78 @@ func extractHDNEAFromURL(streamURL string) string {
 	return ""
 }
 
+func hdneaRemainingLifetime(token string) (time.Duration, bool) {
+	if token == "" {
+		return 0, false
+	}
+
+	parts := strings.Split(token, "~")
+	for _, part := range parts {
+		if strings.HasPrefix(part, "exp=") {
+			expirationStr := strings.TrimPrefix(part, "exp=")
+			expirationUnix, err := strconv.ParseInt(expirationStr, 10, 64)
+			if err != nil {
+				return 0, false
+			}
+			expirationTime := time.Unix(expirationUnix, 0)
+			return time.Until(expirationTime), true
+		}
+	}
+
+	return 0, false
+}
+
+func extractLiveResultHDNEA(liveResult *television.LiveURLOutput) string {
+	if liveResult == nil {
+		return ""
+	}
+
+	candidates := []string{
+		liveResult.Bitrates.Auto,
+		liveResult.Bitrates.High,
+		liveResult.Bitrates.Medium,
+		liveResult.Bitrates.Low,
+		liveResult.Result,
+		liveResult.Mpd.Bitrates.Auto,
+		liveResult.Mpd.Bitrates.High,
+		liveResult.Mpd.Bitrates.Medium,
+		liveResult.Mpd.Bitrates.Low,
+		liveResult.Mpd.Result,
+	}
+
+	for _, candidate := range candidates {
+		if token := extractHDNEAFromURL(candidate); token != "" {
+			return token
+		}
+	}
+
+	return liveResult.Hdnea
+}
+
+func liveResultNeedsRefresh(liveResult *television.LiveURLOutput) bool {
+	hdneaToken := extractLiveResultHDNEA(liveResult)
+	remaining, ok := hdneaRemainingLifetime(hdneaToken)
+	return ok && remaining <= hdneaRefreshLeadTime
+}
+
+func refreshLiveResultIfNeeded(channelID string, liveResult *television.LiveURLOutput) (*television.LiveURLOutput, error) {
+	if channelID == "" || liveResult == nil || !liveResultNeedsRefresh(liveResult) {
+		return liveResult, nil
+	}
+
+	utils.Log.Printf("HDNEA token is near expiry for channel %s; refreshing live URL", channelID)
+	refreshedResult, err := TV.Live(channelID)
+	if err != nil {
+		return liveResult, err
+	}
+
+	if refreshedResult == nil {
+		return liveResult, nil
+	}
+
+	return refreshedResult, nil
+}
+
 func getCachedHDNEA(channelID string) string {
 	if channelID == "" {
 		return ""
@@ -362,6 +435,25 @@ func selectBestLiveHLSURL(liveResult *television.LiveURLOutput, quality string) 
 	}
 
 	return ""
+}
+
+func selectBestLiveMPDURL(liveResult *television.LiveURLOutput, quality string) string {
+	if liveResult == nil {
+		return ""
+	}
+
+	selected := internalUtils.SelectQuality(quality, liveResult.Mpd.Bitrates.Auto, liveResult.Mpd.Bitrates.High, liveResult.Mpd.Bitrates.Medium, liveResult.Mpd.Bitrates.Low)
+	if selected != "" {
+		return selected
+	}
+
+	for _, candidate := range []string{liveResult.Mpd.Bitrates.High, liveResult.Mpd.Bitrates.Auto, liveResult.Mpd.Bitrates.Medium, liveResult.Mpd.Bitrates.Low} {
+		if candidate != "" {
+			return candidate
+		}
+	}
+
+	return liveResult.Mpd.Result
 }
 
 // LiveHandler handles the live channel stream route `/live/:id.m3u8`.
@@ -616,8 +708,9 @@ func RenderHandler(c *fiber.Ctx) error {
 		}
 	}
 
-	// Pattern to match file names ending with .m3u8 and .ts
-	pattern = `[a-z0-9=\_\-A-Z\/\.]*\.(m3u8|ts|aac)`
+	// Match media URIs with optional query strings so catchup params like
+	// ?vbegin=... are consumed as part of the replacement target.
+	pattern = `[a-z0-9=\_\-A-Z\/\.]*\.(m3u8|ts|aac)(\?[^\s"']*)?`
 	re = regexp.MustCompile(pattern)
 	// Execute replacer function on renderResult
 	renderResult = re.ReplaceAllFunc(renderResult, replacer)

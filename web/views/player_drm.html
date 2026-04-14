@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -11,7 +11,7 @@
         background-color: black;
         overflow-y: hidden;
       }
-      
+
       /* Unmute button styling */
       .unmute-overlay {
         position: absolute;
@@ -38,18 +38,18 @@
         transform: translate(-50%, -50%) scale(1.1);
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
       }
-      
+
       .unmute-overlay svg {
         width: 32px;
         height: 32px;
         fill: currentColor;
       }
-      
+
       .unmute-overlay.hidden {
         opacity: 0;
         pointer-events: none;
       }
-      
+
       /* Increase Shaka Player control icons size */
       .shaka-video-container .material-icons-round {
         font-size: 28px !important;
@@ -70,7 +70,7 @@
         id="jiotv_go_player"
         style="width: 100%; height: 100%"
       ></video>
-      
+
       <!-- Unmute button overlay -->
       <button id="unmute-btn" class="unmute-overlay" title="Click to unmute">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
@@ -94,18 +94,26 @@
         const video = document.getElementById("jiotv_go_player");
         const hlsPlayerFallbackUrl = "{{ .hls_player_fallback_url }}";
         const hlsFallbackUrl = "{{ .hls_fallback_url }}";
+        const playerMode = "{{ .player_mode }}";  // "hd" or "auto"
         let hasFallenBack = false;
+        let lastTokenRefreshTime = Date.now();
+        const TOKEN_REFRESH_INTERVAL = 60000; // Refresh every 60 seconds (tokens expire ~90-120s)
+        let segmentFail403Count = 0;
+        const MAX_403_FAILURES = 2;
 
         const fallbackToHLS = (reason) => {
           if (hasFallenBack) {
             return;
           }
-          const targetUrl = hlsPlayerFallbackUrl || hlsFallbackUrl;
+          // ALWAYS use direct HLS M3U8 URL for fallback, NOT player redirect
+          // This ensures clean fallback without attempting DRM again
+          const targetUrl = hlsFallbackUrl;
           if (!targetUrl) {
+            console.error("No HLS fallback URL available");
             return;
           }
           hasFallenBack = true;
-          console.warn("Falling back to HLS:", reason);
+          console.warn("Falling back to HLS:", reason, "URL:", targetUrl);
           window.location.replace(targetUrl);
         };
 
@@ -129,9 +137,11 @@
         const controls = ui.getControls();
         const player = controls.getPlayer();
         let playbackStarted = false;
+        let consecutiveErrors = 0;
 
         const markPlaybackStarted = () => {
           playbackStarted = true;
+          consecutiveErrors = 0;
         };
 
         video.addEventListener("playing", markPlaybackStarted);
@@ -140,12 +150,33 @@
         // Default to unmuted playback. If autoplay is blocked, we fallback to muted.
         video.muted = false;
 
+        // Enhanced error handler with recovery logic
         player.addEventListener("error", (event) => {
           const errorCode = event && event.detail && event.detail.code;
-          console.error("Shaka player error event", event && event.detail);
-          // Fallback for fatal DRM/network/content errors.
-          if (errorCode === 6001 || errorCode === 1001 || errorCode === 3016) {
-            fallbackToHLS("Shaka player error " + errorCode);
+          const errorSeverity = event && event.detail && event.detail.severity;
+          console.error("Shaka player error event", {code: errorCode, severity: errorSeverity, detail: event && event.detail});
+          
+          // Count consecutive errors
+          consecutiveErrors++;
+          
+          // In auto mode, allow more errors before falling back (has fallback safety)
+          // In HD mode, fallback sooner if we have critical errors
+          const fallbackThreshold = playerMode === "auto" ? 5 : 3;
+          
+          // Fallback for fatal DRM/network/content errors - only in HD mode for critical errors
+          // In auto mode, only fallback on actual fatal errors
+          if (playerMode === "hd" && (errorCode === 6001 || errorCode === 1001)) {
+            fallbackToHLS("Shaka player critical error " + errorCode);
+          } else if (playerMode === "auto" && errorCode === 6001) {
+            // In auto mode, only fallback on Widevine errors
+            fallbackToHLS("Widevine DRM error: " + errorCode);
+          } else if (consecutiveErrors > fallbackThreshold) {
+            fallbackToHLS("Too many consecutive errors: " + errorCode);
+          }
+          
+          // For recoverable errors, reset counter on play
+          if (errorSeverity === "recoverable") {
+            console.log("Recoverable error, continuing playback");
           }
         });
 
@@ -173,8 +204,8 @@
                 "com.widevine.alpha": {
                   videoRobustness: "SW_SECURE_CRYPTO",
                   audioRobustness: "SW_SECURE_CRYPTO",
-                },
-              },
+                }
+              }
             },
           });
         }
@@ -182,26 +213,34 @@
         player.configure({
           streaming: {
             retryParameters: {
-              maxAttempts: 3,
+              maxAttempts: 5,  // Increase retry attempts for segment failures
+              backoffFactor: 2,
+              timeout: 30000,  // 30 second timeout
             },
-            bufferingGoal: 5, // 5 seconds
+            buffering: {
+              behindBufferingGoal: 5,  // 5 seconds buffer
+              inFrontOfBufferingGoal: 30,  // 30 seconds head buffer
+            },
+            bufferingGoal: 10, // 10 seconds default
           },
         });
 
         const RequestType = shaka.net.NetworkingEngine.RequestType;
+        let requestCount = 0;
 
+        // Enhanced request filter with better segment URL handling
         player
           .getNetworkingEngine()
           .registerRequestFilter(function (type, request, context) {
-            // Only add headers to license requests:
+            // Only modify segment requests to our render.dash endpoint
             if (
               type == shaka.net.NetworkingEngine.RequestType.SEGMENT &&
               request.uris[0].includes("/render.dash")
             ) {
               const newUrl = new URL(request.uris[0]);
-              // add query params host and path if missing
               const channelHost = "{{ .channel_host }}";
               const channelPath = "{{ .channel_path }}";
+              
               if (
                 channelHost !== "" &&
                 channelPath !== "" &&
@@ -213,6 +252,41 @@
                 newUrl.searchParams.append("path", channelPath);
               }
               request.uris = [newUrl.toString()];
+              requestCount++;
+              
+              // Log segment requests in debug mode
+              if (requestCount % 50 === 0) {
+                console.log("Segment request count:", requestCount);
+              }
+            }
+          });
+
+        // Response filter to detect and handle 403 errors in segments
+        player
+          .getNetworkingEngine()
+          .registerResponseFilter(function (type, response, context) {
+            if (type == shaka.net.NetworkingEngine.RequestType.SEGMENT) {
+              const status = response.status[0];
+              if (Array.isArray(status) && status.length > 0) {
+                const statusCode = status[0];
+                if (statusCode === 403) {
+                  segmentFail403Count++;
+                  console.warn("403 error on segment request, count:", segmentFail403Count);
+                  
+                  // If in auto mode and we have 403 failures, we can retry by refreshing
+                  // The server-side token refresh should handle this
+                  if (playerMode === "auto" && segmentFail403Count > MAX_403_FAILURES) {
+                    // This will trigger fallback through error handler
+                    throw new shaka.util.Error(
+                      shaka.util.Error.Severity.CRITICAL,
+                      shaka.util.Error.Category.NETWORK,
+                      shaka.util.Error.Code.HTTP_ERROR,
+                      403,
+                      "Too many 403 errors on segments"
+                    );
+                  }
+                }
+              }
             }
           });
 
@@ -247,7 +321,7 @@
 
         // Unmute button functionality
         const unmuteBtn = document.getElementById("unmute-btn");
-        
+
         const updateUnmuteButton = () => {
           if (video.muted) {
             unmuteBtn.classList.remove("hidden");
@@ -255,16 +329,29 @@
             unmuteBtn.classList.add("hidden");
           }
         };
-        
+
         unmuteBtn.addEventListener("click", () => {
           video.muted = false;
           video.volume = 0.8; // Set to 80% volume
           updateUnmuteButton();
         });
-        
+
         // Listen for mute state changes (e.g., via Shaka UI controls)
         video.addEventListener("volumechange", updateUnmuteButton);
+
+        // Listen for stalled events (potential network issue)
+        video.addEventListener("stalled", () => {
+          console.warn("Video playback stalled - checking if recovery needed");
+          // In auto mode, give it more time to recover
+          if (playerMode === "auto" && playbackStarted) {
+            console.log("Auto mode: waiting for network recovery...");
+          }
+        });
         
+        video.addEventListener("playing", () => {
+          segmentFail403Count = 0;  // Reset 403 counter on successful play
+        });
+
         // Initial state
         updateUnmuteButton();
 
