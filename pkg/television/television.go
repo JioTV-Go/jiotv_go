@@ -285,27 +285,32 @@ func (tv *Television) Render(streamURL string, hdneaToken string) ([]byte, int, 
 	req.Header.Set("User-Agent", headers.UserAgentPlayTV)
 
 	// Prefer explicit token override from handler cache; otherwise derive from URL query.
+	// When both hdnea and __hdnea__ are present, prefer __hdnea__ as the fresher token.
 	if hdneaToken != "" {
 		req.Header.SetCookie("__hdnea__", hdneaToken)
 	} else if strings.Contains(streamURL, "hdnea=") {
 		// quick parse to extract value
 		q := streamURL[strings.Index(streamURL, "?")+1:]
+		var parsedToken string
 		for _, p := range strings.Split(q, "&") {
-			if strings.HasPrefix(p, "hdnea=") {
-				token := strings.TrimPrefix(p, "hdnea=")
-				if decodedToken, decodeErr := url.QueryUnescape(token); decodeErr == nil {
-					token = decodedToken
-				}
-				req.Header.SetCookie("__hdnea__", token)
-				break
-			} else if strings.HasPrefix(p, "__hdnea__=") {
+			if strings.HasPrefix(p, "__hdnea__=") {
 				token := strings.TrimPrefix(p, "__hdnea__=")
 				if decodedToken, decodeErr := url.QueryUnescape(token); decodeErr == nil {
 					token = decodedToken
 				}
-				req.Header.SetCookie("__hdnea__", token)
+				parsedToken = token
 				break
 			}
+			if parsedToken == "" && strings.HasPrefix(p, "hdnea=") {
+				token := strings.TrimPrefix(p, "hdnea=")
+				if decodedToken, decodeErr := url.QueryUnescape(token); decodeErr == nil {
+					token = decodedToken
+				}
+				parsedToken = token
+			}
+		}
+		if parsedToken != "" {
+			req.Header.SetCookie("__hdnea__", parsedToken)
 		}
 	}
 
