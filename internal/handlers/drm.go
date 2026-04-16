@@ -23,8 +23,9 @@ import (
 var (
 	// tokenRefreshLock prevents concurrent TV object modifications from race conditions
 	tokenRefreshLock sync.Mutex
-	// lastTokenRefreshTime tracks when we last successfully refreshed
-	lastTokenRefreshTime = time.Now()
+	// nextCredentialValidationTime tracks when token validity should be checked next.
+	// This prevents rechecking/re-refreshing on every request.
+	nextCredentialValidationTime time.Time
 )
 
 // EnsureFreshCredentials refreshes tokens proactively before they expire
@@ -34,80 +35,173 @@ func EnsureFreshCredentials() bool {
 	tokenRefreshLock.Lock()
 	defer tokenRefreshLock.Unlock()
 
-	// Only refresh if at least 30 seconds have passed since last successful refresh
-	// This prevents excessive API calls while staying within token TTL (90-120s)
-	timeSinceLastRefresh := time.Since(lastTokenRefreshTime)
-	if timeSinceLastRefresh < 30*time.Second {
-		return true // Recently refreshed, tokens are fresh
+	now := time.Now()
+	if !nextCredentialValidationTime.IsZero() && now.Before(nextCredentialValidationTime) {
+		return true
 	}
 
-	return performTokenRefresh()
-}
-
-// ForceRefreshCredentials bypasses the 30-second interval check and forces immediate refresh
-// Use this only in error recovery paths when we know tokens have failed
-func ForceRefreshCredentials() bool {
-	tokenRefreshLock.Lock()
-	defer tokenRefreshLock.Unlock()
-
-	if os.Getenv("JIOTV_DEBUG") == "true" {
-		utils.Log.Printf("[DEBUG] FORCED token refresh (bypassing 30-second interval)")
-	}
-
-	return performTokenRefresh()
-}
-
-// performTokenRefresh does the actual token refresh work (must be called with lock held)
-func performTokenRefresh() bool {
-	// CRITICAL REFRESH #1: Refresh AccessToken
-	// LoginRefreshAccessToken() does:
-	//   1. Call refresh API
-	//   2. Update credentials file
-	//   3. Update TV object with new token
-	accessTokenErr := LoginRefreshAccessToken()
-	if accessTokenErr != nil {
-		if os.Getenv("JIOTV_DEBUG") == "true" {
-			utils.Log.Printf("[DEBUG] AccessToken refresh error: %v", accessTokenErr)
-		}
-		// Don't return false yet - try SSO token refresh
-	} else {
-		if os.Getenv("JIOTV_DEBUG") == "true" {
-			utils.Log.Printf("[DEBUG] AccessToken refreshed successfully")
-		}
-	}
-
-	// CRITICAL REFRESH #2: Refresh SSOToken
-	// LoginRefreshSSOToken() does:
-	//   1. Call refresh API
-	//   2. Update credentials file
-	//   3. Update TV object with new token
-	ssoTokenErr := LoginRefreshSSOToken()
-	if ssoTokenErr != nil {
-		if os.Getenv("JIOTV_DEBUG") == "true" {
-			utils.Log.Printf("[DEBUG] SSOToken refresh error: %v", ssoTokenErr)
-		}
-		// Don't return false yet - check if at least one refresh succeeded
-	} else {
-		if os.Getenv("JIOTV_DEBUG") == "true" {
-			utils.Log.Printf("[DEBUG] SSOToken refreshed successfully")
-		}
-	}
-
-	// Update last refresh time if either refresh succeeded
-	if accessTokenErr == nil || ssoTokenErr == nil {
-		lastTokenRefreshTime = time.Now()
-		if os.Getenv("JIOTV_DEBUG") == "true" {
-			utils.Log.Printf("[DEBUG] Token refresh cycle completed. TV object already updated by refresh functions")
+	credentials, err := utils.GetJIOTVCredentials()
+	if err != nil || credentials == nil {
+		nextCredentialValidationTime = now.Add(credentialRefreshRetryBackoff)
+		if os.Getenv("JIOTV_DEBUG") == "true" && err != nil {
+			utils.Log.Printf("[DEBUG] EnsureFreshCredentials: failed to load credentials: %v", err)
 		}
 		return true
 	}
 
+	refreshAccessToken := credentials.AccessToken != "" && credentials.RefreshToken != "" && shouldRefreshToken(
+		credentials.AccessToken,
+		credentials.LastTokenRefreshTime,
+		jwtTokenRefreshLeadTime,
+		accessTokenFallbackTTL,
+		accessTokenFallbackLeadTime,
+		now,
+	)
+
+	refreshSSOToken := credentials.SSOToken != "" && credentials.UniqueID != "" && shouldRefreshToken(
+		credentials.SSOToken,
+		credentials.LastSSOTokenRefreshTime,
+		jwtTokenRefreshLeadTime,
+		ssoTokenFallbackTTL,
+		ssoTokenFallbackLeadTime,
+		now,
+	)
+
+	if !refreshAccessToken && !refreshSSOToken {
+		nextCredentialValidationTime = calculateNextCredentialValidationTime(credentials, now)
+		return true
+	}
+
+	return performTokenRefresh(refreshAccessToken, refreshSSOToken, now)
+}
+
+// ForceRefreshCredentials bypasses proactive validity checks and forces immediate refresh
+// Use this only in error recovery paths when we know tokens have failed
+func ForceRefreshCredentials() bool {
+	tokenRefreshLock.Lock()
+	defer tokenRefreshLock.Unlock()
+	now := time.Now()
+
+	if os.Getenv("JIOTV_DEBUG") == "true" {
+		utils.Log.Printf("[DEBUG] FORCED token refresh (bypassing expiry checks)")
+	}
+
+	credentials, err := utils.GetJIOTVCredentials()
+	if err != nil || credentials == nil {
+		nextCredentialValidationTime = now.Add(credentialRefreshRetryBackoff)
+		if os.Getenv("JIOTV_DEBUG") == "true" && err != nil {
+			utils.Log.Printf("[DEBUG] ForceRefreshCredentials: failed to load credentials: %v", err)
+		}
+		return false
+	}
+
+	refreshAccessToken := credentials.AccessToken != "" && credentials.RefreshToken != ""
+	refreshSSOToken := credentials.SSOToken != "" && credentials.UniqueID != ""
+
+	if !refreshAccessToken && !refreshSSOToken {
+		nextCredentialValidationTime = now.Add(credentialRefreshRetryBackoff)
+		return false
+	}
+
+	return performTokenRefresh(refreshAccessToken, refreshSSOToken, now)
+}
+
+// performTokenRefresh does the actual token refresh work (must be called with lock held)
+func performTokenRefresh(refreshAccessToken, refreshSSOToken bool, now time.Time) bool {
+	var accessTokenErr error
+	var ssoTokenErr error
+	var refreshed bool
+
+	// CRITICAL REFRESH #1: Refresh AccessToken
+	if refreshAccessToken {
+		accessTokenErr = LoginRefreshAccessToken()
+		if accessTokenErr != nil {
+			if os.Getenv("JIOTV_DEBUG") == "true" {
+				utils.Log.Printf("[DEBUG] AccessToken refresh error: %v", accessTokenErr)
+			}
+		} else {
+			refreshed = true
+			if os.Getenv("JIOTV_DEBUG") == "true" {
+				utils.Log.Printf("[DEBUG] AccessToken refreshed successfully")
+			}
+		}
+	}
+
+	// CRITICAL REFRESH #2: Refresh SSOToken
+	if refreshSSOToken {
+		ssoTokenErr = LoginRefreshSSOToken()
+		if ssoTokenErr != nil {
+			if os.Getenv("JIOTV_DEBUG") == "true" {
+				utils.Log.Printf("[DEBUG] SSOToken refresh error: %v", ssoTokenErr)
+			}
+		} else {
+			refreshed = true
+			if os.Getenv("JIOTV_DEBUG") == "true" {
+				utils.Log.Printf("[DEBUG] SSOToken refreshed successfully")
+			}
+		}
+	}
+
+	if refreshed {
+		freshCreds, freshErr := utils.GetJIOTVCredentials()
+		if freshErr == nil && freshCreds != nil {
+			nextCredentialValidationTime = calculateNextCredentialValidationTime(freshCreds, now)
+		} else {
+			nextCredentialValidationTime = now.Add(minCredentialValidationInterval)
+		}
+		if os.Getenv("JIOTV_DEBUG") == "true" {
+			utils.Log.Printf("[DEBUG] Token refresh cycle completed. Next validation at %s", nextCredentialValidationTime.Format(time.RFC3339))
+		}
+		return true
+	}
+
+	nextCredentialValidationTime = now.Add(credentialRefreshRetryBackoff)
+
 	// Both refreshes failed - log comprehensive error
 	if os.Getenv("JIOTV_DEBUG") == "true" {
-		utils.Log.Printf("[DEBUG] CRITICAL: Both token refreshes failed! AccessToken error: %v, SSOToken error: %v",
+		utils.Log.Printf("[DEBUG] CRITICAL: Token refresh failed! AccessToken error: %v, SSOToken error: %v",
 			accessTokenErr, ssoTokenErr)
 	}
 	return false
+}
+
+func calculateNextCredentialValidationTime(credentials *utils.JIOTV_CREDENTIALS, now time.Time) time.Time {
+	nextChecks := make([]time.Time, 0, 2)
+
+	if nextCheck, ok := nextTokenValidationCheck(
+		credentials.AccessToken,
+		credentials.LastTokenRefreshTime,
+		jwtTokenRefreshLeadTime,
+		accessTokenFallbackTTL,
+		accessTokenFallbackLeadTime,
+		now,
+	); ok {
+		nextChecks = append(nextChecks, nextCheck)
+	}
+
+	if nextCheck, ok := nextTokenValidationCheck(
+		credentials.SSOToken,
+		credentials.LastSSOTokenRefreshTime,
+		jwtTokenRefreshLeadTime,
+		ssoTokenFallbackTTL,
+		ssoTokenFallbackLeadTime,
+		now,
+	); ok {
+		nextChecks = append(nextChecks, nextCheck)
+	}
+
+	if len(nextChecks) == 0 {
+		return now.Add(credentialRefreshRetryBackoff)
+	}
+
+	closest := nextChecks[0]
+	for _, checkTime := range nextChecks[1:] {
+		if checkTime.Before(closest) {
+			closest = checkTime
+		}
+	}
+
+	return closest
 }
 
 // getDrmMpd returns required properties for rendering DRM MPD
