@@ -20,6 +20,37 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
+func extractCookieValueFromSetCookieHeaders(setCookieHeaders [][]byte, cookieName string) string {
+	prefix := cookieName + "="
+	for _, header := range setCookieHeaders {
+		parts := strings.Split(string(header), ";")
+		for _, part := range parts {
+			trimmed := strings.TrimSpace(part)
+			if strings.HasPrefix(trimmed, prefix) {
+				return strings.TrimPrefix(trimmed, prefix)
+			}
+		}
+	}
+	return ""
+}
+
+func buildCookieHeaderFromSetCookieHeaders(setCookieHeaders [][]byte) string {
+	cookies := make([]string, 0, len(setCookieHeaders))
+	for _, header := range setCookieHeaders {
+		parts := strings.SplitN(string(header), ";", 2)
+		if len(parts) == 0 {
+			continue
+		}
+		cookiePair := strings.TrimSpace(parts[0])
+		if cookiePair == "" || !strings.Contains(cookiePair, "=") {
+			continue
+		}
+		cookies = append(cookies, cookiePair)
+	}
+
+	return strings.Join(cookies, "; ")
+}
+
 var (
 	// tokenRefreshLock prevents concurrent TV object modifications from race conditions
 	tokenRefreshLock sync.Mutex
@@ -304,10 +335,10 @@ func LiveMpdHandler(c *fiber.Ctx) error {
 	quality := c.Query("q")
 	playerMode := c.Query("pm") // "hd" (force Shaka) or "auto" (try Shaka, fallback HLS)
 	if quality == "" {
-		quality = "high"
+		quality = "auto"
 	}
-	if playerMode == "" {
-		playerMode = "hd" // Default to HD mode
+	if playerMode != "hd" && playerMode != "auto" {
+		playerMode = "auto"
 	}
 
 	if isCustomChannel(channelID) {
@@ -337,7 +368,6 @@ func LiveMpdHandler(c *fiber.Ctx) error {
 			drmMpdOutput, err = getDrmMpd(channelID, quality)
 			if err == nil {
 				utils.Log.Println("Retry successful after forced token refresh")
-				return nil // Early return - success
 			}
 		}
 
@@ -419,11 +449,11 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 		utils.Log.Panic(err)
 	}
 
-	// Get the cookies from the response
-	cookies := resp.Header.Peek("Set-Cookie")
-
-	// Set the cookies in the request
-	c.Request().Header.Set("Cookie", string(cookies))
+	// Get cookies from all Set-Cookie headers and forward them as a Cookie header.
+	setCookieHeaders := resp.Header.PeekAll("Set-Cookie")
+	if cookieHeader := buildCookieHeaderFromSetCookieHeaders(setCookieHeaders); cookieHeader != "" {
+		c.Request().Header.Set("Cookie", cookieHeader)
+	}
 
 	decoded_url, err := internalUtils.DecryptURLParam("auth", auth)
 	if err != nil {
@@ -494,7 +524,7 @@ func MpdHandler(c *fiber.Ctx) error {
 				decryptedUrl = freshUrl
 				parsedUrl, err = url.Parse(decryptedUrl)
 				if err != nil {
-					utils.Log.Panicln(err)
+					utils.Log.Println(err)
 					return err
 				}
 			}
@@ -588,23 +618,8 @@ func MpdHandler(c *fiber.Ctx) error {
 	// Extract __hdnea__ from upstream response for injecting into dashBaseURL
 	upstreamHDNEA := ""
 
-	// Try to extract from Set-Cookie header first
-	setCookie := c.Response().Header.Peek("Set-Cookie")
-	if setCookie != nil {
-		setCookieStr := string(setCookie)
-		// Parse Set-Cookie: name=value; attributes...
-		// Look for __hdnea__=value
-		if strings.Contains(setCookieStr, "__hdnea__=") {
-			parts := strings.Split(setCookieStr, ";")
-			for _, part := range parts {
-				trimmed := strings.TrimSpace(part)
-				if strings.HasPrefix(trimmed, "__hdnea__=") {
-					upstreamHDNEA = strings.TrimPrefix(trimmed, "__hdnea__=")
-					break
-				}
-			}
-		}
-	}
+	setCookieHeaders := c.Response().Header.PeekAll("Set-Cookie")
+	upstreamHDNEA = extractCookieValueFromSetCookieHeaders(setCookieHeaders, "__hdnea__")
 
 	// If we got a fresh __hdnea__ from upstream, update dashBaseURL with it
 	if upstreamHDNEA != "" {
@@ -615,16 +630,19 @@ func MpdHandler(c *fiber.Ctx) error {
 	}
 
 	// Delete Domain from cookies
-	if c.Response().Header.Peek("Set-Cookie") != nil {
-		cookies := c.Response().Header.Peek("Set-Cookie")
+	if len(setCookieHeaders) > 0 {
 		c.Response().Header.Del("Set-Cookie")
+		domainBytes := []byte("Domain=" + proxyHost + ";")
 
-		cookies = bytes.Replace(cookies, []byte("Domain="+proxyHost+";"), []byte(""), 1)
-		// Modify path in cookies
-		cookies = bytes.Replace(cookies, []byte("path=/"), []byte("path=/render.dash"), 1)
+		for _, rawCookie := range setCookieHeaders {
+			cookie := append([]byte(nil), rawCookie...)
+			cookie = bytes.Replace(cookie, domainBytes, []byte(""), 1)
+			// Modify path in cookies
+			cookie = bytes.Replace(cookie, []byte("path=/"), []byte("path=/render.dash"), 1)
 
-		// Modify Set-Cookie header
-		c.Response().Header.SetBytesV("Set-Cookie", cookies)
+			// Restore all Set-Cookie headers after normalization.
+			c.Response().Header.Add("Set-Cookie", string(cookie))
+		}
 	}
 	resBody := c.Response().Body()
 	basePathPattern := `<BaseURL>(.*)<\/BaseURL>`

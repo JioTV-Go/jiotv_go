@@ -326,20 +326,23 @@ func (tv *Television) Render(streamURL string, hdneaToken string) ([]byte, int, 
 	buf := resp.Body()
 	// Capture any __hdnea__ Set-Cookie returned by upstream so caller can set cookie on client
 	var newHdnea string
-	setCookie := resp.Header.Peek("Set-Cookie")
-	if setCookie != nil {
+	for _, setCookie := range resp.Header.PeekAll("Set-Cookie") {
 		setCookieStr := string(setCookie)
-		// Parse Set-Cookie: name=value; attributes...
-		// Look for __hdnea__=value
-		if strings.Contains(setCookieStr, "__hdnea__=") {
-			parts := strings.Split(setCookieStr, ";")
-			for _, part := range parts {
-				trimmed := strings.TrimSpace(part)
-				if strings.HasPrefix(trimmed, "__hdnea__=") {
-					newHdnea = strings.TrimPrefix(trimmed, "__hdnea__=")
-					break
-				}
+		if !strings.Contains(setCookieStr, "__hdnea__=") {
+			continue
+		}
+
+		parts := strings.Split(setCookieStr, ";")
+		for _, part := range parts {
+			trimmed := strings.TrimSpace(part)
+			if strings.HasPrefix(trimmed, "__hdnea__=") {
+				newHdnea = strings.TrimPrefix(trimmed, "__hdnea__=")
+				break
 			}
+		}
+
+		if newHdnea != "" {
+			break
 		}
 	}
 

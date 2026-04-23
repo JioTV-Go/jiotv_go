@@ -105,9 +105,8 @@
           if (hasFallenBack) {
             return;
           }
-          // ALWAYS use direct HLS M3U8 URL for fallback, NOT player redirect
-          // This ensures clean fallback without attempting DRM again
-          const targetUrl = hlsFallbackUrl;
+          // Prefer the HLS player page so the browser renders the stream instead of the raw playlist.
+          const targetUrl = hlsPlayerFallbackUrl || hlsFallbackUrl;
           if (!targetUrl) {
             console.error("No HLS fallback URL available");
             return;

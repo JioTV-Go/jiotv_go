@@ -102,7 +102,7 @@
       <script>
         const channelId = {{ printf "%q" .ChannelID }};
         let current43Mode = false;
-        let playerModeIsHD = true;
+        let playerModeIsHD = false;
 
         // SVG icon constants
         const DOWN_ARROW_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="size-6"><path fill-rule="evenodd" d="M12 2.25a.75.75 0 0 1 .75.75v16.19l6.22-6.22a.75.75 0 1 1 1.06 1.06l-7.5 7.5a.75.75 0 0 1-1.06 0l-7.5-7.5a.75.75 0 1 1 1.06-1.06l6.22 6.22V3a.75.75 0 0 1 .75-.75Z" clip-rule="evenodd" /></svg>';
@@ -143,12 +143,30 @@
           if (toggle) toggle.checked = isHD;
         }
 
+        function applyPlayerModeToIframe() {
+          const playerIframe = document.getElementById("playerIframe");
+          if (!playerIframe) {
+            return;
+          }
+
+          const baseSrc = playerIframe.getAttribute("data-base-src");
+          if (!baseSrc) {
+            return;
+          }
+
+          const playerModeParam = playerModeIsHD ? "hd" : "auto";
+          const parsedUrl = new URL(baseSrc, window.location.origin);
+          parsedUrl.searchParams.set("pm", playerModeParam);
+
+          playerIframe.src = parsedUrl.pathname + parsedUrl.search + parsedUrl.hash;
+        }
+
         function togglePlayerMode() {
           const toggle = document.getElementById("player-mode-toggle");
           playerModeIsHD = toggle.checked;
           localStorage.setItem("playerMode_" + channelId, playerModeIsHD ? "hd" : "auto");
-          // Reload player with new mode
-          location.reload();
+          updatePlayerModeUI(playerModeIsHD);
+          applyPlayerModeToIframe();
         }
 
         // Initialize with saved preferences for this channel
@@ -160,21 +178,12 @@
           }
           updateAspectRatioUI(current43Mode);
           
-          // Initialize player mode (default is HD/true)
+          // Initialize player mode (default is auto/false)
           const savedPlayerMode = localStorage.getItem("playerMode_" + channelId);
-          playerModeIsHD = savedPlayerMode !== "auto"; // Default to HD if not set
+          playerModeIsHD = savedPlayerMode === "hd";
           updatePlayerModeUI(playerModeIsHD);
-          
-          // Update player iframe src to include playerMode parameter
-          const playerIframe = document.getElementById("playerIframe");
-          let baseSrc = playerIframe.getAttribute("data-base-src");
-          if (baseSrc) {
-            // Add playerMode parameter to the URL
-            const playerModeParam = playerModeIsHD ? "hd" : "auto";
-            const separator = baseSrc.includes("?") ? "&" : "?";
-            baseSrc = baseSrc + separator + "pm=" + playerModeParam;
-            playerIframe.src = baseSrc;
-          }
+
+          applyPlayerModeToIframe();
         });
       </script>
     </div>

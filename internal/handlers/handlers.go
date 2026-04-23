@@ -905,10 +905,8 @@ func RenderTSHandler(c *fiber.Ctx) error {
 
 		c.Response().Reset()
 		c.Request().Header.DelCookie("__hdnea__")
-		_ = LoginRefreshAccessToken()
-		_ = LoginRefreshSSOToken()
-		if freshCreds, credErr := utils.GetJIOTVCredentials(); credErr == nil {
-			TV = television.New(freshCreds)
+		if !ForceRefreshCredentials() && os.Getenv("JIOTV_DEBUG") == "true" {
+			utils.Log.Printf("[DEBUG] RenderTSHandler forced refresh did not update credentials")
 		}
 
 		retryUrl := stripHDNEAFromURL(decoded_url)
@@ -1006,6 +1004,9 @@ func ChannelsHandler(c *fiber.Ctx) error {
 func PlayHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	quality := c.Query("q")
+	if quality == "" {
+		quality = "auto"
+	}
 
 	// Ensure tokens are fresh before making API call for DRM channels
 	if err := EnsureFreshTokens(); err != nil {

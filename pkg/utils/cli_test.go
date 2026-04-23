@@ -18,13 +18,13 @@ func TestStringFlag(t *testing.T) {
 		{
 			name:     "String flag with aliases",
 			flagName: "host",
-			value:    "localhost",
+			value:    "0.0.0.0",
 			usage:    "Host to listen on",
 			aliases:  []string{"H"},
 			expected: &cli.StringFlag{
 				Name:    "host",
 				Aliases: []string{"H"},
-				Value:   "localhost",
+				Value:   "0.0.0.0",
 				Usage:   "Host to listen on",
 			},
 		},
@@ -46,7 +46,7 @@ func TestStringFlag(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := StringFlag(tt.flagName, tt.value, tt.usage, tt.aliases...)
-			
+
 			if result.Name != tt.expected.Name {
 				t.Errorf("Expected name %s, got %s", tt.expected.Name, result.Name)
 			}
@@ -103,7 +103,7 @@ func TestBoolFlag(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			result := BoolFlag(tt.flagName, tt.usage, tt.aliases...)
-			
+
 			if result.Name != tt.expected.Name {
 				t.Errorf("Expected name %s, got %s", tt.expected.Name, result.Name)
 			}
@@ -119,14 +119,14 @@ func TestBoolFlag(t *testing.T) {
 
 func TestConfigFlag(t *testing.T) {
 	result := ConfigFlag()
-	
+
 	expected := &cli.StringFlag{
 		Name:    "config",
 		Aliases: []string{"c"},
 		Value:   "",
 		Usage:   "Path to config file",
 	}
-	
+
 	if result.Name != expected.Name {
 		t.Errorf("Expected name %s, got %s", expected.Name, result.Name)
 	}
@@ -143,7 +143,7 @@ func TestConfigFlag(t *testing.T) {
 
 func TestVersionFlag(t *testing.T) {
 	result := VersionFlag()
-	
+
 	if result.Name != "version" {
 		t.Errorf("Expected name version, got %s", result.Name)
 	}
@@ -154,13 +154,13 @@ func TestVersionFlag(t *testing.T) {
 
 func TestCommonServerFlags(t *testing.T) {
 	flags := CommonServerFlags()
-	
+
 	expectedFlagNames := []string{"host", "port", "public", "tls", "tls-cert", "tls-key"}
-	
+
 	if len(flags) != len(expectedFlagNames) {
 		t.Errorf("Expected %d flags, got %d", len(expectedFlagNames), len(flags))
 	}
-	
+
 	for i, flag := range flags {
 		var name string
 		switch f := flag.(type) {
@@ -169,7 +169,7 @@ func TestCommonServerFlags(t *testing.T) {
 		case *cli.BoolFlag:
 			name = f.Name
 		}
-		
+
 		if name != expectedFlagNames[i] {
 			t.Errorf("Expected flag %s at position %d, got %s", expectedFlagNames[i], i, name)
 		}
@@ -185,9 +185,9 @@ func TestNewCommand(t *testing.T) {
 		Action:      func(c *cli.Context) error { return nil },
 		Flags:       []cli.Flag{StringFlag("test-flag", "default", "Test flag")},
 	}
-	
+
 	result := NewCommand(config)
-	
+
 	if result.Name != config.Name {
 		t.Errorf("Expected name %s, got %s", config.Name, result.Name)
 	}
