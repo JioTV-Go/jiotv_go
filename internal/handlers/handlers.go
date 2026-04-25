@@ -861,7 +861,6 @@ func RenderTSHandler(c *fiber.Ctx) error {
 	}
 
 	channelID := c.Query("channel_key_id")
-	quality := c.Query("q")
 	auth := c.Query("auth")
 	// parse incoming hdnea query and set as request cookie only for upstream call (no client cookie)
 	if hdnea := c.Query("hdnea"); hdnea != "" {
@@ -912,11 +911,9 @@ func RenderTSHandler(c *fiber.Ctx) error {
 		retryUrl := stripHDNEAFromURL(decoded_url)
 		if channelID != "" {
 			if refreshedResult, refreshErr := TV.Live(channelID); refreshErr == nil && refreshedResult != nil {
-				if refreshedURL := selectBestLiveHLSURL(refreshedResult, quality); refreshedURL != "" {
-					retryUrl = toAbsoluteStreamURL(refreshedURL, refreshedResult)
-					if refreshedHDNEA := refreshedResult.Hdnea; refreshedHDNEA != "" {
-						setCachedHDNEA(channelID, refreshedHDNEA)
-					}
+				if refreshedHDNEA := extractLiveResultHDNEA(refreshedResult); refreshedHDNEA != "" {
+					setCachedHDNEA(channelID, refreshedHDNEA)
+					c.Request().Header.SetCookie("__hdnea__", refreshedHDNEA)
 				}
 			}
 		}

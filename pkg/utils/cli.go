@@ -38,7 +38,7 @@ func VersionFlag() *cli.StringFlag {
 // CommonServerFlags returns common server-related flags
 func CommonServerFlags() []cli.Flag {
 	return []cli.Flag{
-		StringFlag("host", "0.0.0.0", "Host to listen on", "H"),
+		StringFlag("host", "localhost", "Host to listen on", "H"),
 		StringFlag("port", "5001", "Port to listen on", "p"),
 		BoolFlag("public", "Open server to public. This will expose your server outside your local network. Equivalent to passing --host 0.0.0.0", "P"),
 		BoolFlag("tls", "Enable TLS. This will enable HTTPS for the server.", "https"),

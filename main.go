@@ -64,7 +64,7 @@ func main() {
 				Name:        "serve",
 				Aliases:     []string{"run", "start"},
 				Usage:       "Start JioTV Go server",
-				Description: "The serve command starts JioTV Go server, and listens on the host and port. The default host is 0.0.0.0 and port is 5001.",
+				Description: "The serve command starts JioTV Go server, and listens on the host and port. The default host is localhost and port is 5001.",
 				Action: func(c *cli.Context) error {
 					host := c.String("host")
 					// overwrite host if --public flag is passed
