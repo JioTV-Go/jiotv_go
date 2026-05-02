@@ -24,41 +24,35 @@ var (
 // IsAccessTokenExpired checks if the AccessToken needs refreshing
 // Returns true if the token is expired or will expire within the next 10 minutes
 func IsAccessTokenExpired(credentials *utils.JIOTV_CREDENTIALS) bool {
-	if credentials.LastTokenRefreshTime == "" {
-		return true // No refresh time recorded, assume expired
+	if credentials == nil || credentials.AccessToken == "" {
+		return true
 	}
 
-	lastTokenRefreshTime, err := strconv.ParseInt(credentials.LastTokenRefreshTime, 10, 64)
-	if err != nil {
-		utils.Log.Printf("Error parsing LastTokenRefreshTime: %v", err)
-		return true // Error parsing, assume expired
-	}
-
-	lastRefreshTime := time.Unix(lastTokenRefreshTime, 0)
-	// AccessToken expires after 2 hours, refresh 10 minutes early
-	thresholdTime := lastRefreshTime.Add(1*time.Hour + 50*time.Minute)
-
-	return thresholdTime.Before(time.Now())
+	return shouldRefreshToken(
+		credentials.AccessToken,
+		credentials.LastTokenRefreshTime,
+		jwtTokenRefreshLeadTime,
+		accessTokenFallbackTTL,
+		accessTokenFallbackLeadTime,
+		time.Now(),
+	)
 }
 
 // IsSSOTokenExpired checks if the SSOToken needs refreshing
 // Returns true if the token is expired or will expire within the next hour
 func IsSSOTokenExpired(credentials *utils.JIOTV_CREDENTIALS) bool {
-	if credentials.LastSSOTokenRefreshTime == "" {
-		return true // No refresh time recorded, assume expired
+	if credentials == nil || credentials.SSOToken == "" {
+		return true
 	}
 
-	lastTokenRefreshTime, err := strconv.ParseInt(credentials.LastSSOTokenRefreshTime, 10, 64)
-	if err != nil {
-		utils.Log.Printf("Error parsing LastSSOTokenRefreshTime: %v", err)
-		return true // Error parsing, assume expired
-	}
-
-	lastRefreshTime := time.Unix(lastTokenRefreshTime, 0)
-	// SSOToken expires after 24 hours, refresh 1 hour early
-	thresholdTime := lastRefreshTime.Add(23 * time.Hour)
-
-	return thresholdTime.Before(time.Now())
+	return shouldRefreshToken(
+		credentials.SSOToken,
+		credentials.LastSSOTokenRefreshTime,
+		jwtTokenRefreshLeadTime,
+		ssoTokenFallbackTTL,
+		ssoTokenFallbackLeadTime,
+		time.Now(),
+	)
 }
 
 // EnsureFreshTokens checks and refreshes tokens if needed
@@ -70,6 +64,9 @@ func EnsureFreshTokens() error {
 	credentials, err := utils.GetJIOTVCredentials()
 	if err != nil {
 		return fmt.Errorf("failed to get credentials: %v", err)
+	}
+	if credentials == nil {
+		return fmt.Errorf("failed to get credentials: credentials are empty")
 	}
 
 	var refreshed bool

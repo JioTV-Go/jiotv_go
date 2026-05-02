@@ -232,7 +232,7 @@ func TestReplaceTS(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := ReplaceTS(tt.args.baseUrl, tt.args.match, tt.args.params)
+			got := ReplaceTS(tt.args.baseUrl, tt.args.match, tt.args.params, "123")
 			// The function encrypts URLs, so we check that it produces some output
 			if len(got) == 0 {
 				t.Errorf("ReplaceTS() returned empty result")
@@ -283,7 +283,7 @@ func TestReplaceAAC(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := ReplaceAAC(tt.args.baseUrl, tt.args.match, tt.args.params)
+			got := ReplaceAAC(tt.args.baseUrl, tt.args.match, tt.args.params, "123")
 			// The function encrypts URLs, so we check that it produces some output
 			if len(got) == 0 {
 				t.Errorf("ReplaceAAC() returned empty result")
