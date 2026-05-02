@@ -11,6 +11,13 @@
         background-color: black;
         overflow-y: hidden;
       }
+
+      .flowplayer .fp-ui [role="button"]:focus,
+      .flowplayer .fp-play:focus,
+      .flowplayer .fp-pause:focus {
+        outline: 2px solid #ea4335;
+        outline-offset: 2px;
+      }
     </style>
     <link rel="stylesheet" href="/static/external/flowplayer.css" />
     <script src="/static/external/flowplayer.min.js"></script>
@@ -41,6 +48,113 @@
         },
         ui: flowplayer.ui.USE_THIN_CONTROLBAR,
       });
+
+      function initDpadRemoteSupport() {
+        const playerRoot = document.querySelector(".flowplayer");
+        if (!playerRoot) {
+          return false;
+        }
+
+        const isArrowKey = (event) => {
+          return (
+            ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key) ||
+            [37, 38, 39, 40].includes(event.keyCode)
+          );
+        };
+
+        const isActivateKey = (event) => {
+          return event.key === "Enter" || event.key === " " || [13, 32].includes(event.keyCode);
+        };
+
+        const isMediaToggleKey = (event) => {
+          return event.key === "MediaPlayPause" || [179, 415, 19].includes(event.keyCode);
+        };
+
+        const getFocusableControls = () => {
+          const controls = Array.from(
+            playerRoot.querySelectorAll(
+              '.fp-ui [role="button"], .fp-ui .fp-play, .fp-ui .fp-pause'
+            )
+          );
+          controls.forEach((control) => {
+            if (!control.hasAttribute("tabindex") || control.getAttribute("tabindex") === "-1") {
+              control.setAttribute("tabindex", "0");
+            }
+          });
+          return controls;
+        };
+
+        const getPlayPauseControl = () => {
+          return (
+            playerRoot.querySelector('.fp-ui .fp-pause') ||
+            playerRoot.querySelector('.fp-ui .fp-play')
+          );
+        };
+
+        const focusPlayPauseControl = () => {
+          const controls = getFocusableControls();
+          const target = getPlayPauseControl() || controls[0];
+          if (!target) {
+            return false;
+          }
+
+          playerRoot.classList.add("is-hovered");
+          target.focus();
+          return true;
+        };
+
+        const isInsidePlayer = (element) => {
+          return !!(element && element.closest && element.closest(".flowplayer"));
+        };
+
+        document.addEventListener("keydown", (event) => {
+          if (isMediaToggleKey(event)) {
+            event.preventDefault();
+            player.togglePlay();
+            focusPlayPauseControl();
+            return;
+          }
+
+          if (isArrowKey(event) && !isInsidePlayer(document.activeElement)) {
+            if (focusPlayPauseControl()) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+            return;
+          }
+
+          if (!isActivateKey(event)) {
+            return;
+          }
+
+          const activeElement = document.activeElement;
+          if (
+            activeElement &&
+            activeElement.matches &&
+            activeElement.matches('.flowplayer .fp-ui .fp-play, .flowplayer .fp-ui .fp-pause')
+          ) {
+            event.preventDefault();
+            activeElement.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+          }
+        });
+
+        // Some TV browsers do not support Tab navigation, so seed focus once controls exist.
+        setTimeout(() => {
+          getFocusableControls();
+        }, 300);
+
+        return true;
+      }
+
+      let dpadRetryCount = 0;
+      const dpadInitTimer = setInterval(() => {
+        if (initDpadRemoteSupport() || dpadRetryCount > 12) {
+          clearInterval(dpadInitTimer);
+          return;
+        }
+        dpadRetryCount += 1;
+      }, 200);
+
       player.on(flowplayer.events.FULLSCREEN_ENTER, (e) => {
         // rotate to landscape on mobile devices
         if (screen.orientation) {

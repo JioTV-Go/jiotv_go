@@ -1,6 +1,6 @@
 {{ define "navbar" }}
 <style>
-  .catchup-toggle-input {
+  .nav-switch {
     appearance: none;
     -webkit-appearance: none;
     width: 2.75rem;
@@ -13,7 +13,7 @@
     transition: background-color 0.2s ease;
   }
 
-  .catchup-toggle-input::before {
+  .nav-switch::before {
     content: "";
     position: absolute;
     top: 2px;
@@ -26,15 +26,19 @@
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
   }
 
-  .catchup-toggle-input:checked {
+  .nav-switch:checked {
+    background-color: #22c55e;
+  }
+
+  .nav-switch.warn:checked {
     background-color: #f59e0b;
   }
 
-  .catchup-toggle-input:checked::before {
+  .nav-switch:checked::before {
     transform: translateX(1.25rem);
   }
 
-  .catchup-toggle-input:focus-visible {
+  .nav-switch:focus-visible {
     outline: 2px solid currentColor;
     outline-offset: 2px;
   }
@@ -59,16 +63,15 @@
     <a href="/" class="btn btn-ghost text-xl text-error" aria-label="Go to home page">{{ .Title }}</a>
   </div>
   <div class="navbar-end gap-4">
+    {{ if .player_url }}
+    <label class="flex items-center gap-2 cursor-pointer">
+      <span id="player-mode-label" class="font-medium">auto</span>
+      <input id="player-mode-toggle" type="checkbox" class="nav-switch" onchange="togglePlayerMode()" role="switch" aria-label="Toggle player mode" />
+    </label>
+    {{ end }}
     <label class="flex items-center gap-2 cursor-pointer">
       <span id="catchup-toggle-label" class="font-medium">Catchup: OFF</span>
-      <input
-        id="catchup-toggle"
-        type="checkbox"
-        class="catchup-toggle-input"
-        onchange="toggleCatchupMode()"
-        role="switch"
-        aria-label="Toggle catchup mode"
-      />
+      <input id="catchup-toggle" type="checkbox" class="nav-switch warn" onchange="toggleCatchupMode()" role="switch" aria-label="Toggle catchup mode" />
     </label>
     <label class="swap swap-rotate" aria-label="Toggle theme">
       <input type="checkbox" onclick="toggleTheme()" aria-label="Switch between light and dark theme" />

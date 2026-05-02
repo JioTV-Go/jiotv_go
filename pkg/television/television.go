@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	neturl "net/url"
+	"net/url"
+	"path/filepath"
 	"strings"
+	"sync"
 
 	"github.com/valyala/fasthttp"
 	"gopkg.in/yaml.v3"
@@ -50,6 +52,7 @@ func logExcessiveChannelsWarning(channelCount int, context string) {
 var (
 	// customChannelsCacheMap holds cached custom channels indexed by ID for efficient lookups
 	customChannelsCacheMap map[string]Channel
+	customChannelsMu       sync.RWMutex
 )
 
 // New function creates a new Television instance with the provided credentials
@@ -105,8 +108,17 @@ func InitCustomChannels() {
 	}
 }
 
+func ReloadCustomChannels() {
+	if config.Cfg.CustomChannelsFile != "" {
+		loadAndCacheCustomChannels()
+	}
+}
+
 // getCustomChannelByID efficiently looks up a custom channel by ID
 func getCustomChannelByID(channelID string) (Channel, bool) {
+	customChannelsMu.RLock()
+	defer customChannelsMu.RUnlock()
+
 	if customChannelsCacheMap == nil {
 		return Channel{}, false
 	}
@@ -122,22 +134,21 @@ func GetCustomChannelByID(channelID string) (Channel, bool) {
 
 // loadAndCacheCustomChannels loads custom channels from file and caches them
 func loadAndCacheCustomChannels() {
-	// Load channels from file
 	channels, err := LoadCustomChannels(config.Cfg.CustomChannelsFile)
+	next := make(map[string]Channel)
 	if err != nil {
 		utils.SafeLogf("Error loading custom channels: %v", err)
-		// Cache empty result to avoid repeated file I/O errors
-		customChannelsCacheMap = make(map[string]Channel)
 	} else {
-		// Populate the map for efficient lookups
-		customChannelsCacheMap = make(map[string]Channel)
 		for _, channel := range channels {
-			customChannelsCacheMap[channel.ID] = channel
+			next[channel.ID] = channel
 		}
 
-		// Warn user about performance implications if too many channels
 		logExcessiveChannelsWarning(len(channels), "Cached")
 	}
+
+	customChannelsMu.Lock()
+	customChannelsCacheMap = next
+	customChannelsMu.Unlock()
 }
 
 // Live method generates m3u8 link from JioTV API with the provided channel ID
@@ -258,11 +269,11 @@ func (tv *Television) Live(channelID string) (*LiveURLOutput, error) {
 }
 
 // Render method does HTTP GET request to the provided URL and return the response body
-func (tv *Television) Render(url string) ([]byte, int, string) {
+func (tv *Television) Render(streamURL string, hdneaToken string) ([]byte, int, string) {
 	req := fasthttp.AcquireRequest()
 	defer fasthttp.ReleaseRequest(req)
 
-	req.SetRequestURI(url)
+	req.SetRequestURI(streamURL)
 	req.Header.SetMethod("GET")
 
 	// Copy headers from the Television headers map to the request
@@ -270,16 +281,36 @@ func (tv *Television) Render(url string) ([]byte, int, string) {
 		req.Header.Set(key, value)
 	}
 
-	// If hdnea is provided as query param on URL, also send it as cookie __hdnea__ per downstream requirement
-	if strings.Contains(url, "hdnea=") {
+	// Override User-Agent to simulate a player, as some CDNs (e.g. for channel 182) block okhttp
+	req.Header.Set("User-Agent", headers.UserAgentPlayTV)
+
+	// Prefer explicit token override from handler cache; otherwise derive from URL query.
+	// When both hdnea and __hdnea__ are present, prefer __hdnea__ as the fresher token.
+	if hdneaToken != "" {
+		req.Header.SetCookie("__hdnea__", hdneaToken)
+	} else if strings.Contains(streamURL, "hdnea=") {
 		// quick parse to extract value
-		q := url[strings.Index(url, "?")+1:]
+		q := streamURL[strings.Index(streamURL, "?")+1:]
+		var parsedToken string
 		for _, p := range strings.Split(q, "&") {
-			if strings.HasPrefix(p, "hdnea=") {
-				token := strings.TrimPrefix(p, "hdnea=")
-				req.Header.SetCookie("__hdnea__", token)
+			if strings.HasPrefix(p, "__hdnea__=") {
+				token := strings.TrimPrefix(p, "__hdnea__=")
+				if decodedToken, decodeErr := url.QueryUnescape(token); decodeErr == nil {
+					token = decodedToken
+				}
+				parsedToken = token
 				break
 			}
+			if parsedToken == "" && strings.HasPrefix(p, "hdnea=") {
+				token := strings.TrimPrefix(p, "hdnea=")
+				if decodedToken, decodeErr := url.QueryUnescape(token); decodeErr == nil {
+					token = decodedToken
+				}
+				parsedToken = token
+			}
+		}
+		if parsedToken != "" {
+			req.Header.SetCookie("__hdnea__", parsedToken)
 		}
 	}
 
@@ -288,21 +319,30 @@ func (tv *Television) Render(url string) ([]byte, int, string) {
 
 	// Perform the HTTP GET request
 	if err := tv.Client.Do(req, resp); err != nil {
-		utils.Log.Panic(err)
+		utils.Log.Println("Render upstream request failed:", err)
+		return []byte(""), fasthttp.StatusBadGateway, ""
 	}
 
 	buf := resp.Body()
 	// Capture any __hdnea__ Set-Cookie returned by upstream so caller can set cookie on client
 	var newHdnea string
-	// Iterate Set-Cookie headers (avoid deprecated VisitAll)
-	for _, v := range resp.Header.PeekAll("Set-Cookie") {
-		sv := string(v)
-		if strings.HasPrefix(sv, "__hdnea__=") {
-			token := sv[len("__hdnea__="):]
-			if i := strings.IndexByte(token, ';'); i != -1 {
-				token = token[:i]
+	for _, setCookie := range resp.Header.PeekAll("Set-Cookie") {
+		setCookieStr := string(setCookie)
+		if !strings.Contains(setCookieStr, "__hdnea__=") {
+			continue
+		}
+
+		parts := strings.Split(setCookieStr, ";")
+		for _, part := range parts {
+			trimmed := strings.TrimSpace(part)
+			if strings.HasPrefix(trimmed, "__hdnea__=") {
+				newHdnea = strings.TrimPrefix(trimmed, "__hdnea__=")
+				break
 			}
-			newHdnea = token
+		}
+
+		if newHdnea != "" {
+			break
 		}
 	}
 
@@ -364,6 +404,12 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 	fileResult := utils.CheckAndReadFile(filePath)
 	if !fileResult.Exists {
 		utils.SafeLogf("Custom channels file not found: %s", filePath)
+		if isDefaultCustomChannelsPath(filePath) {
+			customConfig, err := loadBuiltInCustomChannelsConfig()
+			if err == nil {
+				return convertCustomConfigToChannels(customConfig), nil
+			}
+		}
 		return []Channel{}, nil
 	}
 
@@ -377,10 +423,45 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 		return nil, fmt.Errorf("failed to parse custom channels file: %w", err)
 	}
 
-	// Convert CustomChannel to Channel
+	channels := convertCustomConfigToChannels(customConfig)
+
+	utils.SafeLogf("Loaded %d custom channels from %s", len(channels), filePath)
+
+	// Warn user about performance implications if too many channels
+	logExcessiveChannelsWarning(len(channels), "You have loaded")
+	return channels, nil
+}
+
+func getCustomChannels() []Channel {
+	customChannelsMu.RLock()
+	defer customChannelsMu.RUnlock()
+
+	var customChannels []Channel
+	for _, channel := range customChannelsCacheMap {
+		customChannels = append(customChannels, channel)
+	}
+	return customChannels
+}
+
+func isDefaultCustomChannelsPath(filePath string) bool {
+	base := strings.ToLower(filepath.Base(filePath))
+	if base != "custom-channels.json" && base != "custom_channels.json" && base != "custom-channels.yml" && base != "custom_channels.yml" && base != "custom-channels.yaml" && base != "custom_channels.yaml" {
+		return false
+	}
+	return true
+}
+
+func loadBuiltInCustomChannelsConfig() (CustomChannelsConfig, error) {
+	var customConfig CustomChannelsConfig
+	if err := json.Unmarshal([]byte(builtInCustomChannelsJSON), &customConfig); err != nil {
+		return CustomChannelsConfig{}, err
+	}
+	return customConfig, nil
+}
+
+func convertCustomConfigToChannels(customConfig CustomChannelsConfig) []Channel {
 	var channels []Channel
 	for _, customChannel := range customConfig.Channels {
-		// Prefix custom channel ID with "cc_" if not already prefixed
 		channelID := customChannel.ID
 		if !strings.HasPrefix(channelID, "cc_") {
 			channelID = "cc_" + channelID
@@ -397,22 +478,31 @@ func LoadCustomChannels(filePath string) ([]Channel, error) {
 		}
 		channels = append(channels, channel)
 	}
-
-	utils.SafeLogf("Loaded %d custom channels from %s", len(channels), filePath)
-
-	// Warn user about performance implications if too many channels
-	logExcessiveChannelsWarning(len(channels), "You have loaded")
-	return channels, nil
+	return channels
 }
 
-func getCustomChannels() []Channel {
-	// Iterate over the custom channels cache map and collect the channels
-	var customChannels []Channel
-	for _, channel := range customChannelsCacheMap {
-		customChannels = append(customChannels, channel)
-	}
-	return customChannels
-}
+const builtInCustomChannelsJSON = `{
+  "channels": [
+    {
+      "id": "custom_news_1",
+      "name": "Sample News Channel",
+      "url": "https://example.com/news/playlist.m3u8",
+      "logo_url": "https://example.com/logos/news.png",
+      "category": 12,
+      "language": 6,
+      "is_hd": true
+    },
+    {
+      "id": "custom_entertainment_1",
+      "name": "Sample Entertainment Channel",
+      "url": "https://example.com/entertainment/playlist.m3u8",
+      "logo_url": "https://example.com/logos/entertainment.png",
+      "category": 5,
+      "language": 1,
+      "is_hd": false
+    }
+  ]
+}`
 
 // Channels fetch channels from JioTV API and merge with custom channels
 func Channels() (ChannelsResponse, error) {
@@ -530,17 +620,6 @@ func FilterChannelsByDefaults(channels []Channel, categories, languages []int) [
 }
 
 func ReplaceM3U8(baseUrl, match []byte, params, channel_id string, quality string) []byte {
-	// Attempt to extract hdnea from params if present
-	hdnea := ""
-	if strings.Contains(params, "hdnea=") {
-		// naive extraction without net/url to avoid allocation; safe since params is small
-		for _, p := range strings.Split(params, "&") {
-			if strings.HasPrefix(p, "hdnea=") {
-				hdnea = strings.TrimPrefix(p, "hdnea=")
-				break
-			}
-		}
-	}
 	config := EncryptedURLConfig{
 		BaseURL:     string(baseUrl),
 		Match:       string(match),
@@ -548,7 +627,6 @@ func ReplaceM3U8(baseUrl, match []byte, params, channel_id string, quality strin
 		ChannelID:   channel_id,
 		EndpointURL: "/render.m3u8",
 		Quality:     quality,
-		Hdnea:       hdnea,
 	}
 
 	result, err := CreateEncryptedURL(config)
@@ -558,26 +636,17 @@ func ReplaceM3U8(baseUrl, match []byte, params, channel_id string, quality strin
 	return result
 }
 
-func ReplaceTS(baseUrl, match []byte, params string) []byte {
+func ReplaceTS(baseUrl, match []byte, params, channelID string) []byte {
 	if config.Cfg.DisableTSHandler {
 		return []byte(string(baseUrl) + string(match) + "?" + params)
 	}
 
-	hdnea := ""
-	if strings.Contains(params, "hdnea=") {
-		for _, p := range strings.Split(params, "&") {
-			if strings.HasPrefix(p, "hdnea=") {
-				hdnea = strings.TrimPrefix(p, "hdnea=")
-				break
-			}
-		}
-	}
 	config := EncryptedURLConfig{
 		BaseURL:     string(baseUrl),
 		Match:       string(match),
 		Params:      params,
+		ChannelID:   channelID,
 		EndpointURL: "/render.ts",
-		Hdnea:       hdnea,
 	}
 
 	result, err := CreateEncryptedURL(config)
@@ -587,26 +656,17 @@ func ReplaceTS(baseUrl, match []byte, params string) []byte {
 	return result
 }
 
-func ReplaceAAC(baseUrl, match []byte, params string) []byte {
+func ReplaceAAC(baseUrl, match []byte, params, channelID string) []byte {
 	if config.Cfg.DisableTSHandler {
 		return []byte(string(baseUrl) + string(match) + "?" + params)
 	}
 
-	hdnea := ""
-	if strings.Contains(params, "hdnea=") {
-		for _, p := range strings.Split(params, "&") {
-			if strings.HasPrefix(p, "hdnea=") {
-				hdnea = strings.TrimPrefix(p, "hdnea=")
-				break
-			}
-		}
-	}
 	config := EncryptedURLConfig{
 		BaseURL:     string(baseUrl),
 		Match:       string(match),
 		Params:      params,
+		ChannelID:   channelID,
 		EndpointURL: "/render.ts",
-		Hdnea:       hdnea,
 	}
 
 	result, err := CreateEncryptedURL(config)
@@ -617,22 +677,12 @@ func ReplaceAAC(baseUrl, match []byte, params string) []byte {
 }
 
 func ReplaceKey(match []byte, params, channel_id string) []byte {
-	hdnea := ""
-	if strings.Contains(params, "hdnea=") {
-		for _, p := range strings.Split(params, "&") {
-			if strings.HasPrefix(p, "hdnea=") {
-				hdnea = strings.TrimPrefix(p, "hdnea=")
-				break
-			}
-		}
-	}
 	config := EncryptedURLConfig{
 		BaseURL:     "",
 		Match:       string(match),
 		Params:      params,
 		ChannelID:   channel_id,
 		EndpointURL: "/render.key",
-		Hdnea:       hdnea,
 	}
 
 	result, err := CreateEncryptedURL(config)
@@ -758,15 +808,20 @@ func (tv *Television) GetCatchupURL(channelID, srno, start, end string) (*LiveUR
 		if u == "" {
 			return ""
 		}
-		parsedURL, err := neturl.Parse(u)
-		if err != nil {
+		qIdx := strings.Index(u, "?")
+		if qIdx == -1 {
 			return ""
 		}
-		hdnea := parsedURL.Query().Get("hdnea")
-		if hdnea != "" {
-			return hdnea
+		query := u[qIdx+1:]
+		for _, p := range strings.Split(query, "&") {
+			if strings.HasPrefix(p, "hdnea=") {
+				return strings.TrimPrefix(p, "hdnea=")
+			}
+			if strings.HasPrefix(p, "__hdnea__=") {
+				return strings.TrimPrefix(p, "__hdnea__=")
+			}
 		}
-		return parsedURL.Query().Get("__hdnea__")
+		return ""
 	}
 	hdnea := extractHdneaFromURL(result.Result)
 	if hdnea == "" {
