@@ -70,8 +70,8 @@ func main() {
 					// overwrite host if --public flag is passed
 					if c.Bool("public") {
 						cmd.Logger().Println("INFO: You are exposing your server to outside your local network (public)!")
-						cmd.Logger().Println("INFO: Overwriting host to 0.0.0.0 for public access")
-						host = "0.0.0.0"
+						cmd.Logger().Println("INFO: Overwriting host to [::] for public access (supports both IPv4 and IPv6)")
+						host = "[::]"
 					}
 					port := c.String("port")
 					tls := c.Bool("tls")
