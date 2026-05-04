@@ -587,31 +587,29 @@ func RenderHandler(c *fiber.Ctx) error {
 
 	decoded_url = toAbsoluteStreamURL(decoded_url, nil)
 
-	// Extract fresh token from URL if present (primary source, always fresh)
+	// Always prefer a freshly cached HDNEA token if available to prevent 403s on expired URL tokens
+	cachedHDNEA := getCachedHDNEA(channel_id)
 	urlToken := extractHDNEAFromURL(decoded_url)
-	var cachedHDNEA string
 
-	// AGGRESSIVE REFRESH: Always prefer fresh URL token over cache to prevent 403 errors from stale tokens
-	if urlToken != "" {
+	renderURL := decoded_url
+	if cachedHDNEA != "" {
+		// We have a freshly fetched token from a recent recovery, use it instead of the potentially expired URL token
+		renderURL = stripHDNEAFromURL(decoded_url)
+	} else if urlToken != "" {
 		cachedHDNEA = urlToken
-	} else {
-		cachedHDNEA = getCachedHDNEA(channel_id)
 	}
 
 	// DEBUG: Log token selection
 	if os.Getenv("JIOTV_DEBUG") == "true" {
-		sourceStr := "URL"
-		if urlToken == "" && cachedHDNEA != "" {
-			sourceStr = "cache"
-		}
-		if urlToken == "" && cachedHDNEA == "" {
+		sourceStr := "cache"
+		if cachedHDNEA == "" {
 			sourceStr = "none"
+		} else if cachedHDNEA == urlToken {
+			sourceStr = "URL"
 		}
 		utils.Log.Printf("[DEBUG] Token selection - URL token: %s | Cached token: %s | Using: %s (source: %s)",
 			truncateToken(urlToken), truncateToken(getCachedHDNEA(channel_id)), truncateToken(cachedHDNEA), sourceStr)
 	}
-
-	renderURL := decoded_url
 	renderResult, statusCode, newHdnea := TV.Render(renderURL, cachedHDNEA)
 
 	// DEBUG: Log token extraction and response
