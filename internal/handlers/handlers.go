@@ -635,41 +635,58 @@ func RenderHandler(c *fiber.Ctx) error {
 		}
 
 		if channel_id != "" {
-			retryQuality := c.Query("q")
-			if retryQuality == "" {
-				retryQuality = "auto"
-			}
-
 			if refreshedLiveResult, refreshErr := TV.Live(channel_id); refreshErr == nil && refreshedLiveResult != nil {
 				if freshToken := extractLiveResultHDNEA(refreshedLiveResult); freshToken != "" {
 					setCachedHDNEA(channel_id, freshToken)
 					cachedHDNEA = freshToken
 				}
 
-				qualityCandidates := []string{retryQuality, "auto", "high", "medium", "low"}
-				triedURL := map[string]bool{renderURL: true}
+				if os.Getenv("JIOTV_DEBUG") == "true" {
+					utils.Log.Printf("[DEBUG] RenderHandler recovery - harvested fresh token, retrying original URL")
+				}
 
-				for _, candidateQuality := range qualityCandidates {
-					candidateURL := selectBestLiveHLSURL(refreshedLiveResult, candidateQuality)
-					candidateURL = toAbsoluteStreamURL(candidateURL, refreshedLiveResult)
-					if candidateURL == "" || triedURL[candidateURL] {
-						continue
+				// Retry the original decoded URL but stripped of any expired URL token,
+				// using the freshly harvested cachedHDNEA token we just acquired.
+				// This preserves the player's requested timeline sequence.
+				renderURL = stripHDNEAFromURL(decoded_url)
+				renderResult, statusCode, newHdnea = TV.Render(renderURL, cachedHDNEA)
+				if newHdnea != "" {
+					setCachedHDNEA(channel_id, newHdnea)
+					cachedHDNEA = newHdnea
+				}
+
+				// If the original URL STILL returns 404 (stale manifest that truly no longer exists),
+				// ONLY THEN do we fallback to the completely new base URL from TV.Live.
+				if statusCode == fiber.StatusNotFound {
+					retryQuality := c.Query("q")
+					if retryQuality == "" {
+						retryQuality = "auto"
 					}
-					triedURL[candidateURL] = true
+					qualityCandidates := []string{retryQuality, "auto", "high", "medium", "low"}
+					triedURL := map[string]bool{renderURL: true}
 
-					if os.Getenv("JIOTV_DEBUG") == "true" {
-						utils.Log.Printf("[DEBUG] RenderHandler recovery - trying quality=%s for channel=%s", candidateQuality, channel_id)
-					}
+					for _, candidateQuality := range qualityCandidates {
+						candidateURL := selectBestLiveHLSURL(refreshedLiveResult, candidateQuality)
+						candidateURL = toAbsoluteStreamURL(candidateURL, refreshedLiveResult)
+						if candidateURL == "" || triedURL[candidateURL] {
+							continue
+						}
+						triedURL[candidateURL] = true
 
-					renderURL = candidateURL
-					renderResult, statusCode, newHdnea = TV.Render(renderURL, cachedHDNEA)
-					if newHdnea != "" {
-						setCachedHDNEA(channel_id, newHdnea)
-						cachedHDNEA = newHdnea
-					}
+						if os.Getenv("JIOTV_DEBUG") == "true" {
+							utils.Log.Printf("[DEBUG] RenderHandler 404 recovery - trying new candidate URL for quality=%s", candidateQuality)
+						}
 
-					if statusCode == fiber.StatusOK {
-						break
+						renderURL = candidateURL
+						renderResult, statusCode, newHdnea = TV.Render(renderURL, cachedHDNEA)
+						if newHdnea != "" {
+							setCachedHDNEA(channel_id, newHdnea)
+							cachedHDNEA = newHdnea
+						}
+
+						if statusCode == fiber.StatusOK {
+							break
+						}
 					}
 				}
 			}
