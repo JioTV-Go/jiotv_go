@@ -819,6 +819,9 @@ func SLHandler(c *fiber.Ctx) error {
 // RenderKeyHandler requests m3u8 key from JioTV server
 func RenderKeyHandler(c *fiber.Ctx) error {
 	channel_id := c.Query("channel_key_id")
+	if err := internalUtils.ValidateRequiredParam("channel_key_id", channel_id); err != nil {
+		return err
+	}
 	auth := c.Query("auth")
 	// parse incoming hdnea query and set as request cookie only for upstream call (no client cookie)
 	if hdnea := c.Query("hdnea"); hdnea != "" {
@@ -868,6 +871,9 @@ func RenderTSHandler(c *fiber.Ctx) error {
 	}
 
 	channelID := c.Query("channel_key_id")
+	if err := internalUtils.ValidateRequiredParam("channel_key_id", channelID); err != nil {
+		return err
+	}
 	auth := c.Query("auth")
 	// parse incoming hdnea query and set as request cookie only for upstream call (no client cookie)
 	if hdnea := c.Query("hdnea"); hdnea != "" {
