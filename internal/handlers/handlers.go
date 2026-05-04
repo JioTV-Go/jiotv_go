@@ -625,52 +625,18 @@ func RenderHandler(c *fiber.Ctx) error {
 		cachedHDNEA = newHdnea
 	}
 
-	// On authentication failure, retry without any cached token
-	if statusCode == fiber.StatusForbidden || statusCode == fiber.StatusUnauthorized {
-		// Clear the stale cached token and force fresh token extraction
-		renderHDNEACache.Delete(channel_id)
+	// On authentication failure or 404, unify the retry logic by fetching a fresh stream URL
+	if statusCode == fiber.StatusForbidden || statusCode == fiber.StatusUnauthorized || statusCode == fiber.StatusNotFound {
+		// Clear the stale cached token
+		if statusCode != fiber.StatusNotFound {
+			renderHDNEACache.Delete(channel_id)
+		}
 
 		if os.Getenv("JIOTV_DEBUG") == "true" {
-			utils.Log.Printf("[DEBUG] Auth failure (Status %d) - clearing cache and retrying with fresh auth", statusCode)
+			utils.Log.Printf("[DEBUG] Auth failure or not found (Status %d) - fetching fresh live URL and auth", statusCode)
 		}
 
-		// Always retry on 403/401, regardless of whether HDNEA is in URL
-		// Some URLs have HDNEA embedded, others don't - but CDN always needs fresh tokens
-		strippedURL := stripHDNEAFromURL(decoded_url)
-		if strippedURL != renderURL {
-			renderURL = strippedURL
-			if os.Getenv("JIOTV_DEBUG") == "true" {
-				utils.Log.Printf("[DEBUG] Stripped HDNEA from URL for retry")
-			}
-		}
-
-		// Retry without any cached HDNEA token - let CDN provide fresh auth
-		renderResult, statusCode, newHdnea = TV.Render(renderURL, "")
-		if newHdnea != "" {
-			setCachedHDNEA(channel_id, newHdnea)
-			cachedHDNEA = newHdnea
-			if os.Getenv("JIOTV_DEBUG") == "true" {
-				utils.Log.Printf("[DEBUG] Retry successful - extracted fresh token: %s", truncateToken(newHdnea))
-			}
-		} else if os.Getenv("JIOTV_DEBUG") == "true" {
-			utils.Log.Printf("[DEBUG] Retry completed - new status: %d", statusCode)
-		}
-	} else if statusCode == fiber.StatusNotFound {
-		wasNotFound := true
-		strippedURL := stripHDNEAFromURL(decoded_url)
-		if strippedURL != renderURL {
-			renderURL = strippedURL
-			renderResult, statusCode, newHdnea = TV.Render(renderURL, cachedHDNEA)
-			if newHdnea != "" {
-				setCachedHDNEA(channel_id, newHdnea)
-				cachedHDNEA = newHdnea
-			}
-		}
-
-		// Some channels occasionally return stale HLS manifests (404).
-		// Do a bounded retry with a freshly fetched live URL.
-		// If the requested quality variant is broken, try alternative qualities once.
-		if wasNotFound && channel_id != "" {
+		if channel_id != "" {
 			retryQuality := c.Query("q")
 			if retryQuality == "" {
 				retryQuality = "auto"
@@ -694,7 +660,7 @@ func RenderHandler(c *fiber.Ctx) error {
 					triedURL[candidateURL] = true
 
 					if os.Getenv("JIOTV_DEBUG") == "true" {
-						utils.Log.Printf("[DEBUG] RenderHandler 404 recovery - trying quality=%s for channel=%s", candidateQuality, channel_id)
+						utils.Log.Printf("[DEBUG] RenderHandler recovery - trying quality=%s for channel=%s", candidateQuality, channel_id)
 					}
 
 					renderURL = candidateURL
@@ -873,9 +839,15 @@ func RenderTSHandler(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Check if decoded_url has hdnea or __hdnea__ and set cookie if not already set
-	// This is crucial when hdnea is embedded in the encrypted auth URL but not in the request query params
-	if len(c.Request().Header.Cookie("__hdnea__")) == 0 && strings.Contains(decoded_url, "hdnea=") {
+	// Always prefer a freshly cached HDNEA token if available
+	cachedHDNEA := getCachedHDNEA(channelID)
+	if cachedHDNEA != "" {
+		c.Request().Header.SetCookie("__hdnea__", cachedHDNEA)
+		// We should also replace the token in the URL if it's there
+		decoded_url = stripHDNEAFromURL(decoded_url)
+	} else if len(c.Request().Header.Cookie("__hdnea__")) == 0 && strings.Contains(decoded_url, "hdnea=") {
+		// Check if decoded_url has hdnea or __hdnea__ and set cookie if not already set
+		// This is crucial when hdnea is embedded in the encrypted auth URL but not in the request query params
 		qIdx := strings.Index(decoded_url, "?")
 		if qIdx != -1 {
 			params := decoded_url[qIdx+1:]
@@ -904,9 +876,6 @@ func RenderTSHandler(c *fiber.Ctx) error {
 
 		c.Response().Reset()
 		c.Request().Header.DelCookie("__hdnea__")
-		if !ForceRefreshCredentials() && os.Getenv("JIOTV_DEBUG") == "true" {
-			utils.Log.Printf("[DEBUG] RenderTSHandler forced refresh did not update credentials")
-		}
 
 		retryUrl := stripHDNEAFromURL(decoded_url)
 		if channelID != "" {
