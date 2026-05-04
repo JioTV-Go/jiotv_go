@@ -21,6 +21,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/proxy"
+	"golang.org/x/sync/singleflight"
 )
 
 var (
@@ -31,6 +32,7 @@ var (
 	EnableDRM        bool
 	SONY_LIST        = []string{"154", "155", "162", "289", "291", "471", "474", "476", "483", "514", "524", "525", "697", "872", "873", "874", "891", "892", "1146", "1393", "1772", "1773", "1774", "1775"}
 	renderHDNEACache sync.Map
+	tokenRefreshGroup singleflight.Group
 )
 
 const (
@@ -361,13 +363,37 @@ func liveResultNeedsRefresh(liveResult *television.LiveURLOutput) bool {
 	return ok && remaining <= hdneaRefreshLeadTime
 }
 
+// refreshChannelToken safely fetches a fresh stream using singleflight to prevent multiple
+// concurrent API requests for the same channel ID when a token expires (thundering herd).
+func refreshChannelToken(channelID string) (*television.LiveURLOutput, error) {
+	if channelID == "" {
+		return nil, fmt.Errorf("empty channel ID")
+	}
+
+	// Use singleflight to ensure only one concurrent TV.Live request per channelID
+	v, err, _ := tokenRefreshGroup.Do(channelID, func() (interface{}, error) {
+		return TV.Live(channelID)
+	})
+
+	if err != nil {
+		return nil, err
+	}
+
+	result, ok := v.(*television.LiveURLOutput)
+	if !ok {
+		return nil, fmt.Errorf("unexpected type from singleflight")
+	}
+
+	return result, nil
+}
+
 func refreshLiveResultIfNeeded(channelID string, liveResult *television.LiveURLOutput) (*television.LiveURLOutput, error) {
 	if channelID == "" || liveResult == nil || !liveResultNeedsRefresh(liveResult) {
 		return liveResult, nil
 	}
 
 	utils.Log.Printf("HDNEA token is near expiry for channel %s; refreshing live URL", channelID)
-	refreshedResult, err := TV.Live(channelID)
+	refreshedResult, err := refreshChannelToken(channelID)
 	if err != nil {
 		return liveResult, err
 	}
@@ -635,7 +661,7 @@ func RenderHandler(c *fiber.Ctx) error {
 		}
 
 		if channel_id != "" {
-			if refreshedLiveResult, refreshErr := TV.Live(channel_id); refreshErr == nil && refreshedLiveResult != nil {
+			if refreshedLiveResult, refreshErr := refreshChannelToken(channel_id); refreshErr == nil && refreshedLiveResult != nil {
 				if freshToken := extractLiveResultHDNEA(refreshedLiveResult); freshToken != "" {
 					setCachedHDNEA(channel_id, freshToken)
 					cachedHDNEA = freshToken
@@ -894,7 +920,7 @@ func RenderTSHandler(c *fiber.Ctx) error {
 
 		retryUrl := stripHDNEAFromURL(decoded_url)
 		if channelID != "" {
-			if refreshedResult, refreshErr := TV.Live(channelID); refreshErr == nil && refreshedResult != nil {
+			if refreshedResult, refreshErr := refreshChannelToken(channelID); refreshErr == nil && refreshedResult != nil {
 				if refreshedHDNEA := extractLiveResultHDNEA(refreshedResult); refreshedHDNEA != "" {
 					setCachedHDNEA(channelID, refreshedHDNEA)
 					c.Request().Header.SetCookie("__hdnea__", refreshedHDNEA)
