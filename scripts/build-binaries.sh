@@ -38,6 +38,10 @@ for var in $(go tool dist list); do
                     cc="x86_64-linux-android32-clang"
                     cxx="x86_64-linux-android32-clang++"
                     ;;
+                "386")
+                    cc="i686-linux-android32-clang"
+                    cxx="i686-linux-android32-clang++"
+                    ;;    
                 *)
                     echo "Skipping: $var"
                     continue
