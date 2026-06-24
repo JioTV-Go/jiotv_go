@@ -192,10 +192,13 @@ func genXML() ([]byte, error) {
 
 	for _, channel := range channelsResponse.Channels {
 		channels = append(channels, Channel{
-			ID: channel.ChannelID,
-			Display: channel.ChannelName,
-			LanguageID: channel.ChannelLanguageID,
-		})
+	ID: channel.ChannelID,
+	Display: channel.ChannelName,
+	LanguageID: channel.ChannelLanguageID,
+	Icon: Icon{
+		Src: "https://jiotv.catchup.cdn.jio.com/dare_images/images/" + channel.LogoURL,
+	},
+})
 	}
 	utils.Log.Println("Fetched", len(channels), "channels")
 	// Use a worker pool to fetch EPG data concurrently
