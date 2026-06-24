@@ -1,46 +1,33 @@
 FROM golang:1.25-alpine AS builder
 
-# Set the working directory inside the container
 WORKDIR /app
 
-# Enable Go 1.25 experiments for json v2 and the new GC during build
+ENV CGO_ENABLED=0
 ENV GOEXPERIMENT=jsonv2,greenteagc
 
-# Copy source files from the host computer to the container
-COPY go.mod ./
-COPY go.sum ./
-COPY cmd ./cmd
-COPY pkg ./pkg
-COPY web ./web
-COPY internal ./internal
-COPY main.go ./main.go
-COPY VERSION ./VERSION
+COPY go.mod go.sum ./
+RUN go mod download
 
-# Build the Go app with optimizations
-RUN go build -ldflags="-s -w" -trimpath -o /app/jiotv_go .
+COPY . .
 
-# Stage 2: Create the final minimal image
-# skipcq: DOK-DL3007
-FROM alpine:latest
+RUN go build \
+    -ldflags="-s -w" \
+    -trimpath \
+    -o /app/jiotv_go .
 
-# Set the working directory inside the container
+FROM alpine:3.22
+
 WORKDIR /app
 
-# Copy the built Go executable from the previous stage
+RUN apk add --no-cache ca-certificates tzdata
+
 COPY --from=builder /app/jiotv_go .
 
-# Set environment variables
-ENV JIOTV_PATH_PREFIX="/app/.jiotv_go"
+ENV JIOTV_PATH_PREFIX=/app/.jiotv_go
 
-# Volume for credentials
-VOLUME /app/.jiotv_go
+VOLUME ["/app/.jiotv_go"]
 
-# Expose port 5001 to the outside world
 EXPOSE 5001
 
-# Command to run the executable with arguments
-# The CMD instruction has been replaced with ENTRYPOINT to allow arguments
 ENTRYPOINT ["./jiotv_go"]
-
-# Default arguments
-CMD ["--skip-update-check", "serve", "--public"]
+CMD ["--skip-update-check","serve","--public"]
