@@ -100,7 +100,7 @@ func Init() {
 
 // NewProgramme creates a new Programme with the given parameters.
 func NewProgramme(channelID int, start, stop, title, desc, category, iconSrc string) Programme {
-	iconURL := fmt.Sprintf("%s/%s", EPG_POSTER_URL, iconSrc)
+	iconURL := EPG_POSTER_URL + iconSrc
 	return Programme{
 		Channel: fmt.Sprint(channelID),
 		Start:   start,
@@ -131,6 +131,7 @@ func genXML() ([]byte, error) {
 	// Create channels and programmes slices with initial capacity
 	var channels []Channel
 	var programmes []Programme
+	var programmeMutex sync.Mutex
 
 	// Define a worker function for fetching EPG data
 	fetchEPG := func(channel Channel, bar *progressbar.ProgressBar) {
@@ -140,8 +141,8 @@ func genXML() ([]byte, error) {
 
 		resp := fasthttp.AcquireResponse()
 
-		for offset := 0; offset < 2; offset++ {
-			reqUrl := fmt.Sprintf(EPG_URL, offset, channel.ID)
+		for offset := 0; offset < 7; offset++ {
+			reqUrl := fmt.Sprintf("https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get?channel_id=%d&offset=%d&langId=%d", channel.ID, offset, channel.LanguageID)
 			req.SetRequestURI(reqUrl)
 
 			if err := client.Do(req, resp); err != nil {
@@ -159,10 +160,14 @@ func genXML() ([]byte, error) {
 				continue
 			}
 
-			for _, programme := range epgResponse.EPG {
+			events := epgResponse.EPG
+			if len(events) == 0 { events = epgResponse.Result }
+			for _, programme := range events {
 				startTime := formatTime(time.UnixMilli(programme.StartEpoch))
 				endTime := formatTime(time.UnixMilli(programme.EndEpoch))
+				programmeMutex.Lock()
 				programmes = append(programmes, NewProgramme(channel.ID, startTime, endTime, programme.Title, programme.Description, programme.ShowCategory, programme.Poster))
+				programmeMutex.Unlock()
 			}
 		}
 		bar.Add(1)
@@ -187,13 +192,14 @@ func genXML() ([]byte, error) {
 
 	for _, channel := range channelsResponse.Channels {
 		channels = append(channels, Channel{
-			ID:      channel.ChannelID,
+			ID: channel.ChannelID,
 			Display: channel.ChannelName,
+			LanguageID: channel.ChannelLanguageID,
 		})
 	}
 	utils.Log.Println("Fetched", len(channels), "channels")
 	// Use a worker pool to fetch EPG data concurrently
-	const numWorkers = 20 // Adjust the number of workers based on your needs
+	const numWorkers = 100 // Adjust the number of workers based on your needs
 	channelQueue := make(chan Channel, len(channels))
 	var wg sync.WaitGroup
 
