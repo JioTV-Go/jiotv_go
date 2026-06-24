@@ -8,10 +8,11 @@ import (
 
 // Channel XML tag structure for the EPG
 type Channel struct {
-	XMLName xml.Name `xml:"channel"`      // XML tag name
-	ID         int    `xml:"id,attr"`      // ID is attribute of channel tag
-	Display    string `xml:"display-name"` // Display name of the channel
-	LanguageID int    `xml:"-"`
+	XMLName    xml.Name `xml:"channel"`
+	ID         int      `xml:"id,attr"`
+	Display    string   `xml:"display-name"`
+	Icon       Icon     `xml:"icon"`
+	LanguageID int      `xml:"-"`
 }
 
 // Icon XML tag for Programme XML tag in EPG
