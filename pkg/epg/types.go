@@ -9,8 +9,9 @@ import (
 // Channel XML tag structure for the EPG
 type Channel struct {
 	XMLName xml.Name `xml:"channel"`      // XML tag name
-	ID      int      `xml:"id,attr"`      // ID is attribute of channel tag
-	Display string   `xml:"display-name"` // Display name of the channel
+	ID         int    `xml:"id,attr"`      // ID is attribute of channel tag
+	Display    string `xml:"display-name"` // Display name of the channel
+	LanguageID int    `xml:"-"`
 }
 
 // Icon XML tag for Programme XML tag in EPG
@@ -66,9 +67,10 @@ type EPG struct {
 
 // ChannelObject represents Individual channel detail from JioTV API response
 type ChannelObject struct {
-	ChannelID   int    `json:"channel_id"`   // Channel ID
+	ChannelID int `json:"channel_id"` // Channel ID
 	ChannelName string `json:"channel_name"` // Channel name
-	LogoURL     string `json:"logoUrl"`      // Channel logo URL
+	ChannelLanguageID int `json:"channelLanguageId"`
+	LogoURL string `json:"logoUrl"`      // Channel logo URL
 }
 
 // ChannelsResponse represents Channel details from JioTV API response
@@ -93,7 +95,8 @@ type EPGObject struct {
 
 // EPGResponse represents EPG details from JioTV EPG API response
 type EPGResponse struct {
-	EPG []EPGObject `json:"epg"` // EPG details for a channel
+	EPG []EPGObject `json:"epg"`
+	Result []EPGObject `json:"result"`
 }
 
 // EpochString is a custom type for unmarshaling epoch from integers to strings in JioTV EPG API
