@@ -27,7 +27,7 @@ const (
 	// URL for fetching EPG data for individual channels from JioTV API
 	EPG_URL = urls.EPGURL
 	// EPG_POSTER_URL
-	EPG_POSTER_URL = urls.EPGPosterURLSlash
+	EPGPosterURLSlash = urls.EPGPosterURLSlash
 	// EPG_TASK_ID is the ID of the EPG generation task
 	EPG_TASK_ID = tasks.EPGTaskID
 	// Default values for random scheduling when crypto/rand fails
