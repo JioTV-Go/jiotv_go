@@ -131,7 +131,6 @@ func genXML() ([]byte, error) {
 	// Create channels and programmes slices with initial capacity
 	var channels []Channel
 	var programmes []Programme
-    var programmeMutex sync.Mutex
 
 	// Define a worker function for fetching EPG data
 	fetchEPG := func(channel Channel, bar *progressbar.ProgressBar) {
@@ -145,9 +144,7 @@ func genXML() ([]byte, error) {
 			reqUrl := fmt.Sprintf(EPG_URL, offset, channel.ID)
 			req.SetRequestURI(reqUrl)
 
-			if channel.ID == 1136 && offset == 0 {
-    utils.Log.Printf("EPG Response: %s", string(resp.Body()))
-}
+			if err := client.Do(req, resp); err != nil {
 				// Handle error
 				utils.Log.Printf("Error fetching EPG for channel %d, offset %d: %v", channel.ID, offset, err)
 				continue
@@ -162,34 +159,10 @@ func genXML() ([]byte, error) {
 				continue
 			}
 
-			events := epgResponse.EPG
-
-if len(events) == 0 {
-    events = epgResponse.Result
-}
-
-if len(events) == 0 {
-    events = epgResponse.Data
-}
-
-for _, programme := range events {
+			for _, programme := range epgResponse.EPG {
 				startTime := formatTime(time.UnixMilli(programme.StartEpoch))
 				endTime := formatTime(time.UnixMilli(programme.EndEpoch))
-				 programmeMutex.Lock()
-
-programmes = append(programmes,
-    NewProgramme(
-        channel.ID,
-        startTime,
-        endTime,
-        programme.Title,
-        programme.Description,
-        programme.ShowCategory,
-        programme.Poster,
-    ),
-)
-
-programmeMutex.Unlock()
+				programmes = append(programmes, NewProgramme(channel.ID, startTime, endTime, programme.Title, programme.Description, programme.ShowCategory, programme.Poster))
 			}
 		}
 		bar.Add(1)
@@ -220,7 +193,7 @@ programmeMutex.Unlock()
 	}
 	utils.Log.Println("Fetched", len(channels), "channels")
 	// Use a worker pool to fetch EPG data concurrently
-	const numWorkers = 50 // Adjust the number of workers based on your needs
+	const numWorkers = 20 // Adjust the number of workers based on your needs
 	channelQueue := make(chan Channel, len(channels))
 	var wg sync.WaitGroup
 
