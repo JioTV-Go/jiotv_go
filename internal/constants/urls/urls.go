@@ -28,7 +28,7 @@ const (
 
 	// EPG URLs
 	EPGURL            = "https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get/?offset=%d&channel_id=%d"
-	EPGPosterURL      = "https://jiotvimages.cdn.jio.com/dare_images/shows/"
+	EPGPosterURL      = "https://jiotvimages.cdn.jio.com/dare_images/shows"
     EPGPosterURLSlash = "https://jiotvimages.cdn.jio.com/dare_images/shows/"
 )
 
