@@ -141,7 +141,7 @@ func genXML() ([]byte, error) {
 
 		resp := fasthttp.AcquireResponse()
 
-		for offset := 0; offset < 7; offset++ {
+		for offset := 0; offset < 2; offset++ {
 			reqUrl := fmt.Sprintf("https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get?channel_id=%d&offset=%d&langId=%d", channel.ID, offset, channel.LanguageID)
 			req.SetRequestURI(reqUrl)
 
