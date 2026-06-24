@@ -28,8 +28,8 @@ const (
 
 	// EPG URLs
 	EPGURL            = "https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get/?offset=%d&channel_id=%d"
-	EPGPosterURL      = "https://jiotv.catchup.cdn.jio.com/epgdata/"
-    EPGPosterURLSlash = "https://jiotv.catchup.cdn.jio.com/epgdata/"
+	EPGPosterURL      = "https://jiotv.catchup.cdn.jio.com/"
+    EPGPosterURLSlash = "https://jiotv.catchup.cdn.jio.com/"
 )
 
 // URL path patterns (for string formatting)
