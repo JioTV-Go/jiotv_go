@@ -100,7 +100,7 @@ func Init() {
 
 // NewProgramme creates a new Programme with the given parameters.
 func NewProgramme(channelID int, start, stop, title, desc, category, iconSrc string) Programme {
-	iconURL := EPGPosterURLSlash + "/" + iconSrc
+	iconURL := EPGPosterURLSlash + iconSrc
 	return Programme{
 		Channel: fmt.Sprint(channelID),
 		Start:   start,
