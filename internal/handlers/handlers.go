@@ -25,13 +25,13 @@ import (
 )
 
 var (
-	TV               *television.Television
-	DisableTSHandler bool
-	isLogoutDisabled bool
-	Title            string
-	EnableDRM        bool
-	SONY_LIST        = []string{"154", "155", "162", "289", "291", "471", "474", "476", "483", "514", "524", "525", "697", "872", "873", "874", "891", "892", "1146", "1393", "1772", "1773", "1774", "1775"}
-	renderHDNEACache sync.Map
+	TV                *television.Television
+	DisableTSHandler  bool
+	isLogoutDisabled  bool
+	Title             string
+	EnableDRM         bool
+	SONY_LIST         = []string{"154", "155", "162", "289", "291", "471", "474", "476", "483", "514", "524", "525", "697", "872", "873", "874", "891", "892", "1146", "1393", "1772", "1773", "1774", "1775"}
+	renderHDNEACache  sync.Map
 	tokenRefreshGroup singleflight.Group
 )
 
@@ -405,6 +405,20 @@ func refreshLiveResultIfNeeded(channelID string, liveResult *television.LiveURLO
 	return refreshedResult, nil
 }
 
+// hdneaCacheKey namespaces cached HDNEA tokens by stream kind. Live and
+// catchup URLs for the same channel are signed with different ACLs, so a
+// token cached for one is rejected with HTTP 400 when replayed against the
+// other; see the caller in RenderHandler.
+func hdneaCacheKey(channelID, streamURL string) string {
+	if channelID == "" {
+		return ""
+	}
+	if strings.Contains(strings.ToLower(streamURL), "catchup") {
+		return channelID + "|catchup"
+	}
+	return channelID
+}
+
 func getCachedHDNEA(channelID string) string {
 	if channelID == "" {
 		return ""
@@ -613,8 +627,14 @@ func RenderHandler(c *fiber.Ctx) error {
 
 	decoded_url = toAbsoluteStreamURL(decoded_url, nil)
 
+	// Cache lookups are namespaced by stream kind: live and catchup URLs for the
+	// same channel are signed with different ACLs (catchup tokens are scoped to
+	// a ".../Catchup_Fallback/*" path), so a token cached for one is rejected
+	// with HTTP 400 when replayed against the other.
+	hdneaKey := hdneaCacheKey(channel_id, decoded_url)
+
 	// Always prefer a freshly cached HDNEA token if available to prevent 403s on expired URL tokens
-	cachedHDNEA := getCachedHDNEA(channel_id)
+	cachedHDNEA := getCachedHDNEA(hdneaKey)
 	urlToken := extractHDNEAFromURL(decoded_url)
 
 	renderURL := decoded_url
@@ -634,7 +654,7 @@ func RenderHandler(c *fiber.Ctx) error {
 			sourceStr = "URL"
 		}
 		utils.Log.Printf("[DEBUG] Token selection - URL token: %s | Cached token: %s | Using: %s (source: %s)",
-			truncateToken(urlToken), truncateToken(getCachedHDNEA(channel_id)), truncateToken(cachedHDNEA), sourceStr)
+			truncateToken(urlToken), truncateToken(getCachedHDNEA(hdneaKey)), truncateToken(cachedHDNEA), sourceStr)
 	}
 	renderResult, statusCode, newHdnea := TV.Render(renderURL, cachedHDNEA)
 
@@ -645,7 +665,7 @@ func RenderHandler(c *fiber.Ctx) error {
 
 	// Always cache fresh token from response for fallback on next request
 	if newHdnea != "" {
-		setCachedHDNEA(channel_id, newHdnea)
+		setCachedHDNEA(hdneaKey, newHdnea)
 		cachedHDNEA = newHdnea
 	}
 
@@ -653,7 +673,7 @@ func RenderHandler(c *fiber.Ctx) error {
 	if statusCode == fiber.StatusForbidden || statusCode == fiber.StatusUnauthorized || statusCode == fiber.StatusNotFound {
 		// Clear the stale cached token
 		if statusCode != fiber.StatusNotFound {
-			renderHDNEACache.Delete(channel_id)
+			renderHDNEACache.Delete(hdneaKey)
 		}
 
 		if os.Getenv("JIOTV_DEBUG") == "true" {
@@ -663,7 +683,7 @@ func RenderHandler(c *fiber.Ctx) error {
 		if channel_id != "" {
 			if refreshedLiveResult, refreshErr := refreshChannelToken(channel_id); refreshErr == nil && refreshedLiveResult != nil {
 				if freshToken := extractLiveResultHDNEA(refreshedLiveResult); freshToken != "" {
-					setCachedHDNEA(channel_id, freshToken)
+					setCachedHDNEA(hdneaKey, freshToken)
 					cachedHDNEA = freshToken
 				}
 
@@ -677,7 +697,7 @@ func RenderHandler(c *fiber.Ctx) error {
 				renderURL = stripHDNEAFromURL(decoded_url)
 				renderResult, statusCode, newHdnea = TV.Render(renderURL, cachedHDNEA)
 				if newHdnea != "" {
-					setCachedHDNEA(channel_id, newHdnea)
+					setCachedHDNEA(hdneaKey, newHdnea)
 					cachedHDNEA = newHdnea
 				}
 
@@ -706,7 +726,7 @@ func RenderHandler(c *fiber.Ctx) error {
 						renderURL = candidateURL
 						renderResult, statusCode, newHdnea = TV.Render(renderURL, cachedHDNEA)
 						if newHdnea != "" {
-							setCachedHDNEA(channel_id, newHdnea)
+							setCachedHDNEA(hdneaKey, newHdnea)
 							cachedHDNEA = newHdnea
 						}
 
@@ -754,12 +774,20 @@ func RenderHandler(c *fiber.Ctx) error {
 	// replacer replaces all the file names ending with .m3u8 and .ts with our own server URLs
 	// More info: https://golang.org/pkg/regexp/#Regexp.ReplaceAllFunc
 	replacer := func(match []byte) []byte {
+		// The pattern below deliberately consumes a trailing query string, so
+		// the extension has to be tested against the path alone. Testing the
+		// whole match leaves every catchup URI ("...m3u8?vbegin=...") falling
+		// through unrewritten, which breaks playback with a demuxer error.
+		path := match
+		if queryIndex := bytes.IndexByte(match, '?'); queryIndex != -1 {
+			path = match[:queryIndex]
+		}
 		switch {
-		case bytes.HasSuffix(match, []byte(".m3u8")):
+		case bytes.HasSuffix(path, []byte(".m3u8")):
 			return television.ReplaceM3U8(baseUrl, match, params, channel_id, c.Query("q"))
-		case bytes.HasSuffix(match, []byte(".ts")):
+		case bytes.HasSuffix(path, []byte(".ts")):
 			return television.ReplaceTS(baseUrl, match, params, channel_id)
-		case bytes.HasSuffix(match, []byte(".aac")):
+		case bytes.HasSuffix(path, []byte(".aac")):
 			return television.ReplaceAAC(baseUrl, match, params, channel_id)
 		default:
 			return match

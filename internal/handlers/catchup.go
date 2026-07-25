@@ -12,6 +12,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	internalUtils "github.com/jiotv-go/jiotv_go/v3/internal/utils"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/television"
 	pkgUtils "github.com/jiotv-go/jiotv_go/v3/pkg/utils"
 	"github.com/valyala/fasthttp"
 )
@@ -23,6 +24,24 @@ const (
 	epochThreshold  = 100000000000
 )
 
+// catchupSupport reports the channel's display name and whether the channel
+// list marks it as offering catchup. known is false when the channel list is
+// unavailable or the ID is absent from it, in which case callers should not
+// block: an API hiccup should not disable a working feature.
+func catchupSupport(channelID string) (name string, supported bool, known bool) {
+	channelList, err := television.Channels()
+	if err != nil {
+		pkgUtils.Log.Printf("Unable to check catchup availability for %s: %v", channelID, err)
+		return channelID, false, false
+	}
+	for _, channel := range channelList.Result {
+		if channel.ID == channelID {
+			return channel.Name, channel.IsCatchupAvailable, true
+		}
+	}
+	return channelID, false, false
+}
+
 func CatchupHandler(c *fiber.Ctx) error {
 	id := c.Params("id")
 	offsetStr := c.Query("offset", "0")
@@ -30,6 +49,21 @@ func CatchupHandler(c *fiber.Ctx) error {
 	if err != nil {
 		offset = 0
 		pkgUtils.Log.Printf("Invalid offset query parameter, defaulting to 0: %v", err)
+	}
+
+	// Channels without catchup still list programmes, but every stream request
+	// for them is refused with an empty HTTP 403, which reaches the player as
+	// an unexplained format/demuxer error. Say so instead of offering dead
+	// links. A paced survey across ~40 channels found isCatchupAvailable to be
+	// a perfect negative predictor: 0/8 sampled channels with the flag unset
+	// were ever playable.
+	if channelName, supported, known := catchupSupport(id); known && !supported {
+		return c.Render("views/catchup", fiber.Map{
+			"Title":       Title,
+			"Error":       "Catchup is not available for " + channelName + ". This channel only offers a live stream.",
+			"Channel":     channelName,
+			"LivePlayURL": "/play/" + id + "?live=true",
+		})
 	}
 
 	epgData, err := getCatchupEPG(id, offset)
@@ -139,9 +173,13 @@ func CatchupStreamHandler(c *fiber.Ctx) error {
 	}
 
 	redirectURL := fmt.Sprintf("/render.m3u8?auth=%s&channel_key_id=%s", codedUrl, id)
-	// Ensure we don't double-append hdnea if it's already in the URL
-	if catchupResult.Hdnea != "" && !strings.Contains(targetURL, "hdnea=") {
-		redirectURL += "&hdnea=" + catchupResult.Hdnea
+	// Only append the token when the target URL does not already carry one.
+	// The check must cover "__hdnea__=" as well: that is the spelling the
+	// catchup API actually returns, and it does not contain the substring
+	// "hdnea=", so a narrower check appends a second, conflicting token,
+	// which JioTV's CDN then rejects with HTTP 400.
+	if catchupResult.Hdnea != "" && !strings.Contains(targetURL, "hdnea=") && !strings.Contains(targetURL, "__hdnea__=") {
+		redirectURL += "&hdnea=" + url.QueryEscape(catchupResult.Hdnea)
 	}
 	return c.Redirect(redirectURL, fiber.StatusFound)
 }
