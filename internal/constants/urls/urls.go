@@ -27,7 +27,7 @@ const (
 	ChannelURL     = "https://jiotv.data.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?os=android&devicetype=phone&usertype=tvYR7NSNn7rymo3F"
 
 	// EPG URLs
-	EPGURL            = "https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get/?offset=%d&channel_id=%d"
+	EPGURL            = "https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get?offset=%d&channel_id=%d"
 	EPGPosterURL      = "https://jiotv.catchup.cdn.jio.com/dare_images/shows"
 	EPGPosterURLSlash = "https://jiotv.catchup.cdn.jio.com/dare_images/shows/"
 )
