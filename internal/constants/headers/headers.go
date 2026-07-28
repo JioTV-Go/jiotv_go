@@ -16,6 +16,11 @@ const (
 	VersionCode = "versionCode"
 	OS          = "os"
 	XAPIKey     = "x-api-key"
+
+	// Headers required by the premium provider APIs
+	XAccessToken = "X-AccessToken"
+	XVersionCode = "X-VersionCode"
+	XPlatform    = "X-Platform"
 )
 
 // HTTP Header Values
@@ -36,7 +41,15 @@ const (
 	DeviceTypePhone = "phone"
 	OSAndroid       = "android"
 	VersionCode315  = "315"
- 	VersionCode389  = "389"
+	VersionCode389  = "389"
+	// VersionCode413 matches the current JioTV app build (v7.1.7). The premium
+	// provider APIs require it: the plans endpoint rejects requests without a
+	// current versionCode/X-Platform pair.
+	VersionCode413 = "413"
+
+	// Platform values for the X-Platform header used by premium provider APIs
+	PlatformAndroid       = "android"
+	PlatformAndroidMobile = "android_mobile"
 
 	// API Key
 	APIKeyJio = "l7xx75e822925f184370b2e25170c5d5820a"

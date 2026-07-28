@@ -281,19 +281,29 @@ func getDrmMpd(channelID, quality string) (*DrmMpdOutput, error) {
 	if refreshedResult, refreshErr := refreshLiveResultIfNeeded(channelID, liveResult); refreshErr == nil && refreshedResult != nil {
 		liveResult = refreshedResult
 	}
+	return buildDrmMpdOutput(liveResult, channelID, quality)
+}
 
-	tv_url := internalUtils.SelectQuality(quality, liveResult.Mpd.Bitrates.Auto, liveResult.Mpd.Bitrates.High, liveResult.Mpd.Bitrates.Medium, liveResult.Mpd.Bitrates.Low)
+// buildDrmMpdOutput turns a playback response into the properties needed to
+// render the DRM player. It is shared by live channels and premium provider
+// content, which return the same payload shape.
+func buildDrmMpdOutput(liveResult *television.LiveURLOutput, channelID, quality string) (*DrmMpdOutput, error) {
+	// ResolvedBitrates covers both shapes: live channels nest URLs under
+	// mpd.bitrates, premium content returns a single mpd.auto.
+	bitrates := liveResult.Mpd.ResolvedBitrates()
+
+	tv_url := internalUtils.SelectQuality(quality, bitrates.Auto, bitrates.High, bitrates.Medium, bitrates.Low)
 
 	// If quality selection fails (empty), try to fallback to any available quality
 	if tv_url == "" {
-		if liveResult.Mpd.Bitrates.High != "" {
-			tv_url = liveResult.Mpd.Bitrates.High
-		} else if liveResult.Mpd.Bitrates.Auto != "" {
-			tv_url = liveResult.Mpd.Bitrates.Auto
-		} else if liveResult.Mpd.Bitrates.Medium != "" {
-			tv_url = liveResult.Mpd.Bitrates.Medium
-		} else if liveResult.Mpd.Bitrates.Low != "" {
-			tv_url = liveResult.Mpd.Bitrates.Low
+		if bitrates.High != "" {
+			tv_url = bitrates.High
+		} else if bitrates.Auto != "" {
+			tv_url = bitrates.Auto
+		} else if bitrates.Medium != "" {
+			tv_url = bitrates.Medium
+		} else if bitrates.Low != "" {
+			tv_url = bitrates.Low
 		}
 	}
 
@@ -318,12 +328,14 @@ func getDrmMpd(channelID, quality string) (*DrmMpdOutput, error) {
 		return nil, err
 	}
 
+	// ResolvedLicenseURL covers both sources: live channels carry the license in
+	// mpd.key, premium provider content returns a top-level keyUrl.
 	licenseUrl := ""
-	if liveResult.Mpd.Key != "" {
-		enc_key, err := secureurl.EncryptURL(liveResult.Mpd.Key)
-		if err != nil {
-			utils.Log.Panicln(err)
-			return nil, err
+	if resolvedLicenseURL := liveResult.ResolvedLicenseURL(); resolvedLicenseURL != "" {
+		enc_key, encErr := secureurl.EncryptURL(resolvedLicenseURL)
+		if encErr != nil {
+			utils.Log.Panicln(encErr)
+			return nil, encErr
 		}
 		licenseUrl = "/drm?auth=" + enc_key + "&channel_id=" + channelID + "&channel=" + channel_enc_url
 	}

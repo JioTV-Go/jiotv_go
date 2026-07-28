@@ -3,6 +3,7 @@ package television
 import (
 	"encoding/json"
 	"strconv"
+	"strings"
 
 	"github.com/valyala/fasthttp"
 )
@@ -19,21 +20,34 @@ type Television struct {
 
 // Channel represents Individual channel details from JioTV API
 type Channel struct {
-	ID       string `json:"channel_id"`
-	Name     string `json:"channel_name"`
-	URL      string `json:"channel_url"`
-	LogoURL  string `json:"logoUrl"`
-	Category int    `json:"channelCategoryId"`
-	Language int    `json:"channelLanguageId"`
-	IsHD     bool   `json:"isHD"`
+	ID                 string `json:"channel_id"`
+	Name               string `json:"channel_name"`
+	URL                string `json:"channel_url"`
+	LogoURL            string `json:"logoUrl"`
+	Category           int    `json:"channelCategoryId"`
+	Language           int    `json:"channelLanguageId"`
+	IsHD               bool   `json:"isHD"`
 	IsCatchupAvailable bool   `json:"isCatchupAvailable"`
+
+	// RequiresSubscription marks channels the playback API refuses with
+	// "No eligible plans found" unless the account subscribes separately.
+	// It is derived from business_type, not from the API's own is_premium flag:
+	// is_premium is set on many freely playable channels and mispredicts
+	// roughly one in five, while business_type=="premium" matched playability
+	// exactly across a sample covering all four business types.
+	RequiresSubscription bool `json:"requiresSubscription"`
 }
+
+// businessTypePremium is the business_type value marking channels that need a
+// separate subscription.
+const businessTypePremium = "premium"
 
 // UnmarshalJSON to Override Channel.ID to convert int from json to string
 func (c *Channel) UnmarshalJSON(b []byte) error {
 	type Alias Channel
 	aux := &struct {
-		ID int `json:"channel_id"`
+		ID           int    `json:"channel_id"`
+		BusinessType string `json:"business_type"`
 		*Alias
 	}{
 		Alias: (*Alias)(c),
@@ -42,6 +56,7 @@ func (c *Channel) UnmarshalJSON(b []byte) error {
 		return err
 	}
 	c.ID = strconv.Itoa(aux.ID)
+	c.RequiresSubscription = strings.EqualFold(strings.TrimSpace(aux.BusinessType), businessTypePremium)
 	return nil
 }
 
@@ -52,6 +67,149 @@ type ChannelsResponse struct {
 	Result  []Channel `json:"result"`
 }
 
+// PremiumProvider represents a premium partner available for the logged-in account.
+// PremiumProvider is a premium provider available on the account.
+//
+// Two different identifier namespaces are involved. ID is the entitlement
+// identifier from the plans API (for example "Z0177"), while ProviderID is the
+// content identifier used by the provider config and catalog APIs (for example
+// "200169"). Only ProviderID can be used to browse or play content.
+type PremiumProvider struct {
+	ID         string `json:"id"`
+	ProviderID string `json:"providerId,omitempty"`
+	Name       string `json:"name"`
+	URL        string `json:"url"`
+	Image      string `json:"image,omitempty"`
+
+	// matchNames holds the provider taxonomy names reported by the plans API,
+	// most authoritative first, used to look the provider up in the provider
+	// directory. Not part of the API response.
+	matchNames []string
+}
+
+// PlansResponse is the response payload for the account plans API
+// (tv.media.jio.com/apis/v2.1/plans/get).
+//
+// PackageInfo holds the plans actually active on the account and is the
+// authoritative source for premium entitlements. Result is the older nested
+// shape, retained as a fallback.
+type PlansResponse struct {
+	PackageInfo []ActiveSubscriptionPlan `json:"PackageInfo"`
+	Result      PlansResult              `json:"result"`
+}
+
+// ActiveSubscriptionPlan represents one plan subscribed on the account.
+type ActiveSubscriptionPlan struct {
+	PlanID        string                 `json:"planid"`
+	IsActive      bool                   `json:"isactive"`
+	PackageDetail ActiveSubscriptionPack `json:"packageDetail"`
+}
+
+// ActiveSubscriptionPack holds the pack details attached to an active plan.
+type ActiveSubscriptionPack struct {
+	PackageID   string         `json:"package_id"`
+	PackageName string         `json:"package_name"`
+	Providers   []PlanProvider `json:"providers"`
+}
+
+// PlansResult wraps plans entries returned by plans API.
+type PlansResult struct {
+	Plans []Plan `json:"plans"`
+}
+
+// Plan represents a single plan returned by plans API.
+type Plan struct {
+	Providers []PlanProvider `json:"providers"`
+}
+
+// PlanProvider represents a provider entry attached to a plan. The current API
+// returns id/name/image; the older nested shape used providerId/providerName,
+// so both spellings are accepted.
+type PlanProvider struct {
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	Image        string `json:"image"`
+	Provider     string `json:"provider"`
+	ProviderID   string `json:"providerId"`
+	ProviderName string `json:"providerName"`
+}
+
+// resolvedID returns the provider identifier regardless of response shape.
+func (p PlanProvider) resolvedID() string {
+	if id := strings.TrimSpace(p.ID); id != "" {
+		return id
+	}
+	return strings.TrimSpace(p.ProviderID)
+}
+
+// resolvedName returns the provider display name regardless of response shape.
+func (p PlanProvider) resolvedName() string {
+	if name := strings.TrimSpace(p.Name); name != "" {
+		return name
+	}
+	return strings.TrimSpace(p.ProviderName)
+}
+
+type PremiumProviderFilterResponse struct {
+	Data PremiumProviderFilterData `json:"data"`
+}
+
+type PremiumProviderFilterData struct {
+	Provider []PremiumProviderFilters `json:"provider"`
+}
+
+type PremiumProviderFilters struct {
+	ProviderID string                  `json:"providerId"`
+	Provider   string                  `json:"provider"`
+	Filters    []PremiumProviderFilter `json:"filters"`
+}
+
+type PremiumProviderFilter struct {
+	FilterName string                       `json:"filterName"`
+	Values     []PremiumProviderFilterValue `json:"values"`
+}
+
+type PremiumProviderFilterValue struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+type PremiumProviderCatalogEnvelope struct {
+	Code         int                      `json:"Code"`
+	CodeLower    int                      `json:"code"`
+	Message      string                   `json:"Message"`
+	MessageLower string                   `json:"message"`
+	Data         []map[string]interface{} `json:"Data"`
+	DataLower    []map[string]interface{} `json:"data"`
+}
+
+type PremiumProviderCatalogItem struct {
+	ID            string `json:"id"`
+	Title         string `json:"title"`
+	Subtitle      string `json:"subtitle,omitempty"`
+	Description   string `json:"description,omitempty"`
+	ImageURL      string `json:"imageUrl,omitempty"`
+	StreamType    string `json:"streamType"`
+	ProviderID    string `json:"providerId"`
+	ChannelID     string `json:"channelId,omitempty"`
+	ContentID     string `json:"contentId,omitempty"`
+	SubCategoryID string `json:"subCategoryId,omitempty"`
+}
+
+type PremiumProviderCatalogResult struct {
+	ProviderID string                       `json:"providerId"`
+	Code       int                          `json:"code"`
+	Message    string                       `json:"message"`
+	Result     []PremiumProviderCatalogItem `json:"result"`
+}
+
+type PremiumProviderPlayRequest struct {
+	StreamType    string `json:"streamType" form:"streamType"`
+	ChannelID     string `json:"channelId" form:"channelId"`
+	ContentID     string `json:"contentId" form:"contentId"`
+	SubCategoryID string `json:"subCategoryId" form:"subCategoryId"`
+}
+
 // Bitrates represents Quality levels for live streams for JioTV API
 type Bitrates struct {
 	Auto   string `json:"auto"`
@@ -60,10 +218,35 @@ type Bitrates struct {
 	Medium string `json:"medium"`
 }
 
+// MPD represents the DASH section of a playback response. Live channels return
+// the stream URLs under "bitrates", while premium provider (SVOD) content
+// returns a single "auto" URL at this level.
 type MPD struct {
 	Result   string   `json:"result"`
 	Key      string   `json:"key"`
 	Bitrates Bitrates `json:"bitrates"`
+	Auto     string   `json:"auto"`
+	High     string   `json:"high"`
+	Low      string   `json:"low"`
+	Medium   string   `json:"medium"`
+}
+
+// ResolvedBitrates merges the two MPD shapes into one set of stream URLs.
+func (m MPD) ResolvedBitrates() Bitrates {
+	resolved := m.Bitrates
+	if resolved.Auto == "" {
+		resolved.Auto = m.Auto
+	}
+	if resolved.High == "" {
+		resolved.High = m.High
+	}
+	if resolved.Medium == "" {
+		resolved.Medium = m.Medium
+	}
+	if resolved.Low == "" {
+		resolved.Low = m.Low
+	}
+	return resolved
 }
 
 // LiveURLOutput represents Response of live stream URL request to JioTV API
@@ -84,10 +267,27 @@ type LiveURLOutput struct {
 	StartTime   float64  `json:"startTime"`
 	VodStitch   bool     `json:"vodStitch"`
 	Mpd         MPD      `json:"mpd"`
+	M3u8        Bitrates `json:"m3u8"`
 	IsDRM       bool     `json:"isDRM"`
+	KeyURL      string   `json:"keyUrl"`
 	ExtID       string   `json:"extId"`
 	AlgoName    string   `json:"algoName"`
 	Hdnea       string   `json:"-"` // parsed from URLs in Live response (hdnea query param); may rotate via Set-Cookie (__hdnea__) on m3u8/ts requests
+}
+
+// ResolvedLicenseURL returns the DRM license URL. Live channels carry it in
+// mpd.key, while premium provider content returns a top-level keyUrl.
+func (l LiveURLOutput) ResolvedLicenseURL() string {
+	if licenseURL := strings.TrimSpace(l.KeyURL); licenseURL != "" {
+		return licenseURL
+	}
+	return strings.TrimSpace(l.Mpd.Key)
+}
+
+// HasDRMStream reports whether the response carries a DASH stream that needs a
+// DRM license, regardless of whether the isDRM flag was set.
+func (l LiveURLOutput) HasDRMStream() bool {
+	return l.Mpd.ResolvedBitrates().Auto != "" && l.ResolvedLicenseURL() != ""
 }
 
 // CategoryMap represents Categories for channels
