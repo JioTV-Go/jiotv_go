@@ -41,7 +41,7 @@ func Init() {
 	var lastModTime time.Time
 	flag := false
 	utils.Log.Println("Checking EPG file")
-	
+
 	// Check file existence and get file info
 	fileResult := utils.CheckAndReadFile(epgFile)
 	if fileResult.Exists {
@@ -131,9 +131,11 @@ func genXML() ([]byte, error) {
 	// Create channels and programmes slices with initial capacity
 	var channels []Channel
 	var programmes []Programme
+	var programmesMu sync.Mutex
 
 	// Define a worker function for fetching EPG data
 	fetchEPG := func(channel Channel, bar *progressbar.ProgressBar) {
+		var channelProgrammes []Programme
 		req := fasthttp.AcquireRequest()
 		req.Header.SetUserAgent(headers.UserAgentOkHttp)
 		defer fasthttp.ReleaseRequest(req)
@@ -149,6 +151,10 @@ func genXML() ([]byte, error) {
 				utils.Log.Printf("Error fetching EPG for channel %d, offset %d: %v", channel.ID, offset, err)
 				continue
 			}
+			if status := resp.StatusCode(); status != fasthttp.StatusOK {
+				utils.Log.Printf("Error fetching EPG for channel %d, offset %d: HTTP status %d", channel.ID, offset, status)
+				continue
+			}
 
 			var epgResponse EPGResponse
 			if err := json.Unmarshal(resp.Body(), &epgResponse); err != nil {
@@ -162,9 +168,12 @@ func genXML() ([]byte, error) {
 			for _, programme := range epgResponse.EPG {
 				startTime := formatTime(time.UnixMilli(programme.StartEpoch))
 				endTime := formatTime(time.UnixMilli(programme.EndEpoch))
-				programmes = append(programmes, NewProgramme(channel.ID, startTime, endTime, programme.Title, programme.Description, programme.ShowCategory, programme.Poster))
+				channelProgrammes = append(channelProgrammes, NewProgramme(channel.ID, startTime, endTime, programme.Title, programme.Description, programme.ShowCategory, programme.Poster))
 			}
 		}
+		programmesMu.Lock()
+		programmes = append(programmes, channelProgrammes...)
+		programmesMu.Unlock()
 		bar.Add(1)
 		fasthttp.ReleaseResponse(resp)
 	}
@@ -217,6 +226,9 @@ func genXML() ([]byte, error) {
 	}
 	close(channelQueue)
 	wg.Wait()
+	if len(programmes) == 0 {
+		return nil, fmt.Errorf("no EPG programmes were fetched")
+	}
 
 	utils.Log.Println("Fetched programmes")
 	// Create EPG and marshal it to XML
