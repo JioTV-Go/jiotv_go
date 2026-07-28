@@ -405,10 +405,6 @@ func refreshLiveResultIfNeeded(channelID string, liveResult *television.LiveURLO
 	return refreshedResult, nil
 }
 
-// hdneaCacheKey namespaces cached HDNEA tokens by stream kind. Live and
-// catchup URLs for the same channel are signed with different ACLs, so a
-// token cached for one is rejected with HTTP 400 when replayed against the
-// other; see the caller in RenderHandler.
 // mediaURIExtension returns the file extension (".m3u8", ".ts" or ".aac") of a
 // matched media URI, or "" if none apply. The matching pattern deliberately
 // consumes a trailing query string, so a catchup URI such as
@@ -428,6 +424,10 @@ func mediaURIExtension(match []byte) string {
 	return ""
 }
 
+// hdneaCacheKey namespaces cached HDNEA tokens by stream kind. Live and
+// catchup URLs for the same channel are signed with different ACLs, so a
+// token cached for one is rejected with HTTP 400 when replayed against the
+// other; see the caller in RenderHandler.
 func hdneaCacheKey(channelID, streamURL string) string {
 	if channelID == "" {
 		return ""
