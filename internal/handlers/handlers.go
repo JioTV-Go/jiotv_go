@@ -409,6 +409,25 @@ func refreshLiveResultIfNeeded(channelID string, liveResult *television.LiveURLO
 // catchup URLs for the same channel are signed with different ACLs, so a
 // token cached for one is rejected with HTTP 400 when replayed against the
 // other; see the caller in RenderHandler.
+// mediaURIExtension returns the file extension (".m3u8", ".ts" or ".aac") of a
+// matched media URI, or "" if none apply. The matching pattern deliberately
+// consumes a trailing query string, so a catchup URI such as
+// "...m3u8?vbegin=...&vend=..." must be tested by its path rather than by the
+// whole match: checking the whole match leaves every catchup URI unmatched,
+// which breaks playback with a demuxer error.
+func mediaURIExtension(match []byte) string {
+	path := match
+	if queryIndex := bytes.IndexByte(match, '?'); queryIndex != -1 {
+		path = match[:queryIndex]
+	}
+	for _, ext := range []string{".m3u8", ".ts", ".aac"} {
+		if bytes.HasSuffix(path, []byte(ext)) {
+			return ext
+		}
+	}
+	return ""
+}
+
 func hdneaCacheKey(channelID, streamURL string) string {
 	if channelID == "" {
 		return ""
@@ -627,10 +646,6 @@ func RenderHandler(c *fiber.Ctx) error {
 
 	decoded_url = toAbsoluteStreamURL(decoded_url, nil)
 
-	// Cache lookups are namespaced by stream kind: live and catchup URLs for the
-	// same channel are signed with different ACLs (catchup tokens are scoped to
-	// a ".../Catchup_Fallback/*" path), so a token cached for one is rejected
-	// with HTTP 400 when replayed against the other.
 	hdneaKey := hdneaCacheKey(channel_id, decoded_url)
 
 	// Always prefer a freshly cached HDNEA token if available to prevent 403s on expired URL tokens
@@ -774,20 +789,12 @@ func RenderHandler(c *fiber.Ctx) error {
 	// replacer replaces all the file names ending with .m3u8 and .ts with our own server URLs
 	// More info: https://golang.org/pkg/regexp/#Regexp.ReplaceAllFunc
 	replacer := func(match []byte) []byte {
-		// The pattern below deliberately consumes a trailing query string, so
-		// the extension has to be tested against the path alone. Testing the
-		// whole match leaves every catchup URI ("...m3u8?vbegin=...") falling
-		// through unrewritten, which breaks playback with a demuxer error.
-		path := match
-		if queryIndex := bytes.IndexByte(match, '?'); queryIndex != -1 {
-			path = match[:queryIndex]
-		}
-		switch {
-		case bytes.HasSuffix(path, []byte(".m3u8")):
+		switch mediaURIExtension(match) {
+		case ".m3u8":
 			return television.ReplaceM3U8(baseUrl, match, params, channel_id, c.Query("q"))
-		case bytes.HasSuffix(path, []byte(".ts")):
+		case ".ts":
 			return television.ReplaceTS(baseUrl, match, params, channel_id)
-		case bytes.HasSuffix(path, []byte(".aac")):
+		case ".aac":
 			return television.ReplaceAAC(baseUrl, match, params, channel_id)
 		default:
 			return match

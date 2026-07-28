@@ -27,9 +27,6 @@ const (
 	ChannelURL     = "https://jiotv.data.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?os=android&devicetype=phone&usertype=tvYR7NSNn7rymo3F"
 
 	// EPG URLs
-	// No trailing slash before the query string: the upstream API answers 404
-	// for "getepg/get/?..." and 200 for "getepg/get?...". This breaks EPG for
-	// every channel when it 404s.
 	EPGURL            = "https://jiotv.data.cdn.jio.com/apis/v1.3/getepg/get?offset=%d&channel_id=%d"
 	EPGPosterURL      = "https://jiotv.catchup.cdn.jio.com/dare_images/shows"
 	EPGPosterURLSlash = "https://jiotv.catchup.cdn.jio.com/dare_images/shows/"
