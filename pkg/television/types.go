@@ -67,8 +67,7 @@ type ChannelsResponse struct {
 	Result  []Channel `json:"result"`
 }
 
-// PremiumProvider represents a premium partner available for the logged-in account.
-// PremiumProvider is a premium provider available on the account.
+// PremiumProvider is a premium partner available on the logged-in account.
 //
 // Two different identifier namespaces are involved. ID is the entitlement
 // identifier from the plans API (for example "Z0177"), while ProviderID is the
