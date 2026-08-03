@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"net/http/httptest"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
@@ -78,4 +79,34 @@ func TestDecryptURLParam(t *testing.T) {
 	// Test invalid encrypted URL
 	_, err = DecryptURLParam("test", "invalid")
 	assert.Error(t, err, "Expected error for invalid encrypted URL")
+}
+func TestSetPlayerHeadersStripsBrowserHeaders(t *testing.T) {
+	// A browser playing from a different origin adds Origin and Referer. The
+	// JioTV key endpoint answers 403 to any request carrying Origin, so these
+	// must not be forwarded upstream.
+	app := fiber.New()
+	app.Get("/test", func(c *fiber.Ctx) error {
+		c.Request().Header.Set("Origin", "http://localhost:8096")
+		c.Request().Header.Set("Referer", "http://localhost:8096/")
+		c.Request().Header.Set("Accept", "*/*")
+		c.Request().Header.Set("Accept-Encoding", "gzip")
+		c.Request().Header.Set("Accept-Language", "en-GB")
+
+		SetPlayerHeaders(c, "TestPlayer/1.0")
+
+		assert.Empty(t, string(c.Request().Header.Peek("Origin")),
+			"Origin must be stripped before proxying upstream")
+		assert.Empty(t, string(c.Request().Header.Peek("Referer")),
+			"Referer must be stripped before proxying upstream")
+		assert.Empty(t, string(c.Request().Header.Peek("Accept")))
+		assert.Empty(t, string(c.Request().Header.Peek("Accept-Encoding")))
+		assert.Empty(t, string(c.Request().Header.Peek("Accept-Language")))
+		assert.Equal(t, "TestPlayer/1.0", string(c.Request().Header.Peek("User-Agent")))
+		return nil
+	})
+
+	req := httptest.NewRequest("GET", "/test", nil)
+	resp, err := app.Test(req)
+	assert.NoError(t, err)
+	assert.Equal(t, fiber.StatusOK, resp.StatusCode)
 }
