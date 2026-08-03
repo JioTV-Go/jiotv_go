@@ -890,7 +890,11 @@ func RenderKeyHandler(c *fiber.Ctx) error {
 	c.Request().Header.Set("srno", "230203144000")
 	c.Request().Header.Set("ssotoken", TV.SsoToken)
 	c.Request().Header.Set("channelId", channel_id)
-	c.Request().Header.Set("User-Agent", PLAYER_USER_AGENT)
+	// Strip browser-added headers before proxying upstream. The key endpoint
+	// rejects requests carrying an Origin header with 403, which breaks
+	// AES-128 channels for any browser-based player served from a different
+	// origin (for example Jellyfin on :8096 requesting keys from :5001).
+	internalUtils.SetPlayerHeaders(c, PLAYER_USER_AGENT)
 	if err := proxy.Do(c, decoded_url, TV.Client); err != nil {
 		return err
 	}
