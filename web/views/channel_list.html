@@ -55,6 +55,7 @@
       href="/play/{{$channel.ID}}"
       class="card relative border border-primary shadow-lg hover:shadow-xl hover:bg-base-300 transition-all duration-200 ease-in-out scale-100 hover:scale-105 group"
       data-channel-id="{{$channel.ID}}"
+      data-catchup-available="{{if $channel.IsCatchupAvailable}}true{{else}}false{{end}}"
       tabindex="0"
     >
       <div class="flex flex-col items-center p-2 sm:p-4">
