@@ -627,3 +627,106 @@ func TestIsCustomChannel(t *testing.T) {
 	// Clean up
 	config.Cfg.CustomChannelsFile = ""
 }
+
+// TestChannelsHandlerM3UDRM tests M3U playlist KODIPROP tag generation for DRM channels
+func TestChannelsHandlerM3UDRM(t *testing.T) {
+	testCases := []struct {
+		name          string
+		isDRM         bool
+		enableDRM     bool
+		quality       string
+		expectedURL   string
+		expectedProps string
+	}{
+		{
+			name:          "NonDRMChannel",
+			isDRM:         false,
+			enableDRM:     true,
+			quality:       "",
+			expectedURL:   "http://localhost:5001/live/123.m3u8",
+			expectedProps: "",
+		},
+		{
+			name:          "NonDRMChannelWithQuality",
+			isDRM:         false,
+			enableDRM:     true,
+			quality:       "high",
+			expectedURL:   "http://localhost:5001/live/high/123.m3u8",
+			expectedProps: "",
+		},
+		{
+			name:          "DRMChannelDRMEnabled",
+			isDRM:         true,
+			enableDRM:     true,
+			quality:       "",
+			expectedURL:   "http://localhost:5001/live/mpd/123",
+			expectedProps: "#KODIPROP:inputstream=inputstream.adaptive\n#KODIPROP:inputstream.adaptive.manifest_type=mpd\n#KODIPROP:inputstream.adaptive.license_type=com.widevine.alpha\n#KODIPROP:inputstream.adaptive.license_key=http://localhost:5001/live/key/123\n",
+		},
+		{
+			name:          "DRMChannelDRMEnabledWithQuality",
+			isDRM:         true,
+			enableDRM:     true,
+			quality:       "high",
+			expectedURL:   "http://localhost:5001/live/mpd/123?q=high",
+			expectedProps: "#KODIPROP:inputstream=inputstream.adaptive\n#KODIPROP:inputstream.adaptive.manifest_type=mpd\n#KODIPROP:inputstream.adaptive.license_type=com.widevine.alpha\n#KODIPROP:inputstream.adaptive.license_key=http://localhost:5001/live/key/123?q=high\n",
+		},
+		{
+			name:          "DRMChannelDRMDisabled",
+			isDRM:         true,
+			enableDRM:     false,
+			quality:       "",
+			expectedURL:   "http://localhost:5001/live/123.m3u8",
+			expectedProps: "",
+		},
+	}
+
+	hostURL := "http://localhost:5001"
+	channelID := "123"
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			// Backup globals
+			origEnableDRM := EnableDRM
+			origDRMList := drmList
+			defer func() {
+				EnableDRM = origEnableDRM
+				drmList = origDRMList
+			}()
+
+			// Setup test environment
+			EnableDRM = tc.enableDRM
+			if tc.isDRM {
+				drmList = []string{channelID}
+			} else {
+				drmList = []string{}
+			}
+
+			// Create mock channel
+			mockChannels := []television.Channel{
+				{
+					ID:       channelID,
+					Name:     "Test Channel",
+					LogoURL:  "test.png",
+					Category: 1, // Entertainment
+					Language: 1, // Hindi
+				},
+			}
+
+			// Generate playlist
+			playlist := GenerateM3UPlaylist(mockChannels, hostURL, tc.quality, "", "", "")
+
+			// Verify the output contains the expected elements
+			if !strings.Contains(playlist, tc.expectedURL) {
+				t.Errorf("Expected playlist to contain channel URL '%s', got: \n%s", tc.expectedURL, playlist)
+			}
+			if tc.expectedProps != "" && !strings.Contains(playlist, tc.expectedProps) {
+				t.Errorf("Expected playlist to contain KODIPROP '%s', got: \n%s", tc.expectedProps, playlist)
+			}
+
+			// Verify non-DRM shouldn't have KODIPROP tags
+			if tc.expectedProps == "" && strings.Contains(playlist, "#KODIPROP") {
+				t.Errorf("Expected playlist to NOT contain KODIPROP tags, but found them: \n%s", playlist)
+			}
+		})
+	}
+}

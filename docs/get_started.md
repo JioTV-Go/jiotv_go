@@ -121,7 +121,8 @@ services:
     environment:
       - JIOTV_PATH_PREFIX=/app/.jiotv_go
       - TZ=Asia/Kolkata
-      # below is optional, but we strongly recommend setting it to true. Read https://t.me/jiotv_go/128 for more information.
+      # Below is optional, but we strongly recommend setting it to true.
+      # Read https://t.me/jiotv_go/128 and https://jiotv_go.rabil.me/drm.html for more information.
       - JIOTV_DRM=true
       # Read https://jiotv_go.rabil.me/config.html to know all configuration options.
 
