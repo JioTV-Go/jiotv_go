@@ -67,6 +67,7 @@
                     src="{{ .EpisodePoster }}"
                     alt="Episode Poster"
                     class="w-full max-h-64 object-cover"
+                    onerror="const attempts = parseInt(this.dataset.onerrorAttempts || '0', 10); if (attempts < 3) { this.dataset.onerrorAttempts = attempts + 1; this.src = 'https://jiotvimages.cdn.jio.com/dare_images/images/{{.ChannelID}}.png'; } else { this.style.display = 'none'; }"
                   />
                 </figure>
                 <div class="card-body p-4">

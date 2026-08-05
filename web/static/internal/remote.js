@@ -13,7 +13,7 @@
   // retain native arrows.
   function keepsArrowKeys(el) {
     if (!el) return false;
-    if (el.tagName === "TEXTAREA") return true;
+    if (el.tagName === "TEXTAREA" || el.tagName === "SELECT") return true;
     return el.tagName === "INPUT" && ["number", "range"].includes(el.type);
   }
   const KEY_DIRS = {

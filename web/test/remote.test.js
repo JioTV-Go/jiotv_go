@@ -139,7 +139,7 @@ describe("remote navigation pickNext", () => {
 describe("remote navigation key handling", () => {
   beforeEach(() => {
     jest.resetModules();
-    document.body.innerHTML = '<input id="search"><button id="apply">Apply</button>';
+    document.body.innerHTML = '<input id="search"><select id="quality"><option>Auto</option><option>HD</option></select><button id="apply">Apply</button>';
     for (const [id, rect] of Object.entries({
       search: { left: 0, top: 0, width: 200, height: 40 },
       apply: { left: 220, top: 0, width: 100, height: 40 },
@@ -154,12 +154,20 @@ describe("remote navigation key handling", () => {
     }
     window.eval(readFileSync("static/internal/remote.js", "utf8"));
   });
-
   test("moves right out of a focused text search field", () => {
     const search = document.getElementById("search");
     const apply = document.getElementById("apply");
     search.focus();
     search.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }));
     expect(document.activeElement).toBe(apply);
+  });
+
+  test("leaves arrow keys to a focused select", () => {
+    const quality = document.getElementById("quality");
+    const event = new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true, cancelable: true });
+    quality.focus();
+    quality.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+    expect(document.activeElement).toBe(quality);
   });
 });
