@@ -1,3 +1,18 @@
 {{ define "styling" }}
+<script>
+  // Set the theme before the stylesheet loads to prevent a flash of the
+  // default palette while common.js is still waiting at the end of <body>.
+  (() => {
+    try {
+      const storedTheme = localStorage.getItem("theme");
+      const theme = storedTheme || (
+        window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+      );
+      document.documentElement.setAttribute("data-theme", theme);
+    } catch (_) {
+      document.documentElement.setAttribute("data-theme", "dark");
+    }
+  })();
+</script>
 <link href="/static/internal/tailwind.css" rel="stylesheet" />
 {{ end }}
