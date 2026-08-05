@@ -1,12 +1,198 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "daisyui" {
+  themes: dark --default, light --prefersdark;
+}
 
-@layer utilities {
-  .line-clamp-2 {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
+/* ---------------------------------------------------------------------------
+   JioTV Go theme — "Midnight Indigo"
+   Dark-first streaming look. We override DaisyUI's built-in dark/light theme
+   tokens (unlayered CSS wins over DaisyUI's layered output), so the existing
+   theme-toggle JS (dark <-> light) keeps working untouched.
+--------------------------------------------------------------------------- */
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --color-base-100: oklch(0.21 0.045 257);
+  --color-base-200: oklch(0.165 0.038 257);
+  --color-base-300: oklch(0.27 0.05 257);
+  --color-base-content: oklch(0.93 0.012 250);
+  --color-primary: oklch(0.62 0.165 254);
+  --color-primary-content: oklch(0.98 0.01 254);
+  --color-secondary: oklch(0.75 0.13 225);
+  --color-secondary-content: oklch(0.18 0.04 250);
+  --color-accent: oklch(0.8 0.14 85);
+  --color-accent-content: oklch(0.2 0.04 85);
+  --color-neutral: oklch(0.3 0.03 255);
+  --color-neutral-content: oklch(0.92 0.01 255);
+  --color-info: oklch(0.72 0.12 225);
+  --color-success: oklch(0.75 0.15 165);
+  --color-warning: oklch(0.8 0.15 80);
+  --color-error: oklch(0.63 0.22 27);
+  --radius-box: 1.25rem;
+  --radius-field: 0.875rem;
+  --radius-selector: 1rem;
+  /* Channel logos are usually dark artwork on transparent PNGs,
+     so give them a light tile in dark mode. */
+  --logo-tile: #ffffff;
+}
+
+[data-theme="light"] {
+  color-scheme: light;
+  --color-base-100: oklch(0.995 0.002 255);
+  --color-base-200: oklch(0.965 0.01 255);
+  --color-base-300: oklch(0.915 0.015 255);
+  --color-base-content: oklch(0.25 0.04 257);
+  --color-primary: oklch(0.45 0.135 252);
+  --color-primary-content: oklch(0.98 0.005 252);
+  --color-secondary: oklch(0.6 0.13 227);
+  --color-secondary-content: oklch(0.98 0.005 227);
+  --color-accent: oklch(0.65 0.15 75);
+  --color-accent-content: oklch(0.98 0.005 75);
+  --color-neutral: oklch(0.35 0.03 255);
+  --color-neutral-content: oklch(0.95 0.005 255);
+  --color-info: oklch(0.55 0.12 227);
+  --color-success: oklch(0.6 0.15 165);
+  --color-warning: oklch(0.7 0.15 75);
+  --color-error: oklch(0.55 0.22 27);
+  --radius-box: 1.25rem;
+  --radius-field: 0.875rem;
+  --radius-selector: 1rem;
+  --logo-tile: var(--color-base-200);
+}
+
+/* --- Base polish ---------------------------------------------------------- */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-base-200);
+  /* soft brand glow at the top of every page */
+  background-image: radial-gradient(
+    60rem 24rem at 50% -8rem,
+    color-mix(in oklab, var(--color-primary) 14%, transparent),
+    transparent
+  );
+  background-repeat: no-repeat;
+  min-height: 100vh;
+}
+
+::selection {
+  background-color: color-mix(in oklab, var(--color-primary) 35%, transparent);
+}
+
+/* Thin, theme-aware scrollbars (WebKit + Firefox) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-base-300) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-base-300);
+  border-radius: 9999px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* --- Component refinements ------------------------------------------------ */
+
+/* Channel cards: soften the JS-toggled border colors (common.js swaps
+   border-primary <-> border-warning), and lift on hover instead of scaling. */
+.card.border-primary {
+  border-color: color-mix(in oklab, var(--color-primary) 30%, transparent);
+}
+.card.border-warning {
+  border-color: color-mix(in oklab, var(--color-warning) 65%, transparent);
+}
+a.card[data-channel-id] {
+  transition: transform 0.2s ease, box-shadow 0.2s ease,
+    border-color 0.2s ease, background-color 0.2s ease;
+}
+a.card[data-channel-id]:hover,
+a.card[data-channel-id]:focus-visible {
+  transform: translateY(-3px);
+  border-color: color-mix(in oklab, var(--color-primary) 70%, transparent);
+  box-shadow: 0 12px 28px -12px
+    color-mix(in oklab, var(--color-primary) 45%, transparent);
+}
+
+/* Glass surface for the sticky navbar and the search toolbar.
+   Pair with Tailwind's backdrop-blur-md utility on the element
+   (the CSS minifier drops a bare backdrop-filter declared here). */
+.glass-panel {
+  background-color: color-mix(in oklab, var(--color-base-100) 72%, transparent);
+}
+
+/* Logo tile: neutral surface that keeps dark and light logos legible */
+.logo-tile {
+  background-color: var(--logo-tile);
+}
+
+/* TV-remote / keyboard focus indicator: thick, high-contrast, always visible */
+:focus-visible {
+  outline: 3px solid color-mix(in oklab, var(--color-primary) 75%, white);
+  outline-offset: 2px;
+}
+
+/* Brand gradient used for the logo chip and headline accents.
+   Jio look: brand blue sweeping into cyan, like the Jio swoosh. */
+.brand-gradient {
+  background-image: linear-gradient(
+    135deg,
+    var(--color-primary),
+    var(--color-secondary)
+  );
+}
+
+/* Section headings as quiet overlines */
+.section-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: color-mix(in oklab, var(--color-base-content) 55%, transparent);
+}
+
+/* Primary buttons get the brand gradient */
+.btn-primary {
+  background-image: linear-gradient(
+    135deg,
+    var(--color-primary),
+    color-mix(in oklab, var(--color-primary) 45%, var(--color-secondary))
+  );
+  border-color: transparent;
+}
+.btn-primary:hover {
+  background-image: linear-gradient(
+    135deg,
+    color-mix(in oklab, var(--color-primary) 88%, white),
+    var(--color-secondary)
+  );
+}
+
+/* Modals and dropdown menus sit above the glow */
+.modal-box,
+.dropdown-content,
+.menu {
+  border: 1px solid color-mix(in oklab, var(--color-base-300) 60%, transparent);
+}
+
+/* --- Accessibility -------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
   }
 }

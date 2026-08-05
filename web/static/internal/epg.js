@@ -119,19 +119,19 @@ function renderSimilarChannels(similarChannels) {
 
         const channelCard = createElement('a', {
             href: `/play/${channel.channel_id}`,
-            className: 'card relative border border-primary shadow-lg hover:shadow-xl hover:bg-base-300 transition-all duration-200 ease-in-out scale-100 hover:scale-105 group',
+            className: 'card relative border border-primary bg-base-100 shadow-sm group',
             'data-channel-id': channel.channel_id,
             tabindex: '0'
         }, '', `
-            <div class="flex flex-col items-center p-2">
+            <div class="flex flex-col items-center p-3">
                 <img
                     src="${logoURL}"
                     loading="lazy"
                     alt="${channel.channel_name}"
-                    class="h-12 w-12 rounded-full bg-gray-200"
+                    class="h-12 w-12 rounded-xl logo-tile ring-1 ring-base-300/60"
                     onerror="this.style.display='none'"
                 />
-                <span class="text-sm font-bold mt-1 text-center line-clamp-2">${channel.channel_name}</span>
+                <span class="text-sm font-semibold mt-2 text-center leading-snug line-clamp-2">${channel.channel_name}</span>
             </div>
         `);
 
