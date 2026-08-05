@@ -17,7 +17,7 @@
         <div class="lg:col-span-8">
           <div
             id="player"
-            class="relative overflow-hidden w-full rounded-xl bg-black"
+            class="relative overflow-hidden w-full rounded-2xl bg-black ring-1 ring-base-300/40 shadow-2xl"
             style="aspect-ratio: 16/9; min-height: 200px"
           >
             <iframe
@@ -34,7 +34,7 @@
             ></iframe>
           </div>
           <div class="mt-2 flex justify-center">
-            <button id="aspect-43-toggle" class="btn" onclick="toggleAspectRatio()">
+            <button id="aspect-43-toggle" class="btn btn-ghost border border-base-300 hover:border-primary" onclick="toggleAspectRatio()">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="0 0 24 24"
@@ -55,12 +55,12 @@
         <div class="lg:col-span-4 mt-4 lg:mt-0">
           <!-- Now Playing Section (EPG) -->
           <div id="epg_parent" class="">
-            <h2 class="mb-3 text-lg font-bold text-center lg:text-left">
+            <h2 class="section-title mb-3 text-center lg:text-left">
               Now Playing
             </h2>
             <div id="epg" class="w-full">
-              <div class="card w-full bg-base-200 shadow-xl">
-                <figure><img id="episodePoster" alt="Episode Poster" /></figure>
+              <div class="card w-full bg-base-100 border border-base-300/50 shadow-lg">
+                <figure><img id="episodePoster" alt="Episode Poster" class="w-full max-h-64 object-cover" /></figure>
                 <div class="card-body p-4">
                   <h2 id="showname" class="card-title text-base"></h2>
                   <div class="flex flex-row gap-2 items-center justify-between">
@@ -78,8 +78,11 @@
                       </span>
                     </div>
                   </div>
-                  <p id="description" class="text-sm"></p>
-                  <div id="keywords" class="card-actions justify-end">
+                  <div>
+                    <p id="description" class="text-sm leading-5 line-clamp-3"></p>
+                    <button id="description-toggle" type="button" class="btn btn-link btn-sm h-auto min-h-0 px-0 hidden" aria-expanded="false" hidden>Read more</button>
+                  </div>
+                  <div id="keywords" class="flex flex-wrap gap-1.5 max-h-16 overflow-y-auto pr-1" aria-label="Program tags">
                     <div class="hidden badge badge-outline"></div>
                   </div>
                 </div>
@@ -91,10 +94,10 @@
       
       <!-- Similar Channels Section - Below main grid on desktop, part of stack on mobile -->
       <div id="similar_channels_parent" class="mt-6 lg:mx-8 xl:mx-52" style="display: none;">
-        <h2 class="mb-3 text-lg font-bold text-center lg:text-left">
+        <h2 class="section-title mb-3 text-center lg:text-left">
           Similar Channels
         </h2>
-        <div id="similar_channels" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+        <div id="similar_channels" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
           <!-- Similar channels will be populated by JavaScript -->
         </div>
       </div>
@@ -188,8 +191,10 @@
       </script>
     </div>
     <script src="/static/internal/utils.js"></script>
+    <script src="/static/internal/now_playing.js"></script>
     <script src="/static/internal/common.js"></script>
     <script src="/static/internal/epg.js"></script>
+    <script src="/static/internal/remote.js"></script>
     {{ template "footer" . }}
   </body>
 </html>

@@ -24,7 +24,7 @@ const getCurrentTheme = () => {
 const toggleTheme = () => {
   const htmlTag = document.getElementsByTagName("html")[0];
   const newTheme = getCurrentTheme() === "dark" ? "light" : "dark";
-  
+
   setLocalStorageItem("theme", newTheme);
   htmlTag.setAttribute("data-theme", newTheme);
 };
@@ -35,12 +35,14 @@ const initializeTheme = () => {
 
   if (getCurrentTheme() === "light") {
     const htmlTag = document.getElementsByTagName("html")[0];
-    
+
     if (sunIcon && moonIcon) {
       sunIcon.classList.replace("swap-on", "swap-off");
       moonIcon.classList.replace("swap-off", "swap-on");
     }
     htmlTag.setAttribute("data-theme", "light");
+  } else {
+    htmlTag.setAttribute("data-theme", "dark");
   }
 };
 
