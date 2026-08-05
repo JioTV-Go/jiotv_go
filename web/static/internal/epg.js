@@ -166,7 +166,10 @@ function updateEPG(epgData) {
     if (shows.length === 0) return;
     
     if (shownameElement) shownameElement.textContent = shows[0].showname;
-    if (descriptionElement) descriptionElement.textContent = shows[0].description;
+    if (descriptionElement) {
+        descriptionElement.textContent = shows[0].description;
+        updateNowPlayingDescription();
+    }
     
     if (episodePosterElement) {
         const posterUrl = new URL("/jtvposter/", window.location.href);

@@ -79,8 +79,11 @@
                       <span>{{ .ShowTime }}</span>
                     </div>
                   </div>
-                  <p id="description" class="text-sm">{{ .Description }}</p>
-                  <div id="keywords" class="card-actions justify-end">
+                  <div>
+                    <p id="description" class="text-sm leading-5 line-clamp-3">{{ .Description }}</p>
+                    <button id="description-toggle" type="button" class="btn btn-link btn-sm h-auto min-h-0 px-0 hidden" aria-expanded="false" hidden>Read more</button>
+                  </div>
+                  <div id="keywords" class="flex flex-wrap gap-1.5 max-h-12 overflow-y-auto pr-1" aria-label="Program tags">
                     <div class="hidden badge badge-outline"></div>
                   </div>
                 </div>
@@ -145,6 +148,7 @@
         updateAspectRatioUI(current43Mode);
       });
     </script>
+    <script src="/static/internal/now_playing.js"></script>
     <script src="/static/internal/utils.js"></script>
     <script src="/static/internal/common.js"></script>
     <script src="/static/internal/remote.js"></script>
