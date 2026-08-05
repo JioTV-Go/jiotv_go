@@ -1,19 +1,27 @@
 {{ define "login_dialog" }}
 <dialog id="login_modal" class="modal modal-bottom sm:modal-middle">
   <form method="dialog" class="modal-box">
-    <h3 class="font-bold text-lg">Login</h3>
-    <div class="flex flex-col gap-2">
-      <label for="username" class="label">Jio Mobile Number</label>
+    <div class="flex flex-col items-center gap-3 mb-4">
+      <span class="brand-gradient flex items-center justify-center size-12 rounded-2xl shadow-md">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="white" class="w-6 h-6" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 20.25h12m-7.5-3v3m3-3v3m-10.125-3h17.25c.621 0 1.125-.504 1.125-1.125V4.875c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125z" />
+        </svg>
+      </span>
+      <h3 class="font-bold text-xl tracking-tight">Sign in to JioTV Go</h3>
+      <p class="text-sm text-base-content/60 -mt-1">We'll text a one-time password to your Jio number.</p>
+    </div>
+    <div class="flex flex-col gap-3">
+      <label for="number" class="label text-sm font-medium">Jio Mobile Number</label>
       <input
         id="number"
         type="tel"
-        class="input input-bordered"
+        class="input input-bordered w-full"
         placeholder="9876543210"
         pattern="[0-9]{10}"
         minlength="10"
         maxlength="10"
       />
-      <button onclick="loginOTPClick()" class="btn btn-primary">Login</button>
+      <button onclick="loginOTPClick()" class="btn btn-primary w-full">Send OTP</button>
     </div>
   </form>
   <form method="dialog" class="modal-backdrop">
@@ -23,19 +31,19 @@
 <!-- Verify OTP Modal -->
 <dialog id="verify_otp_modal" class="modal modal-bottom sm:modal-middle">
   <form method="dialog" class="modal-box">
-    <h3 class="font-bold text-lg">Verify OTP</h3>
-    <div class="flex flex-col gap-2">
-      <label for="otp" class="label">OTP</label>
+    <h3 class="font-bold text-xl tracking-tight mb-4">Verify OTP</h3>
+    <div class="flex flex-col gap-3">
+      <label for="otp" class="label text-sm font-medium">Enter the 6-digit code</label>
       <input
         id="otp"
         type="number"
-        class="input input-bordered"
+        class="input input-bordered w-full tracking-widest"
         placeholder="543210"
         max="999999"
         min="100000"
         required
       />
-      <button onclick="loginOTPVerifyClick()" class="btn btn-primary">
+      <button onclick="loginOTPVerifyClick()" class="btn btn-primary w-full">
         Verify
       </button>
     </div>

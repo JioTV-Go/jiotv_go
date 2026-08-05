@@ -6,6 +6,8 @@
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
+  "background_color": "#0a0f1c",
+  "theme_color": "#0a0f1c",
   "categories": [
     "entertainment",
     "lifestyle",

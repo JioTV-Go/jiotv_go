@@ -7,10 +7,11 @@
     height: 1.5rem;
     border-radius: 9999px;
     border: 0;
-    background-color: #9ca3af;
+    background-color: var(--color-base-300);
     position: relative;
     cursor: pointer;
     transition: background-color 0.2s ease;
+    flex: none;
   }
 
   .nav-switch::before {
@@ -27,11 +28,11 @@
   }
 
   .nav-switch:checked {
-    background-color: #22c55e;
+    background-color: var(--color-primary);
   }
 
   .nav-switch.warn:checked {
-    background-color: #f59e0b;
+    background-color: var(--color-warning);
   }
 
   .nav-switch:checked::before {
@@ -39,38 +40,52 @@
   }
 
   .nav-switch:focus-visible {
-    outline: 2px solid currentColor;
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
+
+  /* On small screens, let navbar-end wrap below navbar-start */
+  @media (max-width: 639px) {
+    .navbar-end {
+      margin-inline-start: 0 !important;
+      width: 100%;
+      justify-content: flex-end;
+      padding-top: 0.25rem;
+    }
+  }
 </style>
-<nav class="navbar bg-base-100 px-4" role="navigation" aria-label="Main navigation">
+<nav class="navbar glass-panel backdrop-blur-md sticky top-0 z-50 px-4 flex-wrap border-b border-base-300/50 shadow-sm" role="navigation" aria-label="Main navigation">
   <div class="navbar-start">
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      fill="none"
-      viewBox="0 0 24 24"
-      stroke-width="1.5"
-      stroke="currentColor"
-      class="w-6 h-6"
-      aria-hidden="true"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M6 20.25h12m-7.5-3v3m3-3v3m-10.125-3h17.25c.621 0 1.125-.504 1.125-1.125V4.875c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125z"
-      />
-    </svg>
-    <a href="/" class="btn btn-ghost text-xl text-error" aria-label="Go to home page">{{ .Title }}</a>
+    <a href="/" class="flex items-center gap-2.5" aria-label="Go to home page">
+      <span class="brand-gradient flex items-center justify-center size-9 rounded-xl shadow-md">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke-width="1.8"
+          stroke="white"
+          class="w-5 h-5"
+          aria-hidden="true"
+        >
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            d="M6 20.25h12m-7.5-3v3m3-3v3m-10.125-3h17.25c.621 0 1.125-.504 1.125-1.125V4.875c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125z"
+          />
+        </svg>
+      </span>
+      <span class="text-lg font-bold tracking-tight">{{ .Title }}</span>
+    </a>
   </div>
-  <div class="navbar-end gap-4">
+  <div class="navbar-end gap-1 sm:gap-4 flex-wrap justify-end">
     {{ if .player_url }}
     <label class="flex items-center gap-2 cursor-pointer">
-      <span id="player-mode-label" class="font-medium">auto</span>
+      <span id="player-mode-label" class="font-medium text-xs sm:text-sm text-base-content/70">auto</span>
       <input id="player-mode-toggle" type="checkbox" class="nav-switch" onchange="togglePlayerMode()" role="switch" aria-label="Toggle player mode" />
     </label>
     {{ end }}
     <label class="flex items-center gap-2 cursor-pointer">
-      <span id="catchup-toggle-label" class="font-medium">Catchup: OFF</span>
+      <span id="catchup-toggle-label" class="font-medium text-xs sm:text-sm text-base-content/70">Catchup: OFF</span>
       <input id="catchup-toggle" type="checkbox" class="nav-switch warn" onchange="toggleCatchupMode()" role="switch" aria-label="Toggle catchup mode" />
     </label>
     <label class="swap swap-rotate" aria-label="Toggle theme">
@@ -79,7 +94,7 @@
       <!-- sun icon -->
       <svg
         id="sunIcon"
-        class="swap-on fill-current w-6 h-6"
+        class="swap-on fill-current w-5 h-5 text-base-content/80"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
         aria-hidden="true"
@@ -92,7 +107,7 @@
       <!-- moon icon -->
       <svg
         id="moonIcon"
-        class="swap-off fill-current w-6 h-6"
+        class="swap-off fill-current w-5 h-5 text-base-content/80"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="0 0 24 24"
         aria-hidden="true"
@@ -104,7 +119,7 @@
     </label>
     {{ if .player_url }}
     <button
-      class="btn btn-outline btn-info btn-md flex flex-row items-center justify-center gap-2"
+      class="btn btn-outline btn-sm sm:btn-md flex flex-row items-center justify-center gap-1 sm:gap-2"
       onclick="window.history.back()"
       aria-label="Go back to previous page"
     >
@@ -123,13 +138,13 @@
           d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"
         />
       </svg>
-      Back
+      <span class="hidden sm:inline">Back</span>
     </button>
     {{ else }} 
       {{ if .IsNotLoggedIn }}
         <button
           onclick="login_modal.showModal()"
-          class="btn btn-outline btn-success btn-md"
+          class="btn btn-primary btn-md"
           aria-label="Open login dialog"
         >
           Login
