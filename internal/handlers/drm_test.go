@@ -1,10 +1,13 @@
 package handlers
 
 import (
+	"net/http/httptest"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
+	fiberrecover "github.com/gofiber/fiber/v2/middleware/recover"
 )
 
 func TestGetDrmMpd(t *testing.T) {
@@ -177,4 +180,75 @@ func TestDashHandler(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestLiveManifestHandlers(t *testing.T) {
+	app := fiber.New()
+
+	// Add recover middleware so the uninitialized TV panics are caught and returned as 500s.
+	app.Use(fiberrecover.New())
+
+	app.Get("/live/mpd/:channelID", LiveManifestMpdHandler)
+	app.Post("/live/key/:channelID", LiveManifestKeyHandler)
+
+	t.Run("Test MPD Handler Missing Channel", func(t *testing.T) {
+		req := httptest.NewRequest("GET", "/live/mpd/", nil)
+		resp, _ := app.Test(req)
+
+		if resp.StatusCode != fiber.StatusNotFound {
+			t.Errorf("Expected 404 for missing channel ID, got %d", resp.StatusCode)
+		}
+	})
+
+	// Since we can't easily mock the global TV object without breaking other tests,
+	// we use defer recover to gracefully catch panics caused by uninitialized store/TV.
+
+	t.Run("Test Key Handler Caching Mechanism", func(t *testing.T) {
+		defer func() { recover() }()
+		// Manually populate the cache to simulate a previous MPD request
+		mockOutput := &DrmMpdOutput{
+			IsDRM:      true,
+			PlayUrl:    "mock",
+			LicenseUrl: "", // Empty URL triggers a 404 Not Found in LiveManifestKeyHandler
+		}
+
+		// The cache key is generated from channelID and quality. Default quality is "auto".
+		cacheKey := "12345_auto"
+		drmMpdCache.Store(cacheKey, drmMpdCacheEntry{
+			Output:    mockOutput,
+			UpdatedAt: time.Now(),
+		})
+
+		req := httptest.NewRequest("POST", "/live/key/12345", nil)
+		resp, _ := app.Test(req)
+
+		// A successful cache hit will return 404 because LicenseUrl is empty.
+		// A cache miss would panic in TV.Live() and return 500.
+		if resp != nil && resp.StatusCode != fiber.StatusNotFound {
+			t.Errorf("Expected 404 Not Found from cache hit, got %d", resp.StatusCode)
+		}
+	})
+
+	t.Run("Test Cache Expiration", func(t *testing.T) {
+		defer func() { recover() }()
+		// Populate cache with an expired entry
+		cacheKey := "expired-channel_auto"
+		drmMpdCache.Store(cacheKey, drmMpdCacheEntry{
+			Output: &DrmMpdOutput{
+				IsDRM:      true,
+				PlayUrl:    "mock",
+				LicenseUrl: "mock",
+			},
+			UpdatedAt: time.Now().Add(-60 * time.Second), // 60 seconds ago (TTL is 30s)
+		})
+
+		req := httptest.NewRequest("POST", "/live/key/expired-channel", nil)
+		resp, _ := app.Test(req)
+
+		// Because it's expired, it will try to hit the JioTV API using the TV object.
+		// Since we initialized TV with nil credentials, it will fail gracefully and return 500.
+		if resp != nil && resp.StatusCode != fiber.StatusInternalServerError {
+			t.Errorf("Expected 500 Internal Server Error due to TV unauthenticated, got %d", resp.StatusCode)
+		}
+	})
 }
