@@ -13,7 +13,7 @@ disable_ts_handler = false
 # Enable Or Disable Logout feature. Default: true
 disable_logout = false
 
-# Enable Or Disable DRM. As DRM is not supported by most of the players, it is disabled by default. Default: false
+# Enable Or Disable DRM. Default: true
 drm = true
 
 # Title of the webpage. Default: JioTV Go

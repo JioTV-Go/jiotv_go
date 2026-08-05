@@ -50,12 +50,10 @@ Simply put, the logout feature allows you to log out of your JioTV account in th
 
 | Purpose | Config Value | Environment Variable | Default |
 | ----- | ------------ | -------------------- | ------- |
-| Enable or disable DRM. | `drm` | `JIOTV_DRM` | `false` |
+| Enable or disable DRM. | `drm` | `JIOTV_DRM` | `true` |
 
-DRM is a method of restricting access to copyrighted. The latest version of JioTV App uses DRM.
-For future compatibility, I have added this feature.
+DRM is a method of restricting access to copyrighted data. The latest version of JioTV App uses DRM.
 
-Currently, the DRM is only supported by the web interface. It is not supported by the IPTV playlist.
 For more detailed information about the DRM feature, including setup and limitations, please see [DRM Documentation](./drm.md).
 
 ### Title:
@@ -185,8 +183,8 @@ disable_ts_handler = false
 # Enable Or Disable Logout feature. Default: true
 disable_logout = false
 
-# Enable Or Disable DRM. As DRM is not supported by most of the players, it is disabled by default. Default: false
-drm = false
+# Enable Or Disable DRM. Default: true
+drm = true
 
 # Title of the webpage. Default: JioTV Go
 title = ""
@@ -232,7 +230,7 @@ epg: false
 debug: false
 disable_ts_handler: false
 disable_logout: false
-drm: false
+drm: true
 title: ""
 disable_url_encryption: false
 path_prefix: ""
@@ -256,7 +254,7 @@ The file is also available at [configs/jiotv-config.json](https://github.com/jio
     "debug": false,
     "disable_ts_handler": false,
     "disable_logout": false,
-    "drm": false,
+    "drm": true,
     "title": "",
     "disable_url_encryption": false,
     "path_prefix": "",
