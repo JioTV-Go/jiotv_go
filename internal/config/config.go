@@ -20,7 +20,7 @@ type JioTVConfig struct {
 	DisableTSHandler bool `yaml:"disable_ts_handler" env:"JIOTV_DISABLE_TS_HANDLER" json:"disable_ts_handler" toml:"disable_ts_handler"`
 	// Enable Or Disable Logout feature. Default: true
 	DisableLogout bool `yaml:"disable_logout" env:"JIOTV_DISABLE_LOGOUT" json:"disable_logout" toml:"disable_logout"`
-	// Enable Or Disable DRM. As DRM is not supported by most of the players, it is disabled by default. Default: false
+	// Enable Or Disable DRM. Default: true
 	DRM bool `yaml:"drm" env:"JIOTV_DRM" json:"drm" toml:"drm"`
 	// Title of the webpage. Default: JioTV Go
 	Title string `yaml:"title" env:"JIOTV_TITLE" json:"title" toml:"title"`
@@ -50,6 +50,9 @@ var Cfg JioTVConfig
 // If no file is found, it loads config from environment variables.
 // It logs messages about which config source is being used.
 func (c *JioTVConfig) Load(filename string) error {
+	// Set default value for DRM manually because cleanenv env-default on booleans overwrites explicit false values
+	c.DRM = true
+
 	if filename == "" {
 		filename = commonFileExists()
 	}
