@@ -288,6 +288,8 @@ func getDrmMpd(channelID, quality string) (*DrmMpdOutput, error) {
 // render the DRM player. It is shared by live channels and premium provider
 // content, which return the same payload shape.
 func buildDrmMpdOutput(liveResult *television.LiveURLOutput, channelID, quality string) (*DrmMpdOutput, error) {
+	cacheKey := channelID + "_" + quality
+
 	// ResolvedBitrates covers both shapes: live channels nest URLs under
 	// mpd.bitrates, premium content returns a single mpd.auto.
 	bitrates := liveResult.Mpd.ResolvedBitrates()
