@@ -158,8 +158,10 @@ a.card[data-channel-id]:focus-visible {
   color: color-mix(in oklab, var(--color-base-content) 55%, transparent);
 }
 
-/* Primary buttons get the brand gradient */
-.btn-primary {
+/* Primary buttons get the brand gradient. Excludes .btn-outline so that
+   variant keeps daisyUI's own transparent-background, theme-aware styling
+   instead of being permanently filled with low-contrast text on top. */
+.btn-primary:not(.btn-outline) {
   background-image: linear-gradient(
     135deg,
     var(--color-primary),
