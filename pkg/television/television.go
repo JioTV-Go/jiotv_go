@@ -556,14 +556,6 @@ const builtInCustomChannelsJSON = `{
   ]
 }`
 
-func cloneMap(source map[string]string) map[string]string {
-	cloned := make(map[string]string, len(source))
-	for key, value := range source {
-		cloned[key] = value
-	}
-	return cloned
-}
-
 func fetchChannelsFromAPI(client *fasthttp.Client, channelAPIURL string, requestHeaders map[string]string) (ChannelsResponse, error) {
 	requestConfig := utils.HTTPRequestConfig{
 		URL:     channelAPIURL,
