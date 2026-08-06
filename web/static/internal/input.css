@@ -169,7 +169,7 @@ a.card[data-channel-id]:focus-visible {
   );
   border-color: transparent;
 }
-.btn-primary:hover {
+.btn-primary:not(.btn-outline):hover {
   background-image: linear-gradient(
     135deg,
     color-mix(in oklab, var(--color-primary) 88%, white),
@@ -182,6 +182,13 @@ a.card[data-channel-id]:focus-visible {
 .dropdown-content,
 .menu {
   border: 1px solid color-mix(in oklab, var(--color-base-300) 60%, transparent);
+}
+
+/* Channels needing a separate subscription. Hiding is driven by a class on
+   <body> rather than per-element display, because the search filter owns each
+   card's inline style.display. */
+.hide-locked-channels .card[data-requires-subscription="true"] {
+  display: none !important;
 }
 
 /* --- Accessibility -------------------------------------------------------- */
