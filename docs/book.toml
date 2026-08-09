@@ -1,7 +1,6 @@
 [book]
 authors = ["Mohammed Rabil"]
 language = "en"
-multilingual = false
 src = "."
 title = "JioTV Go"
 
