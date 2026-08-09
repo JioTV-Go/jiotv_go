@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -133,6 +134,11 @@ func IndexHandler(c *fiber.Ctx) error {
 		return ErrorMessageHandler(c, err)
 	}
 
+	premiumProviders, premiumErr := television.PremiumProviders()
+	if premiumErr != nil {
+		utils.SafeLogf("Unable to fetch premium providers: %v", premiumErr)
+	}
+
 	// Get language and category from query params
 	language := c.Query("language")
 	category := c.Query("category")
@@ -151,11 +157,12 @@ func IndexHandler(c *fiber.Ctx) error {
 
 	// Context data for index page
 	indexContext := fiber.Map{
-		"Title":         Title,
-		"Channels":      nil,
-		"IsNotLoggedIn": !utils.CheckLoggedIn(),
-		"Categories":    television.CategoryMap,
-		"Languages":     television.LanguageMap,
+		"Title":            Title,
+		"Channels":         nil,
+		"PremiumProviders": premiumProviders,
+		"IsNotLoggedIn":    !utils.CheckLoggedIn(),
+		"Categories":       television.CategoryMap,
+		"Languages":        television.LanguageMap,
 		"Qualities": map[string]string{
 			"auto":   "Quality (Auto)",
 			"high":   "High",
@@ -1013,6 +1020,160 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(apiResponse)
+}
+
+// PremiumProvidersHandler lists premium providers detected on the account.
+func PremiumProvidersHandler(c *fiber.Ctx) error {
+	if err := EnsureFreshTokens(); err != nil {
+		utils.Log.Printf("Failed to ensure fresh tokens for premium providers: %v", err)
+	}
+
+	premiumProviders, err := television.PremiumProviders()
+	if err != nil {
+		return ErrorMessageHandler(c, err)
+	}
+
+	return c.JSON(fiber.Map{
+		"result": premiumProviders,
+	})
+}
+
+// PremiumProviderCatalogHandler returns in-app catalog entries for a premium provider.
+func PremiumProviderCatalogHandler(c *fiber.Ctx) error {
+	if err := EnsureFreshTokens(); err != nil {
+		utils.Log.Printf("Failed to ensure fresh tokens for premium catalog: %v", err)
+	}
+
+	providerIdentifier := c.Params("id")
+	page, _ := strconv.Atoi(c.Query("page", "0"))
+	limit, _ := strconv.Atoi(c.Query("limit", "60"))
+
+	catalogResult, err := television.PremiumProviderCatalog(providerIdentifier, page, limit)
+	if err != nil {
+		return ErrorMessageHandler(c, err)
+	}
+
+	return c.JSON(catalogResult)
+}
+
+// PremiumProviderWatchHandler renders a premium provider page with playable catalog cards.
+func PremiumProviderWatchHandler(c *fiber.Ctx) error {
+	if err := EnsureFreshTokens(); err != nil {
+		utils.Log.Printf("Failed to ensure fresh tokens for premium provider page: %v", err)
+	}
+
+	providerIdentifier := c.Params("id")
+	page, _ := strconv.Atoi(c.Query("page", "0"))
+	limit, _ := strconv.Atoi(c.Query("limit", "60"))
+
+	catalogResult, err := television.PremiumProviderCatalog(providerIdentifier, page, limit)
+	if err != nil {
+		return ErrorMessageHandler(c, err)
+	}
+
+	providerName := providerIdentifier
+	providerURL := ""
+	premiumProviders, providersErr := television.PremiumProviders()
+	if providersErr == nil {
+		for _, provider := range premiumProviders {
+			if strings.EqualFold(provider.ProviderID, catalogResult.ProviderID) || strings.EqualFold(provider.ID, providerIdentifier) {
+				if provider.Name != "" {
+					providerName = provider.Name
+				}
+				providerURL = provider.URL
+				break
+			}
+		}
+	}
+
+	return c.Render("views/premium_provider", fiber.Map{
+		"Title":        Title,
+		"ProviderName": providerName,
+		"ProviderID":   catalogResult.ProviderID,
+		"ProviderURL":  providerURL,
+		"Code":         catalogResult.Code,
+		"Message":      catalogResult.Message,
+		"Items":        catalogResult.Result,
+	})
+}
+
+// PremiumProviderPlayHandler resolves a premium stream and redirects to the in-app player.
+func PremiumProviderPlayHandler(c *fiber.Ctx) error {
+	if err := EnsureFreshTokens(); err != nil {
+		utils.Log.Printf("Failed to ensure fresh tokens for premium play: %v", err)
+	}
+
+	playRequest := television.PremiumProviderPlayRequest{
+		StreamType:    c.Query("streamType"),
+		ChannelID:     c.Query("channelId"),
+		ContentID:     c.Query("contentId"),
+		SubCategoryID: c.Query("subCategoryId"),
+	}
+
+	playbackResult, err := television.PremiumProviderPlayback(c.Params("id"), playRequest)
+	if err != nil {
+		if errors.Is(err, television.ErrPremiumNotSubscribed) {
+			// Pass the message as a string: ErrorResponse marshals the value, and
+			// an error value would serialise as an empty object.
+			return internalUtils.ForbiddenError(c, err.Error())
+		}
+		if errors.Is(err, television.ErrPremiumUpstreamUnavailable) {
+			return internalUtils.ErrorResponse(c, fiber.StatusBadGateway, err.Error())
+		}
+		return ErrorMessageHandler(c, err)
+	}
+
+	// Premium provider content is usually DASH protected by Widevine, so it
+	// has to be rendered by the DRM player rather than the HLS player.
+	if playbackResult.HasDRMStream() {
+		drmMpdOutput, drmErr := buildDrmMpdOutput(playbackResult, c.Params("id"), c.Query("q"))
+		if drmErr != nil {
+			return internalUtils.InternalServerError(c, drmErr)
+		}
+		if drmMpdOutput.IsDRM {
+			return c.Render("views/player_drm", fiber.Map{
+				"play_url":     drmMpdOutput.PlayUrl,
+				"license_url":  drmMpdOutput.LicenseUrl,
+				"channel_host": drmMpdOutput.Tv_url_host,
+				"channel_path": drmMpdOutput.Tv_url_path,
+			})
+		}
+	}
+
+	playbackURL := television.ResolvePlaybackURL(playbackResult)
+	if playbackURL == "" {
+		return internalUtils.NotFoundError(c, "No playable stream found for this premium item")
+	}
+
+	encryptedURL, err := secureurl.EncryptURL(playbackURL)
+	if err != nil {
+		return internalUtils.ForbiddenError(c, err)
+	}
+
+	redirectURL := "/premium/player?auth=" + url.QueryEscape(encryptedURL) + "&provider=" + url.QueryEscape(c.Params("id"))
+	if playbackResult.Hdnea != "" {
+		redirectURL += "&hdnea=" + url.QueryEscape(playbackResult.Hdnea)
+	}
+	return c.Redirect(redirectURL, fiber.StatusFound)
+}
+
+// PremiumPlayerHandler serves the HLS player for premium provider streams.
+func PremiumPlayerHandler(c *fiber.Ctx) error {
+	authToken := c.Query("auth")
+	if authToken == "" {
+		return internalUtils.BadRequestError(c, "Missing auth query parameter")
+	}
+
+	providerID := c.Query("provider", "premium")
+	playURL := "/render.m3u8?auth=" + url.QueryEscape(authToken) + "&channel_key_id=" + url.QueryEscape(providerID)
+	if hdnea := c.Query("hdnea"); hdnea != "" {
+		playURL += "&hdnea=" + url.QueryEscape(hdnea)
+	}
+
+	internalUtils.SetCacheHeader(c, 3600)
+	return c.Render("views/player_hls", fiber.Map{
+		"play_url": playURL,
+	})
 }
 
 // PlayHandler loads HTML Page with video player iframe embedded with video URL

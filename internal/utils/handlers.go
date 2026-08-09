@@ -10,8 +10,13 @@ import (
 	"github.com/valyala/fasthttp"
 )
 
-// ErrorResponse sends a standardized error response
+// ErrorResponse sends a standardized error response. Go's built-in error
+// types have no exported fields, so passing one straight to JSON silently
+// serializes to "{}" - unwrap it to its message string first.
 func ErrorResponse(c *fiber.Ctx, statusCode int, message interface{}) error {
+	if err, ok := message.(error); ok {
+		message = err.Error()
+	}
 	return c.Status(statusCode).JSON(fiber.Map{
 		"message": message,
 	})

@@ -84,10 +84,22 @@
       <input id="player-mode-toggle" type="checkbox" class="nav-switch" onchange="togglePlayerMode()" role="switch" aria-label="Toggle player mode" />
     </label>
     {{ end }}
-    <label class="flex items-center gap-2 cursor-pointer">
-      <span id="catchup-toggle-label" class="font-medium text-xs sm:text-sm text-base-content/70">Catchup: OFF</span>
-      <input id="catchup-toggle" type="checkbox" class="nav-switch warn" onchange="toggleCatchupMode()" role="switch" aria-label="Toggle catchup mode" />
-    </label>
+    <div class="flex items-center gap-1">
+      <label class="flex items-center gap-2 cursor-pointer">
+        <span id="catchup-toggle-label" class="font-medium text-xs sm:text-sm text-base-content/70">Catchup: OFF</span>
+        <input id="catchup-toggle" type="checkbox" class="nav-switch warn" onchange="toggleCatchupMode()" role="switch" aria-label="Toggle catchup mode: when on, tapping a channel replays a show that already aired instead of playing it live" />
+      </label>
+      <button
+        type="button"
+        class="tooltip tooltip-bottom btn btn-circle btn-ghost btn-xs text-base-content/50"
+        data-tip="When on, tapping a channel opens its schedule so you can replay a show that already aired, instead of playing it live."
+        aria-label="What does catchup mode do?"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-3.5 w-3.5" aria-hidden="true">
+          <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm8.706-1.442c1.146-.573 2.437.463 2.126 1.706l-.709 2.836.042-.02a.75.75 0 0 1 .67 1.34l-.04.022c-1.147.573-2.438-.463-2.127-1.706l.71-2.836-.042.02a.75.75 0 1 1-.671-1.342l.041-.02ZM12 9a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clip-rule="evenodd" />
+        </svg>
+      </button>
+    </div>
     <label class="swap swap-rotate" aria-label="Toggle theme">
       <input type="checkbox" onclick="toggleTheme()" aria-label="Switch between light and dark theme" />
 
