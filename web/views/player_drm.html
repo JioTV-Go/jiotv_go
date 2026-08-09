@@ -19,7 +19,7 @@
         left: 50%;
         transform: translate(-50%, -50%);
         z-index: 1000;
-        background: rgba(234, 67, 53, 0.9);
+        background: rgba(43, 125, 233, 0.92);
         color: white;
         border: none;
         border-radius: 50%;
@@ -34,7 +34,7 @@
       }
 
       .unmute-overlay:hover {
-        background: rgba(234, 67, 53, 1);
+        background: rgba(43, 125, 233, 1);
         transform: translate(-50%, -50%) scale(1.1);
         box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
       }
@@ -121,14 +121,37 @@
 
         const ui = video["ui"];
         const config = {
+          // Resolution selector in the control bar, not buried in the
+          // three-dot overflow menu.
+          controlPanelElements: [
+            "play_pause",
+            "time_and_duration",
+            "spacer",
+            "mute",
+            "volume",
+            "quality",
+            "fullscreen",
+            "overflow_menu",
+          ],
+          overflowMenuButtons: [
+            "captions",
+            "language",
+            "chapter",
+            "picture_in_picture",
+            "cast",
+            "playback_rate",
+            "recenter_vr",
+            "toggle_stereoscopic",
+            "save_video_frame",
+          ],
           seekBarColors: {
-            base: "rgba(234, 67, 53, 0.5)",
-            buffered: "rgba(234, 67, 53, 0.7)",
-            played: "rgb(234, 67, 53)",
+            base: "rgba(43, 125, 233, 0.3)",
+            buffered: "rgba(43, 125, 233, 0.5)",
+            played: "rgb(43, 125, 233)",
           },
           volumeBarColors: {
-            base: "rgba(234, 67, 53, 0.5)",
-            level: "rgb(234, 67, 53)",
+            base: "rgba(43, 125, 233, 0.3)",
+            level: "rgb(43, 125, 233)",
           },
         };
         ui.configure(config);

@@ -30,7 +30,6 @@ var (
 	isLogoutDisabled  bool
 	Title             string
 	EnableDRM         bool
-	SONY_LIST         = []string{"154", "155", "162", "289", "291", "471", "474", "476", "483", "514", "524", "525", "697", "872", "873", "874", "891", "892", "1146", "1393", "1772", "1773", "1774", "1775"}
 	renderHDNEACache  sync.Map
 	tokenRefreshGroup singleflight.Group
 )
@@ -69,12 +68,14 @@ func Init() {
 	}
 	DisableTSHandler = config.Cfg.DisableTSHandler
 	isLogoutDisabled = config.Cfg.DisableLogout
-	EnableDRM = true // DRM is enabled by default, only channels that support DRM will use it
+	EnableDRM = config.Cfg.DRM // DRM is enabled by default in the config, only channels that support DRM will use it
 	if DisableTSHandler {
 		utils.Log.Println("TS Handler disabled!. All TS video requests will be served directly from JioTV servers.")
 	}
 	if !EnableDRM {
 		utils.Log.Println("If you're not using IPTV Client. We strongly recommend enabling DRM for accessing channels without any issues! Either enable by setting environment variable JIOTV_DRM=true or by setting DRM: true in config. For more info Read https://telegram.me/jiotv_go/128")
+	} else {
+		utils.Log.Printf("Successfully loaded %d DRM channels", len(drmList))
 	}
 	// Generate a new device ID if not present
 	utils.GetDeviceID()
@@ -999,44 +1000,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	// Check if the query parameter "type" is set to "m3u"
 	if c.Query("type") == "m3u" {
 		// Create an M3U playlist
-		m3uContent := "#EXTM3U x-tvg-url=\"" + hostURL + "/epg.xml.gz\"\n"
-		logoURL := hostURL + "/jtvimage"
-		for _, channel := range apiResponse.Result {
-
-			if languages != "" && !utils.ContainsString(television.LanguageMap[channel.Language], strings.Split(languages, ",")) {
-				continue
-			}
-
-			if skipGenres != "" && utils.ContainsString(television.CategoryMap[channel.Category], strings.Split(skipGenres, ",")) {
-				continue
-			}
-
-			var channelURL string
-			if quality != "" {
-				channelURL = fmt.Sprintf("%s/live/%s/%s.m3u8", hostURL, quality, channel.ID)
-			} else {
-				channelURL = fmt.Sprintf("%s/live/%s.m3u8", hostURL, channel.ID)
-			}
-			var channelLogoURL string
-			if strings.HasPrefix(channel.LogoURL, "http://") || strings.HasPrefix(channel.LogoURL, "https://") {
-				// Custom channel with full URL
-				channelLogoURL = channel.LogoURL
-			} else {
-				// Regular channel with relative path
-				channelLogoURL = fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
-			}
-			var groupTitle string
-			switch splitCategory {
-			case "split":
-				groupTitle = fmt.Sprintf("%s - %s", television.CategoryMap[channel.Category], television.LanguageMap[channel.Language])
-			case "language":
-				groupTitle = television.LanguageMap[channel.Language]
-			default:
-				groupTitle = television.CategoryMap[channel.Category]
-			}
-			m3uContent += fmt.Sprintf("#EXTINF:-1 tvg-id=%q tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s\n",
-				channel.ID, channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category], groupTitle, channel.Name, channelURL)
-		}
+		m3uContent := GenerateM3UPlaylist(apiResponse.Result, hostURL, quality, splitCategory, languages, skipGenres)
 
 		// Set the Content-Disposition header for file download
 		c.Set("Content-Disposition", "attachment; filename=jiotv_playlist.m3u")
@@ -1070,7 +1034,9 @@ func PlayHandler(c *fiber.Ctx) error {
 	if EnableDRM {
 		// Sony channels should always use DRM player for consistency
 		// This avoids routing issues and 403 errors from mixed player usage
-		if utils.ContainsString(id, SONY_LIST) {
+		// While SONY_LIST was deprecated and its contents merged with drmList,
+		// we keep the check in case this needs to be reverted
+		if utils.ContainsString(id, drmList) {
 			player_url = "/mpd/" + id + "?q=" + quality
 		} else if isCustomChannel(id) {
 			player_url = "/player/" + id + "?q=" + quality
@@ -1122,4 +1088,72 @@ func ImageHandler(c *fiber.Ctx) error {
 
 func DASHTimeHandler(c *fiber.Ctx) error {
 	return c.SendString(time.Now().UTC().Format("2006-01-02T15:04:05.000Z"))
+}
+
+// GenerateM3UPlaylist generates an M3U playlist string from a list of channels
+func GenerateM3UPlaylist(channels []television.Channel, hostURL, quality, splitCategory, languages, skipGenres string) string {
+	var m3uContent strings.Builder
+	m3uContent.WriteString("#EXTM3U x-tvg-url=\"")
+	m3uContent.WriteString(hostURL)
+	m3uContent.WriteString("/epg.xml.gz\"\n")
+	logoURL := hostURL + "/jtvimage"
+
+	for _, channel := range channels {
+		if languages != "" && !utils.ContainsString(television.LanguageMap[channel.Language], strings.Split(languages, ",")) {
+			continue
+		}
+
+		if skipGenres != "" && utils.ContainsString(television.CategoryMap[channel.Category], strings.Split(skipGenres, ",")) {
+			continue
+		}
+
+		var channelURL string
+		var kodiProps string
+
+		if EnableDRM && utils.ContainsString(channel.ID, drmList) {
+			if quality != "" {
+				channelURL = fmt.Sprintf("%s/live/mpd/%s?q=%s", hostURL, channel.ID, quality)
+			} else {
+				channelURL = fmt.Sprintf("%s/live/mpd/%s", hostURL, channel.ID)
+			}
+
+			// Generate KODIPROP tags for Widevine DRM
+			kodiProps = fmt.Sprintf("#KODIPROP:inputstream=inputstream.adaptive\n#KODIPROP:inputstream.adaptive.manifest_type=mpd\n#KODIPROP:inputstream.adaptive.license_type=com.widevine.alpha\n#KODIPROP:inputstream.adaptive.license_key=%s/live/key/%s", hostURL, channel.ID)
+			if quality != "" {
+				kodiProps += "?q=" + quality
+			}
+			kodiProps += "\n"
+		} else {
+			if quality != "" {
+				channelURL = fmt.Sprintf("%s/live/%s/%s.m3u8", hostURL, quality, channel.ID)
+			} else {
+				channelURL = fmt.Sprintf("%s/live/%s.m3u8", hostURL, channel.ID)
+			}
+		}
+
+		var channelLogoURL string
+		if strings.HasPrefix(channel.LogoURL, "http://") || strings.HasPrefix(channel.LogoURL, "https://") {
+			// Custom channel with full URL
+			channelLogoURL = channel.LogoURL
+		} else {
+			// Regular channel with relative path
+			channelLogoURL = fmt.Sprintf("%s/%s", logoURL, channel.LogoURL)
+		}
+
+		var groupTitle string
+		switch splitCategory {
+		case "split":
+			groupTitle = fmt.Sprintf("%s - %s", television.CategoryMap[channel.Category], television.LanguageMap[channel.Language])
+		case "language":
+			groupTitle = television.LanguageMap[channel.Language]
+		default:
+			groupTitle = television.CategoryMap[channel.Category]
+		}
+
+		fmt.Fprintf(&m3uContent, "#EXTINF:-1 tvg-id=%q tvg-name=%q tvg-logo=%q tvg-language=%q tvg-type=%q group-title=%q, %s\n%s%s\n",
+			channel.ID, channel.Name, channelLogoURL, television.LanguageMap[channel.Language], television.CategoryMap[channel.Category],
+			groupTitle, channel.Name, kodiProps, channelURL)
+	}
+
+	return m3uContent.String()
 }

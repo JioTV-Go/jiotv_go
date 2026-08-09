@@ -14,7 +14,7 @@
         <div class="lg:col-span-8">
           <div
             id="player"
-            class="relative overflow-hidden w-full rounded-xl bg-black"
+            class="relative overflow-hidden w-full rounded-2xl bg-black ring-1 ring-base-300/40 shadow-2xl"
             style="aspect-ratio: 16/9; min-height: 200px"
           >
             <iframe
@@ -30,12 +30,12 @@
             ></iframe>
           </div>
           <div class="mt-2 flex justify-center gap-2">
-            <a href="/catchup/{{ .ChannelID }}" class="btn">
+            <a href="/catchup/{{ .ChannelID }}" class="btn btn-ghost border border-base-300 hover:border-primary">
               Back to Catchup
             </a>
             <button
               id="aspect-43-toggle"
-              class="btn"
+              class="btn btn-ghost border border-base-300 hover:border-primary"
               onclick="toggleAspectRatio()"
             >
               <svg
@@ -56,16 +56,17 @@
 
         <div class="lg:col-span-4 mt-4 lg:mt-0">
           <div id="epg_parent" class="">
-            <h2 class="mb-3 text-lg font-bold text-center lg:text-left">
+            <h2 class="section-title mb-3 text-center lg:text-left">
               Now Playing
             </h2>
             <div id="epg" class="w-full">
-              <div class="card w-full bg-base-200 shadow-xl">
+              <div class="card w-full bg-base-100 border border-base-300/50 shadow-lg">
                 <figure>
                   <img
                     id="episodePoster"
                     src="{{ .EpisodePoster }}"
                     alt="Episode Poster"
+                    class="w-full max-h-64 object-cover"
                     onerror="const attempts = parseInt(this.dataset.onerrorAttempts || '0', 10); if (attempts < 3) { this.dataset.onerrorAttempts = attempts + 1; this.src = 'https://jiotvimages.cdn.jio.com/dare_images/images/{{.ChannelID}}.png'; } else { this.style.display = 'none'; }"
                   />
                 </figure>
@@ -79,8 +80,11 @@
                       <span>{{ .ShowTime }}</span>
                     </div>
                   </div>
-                  <p id="description" class="text-sm">{{ .Description }}</p>
-                  <div id="keywords" class="card-actions justify-end">
+                  <div>
+                    <p id="description" class="text-sm leading-5 line-clamp-3">{{ .Description }}</p>
+                    <button id="description-toggle" type="button" class="btn btn-link btn-sm h-auto min-h-0 px-0 hidden" aria-expanded="false" hidden>Read more</button>
+                  </div>
+                  <div id="keywords" class="flex flex-wrap gap-1.5 max-h-14 overflow-y-auto pr-1" aria-label="Program tags">
                     <div class="hidden badge badge-outline"></div>
                   </div>
                 </div>
@@ -95,12 +99,12 @@
         class="mt-6 lg:mx-8 xl:mx-52"
         style="display: none"
       >
-        <h2 class="mb-3 text-lg font-bold text-center lg:text-left">
+        <h2 class="section-title mb-3 text-center lg:text-left">
           Similar Channels
         </h2>
         <div
           id="similar_channels"
-          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3"
+          class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4"
         ></div>
       </div>
     </div>
@@ -145,8 +149,10 @@
         updateAspectRatioUI(current43Mode);
       });
     </script>
+    <script src="/static/internal/now_playing.js"></script>
     <script src="/static/internal/utils.js"></script>
     <script src="/static/internal/common.js"></script>
+    <script src="/static/internal/remote.js"></script>
     {{ template "footer" . }}
   </body>
 </html>

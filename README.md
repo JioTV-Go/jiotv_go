@@ -51,16 +51,6 @@ The complete documentation for JioTV Go is available at https://jiotv_go.rabil.m
 - [Announcement Channel (`jiotv_go`)](https://telegram.me/jiotv_go)
 - [Support Group (`jiotv_go_chat`)](https://telegram.me/jiotv_go_chat)
 
-## Star History
-
-<a href="https://star-history.com/#jiotv-go/jiotv_go&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=jiotv-go/jiotv_go&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=jiotv-go/jiotv_go&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=jiotv-go/jiotv_go&type=Date" />
-  </picture>
-</a>
-
 ## Contributors
 
 [![Contributors](https://contributors-img.web.app/image?repo=jiotv-go/jiotv_go)](https://github.com/jiotv-go/jiotv_go/graphs/contributors)

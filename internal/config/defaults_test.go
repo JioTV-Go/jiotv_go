@@ -28,6 +28,7 @@ func TestDefaultCategoriesAndLanguagesConfig(t *testing.T) {
 				DefaultCategories: []int{1, 2, 3},
 				DefaultLanguages:  []int{6, 1},
 				Debug:             true,
+				DRM:               true,
 			},
 		},
 		{
@@ -36,12 +37,14 @@ func TestDefaultCategoriesAndLanguagesConfig(t *testing.T) {
 				"default_categories": []int{8, 5},
 				"default_languages":  []int{1},
 				"epg":                false,
+				"drm":                false,
 			},
 			configType: "yaml",
 			expected: JioTVConfig{
 				DefaultCategories: []int{8, 5},
 				DefaultLanguages:  []int{1},
 				EPG:               false,
+				DRM:               false,
 			},
 		},
 		{
@@ -56,6 +59,7 @@ func TestDefaultCategoriesAndLanguagesConfig(t *testing.T) {
 				DefaultCategories: []int{},
 				DefaultLanguages:  []int{},
 				Title:             "Test App",
+				DRM:               true,
 			},
 		},
 	}
