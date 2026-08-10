@@ -52,6 +52,37 @@
     <button>close</button>
   </form>
 </dialog>
+<dialog id="otp_success_modal" class="modal modal-bottom sm:modal-middle">
+  <form method="dialog" class="modal-box">
+    <div class="flex flex-col items-center gap-3 text-center">
+      <span class="flex size-12 items-center justify-center rounded-full bg-success/15 text-success">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-6" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 4.5 4.5 10.5-10.5" />
+        </svg>
+      </span>
+      <h3 class="font-bold text-xl tracking-tight">You’re signed in</h3>
+      <p class="text-sm text-base-content/60">Your channels will reload now.</p>
+      <button value="continue" class="btn btn-primary w-full">Continue</button>
+    </div>
+  </form>
+</dialog>
+<dialog id="otp_error_modal" class="modal modal-bottom sm:modal-middle">
+  <form method="dialog" class="modal-box">
+    <div class="flex flex-col items-center gap-3 text-center">
+      <span class="flex size-12 items-center justify-center rounded-full bg-error/15 text-error">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-6" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+        </svg>
+      </span>
+      <h3 class="font-bold text-xl tracking-tight">Something went wrong</h3>
+      <p id="otp-error-message" class="text-sm text-base-content/60"></p>
+      <button value="close" class="btn btn-primary w-full">Try again</button>
+    </div>
+  </form>
+</dialog>
+<script>
+  otp_success_modal.addEventListener("close", () => document.location.reload());
+</script>
 
 <script>
   {{ if .IsNotLoggedIn }}
