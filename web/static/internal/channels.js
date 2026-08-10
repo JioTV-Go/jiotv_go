@@ -111,10 +111,12 @@ const setupSelectAll = (checkboxClass, allValue) => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  updateFavoriteButtonStates();
-  displayFavoriteChannels();
+  // Run select-all wiring first so the category/language checkboxes behave
+  // correctly even if favorites code below ever throws.
   setupSelectAll(".category-checkbox", "0");
   setupSelectAll(".language-checkbox", "0");
+  updateFavoriteButtonStates();
+  displayFavoriteChannels();
 });
 
 const onQualityChange = (elem) => {
@@ -128,15 +130,14 @@ const onQualityChange = (elem) => {
     setLocalStorageItem("quality", quality);
   }
   
-  // Update all card href attributes with new query parameter
-  const playElems = document.getElementsByClassName("card");
+  // Update all channel card href attributes with new query parameter.
+  // Only target channel cards (a[href]); dropdown-content panels also carry
+  // the .card class but are <div>s with no href, and touching them crashes.
   const currentParams = getCurrentUrlParams();
-  
-  for (let i = 0; i < playElems.length; i++) {
-    const cardElem = playElems[i];
+  document.querySelectorAll("a.card[data-channel-id]").forEach((cardElem) => {
     const href = cardElem.getAttribute("href");
-    cardElem.setAttribute("href", href.split("?")[0] + "?" + currentParams.toString());
-  }
+    if (href) cardElem.setAttribute("href", href.split("?")[0] + "?" + currentParams.toString());
+  });
 };
 
 const storedQuality = getLocalStorageItem("quality");
