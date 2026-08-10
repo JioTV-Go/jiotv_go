@@ -1,6 +1,7 @@
 /**
  * @jest-environment jsdom
  */
+const { readFileSync } = require('node:fs');
 
 // Mock fetch globally
 global.fetch = jest.fn();
@@ -109,6 +110,33 @@ describe('Play Page Functions', () => {
 
     const currentChannel = getCurrentChannelInfo(channelsData, 'test-channel');
     expect(currentChannel.channel_name).toBe('Test Channel');
+  });
+
+  test('similar channels exclude channels outside the user plan', () => {
+    window.history.replaceState({}, '', '/play/current');
+    window.safeGetElementById = jest.fn(() => null);
+    window.safeGetElementsById = jest.fn(() => ({}));
+    window.getJSON = jest.fn().mockRejectedValue(new Error('skip page initialization'));
+    jest.spyOn(console, 'error').mockImplementation(() => {});
+    window.createElement = jest.fn();
+    window.updateNowPlayingDescription = jest.fn();
+
+    window.eval(readFileSync('static/internal/epg.js', 'utf8'));
+
+    const currentChannel = {
+      channel_id: 'current',
+      channelCategoryId: 1,
+      channelLanguageId: 1,
+    };
+    const similarChannels = getSimilarChannels({
+      result: [
+        currentChannel,
+        { channel_id: 'included', channelCategoryId: 1, channelLanguageId: 1 },
+        { channel_id: 'locked', channelCategoryId: 1, channelLanguageId: 1, requiresSubscription: true },
+      ],
+    }, currentChannel);
+
+    expect(similarChannels.map(channel => channel.channel_id)).toEqual(['included']);
   });
 
   test('getSimilarChannels filters and randomizes correctly', () => {

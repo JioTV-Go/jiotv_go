@@ -82,8 +82,10 @@ function getSimilarChannels(channelsData, currentChannel, maxChannels = 12) {
 
     // Filter channels by same category and language, excluding current channel
     let similarChannels = channelsData.result.filter(channel => {
-        return channel.channel_id !== currentChannelID &&
-            (channel.channelCategoryId === currentCategory && channel.channelLanguageId === currentLanguage);
+        return !channel.requiresSubscription &&
+            channel.channel_id !== currentChannelID &&
+            channel.channelCategoryId === currentCategory &&
+            channel.channelLanguageId === currentLanguage;
     });
 
     // Shuffle the array to randomize selection
