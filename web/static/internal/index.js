@@ -37,6 +37,11 @@ init();
 
 
 
+const showOTPError = (message) => {
+  safeGetElementById("otp-error-message").textContent = message;
+  otp_error_modal.showModal(); // skipcq: JS-0125
+};
+
 const loginOTPClick = () => {
   const numberElement = safeGetElementById("number");
   if (!numberElement) {
@@ -53,12 +58,12 @@ const loginOTPClick = () => {
       if (data.status) {
         verify_otp_modal.showModal(); // skipcq: JS-0125
       } else {
-        alert("Sending OTP failed!");
+        showOTPError("We couldn’t send the OTP. Check your number and try again.");
       }
     })
     .catch((err) => {
       console.log(err);
-      alert("Sending OTP failed!");
+      showOTPError("We couldn’t send the OTP. Check your connection and try again.");
     });
 };
 
@@ -80,14 +85,14 @@ const loginOTPVerifyClick = () => {
   postJSON("/login/verifyOTP", { number: `+91${number}`, otp })
     .then((data) => {
       if (data.status) {
-        alert("OTP verification success. Enjoy!");
-        document.location.reload();
+        verify_otp_modal.close(); // skipcq: JS-0125
+        otp_success_modal.showModal(); // skipcq: JS-0125
       } else {
-        alert("OTP verification failed!");
+        showOTPError("The OTP is incorrect or expired. Try again.");
       }
     })
     .catch((err) => {
       console.log(err);
-      alert("OTP verification failed!");
+      showOTPError("We couldn’t verify the OTP. Check your connection and try again.");
     });
 };

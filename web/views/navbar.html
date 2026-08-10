@@ -46,11 +46,20 @@
 
   /* On small screens, let navbar-end wrap below navbar-start */
   @media (max-width: 639px) {
+    .navbar {
+      overflow: clip;
+    }
+
     .navbar-end {
       margin-inline-start: 0 !important;
       width: 100%;
       justify-content: flex-end;
       padding-top: 0.25rem;
+    }
+
+    .navbar .tooltip::before,
+    .navbar .tooltip::after {
+      display: none;
     }
   }
 </style>
