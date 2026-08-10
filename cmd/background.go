@@ -36,16 +36,17 @@ func RunInBackground(args string, configPath string) error {
 		return fmt.Errorf("failed to get executable path: %w", err)
 	}
 
-	cmdArgs := strings.Fields(args)
-	cmdArgs = append(cmdArgs, "--skip-update-check")
-
-	// Add current config path to args if not already explicitly provided
-	if !strings.Contains(args, "--config") {
+	// --skip-update-check and --config are global flags: urfave/cli accepts them
+	// only before the subcommand, so they must precede "serve".
+	cmdArgs := []string{"--skip-update-check"}
+	if configPath != "" && !strings.Contains(args, "--config") {
 		cmdArgs = append(cmdArgs, "--config", configPath)
 	}
+	cmdArgs = append(cmdArgs, "serve")
+	cmdArgs = append(cmdArgs, strings.Fields(args)...)
 
 	// Run JioTVServer function as a separate process
-	cmd := exec.Command(binaryExecutablePath, append([]string{"serve"}, cmdArgs...)...)
+	cmd := exec.Command(binaryExecutablePath, cmdArgs...)
 	err = cmd.Start()
 	if err != nil {
 		return fmt.Errorf("failed to start command: %w", err)
@@ -58,9 +59,16 @@ func RunInBackground(args string, configPath string) error {
 	if err != nil {
 		return fmt.Errorf("failed to write PID file: %w", err)
 	}
-
-	// Wait for 1 second to allow the server to start
-	time.Sleep(1 * time.Second)
+	// Surface an immediate crash (bad flags, port in use) instead of reporting
+	// a success for a process that is already gone.
+	waitResult := make(chan error, 1)
+	go func() { waitResult <- cmd.Wait() }()
+	select {
+	case waitErr := <-waitResult:
+		os.Remove(pidPath)
+		return fmt.Errorf("server exited immediately after start: %w", waitErr)
+	case <-time.After(1 * time.Second):
+	}
 
 	fmt.Println("JioTV Go server started successfully in background.")
 
