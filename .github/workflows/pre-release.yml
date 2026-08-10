@@ -71,4 +71,4 @@ jobs:
           files: |
             ./bin/*
           generate_release_notes: true
-          token: ${{ secrets.PAT }}
+          token: ${{ secrets.GITHUB_TOKEN }}
