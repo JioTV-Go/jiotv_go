@@ -173,15 +173,25 @@ func IndexHandler(c *fiber.Ctx) error {
 
 	// Filter channels by query params if provided
 	if language != "" || category != "" {
-		language_int, err := strconv.Atoi(language)
-		if err != nil {
-			return ErrorMessageHandler(c, err)
+		var categories []int
+		if category != "" {
+			for _, catStr := range strings.Split(category, ",") {
+				catVal, err := strconv.Atoi(strings.TrimSpace(catStr))
+				if err == nil {
+					categories = append(categories, catVal)
+				}
+			}
 		}
-		category_int, err := strconv.Atoi(category)
-		if err != nil {
-			return ErrorMessageHandler(c, err)
+		var languages []int
+		if language != "" {
+			for _, langStr := range strings.Split(language, ",") {
+				langVal, err := strconv.Atoi(strings.TrimSpace(langStr))
+				if err == nil {
+					languages = append(languages, langVal)
+				}
+			}
 		}
-		channels_list := television.FilterChannels(channels.Result, language_int, category_int)
+		channels_list := television.FilterChannelsByDefaults(channels.Result, categories, languages)
 		indexContext["Channels"] = channels_list
 		return c.Render("views/index", indexContext)
 	}
@@ -1016,7 +1026,11 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	}
 
 	for i, channel := range apiResponse.Result {
-		apiResponse.Result[i].URL = fmt.Sprintf("%s/live/%s", hostURL, channel.ID)
+		if EnableDRM && utils.ContainsString(channel.ID, drmList) {
+			apiResponse.Result[i].URL = fmt.Sprintf("%s/live/mpd/%s", hostURL, channel.ID)
+		} else {
+			apiResponse.Result[i].URL = fmt.Sprintf("%s/live/%s", hostURL, channel.ID)
+		}
 	}
 
 	return c.JSON(apiResponse)
