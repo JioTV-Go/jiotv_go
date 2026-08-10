@@ -1,6 +1,19 @@
 package handlers
 
-import "testing"
+import (
+	"log"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"os"
+	"testing"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/store"
+	"github.com/jiotv-go/jiotv_go/v3/pkg/television"
+	pkgUtils "github.com/jiotv-go/jiotv_go/v3/pkg/utils"
+)
 
 func TestHdneaCacheKey(t *testing.T) {
 	tests := []struct {
@@ -49,6 +62,70 @@ func TestHdneaCacheKey(t *testing.T) {
 	catchupKey := hdneaCacheKey("143", "https://example.com/Catchup_Fallback/index.m3u8")
 	if liveKey == catchupKey {
 		t.Errorf("live key (%q) and catchup key (%q) must not be equal", liveKey, catchupKey)
+	}
+}
+
+func TestRenderTSHandlerUsesCatchupTokenCache(t *testing.T) {
+	const channelID = "143"
+	const liveToken = "live-token"
+	const catchupToken = "catchup-token"
+
+	var receivedToken string
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		cookie, _ := r.Cookie("__hdnea__")
+		if cookie == nil {
+			receivedToken = ""
+		} else {
+			receivedToken = cookie.Value
+		}
+		if receivedToken != catchupToken {
+			http.Error(w, "wrong token", http.StatusBadRequest)
+			return
+		}
+		_, _ = w.Write([]byte("segment"))
+	}))
+	defer upstream.Close()
+	cleanupStore, err := store.SetupTestPathPrefix()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer cleanupStore()
+	if err := store.Init(); err != nil {
+		t.Fatal(err)
+	}
+
+	previousTV, previousLog := TV, pkgUtils.Log
+	pkgUtils.Log = log.New(os.Stderr, "", 0)
+	TV = television.New(nil)
+	secureurl.Init()
+	defer func() {
+		TV = previousTV
+		pkgUtils.Log = previousLog
+		renderHDNEACache.Delete(channelID)
+		renderHDNEACache.Delete(channelID + "|catchup")
+	}()
+
+	streamURL := upstream.URL + "/Catchup_Fallback/segment.ts?__hdnea__=" + catchupToken
+	setCachedHDNEA(channelID, liveToken)
+	setCachedHDNEA(hdneaCacheKey(channelID, streamURL), catchupToken)
+
+	auth, err := secureurl.EncryptURL(streamURL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	app := fiber.New()
+	app.Get("/render.ts", RenderTSHandler)
+	response, err := app.Test(httptest.NewRequest(http.MethodGet, "/render.ts?auth="+url.QueryEscape(auth)+"&channel_key_id="+channelID, nil))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer response.Body.Close()
+
+	if response.StatusCode != http.StatusOK {
+		t.Errorf("status = %d, want %d", response.StatusCode, http.StatusOK)
+	}
+	if receivedToken != catchupToken {
+		t.Errorf("upstream __hdnea__ cookie = %q, want %q", receivedToken, catchupToken)
 	}
 }
 
