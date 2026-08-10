@@ -140,6 +140,69 @@ function removeLocalStorageItem(key) {
   }
 }
 
+const SUBSCRIPTION_WARNING_STORAGE_KEY = "subscriptionWarningSuppressed";
+
+function getSubscriptionWarningSuppressions() {
+  const suppressed = getLocalStorageItem(SUBSCRIPTION_WARNING_STORAGE_KEY, []);
+  return Array.isArray(suppressed) ? suppressed.filter(id => typeof id === "string") : [];
+}
+
+function isSubscriptionWarningSuppressed(channelId) {
+  return getSubscriptionWarningSuppressions().includes(String(channelId));
+}
+
+function suppressSubscriptionWarning(channelId) {
+  const id = String(channelId);
+  const suppressed = getSubscriptionWarningSuppressions();
+  if (!suppressed.includes(id)) {
+    setLocalStorageItem(SUBSCRIPTION_WARNING_STORAGE_KEY, [...suppressed, id]);
+  }
+}
+
+function initSubscriptionWarnings() {
+  const modal = safeGetElementById("locked_channel_modal", true);
+  if (!modal) return;
+
+  const message = safeGetElementById("locked-channel-message", true);
+  const suppressCheckbox = safeGetElementById("locked-channel-suppress", true);
+  const cancelButton = safeGetElementById("locked-channel-cancel", true);
+  const continueButton = safeGetElementById("locked-channel-continue", true);
+  const backdrop = safeGetElementById("locked-channel-backdrop", true);
+  let pendingHref = null;
+  let pendingChannelId = null;
+
+  const close = () => {
+    modal.classList.remove("modal-open");
+    pendingHref = null;
+    pendingChannelId = null;
+  };
+
+  document.addEventListener("click", (event) => {
+    if (event.target.closest(".favorite-btn")) return;
+    const card = event.target.closest('a.card[data-requires-subscription="true"]');
+    const channelId = card?.dataset.channelId;
+    if (!card || !channelId || isSubscriptionWarningSuppressed(channelId) || modal.classList.contains("modal-open")) return;
+
+    event.preventDefault();
+    pendingHref = card.href;
+    pendingChannelId = channelId;
+    const name = card.dataset.channelName || card.querySelector(".font-bold, .font-semibold")?.textContent?.trim() || "This channel";
+    if (message) message.textContent = `${name} may require a separate subscription. Playback may fail unless your account is entitled.`;
+    if (suppressCheckbox) suppressCheckbox.checked = false;
+    modal.classList.add("modal-open");
+  });
+
+  cancelButton?.addEventListener("click", close);
+  backdrop?.addEventListener("click", close);
+  continueButton?.addEventListener("click", () => {
+    const href = pendingHref;
+    if (suppressCheckbox?.checked && pendingChannelId) suppressSubscriptionWarning(pendingChannelId);
+    close();
+    if (href) window.location.href = href;
+  });
+}
+
+
 // URL Utilities
 /**
  * Get current URL search parameters
