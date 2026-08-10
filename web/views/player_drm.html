@@ -239,11 +239,8 @@
               backoffFactor: 2,
               timeout: 30000,  // 30 second timeout
             },
-            buffering: {
-              behindBufferingGoal: 5,  // 5 seconds buffer
-              inFrontOfBufferingGoal: 30,  // 30 seconds head buffer
-            },
-            bufferingGoal: 10, // 10 seconds default
+            bufferBehind: 5, // seconds of buffer kept behind the playhead
+            bufferingGoal: 30, // seconds of buffer kept ahead of the playhead
           },
         });
 

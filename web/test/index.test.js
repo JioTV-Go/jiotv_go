@@ -54,7 +54,7 @@ const simpleInit = (urlSearch = '', searchInputId = 'portexe-search-input') => {
 
 
 
-const simpleLoginOTPClick = async (fetchFn = fetch, alertFn = alert, showModalFn = jest.fn()) => {
+const simpleLoginOTPClick = async (fetchFn = fetch, showErrorFn = jest.fn(), showModalFn = jest.fn()) => {
   const number = document.getElementById("number")?.value;
   if (!number) return;
 
@@ -70,15 +70,15 @@ const simpleLoginOTPClick = async (fetchFn = fetch, alertFn = alert, showModalFn
     if (data.status) {
       showModalFn();
     } else {
-      alertFn("Sending OTP failed!");
+      showErrorFn("We couldn’t send the OTP. Check your number and try again.");
     }
   } catch (err) {
     console.log(err);
-    alertFn("Sending OTP failed!");
+    showErrorFn("We couldn’t send the OTP. Check your connection and try again.");
   }
 };
 
-const simpleLoginOTPVerifyClick = async (fetchFn = fetch, alertFn = alert, reloadFn = jest.fn()) => {
+const simpleLoginOTPVerifyClick = async (fetchFn = fetch, showErrorFn = jest.fn(), showSuccessModalFn = jest.fn()) => {
   const number = document.getElementById("number")?.value;
   const otp = document.getElementById("otp")?.value;
 
@@ -94,14 +94,13 @@ const simpleLoginOTPVerifyClick = async (fetchFn = fetch, alertFn = alert, reloa
     const data = await res.json();
 
     if (data.status) {
-      alertFn("OTP verification success. Enjoy!");
-      reloadFn();
+      showSuccessModalFn();
     } else {
-      alertFn("OTP verification failed!");
+      showErrorFn("The OTP is incorrect or expired. Try again.");
     }
   } catch (err) {
     console.log(err);
-    alertFn("OTP verification failed!");
+    showErrorFn("We couldn’t verify the OTP. Check your connection and try again.");
   }
 };
 
@@ -316,28 +315,28 @@ describe('Search and Login Functionality', () => {
       expect(mockShowModal).toHaveBeenCalled();
     });
 
-    it('should handle OTP send failure', async () => {
+    it('shows the error modal when sending OTP fails', async () => {
       const mockFetch = jest.fn().mockResolvedValue({
         json: async () => ({ status: false })
       });
-      const mockAlert = jest.fn();
+      const mockShowError = jest.fn();
       const mockShowModal = jest.fn();
 
-      await simpleLoginOTPClick(mockFetch, mockAlert, mockShowModal);
+      await simpleLoginOTPClick(mockFetch, mockShowError, mockShowModal);
 
-      expect(mockAlert).toHaveBeenCalledWith('Sending OTP failed!');
+      expect(mockShowError).toHaveBeenCalledWith('We couldn’t send the OTP. Check your number and try again.');
       expect(mockShowModal).not.toHaveBeenCalled();
     });
 
-    it('should handle network errors', async () => {
+    it('shows a connection error when sending OTP rejects', async () => {
       const mockFetch = jest.fn().mockRejectedValue(new Error('Network error'));
-      const mockAlert = jest.fn();
+      const mockShowError = jest.fn();
       const mockShowModal = jest.fn();
 
-      await simpleLoginOTPClick(mockFetch, mockAlert, mockShowModal);
+      await simpleLoginOTPClick(mockFetch, mockShowError, mockShowModal);
 
       expect(console.log).toHaveBeenCalledWith(expect.any(Error));
-      expect(mockAlert).toHaveBeenCalledWith('Sending OTP failed!');
+      expect(mockShowError).toHaveBeenCalledWith('We couldn’t send the OTP. Check your connection and try again.');
     });
 
     it('should not make request when number is missing', async () => {
@@ -368,9 +367,9 @@ describe('Search and Login Functionality', () => {
         json: async () => ({ status: true })
       });
       const mockAlert = jest.fn();
-      const mockReload = jest.fn();
+      const mockShowSuccessModal = jest.fn();
 
-      await simpleLoginOTPVerifyClick(mockFetch, mockAlert, mockReload);
+      await simpleLoginOTPVerifyClick(mockFetch, mockAlert, mockShowSuccessModal);
 
       expect(mockFetch).toHaveBeenCalledWith('/login/verifyOTP', {
         method: 'POST',
@@ -381,41 +380,40 @@ describe('Search and Login Functionality', () => {
       });
     });
 
-    it('should handle successful OTP verification', async () => {
+    it('shows success modal after successful OTP verification', async () => {
       const mockFetch = jest.fn().mockResolvedValue({
         json: async () => ({ status: true })
       });
       const mockAlert = jest.fn();
-      const mockReload = jest.fn();
+      const mockShowSuccessModal = jest.fn();
 
-      await simpleLoginOTPVerifyClick(mockFetch, mockAlert, mockReload);
+      await simpleLoginOTPVerifyClick(mockFetch, mockAlert, mockShowSuccessModal);
 
-      expect(mockAlert).toHaveBeenCalledWith('OTP verification success. Enjoy!');
-      expect(mockReload).toHaveBeenCalled();
+      expect(mockShowSuccessModal).toHaveBeenCalled();
+      expect(mockAlert).not.toHaveBeenCalled();
     });
 
-    it('should handle failed OTP verification', async () => {
+    it('shows the error modal for an invalid or expired OTP', async () => {
       const mockFetch = jest.fn().mockResolvedValue({
         json: async () => ({ status: false })
       });
-      const mockAlert = jest.fn();
-      const mockReload = jest.fn();
+      const mockShowError = jest.fn();
+      const mockShowSuccessModal = jest.fn();
 
-      await simpleLoginOTPVerifyClick(mockFetch, mockAlert, mockReload);
+      await simpleLoginOTPVerifyClick(mockFetch, mockShowError, mockShowSuccessModal);
 
-      expect(mockAlert).toHaveBeenCalledWith('OTP verification failed!');
-      expect(mockReload).not.toHaveBeenCalled();
+      expect(mockShowError).toHaveBeenCalledWith('The OTP is incorrect or expired. Try again.');
+      expect(mockShowSuccessModal).not.toHaveBeenCalled();
     });
 
-    it('should handle network errors', async () => {
+    it('shows a connection error when OTP verification rejects', async () => {
       const mockFetch = jest.fn().mockRejectedValue(new Error('Network error'));
-      const mockAlert = jest.fn();
-      const mockReload = jest.fn();
+      const mockShowError = jest.fn();
 
-      await simpleLoginOTPVerifyClick(mockFetch, mockAlert, mockReload);
+      await simpleLoginOTPVerifyClick(mockFetch, mockShowError);
 
       expect(console.log).toHaveBeenCalledWith(expect.any(Error));
-      expect(mockAlert).toHaveBeenCalledWith('OTP verification failed!');
+      expect(mockShowError).toHaveBeenCalledWith('We couldn’t verify the OTP. Check your connection and try again.');
     });
 
     it('should not make request when number is missing', async () => {

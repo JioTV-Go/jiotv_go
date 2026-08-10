@@ -10,6 +10,29 @@
 
   <body>
     {{ template "navbar" . }}
+    {{if .PremiumProviders}}
+    <div class="container mx-auto p-4">
+      <h2 class="text-2xl font-bold mb-2">Premium providers</h2>
+      <p class="text-sm text-gray-500 mb-3">Detected from your active Jio plans.</p>
+      <div class="flex flex-wrap gap-2">
+        {{range $provider := .PremiumProviders}}
+        {{if $provider.ProviderID}}
+        <a href="/premium/providers/{{$provider.ProviderID}}/watch" class="btn btn-outline btn-primary rounded-xl">
+          {{$provider.Name}}
+        </a>
+        {{else if $provider.URL}}
+        <a href="{{$provider.URL}}" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-primary rounded-xl">
+          {{$provider.Name}}
+        </a>
+        {{else}}
+        <a href="/premium/providers/{{$provider.ID}}/watch" class="btn btn-outline btn-primary rounded-xl">
+          {{$provider.Name}}
+        </a>
+        {{end}}
+        {{end}}
+      </div>
+    </div>
+    {{end}}
     <div class="container mx-auto">{{ template "channel_list" . }}</div>
     {{ template "login_dialog" . }}
     <script src="/static/internal/utils.js"></script>

@@ -8,11 +8,11 @@
       id="portexe-search-input"
       type="text"
       placeholder="Search channels here"
-      class="input input-bordered input-md w-full col-span-3 sm:col-span-1"
+      class="input input-bordered input-md w-full col-span-3 sm:col-span-1 text-base"
     />
     <select
       id="portexe-quality-select"
-      class="select select-bordered select-sm sm:select-md w-full sm:max-w-xs sm:w-auto"
+      class="select select-bordered select-sm sm:select-md w-full sm:max-w-xs sm:w-auto text-base sm:text-sm"
       onchange="onQualityChange(this)"
     >
       {{ range $key, $value := .Qualities }}
@@ -21,7 +21,7 @@
     </select>
     <select
       id="portexe-category-select"
-      class="select select-bordered select-sm sm:select-md w-full sm:max-w-xs sm:w-auto"
+      class="select select-bordered select-sm sm:select-md w-full sm:max-w-xs sm:w-auto text-base sm:text-sm"
     >
       {{ range $key, $value := .Categories }}
       <option value="{{$key}}">{{$value}}</option>
@@ -29,7 +29,7 @@
     </select>
     <select
       id="portexe-language-select"
-      class="select select-bordered select-sm sm:select-md w-full sm:max-w-xs sm:w-auto"
+      class="select select-bordered select-sm sm:select-md w-full sm:max-w-xs sm:w-auto text-base sm:text-sm"
     >
       {{ range $key, $value := .Languages }}
       <option value="{{$key}}">{{$value}}</option>
@@ -42,6 +42,19 @@
       Apply
     </button>
   </div>
+  <label
+    for="hide-locked-toggle"
+    class="flex cursor-pointer items-center gap-2.5 px-4 pt-3 text-sm text-base-content/70"
+  >
+    <input
+      id="hide-locked-toggle"
+      type="checkbox"
+      class="checkbox checkbox-sm checkbox-primary"
+      onchange="toggleLockedChannels(this.checked)"
+    />
+    <span>Only show channels included in my plan</span>
+    <span id="locked-channel-count" class="ml-auto text-xs text-base-content/50"></span>
+  </label>
   <div id="favorite-channels-section" class="px-4 pt-6" style="display: none;">
     <h2 class="section-title mb-3">Favourites</h2>
     <div id="favorite-channels-container" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
@@ -56,9 +69,10 @@
       class="card relative border border-primary bg-base-100 shadow-sm group"
       data-channel-id="{{$channel.ID}}"
       data-catchup-available="{{if $channel.IsCatchupAvailable}}true{{else}}false{{end}}"
+      {{if $channel.RequiresSubscription}}data-requires-subscription="true"{{end}}
       tabindex="0"
     >
-      <div class="flex flex-col items-center p-3 sm:p-4">
+      <div class="flex h-full flex-col items-center justify-center p-3 sm:p-4">
         <img
           src="{{$channel.LogoURL}}"
           loading="lazy"
@@ -66,6 +80,17 @@
           class="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl logo-tile ring-1 ring-base-300/60"
         />
         <span class="text-sm sm:text-base font-bold mt-2.5 text-center leading-snug line-clamp-2">{{$channel.Name}}</span>
+        {{if $channel.RequiresSubscription}}
+        <span
+          class="badge badge-outline badge-sm mt-1.5 gap-1 text-[0.65rem] opacity-70"
+          title="Not included in your plan — requires a separate subscription"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-2.5 w-2.5" aria-hidden="true">
+            <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z" clip-rule="evenodd" />
+          </svg>
+          Subscription
+        </span>
+        {{end}}
         <button id="favorite-btn-{{$channel.ID}}" class="favorite-btn absolute btn-ghost p-0 sm:p-2 top-2 right-2 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 rounded-full" aria-label="Add to favorites" onclick="event.preventDefault(); toggleFavorite('{{$channel.ID}}');">
           <svg  id="star-icon-{{$channel.ID}}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
             <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
@@ -99,7 +124,89 @@
     </svg>
     <span class="hidden sm:block">Search</span>
   </button>
+  <div id="locked_channel_modal" class="modal modal-bottom sm:modal-middle" role="dialog" aria-modal="true" aria-labelledby="locked-channel-title" aria-describedby="locked-channel-message">
+    <div class="modal-box pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-center">
+      <span class="mx-auto flex size-12 items-center justify-center rounded-full bg-warning/15 text-warning">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-6" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+        </svg>
+      </span>
+      <h3 id="locked-channel-title" class="mt-3 font-bold text-xl tracking-tight">Subscription required</h3>
+      <p id="locked-channel-message" class="py-3 text-sm text-base-content/60"></p>
+      <div class="modal-action grid grid-cols-2 gap-2">
+        <button id="locked-channel-cancel" type="button" class="btn">Cancel</button>
+        <button id="locked-channel-continue" type="button" class="btn btn-primary">Try anyway</button>
+      </div>
+    </div>
+    <button id="locked-channel-backdrop" type="button" class="modal-backdrop" aria-label="Close subscription notice"></button>
+  </div>
   <script src="/static/internal/utils.js"></script>
   <script src="/static/internal/channels.js"></script>
+  <script>
+    // Hiding is done with a class on <body> rather than per-element display,
+    // because the search filter owns each card's inline style.display.
+    const LOCKED_CHANNELS_STORAGE_KEY = "hideLockedChannels";
+
+    function toggleLockedChannels(shouldHide) {
+      document.body.classList.toggle("hide-locked-channels", shouldHide);
+      try {
+        localStorage.setItem(LOCKED_CHANNELS_STORAGE_KEY, JSON.stringify(shouldHide));
+      } catch (_) {
+        // Ignore storage failures (private mode, quota).
+      }
+    }
+
+    (() => {
+      const lockedCount = document.querySelectorAll('[data-requires-subscription="true"]').length;
+      const countLabel = document.getElementById("locked-channel-count");
+      if (countLabel) {
+        countLabel.textContent = lockedCount ? lockedCount + " need a subscription" : "";
+      }
+
+      const toggle = document.getElementById("hide-locked-toggle");
+      if (!toggle) return;
+      if (!lockedCount) {
+        toggle.closest("label").style.display = "none";
+        return;
+      }
+
+      let stored = false;
+      try {
+        stored = JSON.parse(localStorage.getItem(LOCKED_CHANNELS_STORAGE_KEY)) === true;
+      } catch (_) {
+        stored = false;
+      }
+      toggle.checked = stored;
+      toggleLockedChannels(stored);
+
+      const lockedModal = document.getElementById("locked_channel_modal");
+      const lockedMessage = document.getElementById("locked-channel-message");
+      let pendingHref = null;
+
+      const closeLockedModal = () => {
+        lockedModal.classList.remove("modal-open");
+        pendingHref = null;
+      };
+
+      document.addEventListener("click", (event) => {
+        if (event.target.closest(".favorite-btn")) return;
+        const card = event.target.closest('a.card[data-requires-subscription="true"]');
+        if (!card || lockedModal.classList.contains("modal-open")) return;
+        event.preventDefault();
+        const name = card.querySelector(".font-bold")?.textContent?.trim() || "This channel";
+        pendingHref = card.href;
+        lockedMessage.textContent = `${name} is not included in your plan and needs a separate subscription. Playback will likely fail.`;
+        lockedModal.classList.add("modal-open");
+      });
+
+      document.getElementById("locked-channel-cancel").addEventListener("click", closeLockedModal);
+      document.getElementById("locked-channel-backdrop").addEventListener("click", closeLockedModal);
+      document.getElementById("locked-channel-continue").addEventListener("click", () => {
+        const href = pendingHref;
+        closeLockedModal();
+        if (href) window.location.href = href;
+      });
+    })();
+  </script>
 </div>
 {{end}}
