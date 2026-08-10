@@ -83,7 +83,8 @@ function getSimilarChannels(channelsData, currentChannel, maxChannels = 12) {
     // Filter channels by same category and language, excluding current channel
     let similarChannels = channelsData.result.filter(channel => {
         return channel.channel_id !== currentChannelID &&
-            (channel.channelCategoryId === currentCategory && channel.channelLanguageId === currentLanguage);
+            channel.channelCategoryId === currentCategory &&
+            channel.channelLanguageId === currentLanguage;
     });
 
     // Shuffle the array to randomize selection
@@ -121,6 +122,8 @@ function renderSimilarChannels(similarChannels) {
             href: `/play/${channel.channel_id}`,
             className: 'card relative border border-primary bg-base-100 shadow-sm group',
             'data-channel-id': channel.channel_id,
+            'data-channel-name': channel.channel_name,
+            ...(channel.requiresSubscription ? { 'data-requires-subscription': 'true' } : {}),
             tabindex: '0'
         }, '', `
             <div class="flex flex-col items-center p-3">

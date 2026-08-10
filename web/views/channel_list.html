@@ -52,7 +52,7 @@
       class="checkbox checkbox-sm checkbox-primary"
       onchange="toggleLockedChannels(this.checked)"
     />
-    <span>Only show channels included in my plan</span>
+    <span>Hide channels requiring a separate subscription</span>
     <span id="locked-channel-count" class="ml-auto text-xs text-base-content/50"></span>
   </label>
   <div id="favorite-channels-section" class="px-4 pt-6" style="display: none;">
@@ -83,7 +83,7 @@
         {{if $channel.RequiresSubscription}}
         <span
           class="badge badge-outline badge-sm mt-1.5 gap-1 text-[0.65rem] opacity-70"
-          title="Not included in your plan — requires a separate subscription"
+          title="May require a separate subscription"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-2.5 w-2.5" aria-hidden="true">
             <path fill-rule="evenodd" d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z" clip-rule="evenodd" />
@@ -131,8 +131,12 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
         </svg>
       </span>
-      <h3 id="locked-channel-title" class="mt-3 font-bold text-xl tracking-tight">Subscription required</h3>
+      <h3 id="locked-channel-title" class="mt-3 font-bold text-xl tracking-tight">Subscription may be required</h3>
       <p id="locked-channel-message" class="py-3 text-sm text-base-content/60"></p>
+      <label class="flex items-center justify-center gap-2 text-sm text-base-content/70">
+        <input id="locked-channel-suppress" type="checkbox" class="checkbox checkbox-sm checkbox-primary" />
+        <span>Don’t warn me again for this channel</span>
+      </label>
       <div class="modal-action grid grid-cols-2 gap-2">
         <button id="locked-channel-cancel" type="button" class="btn">Cancel</button>
         <button id="locked-channel-continue" type="button" class="btn btn-primary">Try anyway</button>
@@ -149,11 +153,7 @@
 
     function toggleLockedChannels(shouldHide) {
       document.body.classList.toggle("hide-locked-channels", shouldHide);
-      try {
-        localStorage.setItem(LOCKED_CHANNELS_STORAGE_KEY, JSON.stringify(shouldHide));
-      } catch (_) {
-        // Ignore storage failures (private mode, quota).
-      }
+      setLocalStorageItem(LOCKED_CHANNELS_STORAGE_KEY, shouldHide);
     }
 
     (() => {
@@ -170,42 +170,10 @@
         return;
       }
 
-      let stored = false;
-      try {
-        stored = JSON.parse(localStorage.getItem(LOCKED_CHANNELS_STORAGE_KEY)) === true;
-      } catch (_) {
-        stored = false;
-      }
+      const stored = getLocalStorageItem(LOCKED_CHANNELS_STORAGE_KEY, false) === true;
       toggle.checked = stored;
       toggleLockedChannels(stored);
-
-      const lockedModal = document.getElementById("locked_channel_modal");
-      const lockedMessage = document.getElementById("locked-channel-message");
-      let pendingHref = null;
-
-      const closeLockedModal = () => {
-        lockedModal.classList.remove("modal-open");
-        pendingHref = null;
-      };
-
-      document.addEventListener("click", (event) => {
-        if (event.target.closest(".favorite-btn")) return;
-        const card = event.target.closest('a.card[data-requires-subscription="true"]');
-        if (!card || lockedModal.classList.contains("modal-open")) return;
-        event.preventDefault();
-        const name = card.querySelector(".font-bold")?.textContent?.trim() || "This channel";
-        pendingHref = card.href;
-        lockedMessage.textContent = `${name} is not included in your plan and needs a separate subscription. Playback will likely fail.`;
-        lockedModal.classList.add("modal-open");
-      });
-
-      document.getElementById("locked-channel-cancel").addEventListener("click", closeLockedModal);
-      document.getElementById("locked-channel-backdrop").addEventListener("click", closeLockedModal);
-      document.getElementById("locked-channel-continue").addEventListener("click", () => {
-        const href = pendingHref;
-        closeLockedModal();
-        if (href) window.location.href = href;
-      });
+      initSubscriptionWarnings();
     })();
   </script>
 </div>
