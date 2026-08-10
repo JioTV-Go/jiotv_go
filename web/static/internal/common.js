@@ -87,6 +87,16 @@ function styleCatchupCards() {
     }
   });
 }
+// Only the top-level channel routes /play/<id> and /catchup/<id> switch modes.
+// Nested routes such as /catchup/play/<id> or /catchup/render/<id> carry a
+// sub-route where the id would be, and must be left alone.
+function parseChannelRoute(pathname) {
+  const match = pathname.match(/^\/(play|catchup)\/([^/?#]+)\/?$/);
+  if (!match || match[2] === "play" || match[2] === "render" || match[2] === "stream") {
+    return null;
+  }
+  return { mode: match[1], id: match[2] };
+}
 function updateCatchupUI() {
   const btn = document.getElementById("catchup-toggle");
   const label = document.getElementById("catchup-toggle-label");
@@ -107,18 +117,16 @@ function updateCatchupUI() {
   }
   applyCatchupToCards();
   styleCatchupCards();
-  const path = window.location.pathname;
-  const match = path.match(/^\/(play|catchup)\/([^/?#]+)/);
-  if (match) {
-    const id = match[2];
+  const route = parseChannelRoute(window.location.pathname);
+  if (route) {
     const params = getCurrentUrlParams();
     const liveOverride = params.get("live") === "true";
     const qs = params.toString();
     const base = enabled ? "/catchup/" : "/play/";
-    const target = base + id + (qs ? "?" + qs : "");
+    const target = base + route.id + (qs ? "?" + qs : "");
     if (
-      (enabled && match[1] !== "catchup" && !liveOverride) ||
-      (!enabled && match[1] !== "play")
+      (enabled && route.mode !== "catchup" && !liveOverride) ||
+      (!enabled && route.mode !== "play")
     ) {
       window.location.replace(target);
     }
@@ -132,19 +140,14 @@ function toggleCatchupMode() {
   }
   setLocalStorageItem("catchupMode", next);
   updateCatchupUI();
-  const path = window.location.pathname;
-  const match = path.match(/^\/(play|catchup)\/([^/?#]+)/);
-  if (match) {
-    const id = match[2];
+  const route = parseChannelRoute(window.location.pathname);
+  if (route) {
     const params = getCurrentUrlParams();
-    // When manually toggling, we probably want to ignore the live override if we are switching TO catchup
-    // But if we are switching TO play, live override is redundant but harmless.
-    // If we are on Play (with live=true) and toggle ON, we should go to Catchup.
-    // So we don't check liveOverride here because user action takes precedence.
+    // Manual toggling is an explicit user action, so it overrides live=true.
     const qs = params.toString();
     const base = next ? "/catchup/" : "/play/";
-    const target = base + id + (qs ? "?" + qs : "");
-    if ((next && match[1] !== "catchup") || (!next && match[1] !== "play")) {
+    const target = base + route.id + (qs ? "?" + qs : "");
+    if ((next && route.mode !== "catchup") || (!next && route.mode !== "play")) {
       window.location.replace(target);
     }
   }
