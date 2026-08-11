@@ -27,6 +27,11 @@ JioTV Go is a single Go CLI/server that wraps JioTV Android APIs for live TV, ca
 - `configs/` — example YAML/TOML/JSON config files; pass one explicitly with `--config`.
 - `scripts/` — release/install utilities, not the regular developer task runner.
 
+## Repository Skills
+
+- `.agents/skills/change-configuration/SKILL.md` — use for any `JIOTV_*` or JSON/YAML/TOML configuration change; it defines the required schema, defaults, examples, consumers, and tests to synchronize.
+- `.agents/skills/diagnose-playback/SKILL.md` — use for live, catch-up, HLS, DASH/DRM, browser, or IPTV playback failures; it defines the hop-by-hop evidence and token-scope checks.
+
 ## Development Commands
 
 Run from repository root unless stated otherwise:
