@@ -47,7 +47,7 @@ This section provides information about the API endpoints that JioTV Go offers. 
 ### Get Channels data
 
 - **Path**: `/channels`
-  Discover the complete list of available channels in JSON format.
+  Discover the complete list of available channels in JSON format. DRM channels include `channel_url` for the MPD manifest and `key_url` for the `/live/key/:channel_id` license path.
 
 ## TV Endpoints
 
