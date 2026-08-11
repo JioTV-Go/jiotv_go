@@ -1000,6 +1000,19 @@ func RenderTSHandler(c *fiber.Ctx) error {
 	return nil
 }
 
+func setChannelPlaybackURLs(channels []television.Channel, hostURL string) {
+	for i := range channels {
+		if EnableDRM && utils.ContainsString(channels[i].ID, drmList) {
+			channels[i].URL = fmt.Sprintf("%s/live/mpd/%s", hostURL, channels[i].ID)
+			channels[i].KeyURL = fmt.Sprintf("%s/live/key/%s", hostURL, channels[i].ID)
+			continue
+		}
+
+		channels[i].URL = fmt.Sprintf("%s/live/%s", hostURL, channels[i].ID)
+		channels[i].KeyURL = ""
+	}
+}
+
 // ChannelsHandler fetch all channels from JioTV API
 // Also to generate M3U playlist
 func ChannelsHandler(c *fiber.Ctx) error {
@@ -1026,13 +1039,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 		return c.SendStream(strings.NewReader(m3uContent))
 	}
 
-	for i, channel := range apiResponse.Result {
-		if EnableDRM && utils.ContainsString(channel.ID, drmList) {
-			apiResponse.Result[i].URL = fmt.Sprintf("%s/live/mpd/%s", hostURL, channel.ID)
-		} else {
-			apiResponse.Result[i].URL = fmt.Sprintf("%s/live/%s", hostURL, channel.ID)
-		}
-	}
+	setChannelPlaybackURLs(apiResponse.Result, hostURL)
 
 	return c.JSON(apiResponse)
 }
