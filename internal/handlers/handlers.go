@@ -943,8 +943,9 @@ func RenderTSHandler(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Always prefer a freshly cached HDNEA token if available
-	cachedHDNEA := getCachedHDNEA(channelID)
+	// Cache tokens by stream kind: catchup and live ACLs are incompatible.
+	hdneaKey := hdneaCacheKey(channelID, decoded_url)
+	cachedHDNEA := getCachedHDNEA(hdneaKey)
 	if cachedHDNEA != "" {
 		c.Request().Header.SetCookie("__hdnea__", cachedHDNEA)
 		// We should also replace the token in the URL if it's there

@@ -2169,7 +2169,6 @@ func (tv *Television) GetCatchupURL(channelID, srno, start, end string) (*LiveUR
 				utils.Log.Printf("Retrying the catchup request (attempt %d/%d)...", i+1, maxRetries)
 				continue
 			}
-			utils.Log.Panicln(err)
 			return nil, err
 		}
 		break
@@ -2194,7 +2193,6 @@ func (tv *Television) GetCatchupURL(channelID, srno, start, end string) (*LiveUR
 
 	var result LiveURLOutput
 	if err := json.Unmarshal(resp.Body(), &result); err != nil {
-		utils.Log.Panicln(err)
 		return nil, err
 	}
 
