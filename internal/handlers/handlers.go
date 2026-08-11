@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"html/template"
 	"net/url"
 	"os"
 	"regexp"
@@ -1229,11 +1231,13 @@ func PlayHandler(c *fiber.Ctx) error {
 	} else {
 		player_url = "/player/" + id + "?q=" + quality
 	}
+	playerURLJSON, _ := json.Marshal(player_url)
 	internalUtils.SetCacheHeader(c, 3600)
 	return c.Render("views/play", fiber.Map{
-		"Title":      Title,
-		"player_url": player_url,
-		"ChannelID":  id,
+		"Title":         Title,
+		"player_url":    player_url,
+		"player_url_js": template.JS(playerURLJSON),
+		"ChannelID":     id,
 	})
 }
 
