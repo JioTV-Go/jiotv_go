@@ -323,6 +323,38 @@ func TestChannelsHandler(t *testing.T) {
 		})
 	}
 }
+func TestSetChannelPlaybackURLs(t *testing.T) {
+	origEnableDRM := EnableDRM
+	origDRMList := drmList
+	defer func() {
+		EnableDRM = origEnableDRM
+		drmList = origDRMList
+	}()
+
+	EnableDRM = true
+	drmList = []string{"143"}
+	channels := []television.Channel{{ID: "143"}, {ID: "101"}}
+
+	setChannelPlaybackURLs(channels, "http://localhost:5001")
+
+	if got, want := channels[0].URL, "http://localhost:5001/live/mpd/143"; got != want {
+		t.Errorf("DRM channel URL = %q, want %q", got, want)
+	}
+	if got, want := channels[0].KeyURL, "http://localhost:5001/live/key/143"; got != want {
+		t.Errorf("DRM channel key URL = %q, want %q", got, want)
+	}
+	if got := channels[1].KeyURL; got != "" {
+		t.Errorf("non-DRM channel key URL = %q, want empty", got)
+	}
+
+	body, err := json.Marshal(channels[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(string(body), `"key_url":"http://localhost:5001/live/key/143"`) {
+		t.Errorf("DRM channel JSON missing key_url: %s", body)
+	}
+}
 
 func TestPlayHandler(t *testing.T) {
 	type args struct {

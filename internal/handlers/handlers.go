@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"html/template"
 	"net/url"
 	"os"
 	"regexp"
@@ -173,15 +175,25 @@ func IndexHandler(c *fiber.Ctx) error {
 
 	// Filter channels by query params if provided
 	if language != "" || category != "" {
-		language_int, err := strconv.Atoi(language)
-		if err != nil {
-			return ErrorMessageHandler(c, err)
+		var categories []int
+		if category != "" {
+			for _, catStr := range strings.Split(category, ",") {
+				catVal, err := strconv.Atoi(strings.TrimSpace(catStr))
+				if err == nil {
+					categories = append(categories, catVal)
+				}
+			}
 		}
-		category_int, err := strconv.Atoi(category)
-		if err != nil {
-			return ErrorMessageHandler(c, err)
+		var languages []int
+		if language != "" {
+			for _, langStr := range strings.Split(language, ",") {
+				langVal, err := strconv.Atoi(strings.TrimSpace(langStr))
+				if err == nil {
+					languages = append(languages, langVal)
+				}
+			}
 		}
-		channels_list := television.FilterChannels(channels.Result, language_int, category_int)
+		channels_list := television.FilterChannelsByDefaults(channels.Result, categories, languages)
 		indexContext["Channels"] = channels_list
 		return c.Render("views/index", indexContext)
 	}
@@ -933,8 +945,9 @@ func RenderTSHandler(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Always prefer a freshly cached HDNEA token if available
-	cachedHDNEA := getCachedHDNEA(channelID)
+	// Cache tokens by stream kind: catchup and live ACLs are incompatible.
+	hdneaKey := hdneaCacheKey(channelID, decoded_url)
+	cachedHDNEA := getCachedHDNEA(hdneaKey)
 	if cachedHDNEA != "" {
 		c.Request().Header.SetCookie("__hdnea__", cachedHDNEA)
 		// We should also replace the token in the URL if it's there
@@ -989,6 +1002,19 @@ func RenderTSHandler(c *fiber.Ctx) error {
 	return nil
 }
 
+func setChannelPlaybackURLs(channels []television.Channel, hostURL string) {
+	for i := range channels {
+		if EnableDRM && utils.ContainsString(channels[i].ID, drmList) {
+			channels[i].URL = fmt.Sprintf("%s/live/mpd/%s", hostURL, channels[i].ID)
+			channels[i].KeyURL = fmt.Sprintf("%s/live/key/%s", hostURL, channels[i].ID)
+			continue
+		}
+
+		channels[i].URL = fmt.Sprintf("%s/live/%s", hostURL, channels[i].ID)
+		channels[i].KeyURL = ""
+	}
+}
+
 // ChannelsHandler fetch all channels from JioTV API
 // Also to generate M3U playlist
 func ChannelsHandler(c *fiber.Ctx) error {
@@ -1015,9 +1041,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 		return c.SendStream(strings.NewReader(m3uContent))
 	}
 
-	for i, channel := range apiResponse.Result {
-		apiResponse.Result[i].URL = fmt.Sprintf("%s/live/%s", hostURL, channel.ID)
-	}
+	setChannelPlaybackURLs(apiResponse.Result, hostURL)
 
 	return c.JSON(apiResponse)
 }
@@ -1207,11 +1231,13 @@ func PlayHandler(c *fiber.Ctx) error {
 	} else {
 		player_url = "/player/" + id + "?q=" + quality
 	}
+	playerURLJSON, _ := json.Marshal(player_url)
 	internalUtils.SetCacheHeader(c, 3600)
 	return c.Render("views/play", fiber.Map{
-		"Title":      Title,
-		"player_url": player_url,
-		"ChannelID":  id,
+		"Title":         Title,
+		"player_url":    player_url,
+		"player_url_js": template.JS(playerURLJSON),
+		"ChannelID":     id,
 	})
 }
 

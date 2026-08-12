@@ -23,6 +23,7 @@ type Channel struct {
 	ID                 string `json:"channel_id"`
 	Name               string `json:"channel_name"`
 	URL                string `json:"channel_url"`
+	KeyURL             string `json:"key_url,omitempty"`
 	LogoURL            string `json:"logoUrl"`
 	Category           int    `json:"channelCategoryId"`
 	Language           int    `json:"channelLanguageId"`

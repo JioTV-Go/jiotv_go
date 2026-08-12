@@ -126,7 +126,7 @@ func CatchupHandler(c *fiber.Ctx) error {
 }
 
 func CatchupStreamHandler(c *fiber.Ctx) error {
-	id := c.Params("id")
+	id := strings.TrimSuffix(c.Params("id"), ".m3u8")
 	start := c.Query("start")
 	end := c.Query("end")
 
@@ -218,7 +218,7 @@ func CatchupRenderPlayerHandler(c *fiber.Ctx) error {
 		qualityForDrm = "high"
 	}
 
-	playURL := fmt.Sprintf("/catchup/stream/%s?start=%s&end=%s&srno=%s", id, start, end, srno)
+	playURL := fmt.Sprintf("/catchup/stream/%s.m3u8?start=%s&end=%s&srno=%s", id, start, end, srno)
 	if quality != "" {
 		playURL += "&q=" + quality
 	}

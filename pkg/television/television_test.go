@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"path/filepath"
 	"strings"
@@ -14,6 +15,7 @@ import (
 	"github.com/jiotv-go/jiotv_go/v3/pkg/secureurl"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/store"
 	"github.com/jiotv-go/jiotv_go/v3/pkg/utils"
+	"github.com/valyala/fasthttp"
 )
 
 var (
@@ -642,4 +644,17 @@ func TestLoadAndCacheCustomChannels(t *testing.T) {
 			t.Errorf("Expected channel ID to remain 'cc_already_prefixed', got '%s'", channel.ID)
 		}
 	})
+}
+
+func TestGetCatchupURLReturnsNetworkError(t *testing.T) {
+	tv := &Television{
+		Headers: map[string]string{},
+		Client: &fasthttp.Client{Dial: func(string) (net.Conn, error) {
+			return nil, fmt.Errorf("forced dial failure")
+		}},
+	}
+
+	if _, err := tv.GetCatchupURL("180", "260810180045", "1786371900000", "1786372200000"); err == nil {
+		t.Fatal("GetCatchupURL() error = nil, want network error")
+	}
 }

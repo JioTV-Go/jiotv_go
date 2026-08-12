@@ -27,6 +27,11 @@ JioTV Go is a single Go CLI/server that wraps JioTV Android APIs for live TV, ca
 - `configs/` — example YAML/TOML/JSON config files; pass one explicitly with `--config`.
 - `scripts/` — release/install utilities, not the regular developer task runner.
 
+## Repository Skills
+
+- `.agents/skills/change-configuration/SKILL.md` — use for any `JIOTV_*` or JSON/YAML/TOML configuration change; it defines the required schema, defaults, examples, consumers, and tests to synchronize.
+- `.agents/skills/diagnose-playback/SKILL.md` — use for live, catch-up, HLS, DASH/DRM, browser, or IPTV playback failures; it defines the hop-by-hop evidence and token-scope checks.
+
 ## Development Commands
 
 Run from repository root unless stated otherwise:
@@ -89,8 +94,15 @@ Use `go test ./path/to/package -run '^TestName$'` for focused Go work. Use `cd w
 
 ## Testing & QA
 
-- Backend: standard Go `testing` tests are colocated under `cmd/`, `internal/`, and `pkg/`; Testify `assert` is optional, not required. Some command/API tests depend on external JioTV services, so maintain existing setup and avoid assuming every test is offline.
+- Backend: standard Go `testing` tests are colocated under `cmd/`, `internal/`, and `pkg/`; Testify `assert` is optional, not required. Keep tests offline and deterministic: use `httptest` or injected clients for upstream APIs, restore mutated globals and caches, and do not run shared-state tests in parallel.
 - Frontend: Jest with jsdom; tests live in `web/test/*.test.js` and use DOM/mocked-browser APIs.
 - CI quality gate: `go mod tidy`, `go test -v ./...`, then `cd web && npm ci && npm test -- --watchAll=false --ci`.
 - Add or update behavior-focused tests for changed contracts. No numeric coverage threshold exists; Jest coverage covers `web/static/internal/**/*.js`, while Go coverage is not configured.
 - No ESLint, Prettier, golangci-lint, Staticcheck, or local `go vet` workflow is declared. `.deepsource.toml` configures external Go, Docker, and shell analysis.
+
+## Contribution & Release Workflow
+
+- The default and PR target branch is `develop`; `main` is the release branch. Open normal feature and fix PRs against `develop`.
+- Follow Conventional Commits using the repository's established types: `feat:`, `fix:`, `docs:`, `test:`, `chore:`, and `refactor:`. Keep each commit to one logical change.
+- Before a PR, run the checks relevant to every changed area. Backend changes require `go test -v ./...`; frontend changes additionally follow `web/AGENTS.md`; configuration and user-facing behavior changes require matching docs/examples.
+- Do not manually bump `VERSION`, create release tags, or run release scripts for a normal change. Pushes to `main` trigger `.github/workflows/release.yml`, which updates `develop`, builds release binaries, and publishes tags/releases.
