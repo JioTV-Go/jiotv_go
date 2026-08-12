@@ -2,10 +2,12 @@ package handlers
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jiotv-go/jiotv_go/v3/internal/config"
@@ -493,6 +495,86 @@ func TestDASHTimeHandler(t *testing.T) {
 				t.Errorf("DASHTimeHandler() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
+	}
+}
+
+// TestDASHTimeHandlerServesCDNClock verifies that /dashtime reports the
+// upstream CDN clock (recorded from the MPD publishTime) rather than the
+// machine clock, so players sync to the clock the segment timeline uses.
+func TestDASHTimeHandlerServesCDNClock(t *testing.T) {
+	origPT, origFA := cdnPublishTime, cdnPublishFetchedAt
+	t.Cleanup(func() {
+		cdnClockMu.Lock()
+		defer cdnClockMu.Unlock()
+		cdnPublishTime, cdnPublishFetchedAt = origPT, origFA
+	})
+	// Guarantee the fallback path regardless of test ordering.
+	cdnClockMu.Lock()
+	cdnPublishTime, cdnPublishFetchedAt = time.Time{}, time.Time{}
+	cdnClockMu.Unlock()
+
+	// No observation yet -> falls back to the machine clock (current year).
+	c := createMockFiberContext("GET", "/dashtime")
+	if err := DASHTimeHandler(c); err != nil {
+		t.Fatalf("DASHTimeHandler() error = %v", err)
+	}
+	if body := string(c.Response().Body()); !strings.Contains(body, fmt.Sprintf("%d-", time.Now().UTC().Year())) {
+		t.Errorf("fallback DASHTimeHandler body = %q, want current-year prefix", body)
+	}
+
+	// With an observed CDN clock, the served time must follow it.
+	recordCdnPublishTime(time.Date(2030, 1, 1, 0, 0, 0, 0, time.UTC))
+	c2 := createMockFiberContext("GET", "/dashtime")
+	if err := DASHTimeHandler(c2); err != nil {
+		t.Fatalf("DASHTimeHandler() error = %v", err)
+	}
+	if body := string(c2.Response().Body()); !strings.Contains(body, "2030-01-01T00:00:") {
+		t.Errorf("DASHTimeHandler body = %q, want extrapolated CDN clock 2030-01-01T00:00:xx", body)
+	}
+}
+
+// TestExtractPublishTime verifies publishTime is parsed from live MPD bodies
+// and absent when the attribute is missing.
+func TestExtractPublishTime(t *testing.T) {
+	body := []byte(`<MPD xmlns="urn:mpeg:dash:schema:mpd:2011" type="dynamic" availabilityStartTime="1970-01-01T00:00:00Z" publishTime="2026-08-12T20:15:49.537686Z" minimumUpdatePeriod="PT2S">`)
+	pt, ok := extractPublishTime(body)
+	if !ok {
+		t.Fatal("expected publishTime to be extracted")
+	}
+	want := time.Date(2026, 8, 12, 20, 15, 49, 537686000, time.UTC)
+	if !pt.Equal(want) {
+		t.Errorf("extractPublishTime() = %v, want %v", pt, want)
+	}
+	if _, ok := extractPublishTime([]byte(`<MPD></MPD>`)); ok {
+		t.Error("expected no publishTime match for MPD without the attribute")
+	}
+}
+
+// TestCDNClockExtrapolation verifies cdnNow returns the recorded publishTime
+// plus elapsed time and reports false before any observation exists.
+func TestCDNClockExtrapolation(t *testing.T) {
+	origPT, origFA := cdnPublishTime, cdnPublishFetchedAt
+	t.Cleanup(func() {
+		cdnClockMu.Lock()
+		defer cdnClockMu.Unlock()
+		cdnPublishTime, cdnPublishFetchedAt = origPT, origFA
+	})
+
+	if _, ok := cdnNow(); ok {
+		t.Error("cdnNow should report false before any publishTime is recorded")
+	}
+
+	fixed := time.Date(2026, 8, 12, 20, 15, 49, 0, time.UTC)
+	recordCdnPublishTime(fixed)
+	got, ok := cdnNow()
+	if !ok {
+		t.Fatal("cdnNow should report true after recording")
+	}
+	if got.Before(fixed) {
+		t.Errorf("cdnNow %v is before recorded publishTime %v", got, fixed)
+	}
+	if got.Sub(fixed) > 2*time.Second {
+		t.Errorf("cdnNow %v extrapolated too far from %v", got, fixed)
 	}
 }
 

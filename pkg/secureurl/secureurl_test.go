@@ -79,6 +79,57 @@ func TestEncryptURL(t *testing.T) {
 	}
 }
 
+func TestEncryptURLDeterministic(t *testing.T) {
+	// Initialize the package first so the key is stable for this test run.
+	Init()
+
+	inputs := []string{
+		"cdn.jio.com",
+		"/tv/stream/",
+		"__hdnea__=some-cdn-token-value",
+		"",
+	}
+
+	for _, input := range inputs {
+		t.Run("Deterministic round-trip for: "+input, func(t *testing.T) {
+			first, err := EncryptURLDeterministic(input)
+			if err != nil {
+				t.Fatalf("EncryptURLDeterministic() error = %v", err)
+			}
+
+			// The same input must always produce the same ciphertext. The
+			// /render.dash host/path/hdnea components rely on this so segment
+			// URLs stay stable across live manifest refreshes.
+			second, err := EncryptURLDeterministic(input)
+			if err != nil {
+				t.Fatalf("EncryptURLDeterministic() error = %v", err)
+			}
+			if first != second {
+				t.Errorf("EncryptURLDeterministic(%q) is not stable: %q != %q", input, first, second)
+			}
+
+			// DecryptURL must be able to read the deterministic form.
+			decrypted, err := DecryptURL(first)
+			if err != nil {
+				t.Fatalf("DecryptURL() error = %v", err)
+			}
+			if decrypted != input {
+				t.Errorf("DecryptURL() = %q, want %q", decrypted, input)
+			}
+
+			// A random-IV encryption of the same input should differ from the
+			// deterministic form (they are different code paths on purpose).
+			randomized, err := EncryptURL(input)
+			if err != nil {
+				t.Fatalf("EncryptURL() error = %v", err)
+			}
+			if first == randomized {
+				t.Errorf("EncryptURLDeterministic(%q) unexpectedly equals the randomized EncryptURL form", input)
+			}
+		})
+	}
+}
+
 func TestDecryptURL(t *testing.T) {
 	// Initialize the package first
 	Init()

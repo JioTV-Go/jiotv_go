@@ -60,3 +60,6 @@ jiotv.json
 # MdBook Docs
 docs/book/
 book/
+
+# pnpm files
+pnpm*

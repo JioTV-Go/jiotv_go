@@ -64,6 +64,62 @@ var (
 	drmMpdCacheTTL = 30 * time.Second
 )
 
+// The proxied Broadpeak MPDs timestamp their segment timeline with the CDN's
+// own clock (publishTime), which can differ from the machine clock by minutes.
+// /dashtime is the UTCTiming clock source players sync to, so it must report
+// the CDN's clock - not the machine's - or players compute the live edge far
+// from where the segments actually are and playback stalls for the duration
+// of the skew. These hold the last observed CDN publishTime so
+// DASHTimeHandler can serve an extrapolated CDN clock. Note the cache is
+// global across channels: if two channels' CDNs run different clocks, an
+// interleaved fetch of one could briefly serve the wrong time to the other.
+// This self-corrects because each MPD fetch refreshes the cache and players
+// resolve /dashtime immediately after their own MPD fetch.
+var (
+	cdnClockMu          sync.Mutex
+	cdnPublishTime      time.Time
+	cdnPublishFetchedAt time.Time
+)
+
+// publishTimeRe extracts the publishTime attribute from live MPD bodies.
+var publishTimeRe = regexp.MustCompile(`publishTime="([^"]+)"`)
+
+// recordCdnPublishTime caches the upstream CDN clock observed from an MPD fetch.
+func recordCdnPublishTime(publishTime time.Time) {
+	cdnClockMu.Lock()
+	defer cdnClockMu.Unlock()
+	cdnPublishTime = publishTime
+	cdnPublishFetchedAt = time.Now()
+}
+
+// cdnNow returns the CDN's current clock, extrapolated from the last observed
+// publishTime, and whether any observation exists yet.
+func cdnNow() (time.Time, bool) {
+	cdnClockMu.Lock()
+	defer cdnClockMu.Unlock()
+	if cdnPublishFetchedAt.IsZero() {
+		return time.Time{}, false
+	}
+	elapsed := time.Since(cdnPublishFetchedAt)
+	if elapsed < 0 {
+		elapsed = 0
+	}
+	return cdnPublishTime.Add(elapsed), true
+}
+
+// extractPublishTime parses the publishTime attribute from a DASH MPD body.
+func extractPublishTime(body []byte) (time.Time, bool) {
+	m := publishTimeRe.FindSubmatch(body)
+	if len(m) < 2 {
+		return time.Time{}, false
+	}
+	t, err := time.Parse(time.RFC3339Nano, string(m[1]))
+	if err != nil {
+		return time.Time{}, false
+	}
+	return t, true
+}
+
 type drmMpdCacheEntry struct {
 	Output    *DrmMpdOutput
 	UpdatedAt time.Time
@@ -361,13 +417,13 @@ func buildDrmMpdOutput(liveResult *television.LiveURLOutput, channelID, quality 
 		return nil, err
 	}
 	tv_url_split := strings.Split(parsedTvUrl.Path, "/")
-	tv_url_path, err := secureurl.EncryptURL(strings.Join(tv_url_split[:len(tv_url_split)-1], "/") + "/")
+	tv_url_path, err := secureurl.EncryptURLDeterministic(strings.Join(tv_url_split[:len(tv_url_split)-1], "/") + "/")
 	if err != nil {
 		utils.Log.Panicln(err)
 		return nil, err
 	}
 
-	tv_url_host, err := secureurl.EncryptURL(parsedTvUrl.Host)
+	tv_url_host, err := secureurl.EncryptURLDeterministic(parsedTvUrl.Host)
 	if err != nil {
 		utils.Log.Panicln(err)
 		return nil, err
@@ -555,6 +611,11 @@ func MpdHandler(c *fiber.Ctx) error {
 	// CRITICAL: Refresh credentials before proxying MPD
 	EnsureFreshCredentials()
 
+	// Capture the local server URL before proxying: proxy.Do rewrites the
+	// request URI to the upstream CDN, after which c.Hostname()/c.Protocol()
+	// would return the CDN's host and scheme instead of ours.
+	localServerURL := c.Protocol() + "://" + c.Hostname()
+
 	channelID := c.Query("channel_id")
 	quality := c.Query("q")
 	proxyUrl := c.Query("auth")
@@ -590,12 +651,12 @@ func MpdHandler(c *fiber.Ctx) error {
 	proxyHost := parsedUrl.Host
 	pathParts := strings.Split(parsedUrl.Path, "/")
 	basePath := strings.Join(pathParts[:len(pathParts)-1], "/") + "/"
-	encProxyHost, err := secureurl.EncryptURL(proxyHost)
+	encProxyHost, err := secureurl.EncryptURLDeterministic(proxyHost)
 	if err != nil {
 		utils.Log.Panicln(err)
 		return err
 	}
-	encProxyPath, err := secureurl.EncryptURL(basePath)
+	encProxyPath, err := secureurl.EncryptURLDeterministic(basePath)
 	if err != nil {
 		utils.Log.Panicln(err)
 		return err
@@ -610,7 +671,7 @@ func MpdHandler(c *fiber.Ctx) error {
 
 	dashBaseURL := fmt.Sprintf("/render.dash/host/%s/path/%s", encProxyHost, encProxyPath)
 	if cachedHDNEA != "" {
-		encHDNEA, encErr := secureurl.EncryptURL("__hdnea__=" + cachedHDNEA)
+		encHDNEA, encErr := secureurl.EncryptURLDeterministic("__hdnea__=" + cachedHDNEA)
 		if encErr == nil {
 			dashBaseURL = fmt.Sprintf("/render.dash/host/%s/path/%s/hdnea/%s", encProxyHost, encProxyPath, encHDNEA)
 		}
@@ -633,7 +694,12 @@ func MpdHandler(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Handle 403/401 auth failures by stripping HDNEA and retrying
+	// Handle 403/401 auth failures by stripping HDNEA and retrying.
+	// HDNEA tokens are CDN-managed and expire independently of the JioTV
+	// session tokens, so the first retry drops the stale HDNEA and lets the
+	// CDN issue fresh auth. A full credential refresh is only attempted if
+	// that still fails, avoiding a blocking token refresh on every expired
+	// manifest request.
 	statusCode := c.Response().StatusCode()
 	if statusCode == fiber.StatusForbidden || statusCode == fiber.StatusUnauthorized {
 		if os.Getenv("JIOTV_DEBUG") == "true" {
@@ -642,7 +708,6 @@ func MpdHandler(c *fiber.Ctx) error {
 
 		// Reset response to allow retry
 		c.Response().Reset()
-		ForceRefreshCredentials()
 
 		// Strip HDNEA token and retry - CDN will provide fresh auth
 		// HDNEA tokens are CDN-managed and expire, so requesting without them
@@ -664,6 +729,22 @@ func MpdHandler(c *fiber.Ctx) error {
 			return err
 		}
 
+		// If stripping HDNEA did not help, the JioTV session tokens may have
+		// expired; refresh them and retry once more.
+		if retryStatus := c.Response().StatusCode(); retryStatus == fiber.StatusForbidden || retryStatus == fiber.StatusUnauthorized {
+			if os.Getenv("JIOTV_DEBUG") == "true" {
+				utils.Log.Printf("[DEBUG] MpdHandler retry still %d - forcing credential refresh", retryStatus)
+			}
+			c.Response().Reset()
+			ForceRefreshCredentials()
+			if err := proxy.Do(c, strippedUrl, TV.Client); err != nil {
+				if os.Getenv("JIOTV_DEBUG") == "true" {
+					utils.Log.Printf("[DEBUG] MpdHandler forced-refresh retry failed: %v", err)
+				}
+				return err
+			}
+		}
+
 		if os.Getenv("JIOTV_DEBUG") == "true" {
 			utils.Log.Printf("[DEBUG] MpdHandler retry - new status: %d", c.Response().StatusCode())
 		}
@@ -679,7 +760,7 @@ func MpdHandler(c *fiber.Ctx) error {
 
 	// If we got a fresh __hdnea__ from upstream, update dashBaseURL with it
 	if upstreamHDNEA != "" {
-		encHDNEA, encErr := secureurl.EncryptURL("__hdnea__=" + upstreamHDNEA)
+		encHDNEA, encErr := secureurl.EncryptURLDeterministic("__hdnea__=" + upstreamHDNEA)
 		if encErr == nil {
 			dashBaseURL = fmt.Sprintf("/render.dash/host/%s/path/%s/hdnea/%s", encProxyHost, encProxyPath, encHDNEA)
 		}
@@ -701,6 +782,33 @@ func MpdHandler(c *fiber.Ctx) error {
 		}
 	}
 	resBody := c.Response().Body()
+
+	// Record the upstream CDN clock so /dashtime can report it: the segment
+	// timeline in this MPD is stamped in CDN time, and players must sync to
+	// that clock to find the live edge.
+	if pt, ok := extractPublishTime(resBody); ok {
+		recordCdnPublishTime(pt)
+	}
+
+	// Inject a UTCTiming element pointing at the local /dashtime clock source.
+	// JioTV's Broadpeak MPDs carry no UTCTiming element and use
+	// availabilityStartTime="1970-01-01T00:00:00Z", so without a clock source
+	// players compute the live edge from the client clock. A skewed client
+	// clock makes them hunt for the live edge and pre-roll a large chunk of
+	// the DVR window before playback can start. Serving the clock from the
+	// server fixes this for every client (Shaka, IPTV apps, ExoPlayer...),
+	// not just the browser player.
+	if !bytes.Contains(resBody, []byte("<UTCTiming")) {
+		utcTiming := fmt.Sprintf(
+			`<UTCTiming schemeIdUri="urn:mpeg:dash:utc:http-xsdate:2014" value="%s/dashtime"/>`,
+			localServerURL,
+		)
+		mpdTagPattern := regexp.MustCompile(`<MPD[^>]*>`)
+		resBody = mpdTagPattern.ReplaceAllFunc(resBody, func(match []byte) []byte {
+			return append(append([]byte{}, match...), []byte(utcTiming)...)
+		})
+	}
+
 	basePathPattern := `<BaseURL>(.*)<\/BaseURL>`
 	re := regexp.MustCompile(basePathPattern)
 	// check for match
@@ -820,7 +928,12 @@ func DashHandler(c *fiber.Ctx) error {
 		return err
 	}
 
-	// Handle 403/401 auth failures with retry mechanism (AGGRESSIVE REFRESH)
+	// Handle 403/401 auth failures by clearing the stale HDNEA cookie and
+	// retrying. Segment requests carry only the CDN's __hdnea__ cookie (not
+	// the JioTV session tokens), so an expired token is a CDN auth problem:
+	// dropping the cookie lets the CDN issue fresh auth without the cost of a
+	// blocking token refresh on every expired segment request. A full refresh
+	// is attempted only if the retry still fails.
 	statusCode := c.Response().StatusCode()
 	if statusCode == fiber.StatusForbidden || statusCode == fiber.StatusUnauthorized {
 		if os.Getenv("JIOTV_DEBUG") == "true" {
@@ -829,7 +942,6 @@ func DashHandler(c *fiber.Ctx) error {
 
 		// Reset response to allow retry
 		c.Response().Reset()
-		ForceRefreshCredentials()
 
 		// Clear HDNEA cookie - expired token causes 403
 		// CDN will provide fresh HDNEA in the response
@@ -840,6 +952,22 @@ func DashHandler(c *fiber.Ctx) error {
 				utils.Log.Printf("[DEBUG] DashHandler retry failed: %v", err)
 			}
 			return err
+		}
+
+		// If clearing the cookie did not help, the JioTV session tokens may
+		// have expired; refresh them and retry once more.
+		if retryStatus := c.Response().StatusCode(); retryStatus == fiber.StatusForbidden || retryStatus == fiber.StatusUnauthorized {
+			if os.Getenv("JIOTV_DEBUG") == "true" {
+				utils.Log.Printf("[DEBUG] DashHandler retry still %d - forcing credential refresh", retryStatus)
+			}
+			c.Response().Reset()
+			ForceRefreshCredentials()
+			if err := proxy.Do(c, proxyUrl, TV.Client); err != nil {
+				if os.Getenv("JIOTV_DEBUG") == "true" {
+					utils.Log.Printf("[DEBUG] DashHandler forced-refresh retry failed: %v", err)
+				}
+				return err
+			}
 		}
 
 		if os.Getenv("JIOTV_DEBUG") == "true" {

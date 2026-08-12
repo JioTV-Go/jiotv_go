@@ -203,14 +203,24 @@
         });
 
         const licenseUrl = "{{ .license_url }}";
+        const isDRM = !!licenseUrl;
 
         if (licenseUrl) {
-          const support = await shaka.Player.probeSupport();
-          const drmSupport = support.drm || {};
-          const hasWidevineSupport = Object.keys(drmSupport).some((key) =>
-            key.includes("com.widevine.alpha")
-          );
-          if (!hasWidevineSupport) {
+          // Fast Widevine-only capability check. shaka.Player.probeSupport()
+          // probes EVERY key system - including PlayReady on Windows, whose
+          // CDM is extremely slow to respond - and can stall the page for
+          // minutes before playback even starts. JioTV streams are Widevine
+          // only, so a single requestMediaKeySystemAccess call is enough.
+          try {
+            await navigator.requestMediaKeySystemAccess("com.widevine.alpha", [
+              {
+                initDataTypes: ["cenc"],
+                videoCapabilities: [
+                  { contentType: 'video/mp4; codecs="avc1.42E01E"' },
+                ],
+              },
+            ]);
+          } catch (e) {
             fallbackToHLS("Widevine not supported");
             return;
           }
@@ -226,21 +236,39 @@
                 "com.widevine.alpha": {
                   videoRobustness: "SW_SECURE_CRYPTO",
                   audioRobustness: "SW_SECURE_CRYPTO",
-                }
-              }
+                },
+              },
             },
           });
         }
 
         player.configure({
-          streaming: {
-            retryParameters: {
-              maxAttempts: 5,  // Increase retry attempts for segment failures
-              backoffFactor: 2,
-              timeout: 30000,  // 30 second timeout
+          manifest: {
+            dash: {
+              // JioTV live MPDs have no UTCTiming element; point Shaka at the
+              // server clock (/dashtime returns an ISO timestamp and a Date
+              // header) so the live edge is computed from server time instead
+              // of the client clock. A skewed clock makes Shaka fetch far more
+              // segments than needed while it hunts for the live edge.
+              clockSyncUri: "/dashtime",
             },
-            bufferBehind: 5, // seconds of buffer kept behind the playhead
-            bufferingGoal: 30, // seconds of buffer kept ahead of the playhead
+          },
+          streaming: {
+            // Cap retries: each failed segment would otherwise multiply into
+            // several requests with long backoff, which turns a few expired
+            // HDNEA tokens into hundreds of slow segment requests.
+            retryParameters: {
+              maxAttempts: 2,
+              backoffFactor: 2,
+              timeout: 30000,
+            },
+            // JioTV premium streams use very short segments, so a large
+            // buffering goal multiplies the segment requests needed before
+            // playback can start. Keep the DRM buffer lean and the HLS
+            // fallback at the original, more generous values.
+            bufferBehind: isDRM ? 2 : 5,
+            bufferingGoal: isDRM ? 6 : 30,
+            rebufferingGoal: 2,
           },
         });
 
