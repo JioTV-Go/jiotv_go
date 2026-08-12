@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"net/http"
 	"net/url"
 	"os"
 	"regexp"
@@ -1273,8 +1274,23 @@ func ImageHandler(c *fiber.Ctx) error {
 	return internalUtils.ProxyRequest(c, url, TV.Client, REQUEST_USER_AGENT)
 }
 
+// DASHTimeHandler serves a UTC timestamp for DASH clock sync (UTCTiming).
+// The proxied MPD's segment timeline is stamped with the upstream CDN's
+// clock, so this returns the CDN's extrapolated clock when one has been
+// observed (see recordCdnPublishTime), falling back to the machine clock
+// before the first MPD fetch. Serving the machine clock directly stalls live
+// playback whenever it differs from the CDN clock: players compute the live
+// edge minutes away from the actual segments.
 func DASHTimeHandler(c *fiber.Ctx) error {
-	return c.SendString(time.Now().UTC().Format("2006-01-02T15:04:05.000Z"))
+	now := time.Now().UTC()
+	if cdn, ok := cdnNow(); ok {
+		now = cdn.UTC()
+	}
+	// The Shaka player reads the Date header when clockSyncUri uses the
+	// http-head UTCTiming scheme, so make sure it is present even if the
+	// HTTP framework does not add it automatically.
+	c.Set("Date", now.Format(http.TimeFormat))
+	return c.SendString(now.Format("2006-01-02T15:04:05.000Z"))
 }
 
 // GenerateM3UPlaylist generates an M3U playlist string from a list of channels
