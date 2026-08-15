@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/proxy"
@@ -35,9 +36,9 @@ func WebEPGHandler(c *fiber.Ctx) error {
 	// Get channel ID from URL
 	channelID := c.Params("channelID")
 
-	if channelID[:2] == "sl" {
-		channelID = channelID[2:]
-	}
+	// Trim the Sony ("sl") prefix. Slicing directly panics on IDs shorter than
+	// the prefix, so match on the whole value instead.
+	channelID = strings.TrimPrefix(channelID, "sl")
 
 	channelIntID, err := strconv.Atoi(channelID)
 	if err != nil {

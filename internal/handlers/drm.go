@@ -530,7 +530,7 @@ func DRMKeyHandler(c *fiber.Ctx) error {
 	c.Request().Header.Set("crmid", TV.Crm)
 	c.Request().Header.Set("channelid", channel_id)
 	c.Request().Header.Set("uniqueId", TV.UniqueID)
-	c.Request().Header.Set("versionCode", headers.VersionCode389)
+	c.Request().Header.Set("versionCode", headers.VersionCode422)
 	c.Request().Header.Set("usergroup", "tvYR7NSNn7rymo3F")
 	c.Request().Header.Set("devicetype", "phone")
 	c.Request().Header.Set("Accept-Encoding", "gzip, deflate")

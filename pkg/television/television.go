@@ -136,7 +136,7 @@ func New(credentials *utils.JIOTV_CREDENTIALS) *Television {
 		"uniqueId":        credentials.UniqueID,
 		headers.UserAgent: headers.UserAgentOkHttp,
 		"usergroup":       "tvYR7NSNn7rymo3F",
-		"versionCode":     headers.VersionCode413,
+		"versionCode":     headers.VersionCode422,
 	}
 
 	// Create a fasthttp.Client
@@ -629,7 +629,7 @@ func buildAuthenticatedHeaders(credentials *utils.JIOTV_CREDENTIALS) map[string]
 		headers.Accept:      headers.AcceptJSON,
 		headers.DeviceType:  headers.DeviceTypePhone,
 		headers.OS:          headers.OSAndroid,
-		headers.VersionCode: headers.VersionCode413,
+		headers.VersionCode: headers.VersionCode422,
 		"appkey":            "NzNiMDhlYzQyNjJm",
 		"lbcookie":          "1",
 		"usertype":          "JIO",
@@ -1076,6 +1076,57 @@ func resolvePremiumProviderID(providerIdentifier string) string {
 	return ""
 }
 
+// premiumProviderDisplayName finds the display name backing a statically
+// registered provider entry, so its real content provider ID can be looked
+// up in the directory. It checks both the resolved provider ID and the
+// original identifier, since resolvePremiumProviderID can return an
+// unresolved entitlement ID (for example "Z0177") that is itself a key in
+// premiumProviderByID.
+func premiumProviderDisplayName(resolvedProviderID, originalIdentifier string) string {
+	if providerLink, exists := premiumProviderByID[strings.ToUpper(resolvedProviderID)]; exists {
+		return providerLink.DisplayName
+	}
+	if providerLink, exists := premiumProviderByPlanID[strings.ToUpper(strings.TrimSpace(originalIdentifier))]; exists {
+		return providerLink.DisplayName
+	}
+	return ""
+}
+
+// resolveCatalogProviderID resolves a URL path identifier to the content
+// provider ID required by the catalog and playback APIs. providerIdentifier
+// may already be a content provider ID, or it may be an unresolved
+// entitlement ID such as "Z0177" that a Premium providers link can carry
+// when PremiumProviders() itself failed to resolve it against the
+// directory. In the latter case, the directory is consulted again here the
+// same way, so a request that reaches the catalog/playback APIs always uses
+// a real content provider ID rather than an entitlement ID they reject.
+func resolveCatalogProviderID(client *fasthttp.Client, credentials *utils.JIOTV_CREDENTIALS, providerIdentifier string) string {
+	staticProviderID := resolvePremiumProviderID(providerIdentifier)
+	if staticProviderID == "" {
+		staticProviderID = strings.ToUpper(strings.TrimSpace(providerIdentifier))
+	}
+	if staticProviderID == "" {
+		return ""
+	}
+
+	displayName := premiumProviderDisplayName(staticProviderID, providerIdentifier)
+	if displayName == "" {
+		return staticProviderID
+	}
+
+	providerDirectory, directoryErr := fetchProviderDirectory(client, buildProviderConfigHeaders(credentials))
+	if directoryErr != nil {
+		utils.SafeLogf("Unable to fetch provider directory while resolving %s: %v", providerIdentifier, directoryErr)
+		return staticProviderID
+	}
+
+	if contentProviderID, matched := lookupContentProviderID([]string{displayName}, providerDirectory); matched {
+		return contentProviderID
+	}
+
+	return staticProviderID
+}
+
 // buildPlansAPIHeaders builds headers for the subscription packs API
 // (v2.1/plans/get), which rejects requests without X-Platform.
 func buildPlansAPIHeaders(credentials *utils.JIOTV_CREDENTIALS) map[string]string {
@@ -1093,7 +1144,7 @@ func buildActivePlansHeaders(credentials *utils.JIOTV_CREDENTIALS) map[string]st
 		headers.Accept:      headers.AcceptJSON,
 		headers.DeviceType:  headers.DeviceTypePhone,
 		headers.OS:          headers.OSAndroid,
-		headers.VersionCode: headers.VersionCode413,
+		headers.VersionCode: headers.VersionCode422,
 		"Connection":        "close",
 	}
 	if credentials == nil {
@@ -1560,16 +1611,14 @@ func PremiumProviderCatalog(providerIdentifier string, page, limit int) (Premium
 		return result, errors.New("missing access token")
 	}
 
-	providerID := resolvePremiumProviderID(providerIdentifier)
-	if providerID == "" {
-		providerID = strings.ToUpper(strings.TrimSpace(providerIdentifier))
-	}
+	client := utils.GetRequestClient()
+
+	providerID := resolveCatalogProviderID(client, credentials, providerIdentifier)
 	if providerID == "" {
 		return result, errors.New("invalid provider identifier")
 	}
 	result.ProviderID = providerID
 
-	client := utils.GetRequestClient()
 	configHeaders := buildProviderConfigHeaders(credentials)
 	catalogHeaders := buildProviderCatalogHeaders(credentials)
 
@@ -1733,10 +1782,7 @@ func PremiumProviderPlayback(providerIdentifier string, playRequest PremiumProvi
 		return nil, errors.New("missing access token")
 	}
 
-	providerID := resolvePremiumProviderID(providerIdentifier)
-	if providerID == "" {
-		providerID = strings.ToUpper(strings.TrimSpace(providerIdentifier))
-	}
+	providerID := resolveCatalogProviderID(utils.GetRequestClient(), credentials, providerIdentifier)
 	if providerID == "" {
 		return nil, errors.New("invalid provider identifier")
 	}
