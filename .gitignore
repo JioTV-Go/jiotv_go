@@ -60,3 +60,5 @@ jiotv.json
 # MdBook Docs
 docs/book/
 book/
+# Decompiled APK for reverse-engineering (do not commit)
+apk/

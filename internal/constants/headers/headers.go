@@ -34,23 +34,21 @@ const (
 	AcceptEncodingGzip = "gzip"
 
 	// User agents
-	UserAgentOkHttp = "okhttp/4.2.2"
-	UserAgentPlayTV = "plaYtv/7.1.7 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7"
+	UserAgentOkHttp = "okhttp/4.12.0"
+	UserAgentPlayTV = "plaYtv/7.1.8 (Linux;Android 8.1.0) ExoPlayerLib/2.11.7"
 
 	// Device info
 	DeviceTypePhone = "phone"
 	OSAndroid       = "android"
-	VersionCode315  = "315"
-	VersionCode389  = "389"
-	// VersionCode413 matches the current JioTV app build (v7.1.7). The premium
-	// provider APIs require it: the plans endpoint rejects requests without a
-	// current versionCode/X-Platform pair.
-	VersionCode413 = "413"
+	// VersionCode422 mirrors BuildConfig.VERSION_CODE of the current JioTV app
+	// (v7.1.8). Several APIs reject stale builds, so keep this in step with the
+	// app rather than pinning an older value.
+	VersionCode422 = "422"
 
 	// Platform values for the X-Platform header used by premium provider APIs
 	PlatformAndroid       = "android"
 	PlatformAndroidMobile = "android_mobile"
 
-	// API Key
-	APIKeyJio = "l7xx75e822925f184370b2e25170c5d5820a"
+	// APIKeyJio mirrors BuildConfig.API_KEY of the current JioTV app (v7.1.8).
+	APIKeyJio = "l7xx938b6684ee9e4bbe8831a9a682b8e19f"
 )

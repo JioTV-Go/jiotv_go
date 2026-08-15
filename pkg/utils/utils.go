@@ -159,7 +159,9 @@ func LoginVerifyOTP(number, otp string) (map[string]string, error) {
 		},
 	}
 
-	// Make the request
+	// Keep this on v1. The app's v2 endpoint answers with a token that has to be
+	// swapped for real credentials via v1/loginotp/exchangetoken, so calling v2
+	// alone returns no ssoToken and leaves the user in a login loop.
 	url := "https://" + JIOTV_API_DOMAIN + "/userservice/apis/v1/loginotp/verify"
 
 	requestHeaders := map[string]string{
@@ -397,7 +399,7 @@ func PerformServerLogout() error {
 	requestHeaders := map[string]string{
 		headers.AcceptEncoding: headers.AcceptEncodingGzip,
 		headers.DeviceType:     headers.DeviceTypePhone,
-		"versioncode":          headers.VersionCode389,
+		"versioncode":          headers.VersionCode422,
 		headers.OS:             headers.OSAndroid,
 		headers.ContentType:    headers.ContentTypeJSONCharsetUTF8,
 	}

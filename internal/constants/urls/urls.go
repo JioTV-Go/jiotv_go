@@ -23,14 +23,14 @@ const (
 	RefreshSSOTokenURL = "https://tv.media.jio.com/apis/v2.0/loginotp/refresh?langId=6"
 
 	// Channel listing URLs
-	ChannelsAPIURL = "https://jiotvapi.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?langId=6&os=android&devicetype=phone&usertype=JIO&version=315&langId=6"
-	ChannelURL     = "https://jiotv.data.cdn.jio.com/apis/v3.0/getMobileChannelList/get/?os=android&devicetype=phone&usertype=tvYR7NSNn7rymo3F"
+	ChannelsAPIURL = "https://jiotvapi.cdn.jio.com/apis/v3.1/getMobileChannelList/get/?langId=6&os=android&devicetype=phone&usertype=JIO&version=315&langId=6"
+	ChannelURL     = "https://jiotv.data.cdn.jio.com/apis/v3.1/getMobileChannelList/get/?os=android&devicetype=phone&usertype=tvYR7NSNn7rymo3F"
 
 	// Premium provider URLs
 	PlansAPIURL                = "https://tv.media.jio.com/apis/v2.1/plans/get?langId=6"
 	ActivePlansAPIURL          = "https://jiotvapi.media.jio.com/userservice/apis/v1/plans"
-	ProviderConfigAPIBaseURL   = "https://origin-gcp-api-jiotv.media.jio.com"
-	ProviderMetadataAPIBaseURL = "https://origin-gcp-content-jiotv.media.jio.com"
+	ProviderConfigAPIBaseURL   = "https://api-jiotv.media.jio.com"
+	ProviderMetadataAPIBaseURL = "https://content-jiotv.media.jio.com"
 
 	// Image base path for premium catalog artwork returned as relative paths
 	ImageBaseURL = "https://img.media.jio.com/"
