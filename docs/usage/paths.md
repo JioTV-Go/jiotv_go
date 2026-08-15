@@ -66,11 +66,13 @@ You can also append `&c=split` to the path to have categories based on both lang
 You can also append `&sg=<genre_list>` to the path in order to skip specific genres. Here replace `<genre_list>` with comma(,) seperated list of genres.
 Valid genres: `Entertainment`, `Movies`, `Kids`, `Sports`, `Lifestyle`, `Infotainment`, `News`, `Music`, `Devotional`, `Business`, `Educational`, `Shopping`, `JioDarshan`
 
+You can also append `&sub=hide` to the path to leave out channels that require a separate subscription, or `&sub=only` to get a playlist of just those channels. Any other value, including omitting `sub`, returns every channel. This is the playlist equivalent of the "Hide channels requiring a separate subscription" checkbox on the home page.
+
 ### M3U Playlist
 
 - **Path**: `/channels?type=m3u`
 
-The actual path for the M3U playlist. You can append `&q=<level>` to the path as [above](#m3u-playlist-alias). You can also append `&c=split` to the path as [above](#m3u-playlist-alias).
+The actual path for the M3U playlist. You can append `&q=<level>` to the path as [above](#m3u-playlist-alias). You can also append `&c=split` or `&sub=hide` to the path as [above](#m3u-playlist-alias).
 
 ### M3U8 URL
 
