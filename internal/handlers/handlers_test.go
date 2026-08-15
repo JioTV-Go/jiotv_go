@@ -745,7 +745,7 @@ func TestChannelsHandlerM3UDRM(t *testing.T) {
 			}
 
 			// Generate playlist
-			playlist := GenerateM3UPlaylist(mockChannels, hostURL, tc.quality, "", "", "")
+			playlist := GenerateM3UPlaylist(mockChannels, hostURL, tc.quality, "", "", "", "")
 
 			// Verify the output contains the expected elements
 			if !strings.Contains(playlist, tc.expectedURL) {
@@ -758,6 +758,92 @@ func TestChannelsHandlerM3UDRM(t *testing.T) {
 			// Verify non-DRM shouldn't have KODIPROP tags
 			if tc.expectedProps == "" && strings.Contains(playlist, "#KODIPROP") {
 				t.Errorf("Expected playlist to NOT contain KODIPROP tags, but found them: \n%s", playlist)
+			}
+		})
+	}
+}
+
+func TestGenerateM3UPlaylistSubscriptionFilter(t *testing.T) {
+	const (
+		freeChannelID = "100"
+		paidChannelID = "200"
+	)
+
+	// One channel of each kind, identical in every other respect
+	mockChannels := []television.Channel{
+		{
+			ID:       freeChannelID,
+			Name:     "Free Channel",
+			LogoURL:  "free.png",
+			Category: 1, // Entertainment
+			Language: 1, // Hindi
+		},
+		{
+			ID:                   paidChannelID,
+			Name:                 "Paid Channel",
+			LogoURL:              "paid.png",
+			Category:             1, // Entertainment
+			Language:             1, // Hindi
+			RequiresSubscription: true,
+		},
+	}
+
+	testCases := []struct {
+		name       string
+		subFilter  string
+		expectFree bool
+		expectPaid bool
+	}{
+		{
+			name:       "AbsentKeepsEveryChannel",
+			subFilter:  "",
+			expectFree: true,
+			expectPaid: true,
+		},
+		{
+			name:       "HideDropsSubscriptionChannels",
+			subFilter:  "hide",
+			expectFree: true,
+			expectPaid: false,
+		},
+		{
+			name:       "OnlyKeepsSubscriptionChannels",
+			subFilter:  "only",
+			expectFree: false,
+			expectPaid: true,
+		},
+		{
+			name:       "UnknownValueFallsBackToDefault",
+			subFilter:  "banana",
+			expectFree: true,
+			expectPaid: true,
+		},
+		{
+			// Booleans are deliberately not accepted as aliases, because
+			// "true" is ambiguous between "include them" and "only them".
+			name:       "BooleanIsNotAnAlias",
+			subFilter:  "true",
+			expectFree: true,
+			expectPaid: true,
+		},
+	}
+
+	hostURL := "http://localhost:5001"
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			playlist := GenerateM3UPlaylist(mockChannels, hostURL, "", "", "", "", tc.subFilter)
+
+			// Assert on tvg-id rather than counting lines, so that dropping
+			// the wrong channel fails instead of passing on the right count
+			freeTag := `tvg-id="` + freeChannelID + `"`
+			paidTag := `tvg-id="` + paidChannelID + `"`
+
+			if got := strings.Contains(playlist, freeTag); got != tc.expectFree {
+				t.Errorf("sub=%q: free channel present = %v, want %v, got: \n%s", tc.subFilter, got, tc.expectFree, playlist)
+			}
+			if got := strings.Contains(playlist, paidTag); got != tc.expectPaid {
+				t.Errorf("sub=%q: subscription channel present = %v, want %v, got: \n%s", tc.subFilter, got, tc.expectPaid, playlist)
 			}
 		})
 	}

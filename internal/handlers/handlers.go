@@ -1023,6 +1023,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	splitCategory := strings.TrimSpace(c.Query("c"))
 	languages := strings.TrimSpace(c.Query("l"))
 	skipGenres := strings.TrimSpace(c.Query("sg"))
+	subFilter := strings.TrimSpace(c.Query("sub"))
 	apiResponse, err := television.Channels()
 	if err != nil {
 		return ErrorMessageHandler(c, err)
@@ -1033,7 +1034,7 @@ func ChannelsHandler(c *fiber.Ctx) error {
 	// Check if the query parameter "type" is set to "m3u"
 	if c.Query("type") == "m3u" {
 		// Create an M3U playlist
-		m3uContent := GenerateM3UPlaylist(apiResponse.Result, hostURL, quality, splitCategory, languages, skipGenres)
+		m3uContent := GenerateM3UPlaylist(apiResponse.Result, hostURL, quality, splitCategory, languages, skipGenres, subFilter)
 
 		// Set the Content-Disposition header for file download
 		c.Set("Content-Disposition", "attachment; filename=jiotv_playlist.m3u")
@@ -1264,7 +1265,8 @@ func PlaylistHandler(c *fiber.Ctx) error {
 	splitCategory := c.Query("c")
 	languages := c.Query("l")
 	skipGenres := c.Query("sg")
-	return c.Redirect("/channels?type=m3u&q="+quality+"&c="+splitCategory+"&l="+languages+"&sg="+skipGenres, fiber.StatusMovedPermanently)
+	subFilter := c.Query("sub")
+	return c.Redirect("/channels?type=m3u&q="+quality+"&c="+splitCategory+"&l="+languages+"&sg="+skipGenres+"&sub="+subFilter, fiber.StatusMovedPermanently)
 }
 
 // ImageHandler loads image from JioTV server
@@ -1278,7 +1280,7 @@ func DASHTimeHandler(c *fiber.Ctx) error {
 }
 
 // GenerateM3UPlaylist generates an M3U playlist string from a list of channels
-func GenerateM3UPlaylist(channels []television.Channel, hostURL, quality, splitCategory, languages, skipGenres string) string {
+func GenerateM3UPlaylist(channels []television.Channel, hostURL, quality, splitCategory, languages, skipGenres, subFilter string) string {
 	var m3uContent strings.Builder
 	m3uContent.WriteString("#EXTM3U x-tvg-url=\"")
 	m3uContent.WriteString(hostURL)
@@ -1292,6 +1294,17 @@ func GenerateM3UPlaylist(channels []television.Channel, hostURL, quality, splitC
 
 		if skipGenres != "" && utils.ContainsString(television.CategoryMap[channel.Category], strings.Split(skipGenres, ",")) {
 			continue
+		}
+
+		switch subFilter {
+		case "hide":
+			if channel.RequiresSubscription {
+				continue
+			}
+		case "only":
+			if !channel.RequiresSubscription {
+				continue
+			}
 		}
 
 		var channelURL string
