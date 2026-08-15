@@ -63,16 +63,26 @@ JioTV Go offers a convenient M3U playlist endpoint to enhance your IPTV experien
 
    This will skip all channels from provided list of genres.
 
+7. If you would like to hide channels that require a separate subscription, append the `sub=hide` query parameter:
+
+   ```
+   http://localhost:5001/playlist.m3u?sub=hide
+   ```
+
+   This is the playlist equivalent of the "Hide channels requiring a separate subscription" checkbox on the home page. Use `sub=only` for the inverse, a playlist containing nothing but the channels that need a subscription.
+
+   Any other value, including leaving `sub` out entirely, returns the full playlist.
+
 For both specific quality and split category, append the `q=` and `c=` query parameters:
 
 ```
 http://localhost:5001/playlist.m3u?q=high&c=split
 ```
 
-You can also combine the language grouping and language filtering:
+You can also combine the language grouping, language filtering and subscription filtering:
 
 ```
-http://localhost:5001/playlist.m3u?c=language&l=Hindi,Kannada,Marathi
+http://localhost:5001/playlist.m3u?c=language&l=Hindi,Kannada,Marathi&sub=hide
 ```
 
 
