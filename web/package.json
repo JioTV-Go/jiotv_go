@@ -4,7 +4,7 @@
   "devDependencies": {
     "@tailwindcss/cli": "^4.3.3",
     "daisyui": "^5.7.16",
-    "jest": "^30.5.1",
+    "jest": "^30.5.2",
     "jest-environment-jsdom": "^30.5.1",
     "jsdom": "^30.0.1",
     "tailwindcss": "^4.3.3"
