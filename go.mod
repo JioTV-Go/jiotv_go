@@ -5,7 +5,7 @@ go 1.26
 require (
 	github.com/BurntSushi/toml v1.6.0
 	github.com/ilyakaznacheev/cleanenv v1.5.0
-	github.com/madflojo/tasks v1.3.0
+	github.com/madflojo/tasks v1.3.1
 	github.com/stretchr/testify v1.12.1
 	github.com/urfave/cli/v2 v2.27.7
 	golang.org/x/sync v0.22.0
