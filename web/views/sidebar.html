@@ -1,0 +1,82 @@
+{{ define "category_sidebar" }}
+<div
+  id="sidebar-backdrop"
+  class="fixed inset-0 z-[55] bg-black/50 backdrop-blur-sm hidden md:hidden"
+  onclick="if(window.closeSidebar)window.closeSidebar()"
+></div>
+<aside
+  id="category-sidebar"
+  class="fixed inset-y-0 left-0 z-[60] w-72 max-w-[82%] -translate-x-full transition-transform duration-300 ease-out flex flex-col overflow-hidden p-4 bg-base-100 shadow-2xl border-r border-base-300/60 md:static md:z-auto md:w-64 md:max-w-none md:shrink-0 md:translate-x-0 md:sticky md:top-16 md:h-[calc(100vh-4rem)] md:bg-transparent md:shadow-none"
+  aria-label="Browse and filter channels"
+>
+  <div class="mb-4 flex shrink-0 items-center justify-between md:hidden">
+    <span class="text-lg font-bold">Browse</span>
+    <button
+      type="button"
+      class="btn btn-ghost btn-sm btn-circle"
+      aria-label="Close menu"
+      onclick="if(window.closeSidebar)window.closeSidebar()"
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" /></svg>
+    </button>
+  </div>
+
+  {{ if or .Qualities .Languages .Categories }}
+  <div class="filter-scroll min-h-0 flex-1 overflow-y-scroll pr-1">
+    {{ if .Qualities }}
+    <div class="collapse collapse-arrow mb-1">
+      <input type="checkbox" aria-label="Toggle quality options" />
+      <div class="collapse-title section-title min-h-0 py-2 px-1" id="quality-picker-label">Quality</div>
+      <div class="collapse-content px-1">
+        <div class="flex flex-col gap-1">
+          {{ range $key, $value := .Qualities }}
+          <label class="label cursor-pointer justify-start gap-2.5 rounded-lg px-2 py-1.5 hover:bg-base-200">
+            <input type="radio" name="quality" value="{{$key}}" class="radio radio-sm radio-primary quality-radio" {{if eq $key "auto"}}checked{{end}} />
+            <span class="label-text text-sm">{{$value}}</span>
+          </label>
+          {{ end }}
+        </div>
+      </div>
+    </div>
+    {{ end }}
+
+    {{ if .Languages }}
+    <div class="collapse collapse-arrow mb-1">
+      <input type="checkbox" aria-label="Toggle language options" />
+      <div class="collapse-title section-title min-h-0 py-2 px-1" id="language-picker-label">Language</div>
+      <div class="collapse-content px-1">
+        <div class="flex flex-col gap-1">
+          {{ range $key, $value := .Languages }}
+          <label class="label cursor-pointer justify-start gap-2.5 rounded-lg px-2 py-1.5 hover:bg-base-200">
+            <input type="checkbox" name="language" value="{{$key}}" class="checkbox checkbox-sm checkbox-primary language-checkbox" {{if eq $key 0}}checked{{end}} />
+            <span class="label-text text-sm">{{$value}}</span>
+          </label>
+          {{ end }}
+        </div>
+      </div>
+    </div>
+    {{ end }}
+
+    {{ if .Categories }}
+    <div class="collapse collapse-arrow mb-1">
+      <input type="checkbox" checked aria-label="Toggle category options" />
+      <div class="collapse-title section-title min-h-0 py-2 px-1" id="category-picker-label">Categories</div>
+      <div class="collapse-content px-1">
+        <div class="flex flex-col gap-1">
+          {{ range $key, $value := .Categories }}
+          <label class="label cursor-pointer justify-start gap-2.5 rounded-lg px-2 py-1.5 hover:bg-base-200">
+            <input type="checkbox" name="category" value="{{$key}}" class="checkbox checkbox-sm checkbox-primary category-checkbox" {{if eq $key 0}}checked{{end}} />
+            <span class="label-text text-sm">{{$value}}</span>
+          </label>
+          {{ end }}
+        </div>
+      </div>
+    </div>
+    {{ end }}
+  </div>
+  {{ end }}
+  {{ if or .Languages .Categories }}
+  <button id="filter-apply-button" class="btn btn-primary btn-sm w-full shrink-0 mt-3">Apply</button>
+  {{ end }}
+</aside>
+{{ end }}

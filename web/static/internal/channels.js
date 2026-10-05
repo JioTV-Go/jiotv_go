@@ -1,79 +1,180 @@
-const elements = safeGetElementsById([
-  "portexe-search-button",
-  "portexe-quality-select"
-]);
+const qualityRadios = document.querySelectorAll(".quality-radio");
+const applyButton = safeGetElementById("filter-apply-button", true);
 
-const {
-  "portexe-search-button": catLangApplyButton,
-  "portexe-quality-select": qualityElement
-} = elements;
+const LANGUAGE_STORAGE_KEY = "selectedLanguages";
+const CATEGORY_STORAGE_KEY = "selectedCategories";
 
-catLangApplyButton.addEventListener("click", () => {
-  const selectedCategories = [];
-  const categoryCheckboxes = document.querySelectorAll(".category-checkbox");
-  categoryCheckboxes.forEach(cb => {
-    if (cb.checked) selectedCategories.push(cb.value);
+// Collapse a checkbox selection into a URL parameter. Empty string means "all"
+// (no filter): triggered by the "0" (All) box, an empty selection, or every box
+// being checked. Shared by the language and category filters.
+const computeSelectionParam = (values, total) => {
+  const isAll = values.includes("0") || values.length === 0 || values.length === total;
+  return isAll ? "" : values.filter(val => val !== "0").join(",");
+};
+
+// The same selection is mirrored into a cookie so the server can filter the
+// home grid on the first render instead of the page flashing every channel
+// before a client-side redirect narrows it down.
+// Values are checkbox ids joined by commas, so they need no escaping.
+const readFilterCookie = (name) => {
+  const match = document.cookie.split("; ").find(entry => entry.startsWith(name + "="));
+  return match ? match.slice(name.length + 1) : "";
+};
+
+const writeFilterCookie = (name, value) => {
+  document.cookie = value
+    ? `${name}=${value}; path=/; max-age=31536000; samesite=lax`
+    : `${name}=; path=/; max-age=0; samesite=lax`;
+};
+
+const updateQualityLabel = (value) => {
+  const label = safeGetElementById("quality-picker-label", true);
+  if (!label) return;
+  if (!value || value === "auto") {
+    label.textContent = "Quality";
+    return;
+  }
+  const radio = document.querySelector(`.quality-radio[value="${value}"]`);
+  const text = radio?.closest("label")?.querySelector(".label-text")?.textContent?.trim() || value;
+  label.textContent = `Quality (${text})`;
+};
+
+const updateLanguageLabel = (count) => {
+  const label = safeGetElementById("language-picker-label", true);
+  if (label) label.textContent = count > 0 ? `Language (${count})` : "Language";
+};
+
+const updateCategoryLabel = (count) => {
+  const label = safeGetElementById("category-picker-label", true);
+  if (label) label.textContent = count > 0 ? `Categories (${count})` : "Categories";
+};
+
+// Save one checkbox group and return its URL param value, or null when the
+// group is not on the page (a template can render either picker alone).
+const persistFilter = (checkboxClass, storageKey, urlParam) => {
+  const checkboxes = document.querySelectorAll(checkboxClass);
+  if (!checkboxes.length) return null;
+
+  const selected = [];
+  checkboxes.forEach(cb => { if (cb.checked) selected.push(cb.value); });
+  const param = computeSelectionParam(selected, checkboxes.length);
+
+  if (param) setLocalStorageItem(storageKey, param.split(","));
+  else removeLocalStorageItem(storageKey);
+  writeFilterCookie(urlParam, param);
+  return param;
+};
+
+// One Apply commits language and category together, so changing both costs a
+// single navigation instead of two.
+const applyFilters = () => {
+  const applied = [
+    ["language", persistFilter(".language-checkbox", LANGUAGE_STORAGE_KEY, "language")],
+    ["category", persistFilter(".category-checkbox", CATEGORY_STORAGE_KEY, "category")],
+  ];
+
+  // Only the home grid reads these params, so filters applied from another
+  // screen (e.g. the player) navigate home instead of reloading in place.
+  const isHome = window.location.pathname === "/";
+  const url = new URL(isHome ? window.location.href : "/", window.location.origin);
+  applied.forEach(([urlParam, param]) => {
+    if (param === null) return;
+    if (param) url.searchParams.set(urlParam, param);
+    else url.searchParams.delete(urlParam);
   });
+  window.location.href = url.toString();
+};
 
-  const selectedLanguages = [];
-  const languageCheckboxes = document.querySelectorAll(".language-checkbox");
-  languageCheckboxes.forEach(cb => {
-    if (cb.checked) selectedLanguages.push(cb.value);
-  });
+if (applyButton) applyButton.addEventListener("click", applyFilters);
 
-  // If "All Categories" (value "0") is checked, or if all/none are checked, clear the filter parameter
-  const isAllCategoriesChecked = selectedCategories.includes("0") || selectedCategories.length === 0 || selectedCategories.length === categoryCheckboxes.length;
-  const categoryParam = isAllCategoriesChecked ? "" : selectedCategories.filter(val => val !== "0").join(",");
+// On page load restore both filters. A value present in the URL wins; otherwise
+// the saved selection is shown, and the grid only reloads when the cookie the
+// server filtered on disagrees with it.
+(() => {
+  const urlParams = getCurrentUrlParams();
+  const redirectUrl = new URL(window.location.href);
+  const isHome = window.location.pathname === "/";
+  let needsRedirect = false;
 
-  // If "All Languages" (value "0") is checked, or if all/none are checked, clear the filter parameter
-  const isAllLanguagesChecked = selectedLanguages.includes("0") || selectedLanguages.length === 0 || selectedLanguages.length === languageCheckboxes.length;
-  const languageParam = isAllLanguagesChecked ? "" : selectedLanguages.filter(val => val !== "0").join(",");
+  const restore = (checkboxClass, storageKey, urlParam, updateLabel) => {
+    const checkboxes = document.querySelectorAll(checkboxClass);
+    if (!checkboxes.length) return;
+    const fromUrl = urlParams.get(urlParam);
 
-  // Apply URL parameters and reload
-  updateUrlParameters({
-    language: languageParam,
-    category: categoryParam,
-    q: qualityElement.value
-  });
-
-  // Reload the page
-  document.location.href = window.location.href;
-});
-
-// On page load, set values from URL parameters
-const urlParams = getCurrentUrlParams();
-const language = urlParams.get("language");
-const category = urlParams.get("category");
-
-if (language) {
-  const langs = language.split(",");
-  document.querySelectorAll(".language-checkbox").forEach(cb => {
-    if (cb.value === "0") {
-      cb.checked = false;
-    } else {
-      cb.checked = langs.includes(cb.value);
+    if (fromUrl) {
+      const values = fromUrl.split(",");
+      checkboxes.forEach(cb => {
+        cb.checked = cb.value === "0" ? false : values.includes(cb.value);
+      });
+      updateLabel(values.length);
+      return;
     }
-  });
-} else {
-  document.querySelectorAll(".language-checkbox").forEach(cb => {
-    cb.checked = (cb.value === "0");
-  });
-}
 
-if (category) {
-  const cats = category.split(",");
-  document.querySelectorAll(".category-checkbox").forEach(cb => {
-    if (cb.value === "0") {
-      cb.checked = false;
-    } else {
-      cb.checked = cats.includes(cb.value);
+    const saved = getLocalStorageItem(storageKey, []);
+    if (Array.isArray(saved) && saved.length) {
+      checkboxes.forEach(cb => { cb.checked = saved.includes(cb.value); });
+      updateLabel(saved.length);
+
+      // Off home the params do nothing and a reload would restart playback.
+      // On home the server already filtered from the cookie, so only a stale
+      // cookie (a selection saved before cookies were used, or a browser that
+      // refuses them) still costs one redirect.
+      if (!isHome) return;
+
+      const value = saved.join(",");
+      if (readFilterCookie(urlParam) === value) return;
+
+      writeFilterCookie(urlParam, value);
+      if (readFilterCookie(urlParam) !== value) redirectUrl.searchParams.set(urlParam, value);
+      needsRedirect = true;
+      return;
     }
+
+    checkboxes.forEach(cb => { cb.checked = cb.value === "0"; });
+    updateLabel(0);
+
+    // Nothing saved, so a leftover cookie would filter the grid while the
+    // drawer claims everything is selected.
+    if (isHome && readFilterCookie(urlParam)) {
+      writeFilterCookie(urlParam, "");
+      needsRedirect = true;
+    }
+  };
+
+  restore(".language-checkbox", LANGUAGE_STORAGE_KEY, "language", updateLanguageLabel);
+  restore(".category-checkbox", CATEGORY_STORAGE_KEY, "category", updateCategoryLabel);
+
+  if (needsRedirect) window.location.replace(redirectUrl.toString());
+})();
+
+// Mobile category drawer. On desktop the sidebar is a static column (the
+// -translate-x-full is overridden by md:translate-x-0), so these only matter
+// on small screens where the header hamburger drives them.
+(() => {
+  const sidebar = safeGetElementById("category-sidebar", true);
+  const backdrop = safeGetElementById("sidebar-backdrop", true);
+  if (!sidebar) return;
+
+  const openSidebar = () => {
+    sidebar.classList.remove("-translate-x-full");
+    if (backdrop) backdrop.classList.remove("hidden");
+    document.body.style.overflow = "hidden";
+  };
+  const closeSidebar = () => {
+    sidebar.classList.add("-translate-x-full");
+    if (backdrop) backdrop.classList.add("hidden");
+    document.body.style.overflow = "";
+  };
+
+  window.openSidebar = openSidebar;
+  window.closeSidebar = closeSidebar;
+  window.toggleSidebar = () =>
+    sidebar.classList.contains("-translate-x-full") ? openSidebar() : closeSidebar();
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeSidebar();
   });
-} else {
-  document.querySelectorAll(".category-checkbox").forEach(cb => {
-    cb.checked = (cb.value === "0");
-  });
-}
+})();
 
 // Setup Select All toggle behavior
 const setupSelectAll = (checkboxClass, allValue) => {
@@ -111,17 +212,17 @@ const setupSelectAll = (checkboxClass, allValue) => {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Run select-all wiring first so the category/language checkboxes behave
-  // correctly even if favorites code below ever throws.
-  setupSelectAll(".category-checkbox", "0");
+  // Run select-all wiring first so the language checkboxes behave correctly
+  // even if favorites code below ever throws.
   setupSelectAll(".language-checkbox", "0");
+  setupSelectAll(".category-checkbox", "0");
   updateFavoriteButtonStates();
   displayFavoriteChannels();
 });
 
 const onQualityChange = (elem) => {
   const quality = elem.value;
-  
+
   if (quality === "auto") {
     updateUrlParameter("q", "");
     removeLocalStorageItem("quality");
@@ -129,7 +230,8 @@ const onQualityChange = (elem) => {
     updateUrlParameter("q", quality);
     setLocalStorageItem("quality", quality);
   }
-  
+  updateQualityLabel(quality);
+
   // Update all channel card href attributes with new query parameter.
   // Only target channel cards (a[href]); dropdown-content panels also carry
   // the .card class but are <div>s with no href, and touching them crashes.
@@ -140,15 +242,27 @@ const onQualityChange = (elem) => {
   });
 };
 
-const storedQuality = getLocalStorageItem("quality");
-if (storedQuality && qualityElement) {
-  qualityElement.value = storedQuality;
-}
+const selectQualityRadio = (value) => {
+  const radio = document.querySelector(`.quality-radio[value="${value}"]`);
+  if (!radio) return false;
+  radio.checked = true;
+  return true;
+};
 
-const urlParams2 = getCurrentUrlParams();
-if (urlParams2.get("q") && qualityElement) {
-  qualityElement.value = urlParams2.get("q");
-  onQualityChange(qualityElement); 
+qualityRadios.forEach((radio) => {
+  radio.addEventListener("change", () => {
+    if (radio.checked) onQualityChange(radio);
+  });
+});
+
+const storedQuality = getLocalStorageItem("quality");
+const urlQuality = getCurrentUrlParams().get("q");
+if (urlQuality && selectQualityRadio(urlQuality)) {
+  onQualityChange({ value: urlQuality });
+} else if (storedQuality && selectQualityRadio(storedQuality)) {
+  updateQualityLabel(storedQuality);
+} else {
+  updateQualityLabel("auto");
 }
 
 
@@ -185,7 +299,8 @@ function displayFavoriteChannels() {
   } = elements;
 
   if (!favoriteChannelsSection || !favoriteChannelsContainer || !originalChannelsGrid) {
-    console.error("One or more channel container elements not found.");
+    // Pages without the home favourites section (e.g. the play page) still call
+    // this via toggleFavorite; there is simply no grid to reorganise there.
     return;
   }
 

@@ -140,23 +140,17 @@ function removeLocalStorageItem(key) {
   }
 }
 
-const SUBSCRIPTION_WARNING_STORAGE_KEY = "subscriptionWarningSuppressed";
+const SUBSCRIPTION_WARNING_STORAGE_KEY = "subscriptionWarningDismissed";
 
-function getSubscriptionWarningSuppressions() {
-  const suppressed = getLocalStorageItem(SUBSCRIPTION_WARNING_STORAGE_KEY, []);
-  return Array.isArray(suppressed) ? suppressed.filter(id => typeof id === "string") : [];
+// The subscription notice is a one-time, global acknowledgement: once the user
+// has seen and closed it (by any means), it is never shown again for any
+// channel — no repeated confirmation per channel.
+function isSubscriptionWarningDismissed() {
+  return getLocalStorageItem(SUBSCRIPTION_WARNING_STORAGE_KEY, false) === true;
 }
 
-function isSubscriptionWarningSuppressed(channelId) {
-  return getSubscriptionWarningSuppressions().includes(String(channelId));
-}
-
-function suppressSubscriptionWarning(channelId) {
-  const id = String(channelId);
-  const suppressed = getSubscriptionWarningSuppressions();
-  if (!suppressed.includes(id)) {
-    setLocalStorageItem(SUBSCRIPTION_WARNING_STORAGE_KEY, [...suppressed, id]);
-  }
+function dismissSubscriptionWarning() {
+  setLocalStorageItem(SUBSCRIPTION_WARNING_STORAGE_KEY, true);
 }
 
 function initSubscriptionWarnings() {
@@ -164,31 +158,27 @@ function initSubscriptionWarnings() {
   if (!modal) return;
 
   const message = safeGetElementById("locked-channel-message", true);
-  const suppressCheckbox = safeGetElementById("locked-channel-suppress", true);
   const cancelButton = safeGetElementById("locked-channel-cancel", true);
   const continueButton = safeGetElementById("locked-channel-continue", true);
   const backdrop = safeGetElementById("locked-channel-backdrop", true);
   let pendingHref = null;
-  let pendingChannelId = null;
 
+  // Closing the notice for any reason marks it as seen, so it never reappears.
   const close = () => {
+    dismissSubscriptionWarning();
     modal.classList.remove("modal-open");
     pendingHref = null;
-    pendingChannelId = null;
   };
 
   document.addEventListener("click", (event) => {
     if (event.target.closest(".favorite-btn")) return;
     const card = event.target.closest('a.card[data-requires-subscription="true"]');
-    const channelId = card?.dataset.channelId;
-    if (!card || !channelId || isSubscriptionWarningSuppressed(channelId) || modal.classList.contains("modal-open")) return;
+    if (!card || isSubscriptionWarningDismissed() || modal.classList.contains("modal-open")) return;
 
     event.preventDefault();
     pendingHref = card.href;
-    pendingChannelId = channelId;
     const name = card.dataset.channelName || card.querySelector(".font-bold, .font-semibold")?.textContent?.trim() || "This channel";
-    if (message) message.textContent = `${name} may require a separate subscription. Playback may fail unless your account is entitled.`;
-    if (suppressCheckbox) suppressCheckbox.checked = false;
+    if (message) message.textContent = `${name} and some other channels may require a separate subscription, so playback can fail unless your account is entitled. You'll only see this notice once.`;
     modal.classList.add("modal-open");
   });
 
@@ -196,7 +186,6 @@ function initSubscriptionWarnings() {
   backdrop?.addEventListener("click", close);
   continueButton?.addEventListener("click", () => {
     const href = pendingHref;
-    if (suppressCheckbox?.checked && pendingChannelId) suppressSubscriptionWarning(pendingChannelId);
     close();
     if (href) window.location.href = href;
   });

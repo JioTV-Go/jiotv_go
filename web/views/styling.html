@@ -4,10 +4,17 @@
   // default palette while common.js is still waiting at the end of <body>.
   (() => {
     try {
-      const storedTheme = localStorage.getItem("theme");
-      const theme = storedTheme || (
-        window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
-      );
+      // The theme is persisted through setLocalStorageItem(), which
+      // JSON-encodes the value (e.g. "light"), so parse it here to match. A
+      // raw read would yield a quoted string, apply an invalid data-theme, and
+      // flash the default theme until common.js corrected it after load.
+      let stored = localStorage.getItem("theme");
+      if (stored) {
+        try { stored = JSON.parse(stored); } catch (_) { /* legacy raw value */ }
+      }
+      const theme = stored === "light" || stored === "dark"
+        ? stored
+        : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
       document.documentElement.setAttribute("data-theme", theme);
     } catch (_) {
       document.documentElement.setAttribute("data-theme", "dark");

@@ -1,106 +1,39 @@
 {{ define "navbar" }}
-<style>
-  .nav-switch {
-    appearance: none;
-    -webkit-appearance: none;
-    width: 2.75rem;
-    height: 1.5rem;
-    border-radius: 9999px;
-    border: 0;
-    background-color: var(--color-base-300);
-    position: relative;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    flex: none;
-  }
-
-  .nav-switch::before {
-    content: "";
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 1.25rem;
-    height: 1.25rem;
-    border-radius: 9999px;
-    background-color: #ffffff;
-    transition: transform 0.2s ease;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
-  }
-
-  .nav-switch:checked {
-    background-color: var(--color-primary);
-  }
-
-  .nav-switch.warn:checked {
-    background-color: var(--color-warning);
-  }
-
-  .nav-switch:checked::before {
-    transform: translateX(1.25rem);
-  }
-
-  .nav-switch:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-  }
-
-  /* On small screens, let navbar-end wrap below navbar-start */
-  @media (max-width: 639px) {
-    .navbar {
-      overflow: clip;
-    }
-
-    .navbar-end {
-      margin-inline-start: 0 !important;
-      width: 100%;
-      justify-content: flex-end;
-      padding-top: 0.25rem;
-    }
-
-    .navbar .tooltip::before,
-    .navbar .tooltip::after {
-      display: none;
-    }
-  }
-</style>
-<nav class="navbar glass-panel backdrop-blur-md sticky top-0 z-50 px-4 flex-wrap border-b border-base-300/50 shadow-sm" role="navigation" aria-label="Main navigation">
-  <div class="navbar-start">
+<nav class="app-nav glass-panel backdrop-blur-md sticky top-0 z-50 flex flex-nowrap items-center gap-2 sm:gap-3 px-3 sm:px-5 py-2.5 border-b border-base-300/60 shadow-sm" role="navigation" aria-label="Main navigation">
+  <div class="flex items-center gap-2 shrink-0">
     <a href="/" class="flex items-center gap-2.5" aria-label="Go to home page">
       <span class="brand-gradient flex items-center justify-center size-9 rounded-xl shadow-md">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke-width="1.8"
-          stroke="white"
-          class="w-5 h-5"
-          aria-hidden="true"
-        >
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            d="M6 20.25h12m-7.5-3v3m3-3v3m-10.125-3h17.25c.621 0 1.125-.504 1.125-1.125V4.875c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125z"
-          />
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="white" class="w-5 h-5" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 20.25h12m-7.5-3v3m3-3v3m-10.125-3h17.25c.621 0 1.125-.504 1.125-1.125V4.875c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125z" />
         </svg>
       </span>
       <span class="text-lg font-bold tracking-tight">{{ .Title }}</span>
     </a>
   </div>
-  <div class="navbar-end gap-1 sm:gap-4 flex-wrap justify-end">
-    {{ if .player_url }}
-    <label class="flex items-center gap-2 cursor-pointer">
-      <span id="player-mode-label" class="font-medium text-xs sm:text-sm text-base-content/70">auto</span>
-      <input id="player-mode-toggle" type="checkbox" class="nav-switch" onchange="togglePlayerMode()" role="switch" aria-label="Toggle player mode" />
+
+  <form class="app-search flex-1 min-w-0 flex justify-center" action="/" role="search">
+    <label class="relative w-full max-w-md">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 opacity-50"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+      <input
+        id="portexe-search-input"
+        name="search"
+        type="text"
+        placeholder="Search channels"
+        class="input input-bordered rounded-full w-full pl-10 h-10 sm:h-11 text-base focus:border-primary"
+        aria-label="Search channels"
+      />
     </label>
-    {{ end }}
+  </form>
+
+  <div id="nav-controls" class="shrink-0 flex items-center gap-1 sm:gap-2">
     <div class="flex items-center gap-1">
       <label class="flex items-center gap-2 cursor-pointer">
-        <span id="catchup-toggle-label" class="font-medium text-xs sm:text-sm text-base-content/70">Catchup: OFF</span>
+        <span id="catchup-toggle-label" class="hidden sm:inline font-medium text-xs sm:text-sm text-base-content/70">Catchup: OFF</span>
         <input id="catchup-toggle" type="checkbox" class="nav-switch warn" onchange="toggleCatchupMode()" role="switch" aria-label="Toggle catchup mode: when on, tapping a channel replays a show that already aired instead of playing it live" />
       </label>
       <button
         type="button"
-        class="tooltip tooltip-bottom btn btn-circle btn-ghost btn-xs text-base-content/50"
+        class="tooltip tooltip-bottom btn btn-circle btn-ghost btn-xs text-base-content/50 hidden sm:inline-flex"
         data-tip="When on, tapping a channel opens its schedule so you can replay a show that already aired, instead of playing it live."
         aria-label="What does catchup mode do?"
       >
@@ -109,76 +42,21 @@
         </svg>
       </button>
     </div>
-    <label class="swap swap-rotate" aria-label="Toggle theme">
+
+    <label class="swap swap-rotate btn btn-ghost btn-square btn-sm" aria-label="Toggle theme">
       <input type="checkbox" onclick="toggleTheme()" aria-label="Switch between light and dark theme" />
-
-      <!-- sun icon -->
-      <svg
-        id="sunIcon"
-        class="swap-on fill-current w-5 h-5 text-base-content/80"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z"
-        />
+      <svg id="sunIcon" class="swap-on fill-current w-5 h-5 text-base-content/80" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M5.64,17l-.71.71a1,1,0,0,0,0,1.41,1,1,0,0,0,1.41,0l.71-.71A1,1,0,0,0,5.64,17ZM5,12a1,1,0,0,0-1-1H3a1,1,0,0,0,0,2H4A1,1,0,0,0,5,12Zm7-7a1,1,0,0,0,1-1V3a1,1,0,0,0-2,0V4A1,1,0,0,0,12,5ZM5.64,7.05a1,1,0,0,0,.7.29,1,1,0,0,0,.71-.29,1,1,0,0,0,0-1.41l-.71-.71A1,1,0,0,0,4.93,6.34Zm12,.29a1,1,0,0,0,.7-.29l.71-.71a1,1,0,1,0-1.41-1.41L17,5.64a1,1,0,0,0,0,1.41A1,1,0,0,0,17.66,7.34ZM21,11H20a1,1,0,0,0,0,2h1a1,1,0,0,0,0-2Zm-9,8a1,1,0,0,0-1,1v1a1,1,0,0,0,2,0V20A1,1,0,0,0,12,19ZM18.36,17A1,1,0,0,0,17,18.36l.71.71a1,1,0,0,0,1.41,0,1,1,0,0,0,0-1.41ZM12,6.5A5.5,5.5,0,1,0,17.5,12,5.51,5.51,0,0,0,12,6.5Zm0,9A3.5,3.5,0,1,1,15.5,12,3.5,3.5,0,0,1,12,15.5Z" />
       </svg>
-
-      <!-- moon icon -->
-      <svg
-        id="moonIcon"
-        class="swap-off fill-current w-5 h-5 text-base-content/80"
-        xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 24 24"
-        aria-hidden="true"
-      >
-        <path
-          d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z"
-        />
+      <svg id="moonIcon" class="swap-off fill-current w-5 h-5 text-base-content/80" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M21.64,13a1,1,0,0,0-1.05-.14,8.05,8.05,0,0,1-3.37.73A8.15,8.15,0,0,1,9.08,5.49a8.59,8.59,0,0,1,.25-2A1,1,0,0,0,8,2.36,10.14,10.14,0,1,0,22,14.05,1,1,0,0,0,21.64,13Zm-9.5,6.69A8.14,8.14,0,0,1,7.08,5.22v.27A10.15,10.15,0,0,0,17.22,15.63a9.79,9.79,0,0,0,2.1-.22A8.11,8.11,0,0,1,12.14,19.73Z" />
       </svg>
     </label>
-    {{ if .player_url }}
-    <button
-      class="btn btn-outline btn-sm sm:btn-md flex flex-row items-center justify-center gap-1 sm:gap-2"
-      onclick="window.history.back()"
-      aria-label="Go back to previous page"
-    >
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke-width="1.5"
-        stroke="currentColor"
-        class="w-6 h-6"
-        aria-hidden="true"
-      >
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3"
-        />
-      </svg>
-      <span class="hidden sm:inline">Back</span>
-    </button>
-    {{ else }} 
-      {{ if .IsNotLoggedIn }}
-        <button
-          onclick="login_modal.showModal()"
-          class="btn btn-primary btn-md"
-          aria-label="Open login dialog"
-        >
-          Login
-        </button>
-      {{else}}
-        <button
-          onclick="window.location.href='/logout'"
-          class="btn btn-outline btn-error btn-md"
-          aria-label="Logout from account"
-        >
-          Logout
-        </button>
-      {{end}} 
+
+    {{ if .IsNotLoggedIn }}
+      <button onclick="login_modal.showModal()" class="btn btn-primary btn-sm sm:btn-md" aria-label="Open login dialog">Login</button>
+    {{ else }}
+      <button onclick="window.location.href='/logout'" class="btn btn-outline btn-error btn-sm sm:btn-md" aria-label="Logout from account">Logout</button>
     {{ end }}
   </div>
 </nav>

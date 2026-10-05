@@ -1,62 +1,5 @@
 {{define "channel_list"}}
-<div
-  id="portexe-search-root"
-    class="relative z-50 w-full p-3 grid grid-cols-1 gap-2 sm:grid-cols-5 items-center justify-between glass-panel backdrop-blur-md border border-base-300/50 rounded-2xl shadow-sm"
-  >
-    <input
-      id="portexe-search-input"
-      type="text"
-      placeholder="Search channels here"
-      class="input input-bordered input-md w-full col-span-3 sm:col-span-1 text-base"
-    />
-    <select
-      id="portexe-quality-select"
-      class="select select-bordered select-sm sm:select-md w-full sm:max-w-xs sm:w-auto text-base sm:text-sm"
-      onchange="onQualityChange(this)"
-    >
-      {{ range $key, $value := .Qualities }}
-      <option value="{{$key}}">{{$value}}</option>
-      {{ end }}
-    </select>
-    <div class="dropdown dropdown-bottom w-full sm:w-auto" id="portexe-category-dropdown">
-      <div tabindex="0" role="button" class="btn btn-outline btn-sm sm:btn-md w-full justify-between text-base sm:text-sm font-normal">
-        <span>Categories</span>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 ml-1 opacity-60"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
-      </div>
-      <div tabindex="0" class="dropdown-content card card-compact bg-base-100 z-50 w-64 p-2 shadow-md border border-base-300 max-h-60 overflow-y-auto">
-        <div class="card-body p-1 gap-1">
-          {{ range $key, $value := .Categories }}
-          <label class="label cursor-pointer justify-start gap-2.5 p-1 hover:bg-base-200 rounded-lg">
-            <input type="checkbox" name="category" value="{{$key}}" class="checkbox checkbox-sm checkbox-primary category-checkbox" {{if eq $key 0}}checked{{end}} />
-            <span class="label-text text-sm">{{$value}}</span>
-          </label>
-          {{ end }}
-        </div>
-      </div>
-    </div>
-    <div class="dropdown dropdown-bottom w-full sm:w-auto" id="portexe-language-dropdown">
-      <div tabindex="0" role="button" class="btn btn-outline btn-sm sm:btn-md w-full justify-between text-base sm:text-sm font-normal">
-        <span>Languages</span>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 ml-1 opacity-60"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5" /></svg>
-      </div>
-      <div tabindex="0" class="dropdown-content card card-compact bg-base-100 z-50 w-64 p-2 shadow-md border border-base-300 max-h-60 overflow-y-auto">
-        <div class="card-body p-1 gap-1">
-          {{ range $key, $value := .Languages }}
-          <label class="label cursor-pointer justify-start gap-2.5 p-1 hover:bg-base-200 rounded-lg">
-            <input type="checkbox" name="language" value="{{$key}}" class="checkbox checkbox-sm checkbox-primary language-checkbox" {{if eq $key 0}}checked{{end}} />
-            <span class="label-text text-sm">{{$value}}</span>
-          </label>
-          {{ end }}
-        </div>
-      </div>
-    </div>
-    <button
-      id="portexe-search-button"
-      class="btn btn-primary btn-sm sm:btn-md w-full sm:w-auto col-span-3 sm:col-span-1"
-    >
-      Apply
-    </button>
-  </div>
+<div>
   <label
     for="hide-locked-toggle"
     class="flex cursor-pointer items-center gap-2.5 px-4 pt-3 text-sm text-base-content/70"
@@ -81,23 +24,23 @@
     {{range $channel := .Channels}}
     <a
       href="/play/{{$channel.ID}}"
-      class="card relative border border-primary bg-base-100 shadow-sm group"
+      class="card relative overflow-hidden border border-primary bg-base-100 shadow-sm group"
       data-channel-id="{{$channel.ID}}"
+      data-channel-name="{{$channel.Name}}"
       data-catchup-available="{{if $channel.IsCatchupAvailable}}true{{else}}false{{end}}"
       {{if $channel.RequiresSubscription}}data-requires-subscription="true"{{end}}
       tabindex="0"
     >
-      <div class="flex h-full flex-col items-center justify-center p-3 sm:p-4">
+      <div class="logo-tile relative w-full aspect-[4/3] overflow-hidden">
         <img
           src="{{$channel.LogoURL}}"
           loading="lazy"
           alt="{{$channel.Name}}"
-          class="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl logo-tile ring-1 ring-base-300/60"
+          class="h-full w-full object-contain p-4 transition-transform duration-300 group-hover:scale-110"
         />
-        <span class="text-sm sm:text-base font-bold mt-2.5 text-center leading-snug line-clamp-2">{{$channel.Name}}</span>
         {{if $channel.RequiresSubscription}}
         <span
-          class="badge badge-outline badge-sm mt-1.5 gap-1 text-[0.65rem] opacity-70"
+          class="badge badge-sm absolute top-2 left-2 z-10 gap-1 border-0 text-[0.65rem] bg-base-100/85 text-base-content/80 shadow-sm backdrop-blur-sm"
           title="May require a separate subscription"
         >
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="h-2.5 w-2.5" aria-hidden="true">
@@ -105,39 +48,44 @@
           </svg>
           Subscription
         </span>
+        {{else}}
+        <span class="live-badge absolute top-2 left-2 z-10">LIVE</span>
         {{end}}
-        <button id="favorite-btn-{{$channel.ID}}" class="favorite-btn absolute btn-ghost p-0 sm:p-2 top-2 right-2 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 rounded-full" aria-label="Add to favorites" onclick="event.preventDefault(); toggleFavorite('{{$channel.ID}}');">
-          <svg  id="star-icon-{{$channel.ID}}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
-          </svg>
-
-          <svg id="x-icon-{{$channel.ID}}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 hidden">
-            <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" clip-rule="evenodd" />
-          </svg>
-        </button>
       </div>
+      <div class="px-2.5 py-2.5 border-t border-base-300/40">
+        <p class="now-playing hidden text-center leading-snug line-clamp-1">
+          <span class="font-semibold text-primary">Now:</span>
+          <span class="now-title text-sm font-bold"></span>
+        </p>
+      </div>
+      <button id="favorite-btn-{{$channel.ID}}" class="favorite-btn absolute btn btn-ghost btn-circle bg-base-100/80 backdrop-blur-sm top-2 right-2 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200" aria-label="Add to favorites" onclick="event.preventDefault(); toggleFavorite('{{$channel.ID}}');">
+        <svg  id="star-icon-{{$channel.ID}}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+        </svg>
+
+        <svg id="x-icon-{{$channel.ID}}" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 hidden">
+          <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" clip-rule="evenodd" />
+        </svg>
+      </button>
     </a>
     {{end}}
   </div>
   <button
-    class="btn btn-primary fixed bottom-5 right-5 px-4 rounded-full shadow-lg focus:outline-hidden flex flex-row gap-2"
+    class="btn btn-primary btn-circle sm:w-auto sm:px-4 fixed bottom-24 right-5 md:bottom-6 z-40 shadow-lg focus:outline-hidden flex flex-row gap-2 sm:rounded-full"
     onclick="scrollToTop()"
+    aria-label="Scroll to top"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
       fill="none"
       viewBox="0 0 24 24"
-      stroke-width="1.5"
+      stroke-width="1.8"
       stroke="currentColor"
-      class="w-6 h-6"
+      class="w-5 h-5 shrink-0"
     >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
-      />
+      <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 15.75l7.5-7.5 7.5 7.5" />
     </svg>
-    <span class="hidden sm:block">Search</span>
+    <span class="hidden sm:block">Top</span>
   </button>
   <div id="locked_channel_modal" class="modal modal-bottom sm:modal-middle" role="dialog" aria-modal="true" aria-labelledby="locked-channel-title" aria-describedby="locked-channel-message">
     <div class="modal-box pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-center">
@@ -148,10 +96,6 @@
       </span>
       <h3 id="locked-channel-title" class="mt-3 font-bold text-xl tracking-tight">Subscription may be required</h3>
       <p id="locked-channel-message" class="py-3 text-sm text-base-content/60"></p>
-      <label class="flex items-center justify-center gap-2 text-sm text-base-content/70">
-        <input id="locked-channel-suppress" type="checkbox" class="checkbox checkbox-sm checkbox-primary" />
-        <span>Don’t warn me again for this channel</span>
-      </label>
       <div class="modal-action grid grid-cols-2 gap-2">
         <button id="locked-channel-cancel" type="button" class="btn">Cancel</button>
         <button id="locked-channel-continue" type="button" class="btn btn-primary">Try anyway</button>

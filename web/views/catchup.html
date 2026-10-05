@@ -6,18 +6,18 @@
     <title>{{.Title}} - Catchup</title>
     {{ template "styling" . }}
   </head>
-  <body class="bg-base-200 min-h-screen">
+  <body class="bg-base-200 min-h-screen has-bottom-nav">
     {{template "navbar" .}}
 
     <div class="container mx-auto p-4 sm:p-6">
-      <div class="flex justify-between items-center mb-6">
+      <div class="flex flex-col gap-3 sm:flex-row sm:justify-between sm:items-center mb-6">
         <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">
           Catchup - {{.Channel}}
           <span class="text-base font-normal text-base-content/50"
             >({{.CurrentDate}})</span
           >
         </h1>
-        <div class="join">
+        <div class="join self-start sm:self-auto">
           {{if .ShowPrev}}
           <a href="?offset={{.PrevOffset}}" class="join-item btn"
             >Previous Day</a
@@ -146,6 +146,8 @@
     <script src="/static/internal/utils.js"></script>
     <script src="/static/internal/common.js"></script>
     <script src="/static/internal/remote.js"></script>
+    {{template "bottom_nav" .}}
+    <script src="/static/internal/bottom_nav.js"></script>
     {{template "footer" .}}
   </body>
 </html>

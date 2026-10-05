@@ -7,14 +7,18 @@
     {{ template "styling" . }}
   </head>
 
-  <body>
+  <body class="has-bottom-nav">
     {{ template "navbar" . }}
+    <!-- Filter drawer for the mobile Browse tab. Wrapped in md:hidden so the
+         sidebar's desktop static-column styling never enters the play layout. -->
+    <div class="md:hidden">{{ template "category_sidebar" . }}</div>
     <!-- Main container with responsive layout -->
     <div class="p-1 sm:p-2 md:p-4 lg:p-8">
-      <!-- Desktop grid layout: player left, EPG right. Mobile: stacked -->
-      <div class="lg:grid lg:grid-cols-12 lg:gap-8 lg:mx-8 xl:mx-52">
+      <!-- Desktop grid layout: player fills the left edge-to-edge, EPG rides
+           the right rail. Mobile: stacked -->
+      <div class="lg:grid lg:grid-cols-12 lg:gap-6">
         <!-- Player section -->
-        <div class="lg:col-span-8">
+        <div class="lg:col-span-9">
           <div
             id="player"
             class="relative overflow-hidden w-full rounded-2xl bg-black ring-1 ring-base-300/40 shadow-2xl"
@@ -32,7 +36,16 @@
               allow="autoplay"
             ></iframe>
           </div>
-          <div class="mt-2 flex justify-center">
+          <div class="mt-2 flex flex-wrap items-center justify-center gap-2 sm:gap-3">
+            <button class="btn btn-ghost border border-base-300 hover:border-primary" onclick="window.history.back()" aria-label="Go back to previous page">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.6" stroke="currentColor" class="w-5 h-5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" /></svg>
+              <span>Back</span>
+            </button>
+            <label class="flex items-center gap-2 cursor-pointer rounded-field border border-base-300 px-3 h-12">
+              <span class="text-sm text-base-content/70">Quality</span>
+              <span id="player-mode-label" class="font-medium text-xs sm:text-sm text-base-content/70">auto</span>
+              <input id="player-mode-toggle" type="checkbox" class="nav-switch" onchange="togglePlayerMode()" role="switch" aria-label="Toggle player quality between auto and HD" />
+            </label>
             <button id="aspect-43-toggle" class="btn btn-ghost border border-base-300 hover:border-primary" onclick="toggleAspectRatio()">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -51,7 +64,7 @@
         </div>
         
         <!-- Sidebar section (Now Playing EPG only) -->
-        <div class="lg:col-span-4 mt-4 lg:mt-0">
+        <div class="lg:col-span-3 mt-4 lg:mt-0">
           <!-- Now Playing Section (EPG) -->
           <div id="epg_parent" class="">
             <h2 class="section-title mb-3 text-center lg:text-left">
@@ -92,7 +105,7 @@
       </div>
       
       <!-- Similar Channels Section - Below main grid on desktop, part of stack on mobile -->
-      <div id="similar_channels_parent" class="mt-6 lg:mx-8 xl:mx-52" style="display: none;">
+      <div id="similar_channels_parent" class="mt-6" style="display: none;">
         <h2 class="section-title mb-3 text-center lg:text-left">
           Similar Channels
         </h2>
@@ -193,10 +206,6 @@
       <div class="modal-box pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-center">
         <h2 id="locked-channel-title" class="font-bold text-xl tracking-tight">Subscription may be required</h2>
         <p id="locked-channel-message" class="py-3 text-sm text-base-content/60"></p>
-        <label class="flex items-center justify-center gap-2 text-sm text-base-content/70">
-          <input id="locked-channel-suppress" type="checkbox" class="checkbox checkbox-sm checkbox-primary" />
-          <span>Don’t warn me again for this channel</span>
-        </label>
         <div class="modal-action grid grid-cols-2 gap-2">
           <button id="locked-channel-cancel" type="button" class="btn">Cancel</button>
           <button id="locked-channel-continue" type="button" class="btn btn-primary">Try anyway</button>
@@ -207,9 +216,13 @@
     <script src="/static/internal/utils.js"></script>
     <script src="/static/internal/now_playing.js"></script>
     <script src="/static/internal/common.js"></script>
+    <script src="/static/internal/channels.js"></script>
+    <script src="/static/internal/now_tiles.js"></script>
     <script src="/static/internal/epg.js"></script>
     <script src="/static/internal/remote.js"></script>
     <script>initSubscriptionWarnings();</script>
+    {{ template "bottom_nav" . }}
+    <script src="/static/internal/bottom_nav.js"></script>
     {{ template "footer" . }}
   </body>
 </html>

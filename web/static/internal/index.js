@@ -4,12 +4,10 @@ const search = (searchTerm) => {
   // Update URL search parameter
   updateUrlParameter('search', searchTerm);
 
+  const query = searchTerm.toLowerCase();
   channels.forEach((channel) => {
-    const nameElement = channel.querySelector('.font-bold');
-    if (nameElement) {
-      const name = nameElement.textContent.toLowerCase();
-      channel.style.display = name.includes(searchTerm.toLowerCase()) ? 'block' : 'none';
-    }
+    const name = (channel.dataset.channelName || "").toLowerCase();
+    channel.style.display = !query || name.includes(query) ? "block" : "none";
   });
 };
 

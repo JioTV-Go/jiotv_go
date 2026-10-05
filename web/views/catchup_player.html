@@ -7,7 +7,7 @@
     {{ template "styling" . }}
   </head>
 
-  <body>
+  <body class="has-bottom-nav">
     {{ template "navbar" . }}
     <div class="p-1 sm:p-2 md:p-4 lg:p-8">
       <div class="lg:grid lg:grid-cols-12 lg:gap-8 lg:mx-8 xl:mx-52">
@@ -153,6 +153,8 @@
     <script src="/static/internal/utils.js"></script>
     <script src="/static/internal/common.js"></script>
     <script src="/static/internal/remote.js"></script>
+    {{ template "bottom_nav" . }}
+    <script src="/static/internal/bottom_nav.js"></script>
     {{ template "footer" . }}
   </body>
 </html>

@@ -46,6 +46,15 @@ var (
 	renderChannelDeadCache sync.Map
 )
 
+// qualityOptions backs the sidebar quality picker, which both the index and
+// play pages render.
+var qualityOptions = map[string]string{
+	"auto":   "Quality (Auto)",
+	"high":   "High",
+	"medium": "Medium",
+	"low":    "Low",
+}
+
 const (
 	REFRESH_TOKEN_URL     = urls.RefreshTokenURL
 	REFRESH_SSO_TOKEN_URL = urls.RefreshSSOTokenURL
@@ -184,9 +193,10 @@ func IndexHandler(c *fiber.Ctx) error {
 		utils.SafeLogf("Unable to fetch premium providers: %v", premiumErr)
 	}
 
-	// Get language and category from query params
-	language := c.Query("language")
-	category := c.Query("category")
+	// Get language and category from query params, falling back to the cookies
+	// the filter drawer writes so the first render is already filtered.
+	language := c.Query("language", c.Cookies("language"))
+	category := c.Query("category", c.Cookies("category"))
 
 	// Process logo URLs for all channels
 	hostURL := c.Protocol() + "://" + c.Hostname()
@@ -208,12 +218,7 @@ func IndexHandler(c *fiber.Ctx) error {
 		"IsNotLoggedIn":    !utils.CheckLoggedIn(),
 		"Categories":       television.CategoryMap,
 		"Languages":        television.LanguageMap,
-		"Qualities": map[string]string{
-			"auto":   "Quality (Auto)",
-			"high":   "High",
-			"medium": "Medium",
-			"low":    "Low",
-		},
+		"Qualities":        qualityOptions,
 	}
 
 	// Filter channels by query params if provided
@@ -1301,6 +1306,9 @@ func PlayHandler(c *fiber.Ctx) error {
 		"player_url":    player_url,
 		"player_url_js": template.JS(playerURLJSON),
 		"ChannelID":     id,
+		"Categories":    television.CategoryMap,
+		"Languages":     television.LanguageMap,
+		"Qualities":     qualityOptions,
 	})
 }
 

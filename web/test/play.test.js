@@ -111,15 +111,15 @@ describe('Play Page Functions', () => {
     const currentChannel = getCurrentChannelInfo(channelsData, 'test-channel');
     expect(currentChannel.channel_name).toBe('Test Channel');
   });
-  test('suppression is shared by channel and similar-card flows', () => {
+  test('subscription warning is a one-time global notice', () => {
     window.eval(readFileSync('static/internal/utils.js', 'utf8'));
     localStorage.clear();
 
-    expect(isSubscriptionWarningSuppressed('locked')).toBe(false);
-    suppressSubscriptionWarning('locked');
-    expect(getSubscriptionWarningSuppressions()).toEqual(['locked']);
-    expect(isSubscriptionWarningSuppressed('locked')).toBe(true);
-    expect(isSubscriptionWarningSuppressed('other')).toBe(false);
+    // Not dismissed initially; once dismissed it stays dismissed for every
+    // channel (no per-channel state).
+    expect(isSubscriptionWarningDismissed()).toBe(false);
+    dismissSubscriptionWarning();
+    expect(isSubscriptionWarningDismissed()).toBe(true);
   });
 
 
