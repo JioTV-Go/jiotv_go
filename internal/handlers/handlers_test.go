@@ -3,6 +3,8 @@ package handlers
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
@@ -481,23 +483,38 @@ func TestPlaylistHandler(t *testing.T) {
 	}
 }
 
-func TestImageHandler(t *testing.T) {
-	type args struct {
-		c *fiber.Ctx
+func TestImageHandlerServesCachedLogo(t *testing.T) {
+	channelImageCache.Store("Sony_HD.png", cachedChannelImage{
+		contentType: "image/png",
+		body:        []byte("PNGDATA"),
+	})
+	t.Cleanup(func() { channelImageCache.Delete("Sony_HD.png") })
+
+	app := fiber.New()
+	app.Get("/jtvimage/:file", ImageHandler)
+
+	req := httptest.NewRequest("GET", "/jtvimage/Sony_HD.png", nil)
+	resp, err := app.Test(req)
+	if err != nil {
+		t.Fatalf("request failed: %v", err)
 	}
-	tests := []struct {
-		name    string
-		args    args
-		wantErr bool
-	}{
-		// No test cases - complex handler function
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		t.Fatalf("status = %d", resp.StatusCode)
 	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if err := ImageHandler(tt.args.c); (err != nil) != tt.wantErr {
-				t.Errorf("ImageHandler() error = %v, wantErr %v", err, tt.wantErr)
-			}
-		})
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("read body: %v", err)
+	}
+	if string(body) != "PNGDATA" {
+		t.Fatalf("body = %q", body)
+	}
+	if cc := resp.Header.Get("Cache-Control"); cc != channelImageCacheControl {
+		t.Fatalf("Cache-Control = %q", cc)
+	}
+	if ct := resp.Header.Get("Content-Type"); !strings.HasPrefix(ct, "image/png") {
+		t.Fatalf("Content-Type = %q", ct)
 	}
 }
 

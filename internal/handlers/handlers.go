@@ -44,15 +44,25 @@ var (
 	// live URL, retry, try every quality candidate), hammering Jio's live-URL
 	// API for a channel that isn't coming back within the cooldown window.
 	renderChannelDeadCache sync.Map
+	// Channel logos never rotate; cache the proxied bytes so a grid refresh
+	// does not fetch the same PNG from Jio's CDN again. The browser is also
+	// told the response is immutable so it can skip the round-trip entirely.
+	channelImageCache sync.Map
 )
 
+type cachedChannelImage struct {
+	contentType string
+	body        []byte
+}
+
 const (
-	REFRESH_TOKEN_URL     = urls.RefreshTokenURL
-	REFRESH_SSO_TOKEN_URL = urls.RefreshSSOTokenURL
-	PLAYER_USER_AGENT     = headers.UserAgentPlayTV
-	REQUEST_USER_AGENT    = headers.UserAgentOkHttp
-	hdneaCacheTTL         = 60 * time.Second // Aggressive TTL: 60 seconds (tokens expire ~90-120s, keep cache short)
-	hdneaRefreshLeadTime  = 20 * time.Second
+	REFRESH_TOKEN_URL        = urls.RefreshTokenURL
+	REFRESH_SSO_TOKEN_URL    = urls.RefreshSSOTokenURL
+	PLAYER_USER_AGENT        = headers.UserAgentPlayTV
+	REQUEST_USER_AGENT       = headers.UserAgentOkHttp
+	hdneaCacheTTL            = 60 * time.Second // Aggressive TTL: 60 seconds (tokens expire ~90-120s, keep cache short)
+	hdneaRefreshLeadTime     = 20 * time.Second
+	channelImageCacheControl = "public, max-age=31536000, immutable"
 	// renderChannelDeadCacheTTL mirrors the JioTV Android app's own default
 	// cooldown for a channel that failed to come up (BroadcastUnicastModel's
 	// BTUS_RETRY_TIMER default, 60s) before it tries bootstrapping again.
@@ -1331,10 +1341,36 @@ func PlaylistHandler(c *fiber.Ctx) error {
 	return c.Redirect("/channels?type=m3u&q="+quality+"&c="+splitCategory+"&l="+languages+"&sg="+skipGenres+"&sub="+subFilter, fiber.StatusMovedPermanently)
 }
 
-// ImageHandler loads image from JioTV server
+// ImageHandler serves a channel logo. Logos do not change, so a successful
+// fetch is kept in process and advertised as immutable to the browser.
 func ImageHandler(c *fiber.Ctx) error {
-	url := "https://jiotv.catchup.cdn.jio.com/dare_images/images/" + c.Params("file")
-	return internalUtils.ProxyRequest(c, url, TV.Client, REQUEST_USER_AGENT)
+	file := c.Params("file")
+	if file == "" {
+		return c.SendStatus(fiber.StatusBadRequest)
+	}
+
+	if cached, ok := channelImageCache.Load(file); ok {
+		img := cached.(cachedChannelImage)
+		c.Set(fiber.HeaderCacheControl, channelImageCacheControl)
+		if img.contentType != "" {
+			c.Set(fiber.HeaderContentType, img.contentType)
+		}
+		return c.Send(img.body)
+	}
+
+	url := "https://jiotv.catchup.cdn.jio.com/dare_images/images/" + file
+	if err := internalUtils.ProxyRequest(c, url, TV.Client, REQUEST_USER_AGENT); err != nil {
+		return err
+	}
+
+	if c.Response().StatusCode() == fiber.StatusOK && len(c.Response().Body()) > 0 {
+		channelImageCache.Store(file, cachedChannelImage{
+			contentType: string(c.Response().Header.ContentType()),
+			body:        append([]byte(nil), c.Response().Body()...),
+		})
+		c.Set(fiber.HeaderCacheControl, channelImageCacheControl)
+	}
+	return nil
 }
 
 // DASHTimeHandler serves a UTC timestamp for DASH clock sync (UTCTiming).
