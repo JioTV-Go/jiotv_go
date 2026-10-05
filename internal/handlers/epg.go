@@ -87,11 +87,12 @@ func webEPGWithCorrectedDay(channelID, offset int) ([]byte, string, int, error) 
 		return nil, "", 0, err
 	}
 	if statusCode == fiber.StatusOK {
-		if dayOffset := webEPGDayOffset(body); dayOffset > 0 {
-			if adjusted, adjType, adjStatus, adjErr := fetchWebEPG(channelID, offset+dayOffset); adjErr == nil && adjStatus == fiber.StatusOK {
-				return adjusted, adjType, adjStatus, nil
-			}
-		}
+		// passed the requested 'offset' to properly calculate the lag
+		if dayOffset := webEPGDayOffset(body, offset); dayOffset > 0 {
+            if adjusted, adjType, adjStatus, adjErr := fetchWebEPG(channelID, offset+dayOffset); adjErr == nil && adjStatus == fiber.StatusOK {
+                return adjusted, adjType, adjStatus, nil
+            }
+        }
 	}
 	return body, contentType, statusCode, nil
 }
@@ -117,7 +118,7 @@ func fetchWebEPG(channelID, offset int) ([]byte, string, int, error) {
 // webEPGDayOffset returns how many days the EPG API's "today" lags the real
 // date, derived from the serverDate the API stamps on its response. It returns
 // 0 when the offset cannot be determined, meaning nothing to correct.
-func webEPGDayOffset(body []byte) int {
+func webEPGDayOffset(body []byte, requestedOffset int) int {
 	var resp struct {
 		EPG []struct {
 			ServerDate string `json:"serverDate"`
@@ -133,12 +134,18 @@ func webEPGDayOffset(body []byte) int {
 	if err != nil {
 		return 0
 	}
-	epgDay := (serverDayStart.UnixMilli() + istOffsetMS) / dayMS
-	today := (time.Now().UnixMilli() + istOffsetMS) / dayMS
-	if delta := int(today - epgDay); delta > 0 {
-		return delta
-	}
-	return 0
+	// Safely parse variables considering the float value of istOffsetMS
+    epgDay := (serverDayStart.UnixMilli() + int64(istOffsetMS)) / int64(dayMS)
+    today := (time.Now().UnixMilli() + int64(istOffsetMS)) / int64(dayMS)
+
+	// Calculate the day EXPECTED 
+    expectedDay := today + int64(requestedOffset)
+
+	// Only correct if the returned day is older than the specific day requested
+    if delta := int(expectedDay - epgDay); delta > 0 {
+        return delta
+    }
+    return 0
 }
 
 // PosterHandler loads image from JioTV server

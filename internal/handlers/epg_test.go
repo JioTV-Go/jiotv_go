@@ -42,56 +42,109 @@ func epgJSONBody(serverDate, showName string) []byte {
 
 func TestWebEPGDayOffset(t *testing.T) {
 	now := time.Now().UnixMilli()
+
 	tests := []struct {
-		name string
-		body []byte
-		want int
+		name            string
+		body            []byte
+		requestedOffset int
+		want            int
 	}{
 		{
-			name: "server a day behind returns 1",
-			body: epgJSONBody(istDateString(now-24*time.Hour.Milliseconds()), "Yesterday Show"),
-			want: 1,
+			name:            "server a day behind for today returns 1",
+			body:            epgJSONBody(
+				istDateString(now-24*time.Hour.Milliseconds()),
+				"Yesterday Show",
+			),
+			requestedOffset: 0,
+			want:            1,
 		},
 		{
-			name: "server date today returns 0",
-			body: epgJSONBody(istDateString(now), "Today Show"),
-			want: 0,
+			name:            "server date today for today returns 0",
+			body:            epgJSONBody(
+				istDateString(now),
+				"Today Show",
+			),
+			requestedOffset: 0,
+			want:            0,
 		},
 		{
-			name: "server date in the future returns 0",
-			body: epgJSONBody(istDateString(now+24*time.Hour.Milliseconds()), "Tomorrow Show"),
-			want: 0,
+			name:            "server date in the future returns 0",
+			body:            epgJSONBody(
+				istDateString(now+24*time.Hour.Milliseconds()),
+				"Tomorrow Show",
+			),
+			requestedOffset: 0,
+			want:            0,
 		},
 		{
-			name: "empty epg array returns 0",
-			body: []byte(`{"epg":[]}`),
-			want: 0,
+			name:            "requested tomorrow while API returns today returns 1",
+			body:            epgJSONBody(
+				istDateString(now),
+				"Today Show",
+			),
+			requestedOffset: 1,
+			want:            1,
 		},
 		{
-			name: "invalid json returns 0",
-			body: []byte(`not-json`),
-			want: 0,
+			name:            "requested yesterday while API returns yesterday returns 0",
+			body:            epgJSONBody(
+				istDateString(now-24*time.Hour.Milliseconds()),
+				"Yesterday Show",
+			),
+			requestedOffset: -1,
+			want:            0,
 		},
 		{
-			name: "missing serverDate returns 0",
-			body: []byte(`{"epg":[{"showname":"No Date"}]}`),
-			want: 0,
+			name:            "requested tomorrow while API returns yesterday returns 2",
+			body:            epgJSONBody(
+				istDateString(now-24*time.Hour.Milliseconds()),
+				"Yesterday Show",
+			),
+			requestedOffset: 1,
+			want:            2,
 		},
 		{
-			name: "malformed serverDate returns 0",
-			body: []byte(`{"epg":[{"serverDate":"not-a-date"}]}`),
-			want: 0,
+			name:            "empty epg array returns 0",
+			body:            []byte(`{"epg":[]}`),
+			requestedOffset: 0,
+			want:            0,
 		},
 		{
-			name: "nil body returns 0",
-			body: nil,
-			want: 0,
+			name:            "invalid json returns 0",
+			body:            []byte(`not-json`),
+			requestedOffset: 0,
+			want:            0,
+		},
+		{
+			name:            "missing serverDate returns 0",
+			body:            []byte(`{"epg":[{"showname":"No Date"}]}`),
+			requestedOffset: 0,
+			want:            0,
+		},
+		{
+			name:            "malformed serverDate returns 0",
+			body:            []byte(`{"epg":[{"serverDate":"not-a-date"}]}`),
+			requestedOffset: 0,
+			want:            0,
+		},
+		{
+			name:            "nil body returns 0",
+			body:            nil,
+			requestedOffset: 0,
+			want:            0,
 		},
 	}
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := webEPGDayOffset(tt.body); got != tt.want {
-				t.Errorf("webEPGDayOffset() = %d, want %d", got, tt.want)
+			got := webEPGDayOffset(tt.body, tt.requestedOffset)
+			if got != tt.want {
+				t.Errorf(
+					"webEPGDayOffset(body, %d) = %d, want %d",
+					tt.requestedOffset,
+					got,
+					tt.want,
+				)
 			}
 		})
 	}
