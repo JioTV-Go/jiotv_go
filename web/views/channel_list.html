@@ -139,26 +139,6 @@
     </svg>
     <span class="hidden sm:block">Search</span>
   </button>
-  <div id="locked_channel_modal" class="modal modal-bottom sm:modal-middle" role="dialog" aria-modal="true" aria-labelledby="locked-channel-title" aria-describedby="locked-channel-message">
-    <div class="modal-box pb-[calc(1.5rem+env(safe-area-inset-bottom))] text-center">
-      <span class="mx-auto flex size-12 items-center justify-center rounded-full bg-warning/15 text-warning">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="size-6" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
-        </svg>
-      </span>
-      <h3 id="locked-channel-title" class="mt-3 font-bold text-xl tracking-tight">Subscription may be required</h3>
-      <p id="locked-channel-message" class="py-3 text-sm text-base-content/60"></p>
-      <label class="flex items-center justify-center gap-2 text-sm text-base-content/70">
-        <input id="locked-channel-suppress" type="checkbox" class="checkbox checkbox-sm checkbox-primary" />
-        <span>Don’t warn me again for this channel</span>
-      </label>
-      <div class="modal-action grid grid-cols-2 gap-2">
-        <button id="locked-channel-cancel" type="button" class="btn">Cancel</button>
-        <button id="locked-channel-continue" type="button" class="btn btn-primary">Try anyway</button>
-      </div>
-    </div>
-    <button id="locked-channel-backdrop" type="button" class="modal-backdrop" aria-label="Close subscription notice"></button>
-  </div>
   <script src="/static/internal/utils.js"></script>
   <script src="/static/internal/channels.js"></script>
   <script>
@@ -188,7 +168,6 @@
       const stored = getLocalStorageItem(LOCKED_CHANNELS_STORAGE_KEY, false) === true;
       toggle.checked = stored;
       toggleLockedChannels(stored);
-      initSubscriptionWarnings();
     })();
   </script>
 </div>

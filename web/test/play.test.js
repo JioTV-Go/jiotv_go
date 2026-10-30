@@ -111,18 +111,6 @@ describe('Play Page Functions', () => {
     const currentChannel = getCurrentChannelInfo(channelsData, 'test-channel');
     expect(currentChannel.channel_name).toBe('Test Channel');
   });
-  test('suppression is shared by channel and similar-card flows', () => {
-    window.eval(readFileSync('static/internal/utils.js', 'utf8'));
-    localStorage.clear();
-
-    expect(isSubscriptionWarningSuppressed('locked')).toBe(false);
-    suppressSubscriptionWarning('locked');
-    expect(getSubscriptionWarningSuppressions()).toEqual(['locked']);
-    expect(isSubscriptionWarningSuppressed('locked')).toBe(true);
-    expect(isSubscriptionWarningSuppressed('other')).toBe(false);
-  });
-
-
   test('getSimilarChannels filters and randomizes correctly', () => {
     function getSimilarChannels(channelsData, currentChannel, maxChannels = 6) {
       if (!channelsData || !channelsData.result || !currentChannel) return [];
