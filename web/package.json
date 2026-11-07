@@ -2,7 +2,7 @@
   "name": "jiotv-go-web",
   "description": "Frontend for JioTV Go - Web interface and styling",
   "devDependencies": {
-    "@tailwindcss/cli": "^4.3.3",
+    "@tailwindcss/cli": "^4.3.4",
     "daisyui": "^5.7.16",
     "jest": "^30.5.1",
     "jest-environment-jsdom": "^30.5.1",
