@@ -1033,6 +1033,11 @@ func RenderTSHandler(c *fiber.Ctx) error {
 		}
 	}
 
+	// Strip browser-added headers before proxying the segment upstream. The CDN
+	// answers 403 to /render.ts requests carrying Origin or Referer, so browsers
+	// fail every segment while native players (which send neither) work. Same
+	// class of bug as the render.key endpoint, see #790.
+	internalUtils.SetPlayerHeaders(c, PLAYER_USER_AGENT)
 	if err := internalUtils.ProxyRequest(c, decoded_url, TV.Client, PLAYER_USER_AGENT); err != nil {
 		return err
 	}
